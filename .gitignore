@@ -1,3 +1,9 @@
+#GWT cache
+gwt-unitCache/
+war/circuitjs1/
+war/circuitjs1/circuits/
+war/WEB-INF/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
