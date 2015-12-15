@@ -44,11 +44,13 @@ class Scope {
     double minV[], maxV[], minMaxV;
     double minI[], maxI[], minMaxI;
     int scopePointCount = 128;
+    FFT fft;
     int ptr, ctr, speed, position;
     int value, ivalue;
     String text;
     Rectangle rect;
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY;
+    boolean showFFT;
     CircuitElm elm, xElm, yElm;
 //    MemoryImageSource imageSource;
 //    Image image;
@@ -85,6 +87,11 @@ class Scope {
     void showMin    (boolean b) { showMin = b; }
     void showFreq   (boolean b) { showFreq = b; }
     void setLockScale  (boolean b) { lockScale = b; }
+    void showFFT(boolean b) {
+      showFFT = b;
+      if (showFFT && (fft == null))
+        fft = new FFT(scopePointCount);
+    }
     
     void resetGraph() {
     	scopePointCount = 1;
@@ -94,6 +101,12 @@ class Scope {
     	maxV = new double[scopePointCount];
     	minI = new double[scopePointCount];
     	maxI = new double[scopePointCount];
+    	for (int i = 0; i < scopePointCount; i++) {
+    		minV[i] = 0;
+    		maxV[i] = 0;
+    		minI[i] = 0;
+    		maxI[i] = 0;
+    	}
     	ptr = ctr = 0;
     	allocImage();
     }
@@ -108,6 +121,7 @@ class Scope {
     	speed = 64;
     	showI = showV = showScale = true;
     	showFreq = lockScale = showMin = showMax = false;
+    	showFFT = false;
     	plot2d = false;
     	// no showI for Output
     		if (elm != null && (elm instanceof OutputElm ||
@@ -238,6 +252,52 @@ class Scope {
     void adjustScale(double x) {
     	minMaxV *= x;
     	minMaxI *= x;
+    }
+
+    void drawFFTVerticalGridLines(Graphics g) {
+      // Draw x-grid lines and label the frequencies in the FFT that they point to.
+      int prevEnd = 0;
+      int divs = 20;
+      double maxFrequency = 1 / (sim.timeStep * speed * divs * 2);
+      for (int i = 0; i < divs; i++) {
+        int x = rect.width * i / divs;
+        if (x < prevEnd) continue;
+        String s = ((int) Math.round(i * maxFrequency)) + "Hz";
+        int sWidth = (int) Math.ceil(g.context.measureText(s).getWidth());
+        prevEnd = x + sWidth + 4;
+        if (i > 0) {
+          g.setColor("#880000");
+          g.drawLine(x, 0, x, rect.height);
+        }
+        g.setColor("#FF0000");
+        g.drawString(s, x + 2, rect.height);
+      }
+    }
+
+    void drawFFT(Graphics g) {
+      int y = (rect.height - 1) / 2;
+      double[] real = new double[scopePointCount];
+      double[] imag = new double[scopePointCount];
+      for (int i = 0; i < scopePointCount; i++) {
+        real[i] = maxV[(ptr - i + scopePointCount) & (scopePointCount - 1)];
+        imag[i] = 0;
+      }
+      fft.fft(real, imag);
+      double magnitude = fft.magnitude(real[0], imag[0]);
+      int prevHeight = (int) ((magnitude * y) / minMaxV);
+      int prevX = 0;
+      g.setColor("#FF0000");
+      for (int i = 1; i < scopePointCount / 2; i++) {
+        int x = 2 * i * rect.width / scopePointCount;
+        // rect.width may be greater than or less than scopePointCount/2,
+        // so x may be greater than or equal to prevX.
+        if (x == prevX) continue;
+        magnitude = fft.magnitude(real[i], imag[i]);
+        int height = (int) ((magnitude * y) / minMaxV);
+        g.drawLine(prevX, y - prevHeight, x, y - height);
+        prevHeight = height;
+        prevX = x;
+      }
     }
 
     void draw2d(Graphics g) {
@@ -415,6 +475,11 @@ class Scope {
 //    		for (i = 0; i < pixels.length; i += r.width)
 //    			pixels[i+gx] = col;
     	}
+
+        if (showFFT) {
+          drawFFTVerticalGridLines(g);
+          drawFFT(g);
+        }
 
     	// these two loops are pretty much the same, and should be
     	// combined!
@@ -637,6 +702,7 @@ class Scope {
     		sim.scopeVIMenuItem   .setState(plot2d && !plotXY);
     		sim.scopeXYMenuItem   .setState(plotXY);
     		sim.scopeSelectYMenuItem.setEnabled(plotXY);
+    		sim.scopeFFTMenuItem.setState(showFFT);
     		sim.scopeResistMenuItem.setState(value == VAL_R);
     		sim.scopeResistMenuItem.setEnabled(elm instanceof MemristorElm);
     		return sim.scopeMenuBar;
@@ -652,7 +718,8 @@ class Scope {
     			(showMax ? 0 : 4) |   // showMax used to be always on
     			(showFreq ? 8 : 0) |
     			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
-    			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0);
+    			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
+    			(showFFT ? 1024 : 0);
     	flags |= FLAG_YELM; // yelm present
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
@@ -708,6 +775,7 @@ class Scope {
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
+    	showFFT((flags & 1024) != 0);
     }
     
     void allocImage() {
@@ -781,6 +849,8 @@ class Scope {
     		showMin(sim.scopeMinMenuItem.getState());
     	if (mi == "showfreq")
     		showFreq(sim.scopeFreqMenuItem.getState());
+    	if (mi == "showfft")
+    		showFFT(sim.scopeFFTMenuItem.getState());
     	if (mi == "showpower")
     		setValue(VAL_POWER);
     	if (mi == "showib")
