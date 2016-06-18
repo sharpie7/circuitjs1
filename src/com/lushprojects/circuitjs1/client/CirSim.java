@@ -1,5 +1,5 @@
 /*    
-    Copyright (C) Paul Falstad and Iain Sharp
+    Copyright (C) Paul Falstad, Iain Sharp and Dr. Matthew Swabey
     
     This file is part of CircuitJS1.
 
@@ -98,7 +98,7 @@ MouseOutHandler, MouseWheelHandler {
     
     public static final int sourceRadius = 7;
     public static final double freqMult = 3.14159265*2*4;
-    
+    public int currentDumpVersion = 0; //Hardcoded at 0 in case no version number is provided in string.
     
     
 //    public String getAppletInfo() {
@@ -226,6 +226,7 @@ MouseOutHandler, MouseWheelHandler {
     static ImportFromTextDialog importFromTextDialog;
     static ScrollValuePopup scrollValuePopup;
     static AboutBox aboutBox;
+    static ErrorBox errorBox;
 //    Class dumpTypes[], shortcuts[];
     String shortcuts[];
     static String muString = "u";
@@ -2594,7 +2595,8 @@ MouseOutHandler, MouseWheelHandler {
 	f |= (powerCheckItem.getState()) ? 8 : 0;
 	f |= (showValuesCheckItem.getState()) ? 0 : 16;
 	// 32 = linear scale in afilter
-	String dump = "$ " + f + " " +
+	String dump = "V " + " " + circuitjs1.maxDumpVersion + "\n"; //Add a version number to dump.
+	dump += "$ " + f + " " +
 	    timeStep + " " + getIterCount() + " " +
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
 	    powerBar.getValue() + "\n";
@@ -2810,6 +2812,7 @@ MouseOutHandler, MouseWheelHandler {
 	    scopeCount = 0;
 	}
 	//cv.repaint();
+	currentDumpVersion = 0;
 	int p;
 	for (p = 0; p < len; ) {
 	    int l;
@@ -2827,6 +2830,13 @@ MouseOutHandler, MouseWheelHandler {
 		String type = st.nextToken();
 		int tint = type.charAt(0);
 		try {
+			if (tint == 'V') {
+				currentDumpVersion = new Integer(st.nextToken()).intValue();
+				if (currentDumpVersion < circuitjs1.minDumpVersion || currentDumpVersion > circuitjs1.maxDumpVersion) {
+					errorBox = new ErrorBox(circuitjs1.versionString, "Circuit String Version " + currentDumpVersion + " is not supported.");
+				}
+	    		break;
+			}
 		    if (tint == 'o') {
 			Scope sc = new Scope(this);
 			sc.position = scopeCount;

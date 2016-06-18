@@ -1,5 +1,5 @@
 /*    
-    Copyright (C) Paul Falstad and Iain Sharp
+    Copyright (C) Paul Falstad, Iain Sharp and Dr. Matthew Swabey
     
     This file is part of CircuitJS1.
 
@@ -23,6 +23,7 @@ package com.lushprojects.circuitjs1.client;
 //GWT conversion (c) 2015 by Iain Sharp
 
 //Version History
+//v1.0.2 16-06-17 add a file version system to enable upgrades and bugfixes. Bugfix scope dump/load.
 //v1.0.1 15-06-15
 //Convert source code to GPLv2
 //Incorporate example files in to project
@@ -56,7 +57,9 @@ import com.google.gwt.user.client.Window;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.0.1";
+	public static final String versionString="1.0.2";
+	public static final int maxDumpVersion = 1;
+	public static final int minDumpVersion = 0;  
 
 	static CirSim mysim;
 	

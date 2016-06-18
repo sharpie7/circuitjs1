@@ -1,5 +1,5 @@
 /*    
-    Copyright (C) Paul Falstad and Iain Sharp
+    Copyright (C) Paul Falstad, Iain Sharp and Dr. Matthew Swabey
     
     This file is part of CircuitJS1.
 
@@ -658,8 +658,9 @@ class Scope {
     	if (eno < 0)
     		return null;
     	int yno = yElm == null ? -1 : sim.locateElm(yElm);
-    	String x = "o " + eno + " " +
-    			speed + " " + value + " " + flags + " " +
+    	// Updated string to write out ivalue as we are dumping version 1
+    	String x =  "o " + eno + " " +
+    			speed + " " + value + " " + ivalue + " " + flags + " " +
     			minMaxV + " " + minMaxI + " " + position + " " + yno;
     	if (text != null)
     		x += " " + text;
@@ -674,6 +675,7 @@ class Scope {
     	elm = sim.getElm(e);
     	speed = new Integer(st.nextToken()).intValue();
     	value = new Integer(st.nextToken()).intValue();
+    	if (sim.currentDumpVersion == 1) ivalue = new Integer(st.nextToken()).intValue();
     	int flags = new Integer(st.nextToken()).intValue();
     	minMaxV = new Double(st.nextToken()).doubleValue();
     	minMaxI = new Double(st.nextToken()).doubleValue();
