@@ -27,12 +27,15 @@ package com.lushprojects.circuitjs1.client;
 	int FLAG_PNP = 1;
 	int FLAG_SHOWVT = 2;
 	int FLAG_DIGITAL = 4;
+	int FLAG_FLIP = 8;
 	double vt;
+	double beta;
 	MosfetElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
 	    pnp = (pnpflag) ? -1 : 1;
 	    flags = (pnpflag) ? FLAG_PNP : 0;
 	    noDiagonal = true;
+	    beta = getDefaultBeta();
 	    vt = getDefaultThreshold();
 	}
 	public MosfetElm(int xa, int ya, int xb, int yb, int f,
@@ -41,74 +44,76 @@ package com.lushprojects.circuitjs1.client;
 	    pnp = ((f & FLAG_PNP) != 0) ? -1 : 1;
 	    noDiagonal = true;
 	    vt = getDefaultThreshold();
+	    beta = getDefaultBeta();
 	    try {
 		vt = new Double(st.nextToken()).doubleValue();
+		beta = new Double(st.nextToken()).doubleValue();
 	    } catch (Exception e) {}
 	}
 	double getDefaultThreshold() { return 1.5; }
-	double getBeta() { return .02; }
+	double getDefaultBeta() { return .02; }
 	boolean nonLinear() { return true; }
 	boolean drawDigital() { return (flags & FLAG_DIGITAL) != 0; }
 	void reset() {
 	    lastv1 = lastv2 = volts[0] = volts[1] = volts[2] = curcount = 0;
 	}
 	String dump() {
-	    return super.dump() + " " + vt;
+	    return super.dump() + " " + vt + " " + beta;
 	}
 	int getDumpType() { return 'f'; }
 	final int hs = 16;
 	
 	void draw(Graphics g) {
-	    setBbox(point1, point2, hs);
-	    setVoltageColor(g, volts[1]);
-	    drawThickLine(g, src[0], src[1]);
-	    setVoltageColor(g, volts[2]);
-	    drawThickLine(g, drn[0], drn[1]);
-	    int segments = 6;
-	    int i;
-	    setPowerColor(g, true);
-	    double segf = 1./segments;
-	    for (i = 0; i != segments; i++) {
-		double v = volts[1]+(volts[2]-volts[1])*i/segments;
-		setVoltageColor(g, v);
-		interpPoint(src[1], drn[1], ps1, i*segf);
-		interpPoint(src[1], drn[1], ps2, (i+1)*segf);
-		drawThickLine(g, ps1, ps2);
-	    }
-	    setVoltageColor(g, volts[1]);
-	    drawThickLine(g, src[1], src[2]);
-	    setVoltageColor(g, volts[2]);
-	    drawThickLine(g, drn[1], drn[2]);
-	    if (!drawDigital()) {
-		setVoltageColor(g, pnp == 1 ? volts[1] : volts[2]);
-		g.fillPolygon(arrowPoly);
-	    }
-	    if (sim.powerCheckItem.getState())
-		g.setColor(Color.gray);
-	    setVoltageColor(g, volts[0]);
-	    drawThickLine(g, point1, gate[1]);
-	    drawThickLine(g, gate[0], gate[2]);
-	    if (drawDigital() && pnp == -1)
-		drawThickCircle(g, pcircle.x, pcircle.y, pcircler);
-	    if ((flags & FLAG_SHOWVT) != 0) {
-		String s = "" + (vt*pnp);
-		g.setColor(whiteColor);
-		g.setFont(unitsFont);
-		drawCenteredText(g, s, x2+2, y2, false);
-	    }
-	    if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
-		g.setColor(Color.white);
-		g.setFont(unitsFont);
-		int ds = sign(dx);
-		g.drawString("G", gate[1].x-10*ds, gate[1].y-5);
-		g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*ds, src[0].y+4); // x+6 if ds=1, -12 if -1
-		g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*ds, drn[0].y+4);
-	    }	    
-	    curcount = updateDotCount(-ids, curcount);
-	    drawDots(g, src[0], src[1], curcount);
-	    drawDots(g, src[1], drn[1], curcount);
-	    drawDots(g, drn[1], drn[0], curcount);
-	    drawPosts(g);
+		setBbox(point1, point2, hs);
+		setVoltageColor(g, volts[1]);
+		drawThickLine(g, src[0], src[1]);
+		setVoltageColor(g, volts[2]);
+		drawThickLine(g, drn[0], drn[1]);
+		int segments = 6;
+		int i;
+		setPowerColor(g, true);
+		double segf = 1./segments;
+		for (i = 0; i != segments; i++) {
+			double v = volts[1]+(volts[2]-volts[1])*i/segments;
+			setVoltageColor(g, v);
+			interpPoint(src[1], drn[1], ps1, i*segf);
+			interpPoint(src[1], drn[1], ps2, (i+1)*segf);
+			drawThickLine(g, ps1, ps2);
+		}
+		setVoltageColor(g, volts[1]);
+		drawThickLine(g, src[1], src[2]);
+		setVoltageColor(g, volts[2]);
+		drawThickLine(g, drn[1], drn[2]);
+		if (!drawDigital()) {
+			setVoltageColor(g, pnp == 1 ? volts[1] : volts[2]);
+			g.fillPolygon(arrowPoly);
+		}
+		if (sim.powerCheckItem.getState())
+			g.setColor(Color.gray);
+		setVoltageColor(g, volts[0]);
+		drawThickLine(g, point1, gate[1]);
+		drawThickLine(g, gate[0], gate[2]);
+		if (drawDigital() && pnp == -1)
+			drawThickCircle(g, pcircle.x, pcircle.y, pcircler);
+		if ((flags & FLAG_SHOWVT) != 0) {
+			String s = "" + (vt*pnp);
+			g.setColor(whiteColor);
+			g.setFont(unitsFont);
+			drawCenteredText(g, s, x2+2, y2, false);
+		}
+		if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
+			g.setColor(Color.white);
+			g.setFont(unitsFont);
+			int ds = sign(dx);
+			g.drawString("G", gate[1].x-10*ds, gate[1].y-5);
+			g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*ds, src[0].y+4); // x+6 if ds=1, -12 if -1
+			g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*ds, drn[0].y+4);
+		}	    
+		curcount = updateDotCount(-ids, curcount);
+		drawDots(g, src[0], src[1], curcount);
+		drawDots(g, src[1], drn[1], curcount);
+		drawDots(g, drn[1], drn[0], curcount);
+		drawPosts(g);
 	}
 	Point getPost(int n) {
 	    return (n == 0) ? point1 : (n == 1) ? src[0] : drn[0];
@@ -127,6 +132,8 @@ package com.lushprojects.circuitjs1.client;
 	    // find the coordinates of the various points we need to draw
 	    // the MOSFET.
 	    int hs2 = hs*dsign;
+	    if ((flags & FLAG_FLIP) != 0)
+	    	hs2 = -hs2;
 	    src = newPointArray(3);
 	    drn = newPointArray(3);
 	    interpPoint2(point1, point2, src[0], drn[0], 1, -hs2);
@@ -193,7 +200,6 @@ package com.lushprojects.circuitjs1.client;
 	    ids = 0;
 	    gm = 0;
 	    double Gds = 0;
-	    double beta = getBeta();
 	    if (vgs > .5 && this instanceof JfetElm) {
 		sim.stop("JFET is reverse biased!", this);
 		return;
@@ -253,23 +259,37 @@ package com.lushprojects.circuitjs1.client;
 	    return !(n1 == 0 || n2 == 0);
 	}
 	public EditInfo getEditInfo(int n) {
-	    if (n == 0)
-		return new EditInfo("Threshold Voltage", pnp*vt, .01, 5);
-	    if (n == 1) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Digital Symbol", drawDigital());
-		return ei;
-	    }
-		
-	    return null;
+		if (n == 0)
+			return new EditInfo("Threshold Voltage", pnp*vt, .01, 5);
+		if (n == 1)
+			return new EditInfo("Beta", beta, .01, 5);
+		if (n == 2) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Digital Symbol", drawDigital());
+			return ei;
+		}
+		if (n == 3) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Swap D/S", (flags & FLAG_FLIP) != 0);
+			return ei;
+		}
+
+		return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0)
-		vt = pnp*ei.value;
-	    if (n == 1) {
-		flags = (ei.checkbox.getState()) ? (flags | FLAG_DIGITAL) :
-		    (flags & ~FLAG_DIGITAL);
-		setPoints();
-	    }
+		if (n == 0)
+			vt = pnp*ei.value;
+		if (n == 1)
+			beta = ei.value;	
+		if (n == 2) {
+			flags = (ei.checkbox.getState()) ? (flags | FLAG_DIGITAL) :
+				(flags & ~FLAG_DIGITAL);
+			setPoints();
+		}
+		if (n == 3) {
+			flags = (ei.checkbox.getState()) ? (flags | FLAG_FLIP) :
+				(flags & ~FLAG_FLIP);
+			setPoints();
+		}
 	}
     }
