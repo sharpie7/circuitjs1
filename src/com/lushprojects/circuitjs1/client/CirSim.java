@@ -349,7 +349,7 @@ MouseOutHandler, MouseWheelHandler {
 //			pause = Integer.parseInt(param);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
-		euro = qp.getBooleanValue("euroResistors", true);
+		euro = qp.getBooleanValue("euroResistors", false);
 //		useFrameStr  = qp.getValue("useFrame");
 //		String x = applet.getParameter("whiteBackground");
 //		if (x != null && x.equalsIgnoreCase("true"))
