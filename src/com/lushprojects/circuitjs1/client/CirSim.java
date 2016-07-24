@@ -145,6 +145,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeMaxMenuItem;
     CheckboxMenuItem scopeMinMenuItem;
     CheckboxMenuItem scopeFreqMenuItem;
+    CheckboxMenuItem scopeFFTMenuItem;
     CheckboxMenuItem scopePowerMenuItem;
     CheckboxMenuItem scopeIbMenuItem;
     CheckboxMenuItem scopeIcMenuItem;
@@ -905,6 +906,7 @@ MouseOutHandler, MouseWheelHandler {
     		m.addItem(scopeMaxMenuItem = new CheckboxMenuItem("Show Peak Value", new MyCommand("scopepop", "showpeak")));
     		m.addItem(scopeMinMenuItem = new CheckboxMenuItem("Show Negative Peak Value", new MyCommand("scopepop", "shownegpeak")));
     		m.addItem(scopeFreqMenuItem = new CheckboxMenuItem("Show Frequency", new MyCommand("scopepop", "showfreq")));
+    		m.addItem(scopeFFTMenuItem = new CheckboxMenuItem("Show Spectrum", new MyCommand("scopepop", "showfft")));
     		m.addItem(scopeVIMenuItem = new CheckboxMenuItem("Show V vs I", new MyCommand("scopepop", "showvvsi")));
     		m.addItem(scopeXYMenuItem = new CheckboxMenuItem("Plot X/Y", new MyCommand("scopepop", "plotxy")));
     		m.addItem(scopeSelectYMenuItem = new CheckboxAlignedMenuItem("Select Y", new MyCommand("scopepop", "selecty")));
@@ -2434,7 +2436,7 @@ MouseOutHandler, MouseWheelHandler {
     			scopes[menuScope].selectY();
     		if (item=="reset")
     			scopes[menuScope].resetGraph();
-    		if (item.indexOf("show")==0 || item=="plotxy")
+    		if (item.indexOf("show")==0 || item=="plotxy" || item=="showfft")
     			scopes[menuScope].handleMenu(item);
     		//cv.repaint();
     	}
