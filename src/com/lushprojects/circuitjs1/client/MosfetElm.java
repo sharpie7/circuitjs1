@@ -181,9 +181,12 @@ package com.lushprojects.circuitjs1.client;
 		vs[2] = lastv2 - .5;
 	    int source = 1;
 	    int drain = 2;
+	    
+	    // if source voltage > drain (for NPN), swap source and drain
+	    // (opposite for PNP)
 	    if (pnp*vs[1] > pnp*vs[2]) {
-		source = 2;
-		drain = 1;
+	    	source = 2;
+	    	drain = 1;
 	    }
 	    int gate = 0;
 	    double vgs = vs[gate ]-vs[source];
