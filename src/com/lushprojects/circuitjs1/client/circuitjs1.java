@@ -56,7 +56,7 @@ import com.google.gwt.user.client.Window;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.0.1";
+	public static final String versionString="1.6.1js";
 
 	static CirSim mysim;
 	
