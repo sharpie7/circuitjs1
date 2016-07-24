@@ -3326,7 +3326,7 @@ MouseOutHandler, MouseWheelHandler {
     public void onDoubleClick(DoubleClickEvent e){
     	e.preventDefault();
  //   	if (!didSwitch && mouseElm != null)
-    	if (mouseElm != null)
+    	if (mouseElm != null && !(mouseElm instanceof SwitchElm))
     		doEdit(mouseElm);
     }
     
