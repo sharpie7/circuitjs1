@@ -51,6 +51,9 @@ public class AboutBox extends PopupPanel {
 		vp.add(new HTML("<p>Circuit Simulator version "+version+".</p>"+
 		"<p>Original by Paul Falstad.<br><a href=\"http://www.falstad.com/\" target=\"_blank\">http://www.falstad.com/</a></p>"+
 		"<p>JavaScript conversion by Iain Sharp.<br><a href=\"http://lushprojects.com/\" target=\"_blank\">http://lushprojects.com/</a></p>"+
+		"<p>Thanks to Edward Calver for 15 new components and other improvements.  Thanks to Rodrigo Hausen for file import/export and many other UI improvements. "+  
+		"Thanks to J. Mike Rollins for the Zener diode code.  Thanks to Julius Schmidt for the spark gap code and some examples.  Thanks to Dustin Soodak for help with the user interface improvements. "+
+		"Thanks to Jacob Calvert for the T Flip Flop. Thanks to Ben Hayden for scope spectrum.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
 		"under the terms of the GNU General Public License as published by "+
 		"the Free Software Foundation, either version 2 of the License, or "+
@@ -60,7 +63,7 @@ public class AboutBox extends PopupPanel {
 		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "+
 		"GNU General Public License for more details.</p>"+
 		"<p style=\"font-size:9px\">For details of licensing see <A href=\"http://www.gnu.org/licenses/\" target=\"_blank\">http://www.gnu.org/licenses/</A>.</p>"+
-		"<p style=\"font-size:9px\">Source code:<A href=\"https://github.com/sharpie7/circuitjs1\" target=\"_blank\">https://github.com/sharpie7/circuitjs1</A></p>"));
+		"<p style=\"font-size:9px\">Source code:<A href=\"https://github.com/pfalstad/circuitjs1\" target=\"_blank\">https://github.com/sharpie7/circuitjs1</A></p>"));
 		vp.add(okButton = new Button("OK"));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
