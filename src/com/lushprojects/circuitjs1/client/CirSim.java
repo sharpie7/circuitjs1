@@ -758,6 +758,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem("Add Text", "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Box", "BoxElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Scope Probe", "ProbeElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Labeled Node", "LabeledNodeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+"&nbsp;</div>Outputs and Labels"), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -1480,6 +1481,11 @@ MouseOutHandler, MouseWheelHandler {
 	return elmList.elementAt(n);
     }
     
+    public static native void console(String text)
+    /*-{
+	    console.log(text);
+	}-*/;
+
     void analyzeCircuit() {
 	calcCircuitBottom();
 	if (elmList.isEmpty())
@@ -1524,6 +1530,7 @@ MouseOutHandler, MouseWheelHandler {
 	//System.out.println("ac2");
 
 	// allocate nodes and voltage sources
+	LabeledNodeElm.resetNodeList();
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
 	    int inodes = ce.getInternalNodeCount();
@@ -1623,17 +1630,17 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		// loop through all ce's nodes to see if they are connected
 		// to other nodes not in closure
-		for (j = 0; j < ce.getPostCount(); j++) {
-		    if (!closure[ce.getNode(j)]) {
+		for (j = 0; j < ce.getConnectionNodeCount(); j++) {
+		    if (!closure[ce.getConnectionNode(j)]) {
 			if (ce.hasGroundConnection(j))
-			    closure[ce.getNode(j)] = changed = true;
+			    closure[ce.getConnectionNode(j)] = changed = true;
 			continue;
 		    }
 		    int k;
-		    for (k = 0; k != ce.getPostCount(); k++) {
+		    for (k = 0; k != ce.getConnectionNodeCount(); k++) {
 			if (j == k)
 			    continue;
-			int kn = ce.getNode(k);
+			int kn = ce.getConnectionNode(k);
 			if (ce.getConnection(j, k) && !closure[kn]) {
 			    closure[kn] = true;
 			    changed = true;
@@ -1647,7 +1654,7 @@ MouseOutHandler, MouseWheelHandler {
 	    // connect unconnected nodes
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
-		    System.out.println("node " + i + " unconnected");
+		    console("node " + i + " unconnected");
 		    stampResistor(0, i, 1e8);
 		    closure[i] = true;
 		    changed = true;
@@ -1665,7 +1672,7 @@ MouseOutHandler, MouseWheelHandler {
 		// first try findPath with maximum depth of 5, to avoid slowdowns
 		if (!fpi.findPath(ce.getNode(0), 5) &&
 		    !fpi.findPath(ce.getNode(0))) {
-		    System.out.println(ce + " no path");
+		    console(ce + " no path");
 		    ce.reset();
 		}
 	    }
@@ -1693,7 +1700,7 @@ MouseOutHandler, MouseWheelHandler {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.SHORT, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
-		    System.out.println(ce + " shorted");
+		    console(ce + " shorted");
 		    ce.reset();
 		} else {
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
@@ -1953,17 +1960,21 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		if (ce == firstElm)
 		    continue;
-		if (type == INDUCT) { 
+		if (type == INDUCT) {
+		    // inductors need a path free of current sources
 		    if (ce instanceof CurrentElm)
 			continue;
 		}
 		if (type == VOLTAGE) {
+		    // when checking for voltage loops, we only care about voltage sources/wires
 		    if (!(ce.isWire() || ce instanceof VoltageElm))
 			continue;
 		}
+		// when checking for shorts, just check wires
 		if (type == SHORT && !ce.isWire())
 		    continue;
 		if (type == CAP_V) {
+		    // checking for capacitor/voltage source loops
 		    if (!(ce.isWire() || ce instanceof CapacitorElm || ce instanceof VoltageElm))
 			continue;
 		}
@@ -1971,20 +1982,20 @@ MouseOutHandler, MouseWheelHandler {
 		    // look for posts which have a ground connection;
 		    // our path can go through ground
 		    int j;
-		    for (j = 0; j != ce.getPostCount(); j++)
+		    for (j = 0; j != ce.getConnectionNodeCount(); j++)
 			if (ce.hasGroundConnection(j) &&
-			    findPath(ce.getNode(j), depth)) {
+			    findPath(ce.getConnectionNode(j), depth)) {
 			    used[n1] = false;
 			    return true;
 			}
 		}
 		int j;
-		for (j = 0; j != ce.getPostCount(); j++) {
+		for (j = 0; j != ce.getConnectionNodeCount(); j++) {
 		    //System.out.println(ce + " " + ce.getNode(j));
-		    if (ce.getNode(j) == n1)
+		    if (ce.getConnectionNode(j) == n1)
 			break;
 		}
-		if (j == ce.getPostCount())
+		if (j == ce.getConnectionNodeCount())
 		    continue;
 		if (ce.hasGroundConnection(j) && findPath(0, depth)) {
 		    //System.out.println(ce + " has ground");
@@ -1992,6 +2003,7 @@ MouseOutHandler, MouseWheelHandler {
 		    return true;
 		}
 		if (type == INDUCT && ce instanceof InductorElm) {
+		    // inductors can use paths with other inductors of matching current
 		    double c = ce.getCurrent();
 		    if (j == 0)
 			c = -c;
@@ -2001,11 +2013,11 @@ MouseOutHandler, MouseWheelHandler {
 			continue;
 		}
 		int k;
-		for (k = 0; k != ce.getPostCount(); k++) {
+		for (k = 0; k != ce.getConnectionNodeCount(); k++) {
 		    if (j == k)
 			continue;
-		    //System.out.println(ce + " " + ce.getNode(j) + "-" + ce.getNode(k));
-		    if (ce.getConnection(j, k) && findPath(ce.getNode(k), depth)) {
+//		    console(ce + " " + ce.getNode(j) + "-" + ce.getNode(k));
+		    if (ce.getConnection(j, k) && findPath(ce.getConnectionNode(k), depth)) {
 			//System.out.println("got findpath " + n1);
 			used[n1] = false;
 			return true;
@@ -4281,6 +4293,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new HalfAdderElm(x1, y1, x2, y2, f, st);
     	if (tint==194)
     		return (CircuitElm) new MonostableElm(x1, y1, x2, y2, f, st);
+    	if (tint==207)
+    		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
     	
     	return
     			null;
@@ -4455,6 +4469,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new HalfAdderElm(x1, y1);
     	if (n=="MonostableElm")
     		return (CircuitElm) new MonostableElm(x1, y1);
+    	if (n=="LabeledNodeElm")
+    		return (CircuitElm) new LabeledNodeElm(x1, y1);
     	
     	return null;
     }
