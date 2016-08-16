@@ -230,8 +230,8 @@ class VoltageElm extends CircuitElm {
 	case WF_TRIANGLE: arr[0] = "triangle gen"; break;
 	}
 	arr[1] = "I = " + getCurrentText(getCurrent());
-//	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
-//	    getVoltageText(getVoltageDiff());
+	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
+	    getVoltageText(getVoltageDiff());
 	if (waveform != WF_DC && waveform != WF_VAR) {
 	    arr[3] = "f = " + getUnitText(frequency, "Hz");
 	    arr[4] = "Vmax = " + getVoltageText(maxVoltage);
