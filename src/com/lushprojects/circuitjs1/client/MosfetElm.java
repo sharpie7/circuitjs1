@@ -29,6 +29,7 @@ package com.lushprojects.circuitjs1.client;
 	int FLAG_DIGITAL = 4;
 	int FLAG_FLIP = 8;
 	double vt;
+	// beta = 1/(RdsON*(Vgs-Vt))
 	double beta;
 	MosfetElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
