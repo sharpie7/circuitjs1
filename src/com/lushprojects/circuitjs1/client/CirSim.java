@@ -71,6 +71,7 @@ import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.http.client.URL;
@@ -690,6 +691,7 @@ MouseOutHandler, MouseWheelHandler {
 //		}
 //	);
 		enableUndoRedo();
+		enablePaste();
 		setiFrameHeight();
 		cv.addMouseDownHandler(this);
 		cv.addMouseMoveHandler(this);
@@ -2577,7 +2579,7 @@ MouseOutHandler, MouseWheelHandler {
     void doExportAsText()
     {
     	String dump = dumpCircuit();
-	    exportAsTextDialog = new ExportAsTextDialog(dump);
+	    exportAsTextDialog = new ExportAsTextDialog(this, dump);
 	    exportAsTextDialog.show();
     }
     
@@ -3343,6 +3345,11 @@ MouseOutHandler, MouseWheelHandler {
     public void onMouseDown(MouseDownEvent e) {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
+    	
+    	// maybe someone did copy in another window?  should really do this when
+    	// window receives focus
+    	enablePaste();
+    	
     	// IES - hack to only handle left button events in the web version.
     	if (e.getNativeButton() != NativeEvent.BUTTON_LEFT)
     		return;
@@ -3706,10 +3713,25 @@ MouseOutHandler, MouseWheelHandler {
     			elmList.removeElementAt(i);
     		}
     	}
+    	writeClipboardToStorage();
     	enablePaste();
     	needAnalyze();
     }
 
+    void writeClipboardToStorage() {
+    	Storage stor = Storage.getLocalStorageIfSupported();
+    	if (stor == null)
+    		return;
+    	stor.setItem("circuitClipboard", clipboard);
+    }
+    
+    void readClipboardFromStorage() {
+    	Storage stor = Storage.getLocalStorageIfSupported();
+    	if (stor == null)
+    		return;
+    	clipboard = stor.getItem("circuitClipboard");
+    }
+    
     void doDelete() {
     	int i;
     	pushUndo();
@@ -3752,11 +3774,14 @@ MouseOutHandler, MouseWheelHandler {
     		if (ce.isSelected())
     			clipboard += ce.dump() + "\n";
     	}
+    	writeClipboardToStorage();
     	enablePaste();
     }
 
     void enablePaste() {
-    	pasteItem.setEnabled(clipboard.length() > 0);
+    	if (clipboard == null || clipboard.length() == 0)
+    		readClipboardFromStorage();
+    	pasteItem.setEnabled(clipboard != null && clipboard.length() > 0);
     }
 
     void doPaste() {
@@ -3773,6 +3798,7 @@ MouseOutHandler, MouseWheelHandler {
     			oldbb = bb;
     	}
     	int oldsz = elmList.size();
+    	readClipboardFromStorage();
     	readSetup(clipboard, true, false);
 
     	// select new items
