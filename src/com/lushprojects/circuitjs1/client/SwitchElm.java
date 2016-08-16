@@ -22,6 +22,7 @@ package com.lushprojects.circuitjs1.client;
 // import java.awt.*;
 //import java.util.StringTokenizer;
 
+// SPST switch
 class SwitchElm extends CircuitElm {
     boolean momentary;
     // position 0 == closed, position 1 == open
