@@ -132,7 +132,7 @@ package com.lushprojects.circuitjs1.client;
 	    	return ei;
 	    }
 	    if (n == 2)
-	    	return new EditInfo("Switch Group", 0, 0, 100).setDimensionless();
+	    	return new EditInfo("Switch Group", link, 0, 100).setDimensionless();
 	    return super.getEditInfo(n);
 	}
 	public void setEditValue(int n, EditInfo ei) {
