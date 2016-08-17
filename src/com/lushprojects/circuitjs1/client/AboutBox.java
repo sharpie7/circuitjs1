@@ -53,7 +53,7 @@ public class AboutBox extends PopupPanel {
 		"<p>JavaScript conversion by Iain Sharp.<br><a href=\"http://lushprojects.com/\" target=\"_blank\">http://lushprojects.com/</a></p>"+
 		"<p>Thanks to Edward Calver for 15 new components and other improvements.  Thanks to Rodrigo Hausen for file import/export and many other UI improvements. "+  
 		"Thanks to J. Mike Rollins for the Zener diode code.  Thanks to Julius Schmidt for the spark gap code and some examples.  Thanks to Dustin Soodak for help with the user interface improvements. "+
-		"Thanks to Jacob Calvert for the T Flip Flop. Thanks to Ben Hayden for scope spectrum.</p>"+
+		"Thanks to Jacob Calvert for the T Flip Flop. Thanks to Ben Hayden for scope spectrum. Thanks to Andre Adrian for improved emitter coupled oscillator.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
 		"under the terms of the GNU General Public License as published by "+
 		"the Free Software Foundation, either version 2 of the License, or "+
