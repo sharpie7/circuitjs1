@@ -72,12 +72,12 @@ class SchmittElm extends InvertingSchmittElm{
 	    draw2Leads(g);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, gatePoly);
-	    drawThickPolygon(g, symbolPoly);
+	    g.setLineWidth(2);
+	    drawPolygon(g, symbolPoly);
+	    g.setLineWidth(1);;
 	    curcount = updateDotCount(current, curcount);
 	    drawDots(g, lead2, point2, curcount);
 	}
-	Polygon gatePoly;
-	Polygon symbolPoly;
 	void setPoints() {
 	    super.setPoints();
 	    int hs = 16;
@@ -87,22 +87,12 @@ class SchmittElm extends InvertingSchmittElm{
 	    lead1 = interpPoint(point1, point2, .5-ww/dn);
 	    lead2 = interpPoint(point1, point2, .5+(ww-3)/dn);
 	    Point triPoints[] = newPointArray(3); 
-	    Point symPoints[] = newPointArray(6);
-	    Point dummy=new Point(0,0);
 	    interpPoint2(lead1, lead2, triPoints[0], triPoints[1], 0, hs);
 	    triPoints[2] = interpPoint(point1, point2, .5+(ww-5)/dn);
-
-    	    interpPoint2(lead1, lead2, symPoints[4], symPoints[5], 0.25, hs/4);//   5 1 3
-	    interpPoint2(lead1, lead2, symPoints[2], symPoints[1], 0.4, hs/4);//0 4 2 
-	    interpPoint2(lead1, lead2,dummy,symPoints[0], 0.1, hs/4);
-	    interpPoint2(lead1, lead2,symPoints[3],dummy, 0.52, hs/4);
-
 	    gatePoly = createPolygon(triPoints);
-	    symbolPoly=createPolygon(symPoints);
-	    setBbox(point1, point2, hs);
 	}
         void getInfo(String arr[]) {
-            arr[0] = "Schmitt";
+            arr[0] = "Schmitt Trigger";
         }
 
     }

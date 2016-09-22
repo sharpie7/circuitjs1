@@ -24,21 +24,36 @@ package com.lushprojects.circuitjs1.client;
 
     abstract class GateElm extends CircuitElm {
 	final int FLAG_SMALL = 1;
+	final int FLAG_SCHMITT = 2;
 	int inputCount = 2;
 	boolean lastOutput;
+	double highVoltage;
+	public static double lastHighVoltage = 5;
+	static boolean lastSchmitt = false;
 	
 	public GateElm(int xx, int yy) {
 	    super(xx, yy);
 	    noDiagonal = true;
 	    inputCount = 2;
+	    
+	    // copy defaults from last gate edited
+	    highVoltage = lastHighVoltage;
+	    if (lastSchmitt)
+		flags |= FLAG_SCHMITT;
+	    
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
 	}
 	public GateElm(int xa, int ya, int xb, int yb, int f,
 			StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    inputCount = new Integer(st.nextToken()).intValue();
-	    lastOutput = new Double (st.nextToken()).doubleValue() > 2.5;
+	    double lastOutputVoltage = new Double (st.nextToken()).doubleValue();
 	    noDiagonal = true;
+	    highVoltage = 5;
+	    try {
+		highVoltage = new Double(st.nextToken()).doubleValue();
+	    } catch (Exception e) { }
+	    lastOutput = lastOutputVoltage > highVoltage*.5;
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
 	}
 	boolean isInverting() { return false; }
@@ -48,15 +63,18 @@ package com.lushprojects.circuitjs1.client;
 	    gwidth = 7*s;
 	    gwidth2 = 14*s;
 	    gheight = 8*s;
-	    flags = (s == 1) ? FLAG_SMALL : 0;
+	    flags &= ~FLAG_SMALL;
+	    flags |= (s == 1) ? FLAG_SMALL : 0;
 	}
 	String dump() {
-	    return super.dump() + " " + inputCount + " " + volts[inputCount];
+	    return super.dump() + " " + inputCount + " " + volts[inputCount] + " " + highVoltage;
 	}
 	Point inPosts[], inGates[];
+	boolean inputStates[];
 	int ww;
 	void setPoints() {
 	    super.setPoints();
+	    inputStates = new boolean[inputCount];
 	    if (dn > 150 && this == sim.dragElm)
 		setSize(2);
 	    int hs = gheight;
@@ -80,7 +98,10 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    hs2 = gwidth*(inputCount/2+1);
 	    setBbox(point1, point2, hs2);
+	    if (hasSchmittInputs())
+		schmittPoly = getSchmittPolygon(gsize, .47f);
 	}
+	
 	void draw(Graphics g) {
 	    int i;
 	    for (i = 0; i != inputCount; i++) {
@@ -91,6 +112,10 @@ package com.lushprojects.circuitjs1.client;
 	    drawThickLine(g, lead2, point2);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, gatePoly);
+	    g.setLineWidth(2);
+	    if (hasSchmittInputs())
+		drawPolygon(g, schmittPoly);
+	    g.setLineWidth(1);
 	    if (linePoints != null)
 		for (i = 0; i != linePoints.length-1; i++)
 		    drawThickLine(g, linePoints[i], linePoints[i+1]);
@@ -100,7 +125,7 @@ package com.lushprojects.circuitjs1.client;
 	    drawDots(g, lead2, point2, curcount);
 	    drawPosts(g);
 	}
-	Polygon gatePoly;
+	Polygon gatePoly, schmittPoly;
 	Point pcircle, linePoints[];
 	int getPostCount() { return inputCount+1; }
 	Point getPost(int n) {
@@ -118,8 +143,13 @@ package com.lushprojects.circuitjs1.client;
 	void stamp() {
 	    sim.stampVoltageSource(0, nodes[inputCount], voltSource);
 	}
+	boolean hasSchmittInputs() { return (flags & FLAG_SCHMITT) != 0; }
 	boolean getInput(int x) {
-	    return volts[x] > 2.5;
+	    if (!hasSchmittInputs())
+		return volts[x] > highVoltage*.5;
+	    boolean res = volts[x] > highVoltage*(inputStates[x] ? .35 : .55);
+	    inputStates[x] = res;
+	    return res;
 	}
 	abstract boolean calcFunction();
 	void doStep() {
@@ -128,18 +158,37 @@ package com.lushprojects.circuitjs1.client;
 	    if (isInverting())
 		f = !f;
 	    lastOutput = f;
-	    double res = f ? 5 : 0;
+	    double res = f ? highVoltage : 0;
 	    sim.updateVoltageSource(0, nodes[inputCount], voltSource, res);
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
 		return new EditInfo("# of Inputs", inputCount, 1, 8).
 		    setDimensionless();
+	    if (n == 1)
+		return new EditInfo("High Voltage (V)", highVoltage, 1, 10);
+	    if (n == 2) {
+                EditInfo ei = new EditInfo("", 0, -1, -1);
+                ei.checkbox = new Checkbox("Schmitt Inputs", hasSchmittInputs());
+                return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    inputCount = (int) ei.value;
-	    setPoints();
+	    if (n == 0) {
+		inputCount = (int) ei.value;
+		setPoints();
+	    }
+	    if (n == 1)
+		highVoltage = lastHighVoltage = ei.value;
+	    if (n == 2) {
+		if (ei.checkbox.getState())
+		    flags |= FLAG_SCHMITT;
+		else
+		    flags &= ~FLAG_SCHMITT;
+		lastSchmitt = hasSchmittInputs();
+		setPoints();
+	    }
 	}
 	// there is no current path through the gate inputs, but there
 	// is an indirect path through the output to ground.

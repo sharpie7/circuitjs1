@@ -65,7 +65,9 @@ package com.lushprojects.circuitjs1.client;
 	    draw2Leads(g);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, gatePoly);
-	    drawThickPolygon(g, symbolPoly);
+	    g.setLineWidth(2);
+	    drawPolygon(g, symbolPoly);
+	    g.setLineWidth(1);;
 	    drawThickCircle(g, pcircle.x, pcircle.y, 3);
 	    curcount = updateDotCount(current, curcount);
 	    drawDots(g, lead2, point2, curcount);
@@ -83,18 +85,11 @@ package com.lushprojects.circuitjs1.client;
 	    lead2 = interpPoint(point1, point2, .5+(ww+2)/dn);
 	    pcircle = interpPoint(point1, point2, .5+(ww-2)/dn);
 	    Point triPoints[] = newPointArray(3); 
-	    Point symPoints[] = newPointArray(6);
-	    Point dummy=new Point(0,0);
 	    interpPoint2(lead1, lead2, triPoints[0], triPoints[1], 0, hs);
 	    triPoints[2] = interpPoint(point1, point2, .5+(ww-5)/dn);
 
-    	    interpPoint2(lead1, lead2, symPoints[5], symPoints[4], 0.2, hs/4);// 0 5 1
-	    interpPoint2(lead1, lead2, symPoints[1], symPoints[2], 0.35, hs/4);//  4 2 3
-	    interpPoint2(lead1, lead2, symPoints[0],dummy, 0.1, hs/4);
-	    interpPoint2(lead1, lead2,dummy,symPoints[3], 0.45, hs/4);
-
 	    gatePoly = createPolygon(triPoints);
-	    symbolPoly=createPolygon(symPoints);
+	    symbolPoly = getSchmittPolygon(1, .3f);
 	    setBbox(point1, point2, hs);
 	}
 	int getVoltageSourceCount() { return 1; }

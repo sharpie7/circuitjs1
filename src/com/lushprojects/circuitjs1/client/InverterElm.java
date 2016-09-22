@@ -24,23 +24,29 @@ package com.lushprojects.circuitjs1.client;
 
     class InverterElm extends CircuitElm {
 	double slewRate; // V/ns
+	double highVoltage;
 	public InverterElm(int xx, int yy) {
 	    super(xx, yy);
 	    noDiagonal = true;
 	    slewRate = .5;
+	    
+	    // copy defaults from last gate edited
+	    highVoltage = GateElm.lastHighVoltage;
 	}
 	public InverterElm(int xa, int ya, int xb, int yb, int f,
 			      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    noDiagonal = true;
+	    highVoltage = 5;
 	    try {
 		slewRate = new Double (st.nextToken()).doubleValue();
+		highVoltage = new Double (st.nextToken()).doubleValue();
 	    } catch (Exception e) {
 		slewRate = .5;
 	    }
 	}
 	String dump() {
-	    return super.dump() + " " + slewRate;
+	    return super.dump() + " " + slewRate + " " + highVoltage;
 	}
 	
 	int getDumpType() { return 'I'; }
@@ -76,7 +82,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void doStep() {
 	    double v0 = volts[1];
-	    double out = volts[0] > 2.5 ? 0 : 5;
+	    double out = volts[0] > highVoltage*.5 ? 0 : highVoltage;
 	    double maxStep = slewRate * sim.timeStep * 1e9;
 	    out = Math.max(Math.min(v0+maxStep, out), v0-maxStep);
 	    sim.updateVoltageSource(0, nodes[1], voltSource, out);
@@ -90,10 +96,15 @@ package com.lushprojects.circuitjs1.client;
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
 		return new EditInfo("Slew Rate (V/ns)", slewRate, 0, 0);
+	    if (n == 1)
+		return new EditInfo("High Voltage (V)", highVoltage, 1, 10);
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    slewRate = ei.value;
+	    if (n == 0)
+		slewRate = ei.value;
+	    if (n == 1)
+		highVoltage = GateElm.lastHighVoltage = ei.value;
 	}
 	// there is no current path through the inverter input, but there
 	// is an indirect path through the output to ground.
