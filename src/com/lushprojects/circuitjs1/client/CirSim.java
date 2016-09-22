@@ -3408,6 +3408,12 @@ MouseOutHandler, MouseWheelHandler {
 //	}
 //
 
+	if (doSwitch(e.getX(), e.getY()))
+	{
+            didSwitch = true;
+	    return;
+	}
+
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
 			distanceSq(mouseElm.x, mouseElm.y, mouseElm.x2, mouseElm.y2) >=256 &&
@@ -3418,11 +3424,6 @@ MouseOutHandler, MouseWheelHandler {
 	
 	if (tempMouseMode != MODE_SELECT && tempMouseMode != MODE_DRAG_SELECTED)
 	    clearSelection();
-	if (doSwitch(e.getX(), e.getY()))
-	{
-            didSwitch = true;
-	    return;
-	}
 
 	pushUndo();
 	initDragX = e.getX();
