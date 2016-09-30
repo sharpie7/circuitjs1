@@ -638,16 +638,16 @@ MouseOutHandler, MouseWheelHandler {
 //	    setMenuBar(mb);
 	
 	if (startCircuitText != null) {
-		getSetupList(false);
-		readSetup(startCircuitText, false);
+	    getSetupList(false);
+	    readSetup(startCircuitText, false);
 	} else {
-		readSetup(null, 0, false, false);
-		if (stopMessage == null && startCircuit != null) {
-			getSetupList(false);
-			readSetupFile(startCircuit, startLabel, true);
-		}
-		else
-			getSetupList(true);
+	    readSetup(null, 0, false, false);
+	    if (stopMessage == null && startCircuit != null) {
+		getSetupList(false);
+		readSetupFile(startCircuit, startLabel, true);
+	    }
+	    else
+		getSetupList(true);
 	}
 		
 
@@ -2189,6 +2189,10 @@ MouseOutHandler, MouseWheelHandler {
 	long steprate = (long) (160*getIterCount());
 	long tm = System.currentTimeMillis();
 	long lit = lastIterTime;
+	if (lit == 0) {
+	    lastIterTime = tm;
+	    return;
+	}
 	if (1000 >= steprate*(tm-lastIterTime))
 	    return;
 	for (iter = 1; ; iter++) {
@@ -2287,8 +2291,7 @@ MouseOutHandler, MouseWheelHandler {
 	    	scopes[i].timeStep();
 	    tm = System.currentTimeMillis();
 	    lit = tm;
-	    if (iter*1000 >= steprate*(tm-lastIterTime) ||
-		(tm-lastFrameTime > 500))
+	    if (iter*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
 		break;
 	} // for (iter = 1; ; iter++)
 	lastIterTime = lit;
@@ -2835,6 +2838,7 @@ MouseOutHandler, MouseWheelHandler {
 	    powerBar.setValue(50);
 	    CircuitElm.voltageRange = 5;
 	    scopeCount = 0;
+	    lastIterTime = 0;
 	}
 	//cv.repaint();
 	int p;
