@@ -115,8 +115,12 @@ public abstract class CircuitElm implements Editable {
     }
     
     void allocNodes() {
-	nodes = new int[getPostCount()+getInternalNodeCount()];
-	volts = new double[getPostCount()+getInternalNodeCount()];
+	int n = getPostCount() + getInternalNodeCount();
+	// preserve voltages if possible
+	if (nodes == null || nodes.length != n) {
+	    nodes = new int[n];
+	    volts = new double[n];
+	}
     }
     String dump() {
 	int t = getDumpType();
@@ -791,4 +795,5 @@ public abstract class CircuitElm implements Editable {
     void setMouseElm(boolean v) {iAmMouseElm=v;}
     
     boolean isMouseElm() {return iAmMouseElm; }
+    void updateModels() {}
 }

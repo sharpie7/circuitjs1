@@ -48,7 +48,9 @@ import com.google.gwt.canvas.dom.client.TextMetrics;
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
 	    int i;
 	    for (i = 0; i != getPostCount(); i++) {
-		if (pins[i].state) {
+		if (pins == null)
+		    volts[i] = new Double(st.nextToken()).doubleValue();
+		else if (pins[i].state) {
 		    volts[i] = new Double(st.nextToken()).doubleValue();
 		    pins[i].value = volts[i] > 2.5;
 		}
@@ -194,7 +196,6 @@ import com.google.gwt.canvas.dom.client.TextMetrics;
 	}
 	
 	String dump() {
-	    int t = getDumpType();
 	    String s = super.dump();
 	    if (needsBits())
 		s += " " + bits;

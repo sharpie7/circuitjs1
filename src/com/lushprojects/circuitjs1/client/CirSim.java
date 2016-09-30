@@ -221,7 +221,7 @@ MouseOutHandler, MouseWheelHandler {
     int scopeCount;
     Scope scopes[];
    int scopeColCount[];
-    static EditDialog editDialog;
+    static EditDialog editDialog, customLogicEditDialog;
     static ExportAsUrlDialog exportAsUrlDialog;
     static ExportAsTextDialog exportAsTextDialog;
     static ExportAsLocalFileDialog exportAsLocalFileDialog;
@@ -302,6 +302,7 @@ MouseOutHandler, MouseWheelHandler {
 //	super("Circuit Simulator v1.6d");
 //	applet = a;
 //	useFrame = false;
+	theSim = this;
     }
 
     String startCircuit = null;
@@ -820,6 +821,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem("Add Sequence generator", "SeqGenElm"));
     	chipMenuBar.addItem(getClassCheckItem("Add Full Adder", "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem("Add Half Adder", "HalfAdderElm"));
+    	chipMenuBar.addItem(getClassCheckItem("Add Custom Logic", "UserDefinedLogicElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+"&nbsp;</div>Digital Chips"), chipMenuBar);
     	
     	MenuBar achipMenuBar = new MenuBar(true);
@@ -1085,6 +1087,7 @@ MouseOutHandler, MouseWheelHandler {
     int frames = 0;
     int steps = 0;
     int framerate = 0, steprate = 0;
+    static CirSim theSim;
 
     public void updateCircuit() {
     long mystarttime;
@@ -1125,6 +1128,7 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		runCircuit();
 	    } catch (Exception e) {
+		console("exception in runCircuit");
 		e.printStackTrace();
 		analyzeFlag = true;
 //		cv.repaint();
@@ -2604,6 +2608,7 @@ MouseOutHandler, MouseWheelHandler {
     
     String dumpCircuit() {
 	int i;
+	CustomLogicModel.clearDumpedFlags();
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
 	f |= (voltsCheckItem.getState()) ? 0 : 4;
@@ -2615,9 +2620,15 @@ MouseOutHandler, MouseWheelHandler {
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
 	    powerBar.getValue() + "\n";
 		
-
-	for (i = 0; i != elmList.size(); i++)
-	    dump += getElm(i).dump() + "\n";
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce instanceof CustomLogicElm) {
+		String m = ((CustomLogicElm)ce).dumpModel();
+		if (!m.isEmpty())
+		    dump += m + "\n";
+	    }
+	    dump += ce.dump() + "\n";
+	}
 	for (i = 0; i != scopeCount; i++) {
 	    String d = scopes[i].dump();
 	    if (d != null)
@@ -2856,6 +2867,10 @@ MouseOutHandler, MouseWheelHandler {
 		    }
 		    if (tint == '$') {
 			readOptions(st);
+			break;
+		    }
+		    if (tint == '!') {
+			new CustomLogicModel(st);
 			break;
 		    }
 		    if (tint == '%' || tint == '?' || tint == 'B') {
@@ -3873,6 +3888,8 @@ MouseOutHandler, MouseWheelHandler {
     boolean dialogIsShowing() {
     	if (editDialog!=null && editDialog.isShowing())
     		return true;
+    	if (customLogicEditDialog!=null && customLogicEditDialog.isShowing())
+		return true;
     	if (exportAsUrlDialog != null && exportAsUrlDialog.isShowing())
     		return true;
     	if (exportAsTextDialog != null && exportAsTextDialog.isShowing())
@@ -4296,7 +4313,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new MonostableElm(x1, y1, x2, y2, f, st);
     	if (tint==207)
     		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
-    	
+    	if (tint==208)
+    	    return (CircuitElm) new CustomLogicElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4472,10 +4490,16 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new MonostableElm(x1, y1);
     	if (n=="LabeledNodeElm")
     		return (CircuitElm) new LabeledNodeElm(x1, y1);
-    	
+    	if (n=="UserDefinedLogicElm")
+    	    	return (CircuitElm) new CustomLogicElm(x1, y1);
     	return null;
     }
     
+    public void updateModels() {
+	int i;
+	for (i = 0; i != elmList.size(); i++)
+	    elmList.get(i).updateModels();
+    }
 }
 
 
