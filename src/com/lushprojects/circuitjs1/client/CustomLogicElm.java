@@ -9,10 +9,11 @@ public class CustomLogicElm extends ChipElm {
     CustomLogicModel model;
     boolean lastValues[];
     boolean patternValues[];
+    static String lastModelName = "default";
     
     public CustomLogicElm(int xx, int yy) {
 	super(xx, yy);
-	modelName = "default";
+	modelName = lastModelName;
 	setupPins();
     }
 
@@ -180,7 +181,7 @@ public class CustomLogicElm extends ChipElm {
 	}
 	if (n == 3) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button("Edit Definition");
+            ei.button = new Button("Edit Model");
             return ei;
 	}
 	return super.getEditInfo(n);
@@ -188,7 +189,7 @@ public class CustomLogicElm extends ChipElm {
     
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 2) {
-	    modelName = ei.textf.getText();
+	    modelName = lastModelName = ei.textf.getText();
 	    model = CustomLogicModel.getModelWithNameOrCopy(modelName, model);
 	    setupPins();
 	    allocNodes();

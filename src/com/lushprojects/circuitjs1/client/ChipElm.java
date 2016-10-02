@@ -124,6 +124,7 @@ import com.google.gwt.canvas.dom.client.TextMetrics;
 	    setPoints();
 	}
 	void setPoints() {
+	    clockPointsX = null;
 	    if (x2-x > sizeX*cspc2 && this == sim.dragElm)
 		setSize(2);
 	    int hs = cspc;
