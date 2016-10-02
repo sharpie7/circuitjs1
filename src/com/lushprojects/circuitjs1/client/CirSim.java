@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseEvent;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpHandler;
@@ -68,6 +69,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -261,7 +263,7 @@ MouseOutHandler, MouseWheelHandler {
 	        updateCircuit();
 	      }
 	    };
-	 final int FASTTIMER=40;
+	 final int FASTTIMER=16;
     
 	int getrand(int x) {
 		int q = random.nextInt();
@@ -698,7 +700,8 @@ MouseOutHandler, MouseWheelHandler {
 		cv.addMouseMoveHandler(this);
 		cv.addMouseUpHandler(this);
 		cv.addClickHandler(this);
-		cv.addDoubleClickHandler(this);	
+		cv.addDoubleClickHandler(this);
+		doTouchHandlers(cv.getCanvasElement());
 		cv.addDomHandler(this, ContextMenuEvent.getType());	
 		menuBar.addDomHandler(new ClickHandler() {
 		    public void onClick(ClickEvent event) {
@@ -714,6 +717,47 @@ MouseOutHandler, MouseWheelHandler {
 
     }
 
+    // install touch handlers
+    // don't feel like rewriting this in java.  Anyway, java doesn't let us create mouse
+    // events and dispatch them.
+    native void doTouchHandlers(CanvasElement cv) /*-{
+	// Set up touch events for mobile, etc
+	cv.addEventListener("touchstart", function (e) {
+        	mousePos = getTouchPos(cv, e);
+  		var touch = e.touches[0];
+  		var mouseEvent = new MouseEvent("mousedown", {
+    			clientX: touch.clientX,
+    			clientY: touch.clientY
+  		});
+  		e.preventDefault();
+  		cv.dispatchEvent(mouseEvent);
+	}, false);
+	cv.addEventListener("touchend", function (e) {
+  		var mouseEvent = new MouseEvent("mouseup", {});
+  		e.preventDefault();
+  		cv.dispatchEvent(mouseEvent);
+	}, false);
+	cv.addEventListener("touchmove", function (e) {
+  		var touch = e.touches[0];
+  		var mouseEvent = new MouseEvent("mousemove", {
+    			clientX: touch.clientX,
+    			clientY: touch.clientY
+  		});
+  		e.preventDefault();
+  		cv.dispatchEvent(mouseEvent);
+	}, false);
+
+	// Get the position of a touch relative to the canvas
+	function getTouchPos(canvasDom, touchEvent) {
+  		var rect = canvasDom.getBoundingClientRect();
+  		return {
+    			x: touchEvent.touches[0].clientX - rect.left,
+    			y: touchEvent.touches[0].clientY - rect.top
+  		};
+	}
+	
+    }-*/;
+    
     boolean shown = false;
     
     public void composeMainMenu(MenuBar mainMenuBar) {
@@ -2820,6 +2864,7 @@ MouseOutHandler, MouseWheelHandler {
     void readSetup(byte b[], int len, boolean retain, boolean centre) {
 	int i;
 	if (!retain) {
+	    clearMouseElm();
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
 		ce.delete();
@@ -3204,6 +3249,12 @@ MouseOutHandler, MouseWheelHandler {
     		mouseDragged(e);
     		return;
     	}
+    	mouseSelect(e);
+    }
+    
+    // need to break this out into a separate routine to handle selection,
+    // since we don't get mouse move events on mobile
+    public void mouseSelect(MouseEvent<?> e) {
     	//	The following is in the original, but seems not to work/be needed for GWT
     	//    	if (e.getNativeButton()==NativeEvent.BUTTON_LEFT)
     	//	    return;
@@ -3367,12 +3418,14 @@ MouseOutHandler, MouseWheelHandler {
 //    }
     
     public void onMouseOut(MouseOutEvent e) {
-    	//    public void mouseExited(MouseEvent e) {
-    	scopeSelected = -1;
-    	mouseElm = plotXElm = plotYElm = null;
-    	//	cv.repaint();
+	clearMouseElm();
     }
 
+    void clearMouseElm() {
+    	scopeSelected = -1;
+    	mouseElm = plotXElm = plotYElm = null;
+    }
+    
     public void onMouseDown(MouseDownEvent e) {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
@@ -3384,6 +3437,10 @@ MouseOutHandler, MouseWheelHandler {
     	// IES - hack to only handle left button events in the web version.
     	if (e.getNativeButton() != NativeEvent.BUTTON_LEFT)
     		return;
+    	
+    	// set mouseElm in case we are on mobile
+    	mouseSelect(e);
+    	
     	mouseDragging=true;
 	didSwitch = false;
 //
@@ -3553,6 +3610,8 @@ MouseOutHandler, MouseWheelHandler {
     	////	    doPopupMenu(e);
     	////	    return;
     	////	}
+    	if (tempMouseMode == MODE_SELECT && selectedArea == null)
+    	    clearSelection();
     	tempMouseMode = mouseMode;
     	selectedArea = null;
     	dragging = false;
