@@ -256,7 +256,7 @@ MouseOutHandler, MouseWheelHandler {
     Canvas backcv;
     Context2d backcontext;
     static final int MENUBARHEIGHT=30;
-    static final int VERTICALPANELWIDTH=166;
+    static int VERTICALPANELWIDTH=166; // default
     static final int POSTGRABSQ=16;
     final Timer timer = new Timer() {
 	      public void run() {
@@ -538,7 +538,13 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar);
 
 	  
-	
+    	int width=(int)RootLayoutPanel.get().getOffsetWidth();
+    	VERTICALPANELWIDTH = width/5;
+    	if (VERTICALPANELWIDTH > 166)
+    	    VERTICALPANELWIDTH = 166;
+    	if (VERTICALPANELWIDTH < 128)
+    	    VERTICALPANELWIDTH = 128;
+
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
@@ -722,10 +728,24 @@ MouseOutHandler, MouseWheelHandler {
     // events and dispatch them.
     native void doTouchHandlers(CanvasElement cv) /*-{
 	// Set up touch events for mobile, etc
+	var lastTap;
+	var tmout;
+	var sim = this;
 	cv.addEventListener("touchstart", function (e) {
         	mousePos = getTouchPos(cv, e);
   		var touch = e.touches[0];
-  		var mouseEvent = new MouseEvent("mousedown", {
+  		var etype = "mousedown";
+  		clearTimeout(tmout);
+  		if (e.timeStamp-lastTap < 300) {
+     		    etype = "dblclick";
+  		} else {
+  		    tmout = setTimeout(function() {
+  		        sim.@com.lushprojects.circuitjs1.client.CirSim::longPress()();
+  		    }, 1000);
+  		}
+  		lastTap = e.timeStamp;
+  		
+  		var mouseEvent = new MouseEvent(etype, {
     			clientX: touch.clientX,
     			clientY: touch.clientY
   		});
@@ -735,6 +755,7 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addEventListener("touchend", function (e) {
   		var mouseEvent = new MouseEvent("mouseup", {});
   		e.preventDefault();
+  		clearTimeout(tmout);
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 	cv.addEventListener("touchmove", function (e) {
@@ -744,6 +765,7 @@ MouseOutHandler, MouseWheelHandler {
     			clientY: touch.clientY
   		});
   		e.preventDefault();
+  		clearTimeout(tmout);
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 
@@ -3362,17 +3384,23 @@ MouseOutHandler, MouseWheelHandler {
 
     public void onContextMenu(ContextMenuEvent e) {
     	e.preventDefault();
-    	int x, y;
+    	menuX = e.getNativeEvent().getClientX();
+    	menuY = e.getNativeEvent().getClientY();
+    	doPopupMenu();
+    }
+    
+    void doPopupMenu() {
     	menuElm = mouseElm;
     	menuScope=-1;
+    	int x, y;
     	if (scopeSelected!=-1) {
     		MenuBar m=scopes[scopeSelected].getMenu();
     		menuScope=scopeSelected;
     		if (m!=null) {
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(m);
-    			y=Math.max(0, Math.min(e.getNativeEvent().getClientY(),cv.getCoordinateSpaceHeight()-400));
-    			contextPanel.setPopupPosition(e.getNativeEvent().getClientX(), y);
+    			y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-400));
+    			contextPanel.setPopupPosition(menuX, y);
     			contextPanel.show();
     		}
     	} else if (mouseElm != null) {
@@ -3380,17 +3408,21 @@ MouseOutHandler, MouseWheelHandler {
     		elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(elmMenuBar);
-    		contextPanel.setPopupPosition(e.getNativeEvent().getClientX(), e.getNativeEvent().getClientY());
+    		contextPanel.setPopupPosition(menuX, menuY);
     		contextPanel.show();
     	} else {
     		doMainMenuChecks();
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(mainMenuBar);
-    		x=Math.max(0, Math.min(e.getNativeEvent().getClientX(), cv.getCoordinateSpaceWidth()-400));
-    		y=Math.max(0, Math.min(e.getNativeEvent().getClientY(),cv.getCoordinateSpaceHeight()-450));
+    		x=Math.max(0, Math.min(menuX, cv.getCoordinateSpaceWidth()-400));
+    		y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-450));
     		contextPanel.setPopupPosition(x,y);
     		contextPanel.show();
     	}
+    }
+    
+    void longPress() {
+	doPopupMenu();
     }
     
 //    public void mouseClicked(MouseEvent e) {
@@ -3426,9 +3458,13 @@ MouseOutHandler, MouseWheelHandler {
     	mouseElm = plotXElm = plotYElm = null;
     }
     
+    int menuX, menuY;
+    
     public void onMouseDown(MouseDownEvent e) {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
+    	menuX = e.getX();
+    	menuY = e.getY();
     	
     	// maybe someone did copy in another window?  should really do this when
     	// window receives focus
@@ -3610,8 +3646,11 @@ MouseOutHandler, MouseWheelHandler {
     	////	    doPopupMenu(e);
     	////	    return;
     	////	}
+    	
+    	// click to clear selection
     	if (tempMouseMode == MODE_SELECT && selectedArea == null)
     	    clearSelection();
+    	
     	tempMouseMode = mouseMode;
     	selectedArea = null;
     	dragging = false;
