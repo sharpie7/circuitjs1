@@ -19,6 +19,7 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.user.client.Window;
 
 //import java.awt.*;
 //import java.util.StringTokenizer;
@@ -285,8 +286,12 @@ class VoltageElm extends CircuitElm {
 	    double oldfreq = frequency;
 	    frequency = ei.value;
 	    double maxfreq = 1/(8*sim.timeStep);
-	    if (frequency > maxfreq)
-		frequency = maxfreq;
+	    if (frequency > maxfreq) {
+		if (Window.confirm("Adjust timestep to allow for higher frequencies?"))
+		    sim.timeStep = 1/(32*frequency);
+		else
+		    frequency = maxfreq;
+	    }
 	    double adj = frequency-oldfreq;
 	    freqTimeZero = sim.t-oldfreq*(sim.t-freqTimeZero)/frequency;
 	}
