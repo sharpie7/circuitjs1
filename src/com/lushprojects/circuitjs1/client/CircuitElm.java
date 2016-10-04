@@ -581,28 +581,31 @@ public abstract class CircuitElm implements Editable {
     
     static String myGetUnitText(double v, String u, boolean sf) {
     NumberFormat s;
+    String sp = "";
     if (sf)
     	s=shortFormat;
-    else
+    else {
     	s=showFormat;
+    	sp = " ";
+    }
 	double va = Math.abs(v);
 	if (va < 1e-14)
-	    return "0 " + u;
+	    return sf ? null : "0 " + u;
 	if (va < 1e-9)
-	    return s.format(v*1e12) + " p" + u;
+	    return s.format(v*1e12) + sp + "p" + u;
 	if (va < 1e-6)
-	    return s.format(v*1e9) + " n" + u;
+	    return s.format(v*1e9) + sp + "n" + u;
 	if (va < 1e-3)
-	    return s.format(v*1e6) + " " + CirSim.muString + u;
+	    return s.format(v*1e6) + sp + CirSim.muString + u;
 	if (va < 1)
-	    return s.format(v*1e3) + " m" + u;
+	    return s.format(v*1e3) + sp + "m" + u;
 	if (va < 1e3)
-	    return s.format(v) + " " + u;
+	    return s.format(v) + sp + u;
 	if (va < 1e6)
-	    return s.format(v*1e-3) + " k" + u;
+	    return s.format(v*1e-3) + sp + "k" + u;
 	if (va < 1e9)
-	    return s.format(v*1e-6) + " M" + u;
-	return s.format(v*1e-9) + " G" + u;
+	    return s.format(v*1e-6) + sp + "M" + u;
+	return s.format(v*1e-9) + sp + "G" + u;
     }
     
     /*
