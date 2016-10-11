@@ -246,7 +246,7 @@ class ProbeElm extends CircuitElm {
     }
 
     void getInfo(String arr[]) {
-	arr[0] = "scope probe";
+	arr[0] = "voltmeter";
 	arr[1] = "Vd = " + getVoltageText(getVoltageDiff());
     }
     boolean getConnection(int n1, int n2) { return false; }
