@@ -799,4 +799,5 @@ public abstract class CircuitElm implements Editable {
     
     boolean isMouseElm() {return iAmMouseElm; }
     void updateModels() {}
+    void stepFinished() {}
 }

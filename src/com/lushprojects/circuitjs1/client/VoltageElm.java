@@ -237,12 +237,17 @@ class VoltageElm extends CircuitElm {
 	    arr[3] = "f = " + getUnitText(frequency, "Hz");
 	    arr[4] = "Vmax = " + getVoltageText(maxVoltage);
 	    int i = 5;
+	    if (waveform == WF_AC && bias == 0)
+		arr[i++] = "Vrms = " + getVoltageText(maxVoltage/1.41421356);
 	    if (bias != 0)
 		arr[i++] = "Voff = " + getVoltageText(bias);
 	    else if (frequency > 500)
 		arr[i++] = "wavelength = " +
 		    getUnitText(2.9979e8/frequency, "m");
 	    arr[i++] = "P = " + getUnitText(getPower(), "W");
+	}
+	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources) {
+	    arr[3] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
 	}
     }
     public EditInfo getEditInfo(int n) {

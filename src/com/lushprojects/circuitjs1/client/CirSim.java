@@ -222,6 +222,7 @@ MouseOutHandler, MouseWheelHandler {
  //   public boolean useFrame;
     int scopeCount;
     Scope scopes[];
+    boolean showResistanceInVoltageSources;
    int scopeColCount[];
     static EditDialog editDialog, customLogicEditDialog;
     static ExportAsUrlDialog exportAsUrlDialog;
@@ -382,7 +383,9 @@ MouseOutHandler, MouseWheelHandler {
 //	    ohmString = "\u03a9";
 //	    useBufferedImage = true;
 //	}
-	
+	muString = "\u03bc";
+	ohmString = "\u03a9";
+
 //	dumpTypes = new Class[300];
 	shortcuts = new String[127];
 
@@ -824,8 +827,10 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem("Add Lamp (beta)", "LampElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Text", "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Box", "BoxElm"));
-    	outputMenuBar.addItem(getClassCheckItem("Add Scope Probe", "ProbeElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Voltmeter/Scobe Probe", "ProbeElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Labeled Node", "LabeledNodeElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Test Point", "TestPointElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Ammeter", "AmmeterElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+"&nbsp;</div>Outputs and Labels"), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -1986,6 +1991,20 @@ MouseOutHandler, MouseWheelHandler {
 		return;
 	    }
 	}
+	
+	// show resistance in voltage sources if there's only one
+	boolean gotVoltageSource = false;
+	showResistanceInVoltageSources = true;
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce instanceof VoltageElm) {
+		if (gotVoltageSource)
+		    showResistanceInVoltageSources = false;
+		else
+		    gotVoltageSource = true;
+	    }
+	}
+
     }
 
     void calcCircuitBottom() {
@@ -2353,6 +2372,10 @@ MouseOutHandler, MouseWheelHandler {
 		break;
 	    }
 	    t += timeStep;
+	    for (i = 0; i != elmList.size(); i++) {
+		CircuitElm ce = getElm(i);
+		ce.stepFinished();
+	    }
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
 	    tm = System.currentTimeMillis();
@@ -4417,6 +4440,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
     	if (tint==208)
     	    return (CircuitElm) new CustomLogicElm(x1, y1, x2, y2, f, st);
+    	if (tint==368)
+    	    return new TestPointElm(x1, y1, x2, y2, f, st);
+    	if (tint==370)
+    	    return new AmmeterElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4594,6 +4621,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new LabeledNodeElm(x1, y1);
     	if (n=="UserDefinedLogicElm")
     	    	return (CircuitElm) new CustomLogicElm(x1, y1);
+    	if (n=="TestPointElm")
+    	    	return new TestPointElm(x1, y1);
+    	if (n=="AmmeterElm")
+	    	return new AmmeterElm(x1, y1);
     	return null;
     }
     
