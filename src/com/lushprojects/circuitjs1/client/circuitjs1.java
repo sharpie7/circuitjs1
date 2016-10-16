@@ -53,10 +53,11 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.0.1";
+	public static final String versionString="1.7.2js";
 
 	static CirSim mysim;
 	
@@ -73,6 +74,16 @@ public class circuitjs1 implements EntryPoint {
                 	
             }
         });
+	    
+	    /*
+	    Window.addWindowClosingHandler(new Window.ClosingHandler() {
+
+	        public void onWindowClosing(ClosingEvent event) {
+	            event.setMessage("Are you sure?");
+	        }
+	    });
+	     */
+
 	  mysim.updateCircuit();
 	  
 

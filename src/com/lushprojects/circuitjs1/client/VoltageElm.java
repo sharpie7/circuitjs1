@@ -19,6 +19,7 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.user.client.Window;
 
 //import java.awt.*;
 //import java.util.StringTokenizer;
@@ -230,18 +231,23 @@ class VoltageElm extends CircuitElm {
 	case WF_TRIANGLE: arr[0] = "triangle gen"; break;
 	}
 	arr[1] = "I = " + getCurrentText(getCurrent());
-//	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
-//	    getVoltageText(getVoltageDiff());
+	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
+	    getVoltageText(getVoltageDiff());
 	if (waveform != WF_DC && waveform != WF_VAR) {
 	    arr[3] = "f = " + getUnitText(frequency, "Hz");
 	    arr[4] = "Vmax = " + getVoltageText(maxVoltage);
 	    int i = 5;
+	    if (waveform == WF_AC && bias == 0)
+		arr[i++] = "Vrms = " + getVoltageText(maxVoltage/1.41421356);
 	    if (bias != 0)
 		arr[i++] = "Voff = " + getVoltageText(bias);
 	    else if (frequency > 500)
 		arr[i++] = "wavelength = " +
 		    getUnitText(2.9979e8/frequency, "m");
 	    arr[i++] = "P = " + getUnitText(getPower(), "W");
+	}
+	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources) {
+	    arr[3] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
 	}
     }
     public EditInfo getEditInfo(int n) {
@@ -285,8 +291,12 @@ class VoltageElm extends CircuitElm {
 	    double oldfreq = frequency;
 	    frequency = ei.value;
 	    double maxfreq = 1/(8*sim.timeStep);
-	    if (frequency > maxfreq)
-		frequency = maxfreq;
+	    if (frequency > maxfreq) {
+		if (Window.confirm("Adjust timestep to allow for higher frequencies?"))
+		    sim.timeStep = 1/(32*frequency);
+		else
+		    frequency = maxfreq;
+	    }
 	    double adj = frequency-oldfreq;
 	    freqTimeZero = sim.t-oldfreq*(sim.t-freqTimeZero)/frequency;
 	}

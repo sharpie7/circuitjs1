@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -33,10 +34,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.user.client.ui.Widget;
-import java.util.Iterator;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 //import java.awt.*;
 //import java.awt.event.*;
@@ -106,15 +104,18 @@ class EditDialog extends DialogBox  {
 	void buildDialog() {
 		int i;
 		int idx;
-		Label l;
 		for (i = 0; ; i++) {
+			Label l = null;
 			einfos[i] = elm.getEditInfo(i);
 			if (einfos[i] == null)
 				break;
 			EditInfo ei = einfos[i];
 			idx = vp.getWidgetIndex(hp);
-			vp.insert(l = new Label(ei.name),idx);
-			if (i!=0)
+			if (ei.name.startsWith("<"))
+			    vp.insert(l = new HTML(ei.name),idx);
+			else
+			    vp.insert(l = new Label(ei.name),idx);
+			if (i!=0 && l != null)
 				l.setStyleName("topSpace");
 			idx = vp.getWidgetIndex(hp);
 			if (ei.choice != null) {
@@ -124,7 +125,6 @@ class EditDialog extends DialogBox  {
 						itemStateChanged(e);
 					}
 				});
-//				ei.choice.addItemListener(this);
 			} else if (ei.checkbox != null) {
 				vp.insert(ei.checkbox,idx);
 				ei.checkbox.addValueChangeHandler( new ValueChangeHandler<Boolean>() {
@@ -132,19 +132,20 @@ class EditDialog extends DialogBox  {
 						itemStateChanged(e);
 					}
 				});
-//				ei.checkbox.addItemListener(this);
+			} else if (ei.button != null) {
+			    vp.insert(ei.button, idx);
+			    ei.button.addClickHandler( new ClickHandler() {
+				public void onClick(ClickEvent event) {
+				    itemStateChanged(event);
+				}
+			    });
+			} else if (ei.textArea != null) {
+			    vp.insert(ei.textArea, idx);
 			} else {
-				vp.insert(ei.textf =
-					//	new TextBox(unitString(ei), 10));
-						new TextBox(), idx);
+				vp.insert(ei.textf = new TextBox(), idx);
 				if (ei.text != null)
 					ei.textf.setText(ei.text);
-//				ei.textf.addActionListener(this);
 				if (ei.text == null) {
-//					add(ei.bar = new Scrollbar(Scrollbar.HORIZONTAL,
-//							50, 10, 0, barmax+2));
-//					setBar(ei);
-//					ei.bar.addAdjustmentListener(this);
 					ei.textf.setText(unitString(ei));
 				}
 			}
@@ -204,120 +205,48 @@ class EditDialog extends DialogBox  {
 		int i;
 		for (i = 0; i != einfocount; i++) {
 			EditInfo ei = einfos[i];
-//			if (ei.textf == null)
-//				continue;
-//			if (ei.text == null) {
 			if (ei.textf!=null && ei.text==null) {
 				try {
 					double d = parseUnits(ei);
 					ei.value = d;
 				} catch (Exception ex) { /* ignored */ }
 			}
+			if (ei.button != null)
+			    continue;
 			elm.setEditValue(i, ei);
-
-//			if (ei.text == null)
-//				setBar(ei);
 		}
 		cframe.needAnalyze();
 	}
 
-//	public void actionPerformed(ActionEvent e) {
-//		int i;
-//		Object src = e.getSource();
-//		for (i = 0; i != einfocount; i++) {
-//			EditInfo ei = einfos[i];
-//			if (src == ei.textf) {
-//				if (ei.text == null) {
-//					try {
-//						double d = parseUnits(ei);
-//						ei.value = d;
-//					} catch (Exception ex) { /* ignored */ }
-//				}
-//				elm.setEditValue(i, ei);
-//				if (ei.text == null)
-//					setBar(ei);
-//				cframe.needAnalyze();
-//			}
-//		}
-//		if (e.getSource() == okButton) {
-//			apply();
-//			closeDialog();
-//		}
-//		if (e.getSource() == applyButton)
-//			apply();
-//	}
-//
-//	public void adjustmentValueChanged(AdjustmentEvent e) {
-//		Object src = e.getSource();
-//		int i;
-//		for (i = 0; i != einfocount; i++) {
-//			EditInfo ei = einfos[i];
-//			if (ei.bar == src) {
-//				double v = ei.bar.getValue() / 1000.;
-//				if (v < 0)
-//					v = 0;
-//				if (v > 1)
-//					v = 1;
-//				ei.value = (ei.maxval-ei.minval)*v + ei.minval;
-//				/*if (ei.maxval-ei.minval > 100)
-//		    ei.value = Math.round(ei.value);
-//		else
-//		ei.value = Math.round(ei.value*100)/100.;*/
-//				ei.value = Math.round(ei.value/ei.minval)*ei.minval;
-//				elm.setEditValue(i, ei);
-//				ei.textf.setText(unitString(ei));
-//				cframe.needAnalyze();
-//			}
-//		}
-//	}
-//
 	public void itemStateChanged(GwtEvent e) {
-		Object src = e.getSource();
-		int i;
-		boolean changed = false;
-		for (i = 0; i != einfocount; i++) {
-			EditInfo ei = einfos[i];
-			if (ei.choice == src || ei.checkbox == src) {
-				elm.setEditValue(i, ei);
-				if (ei.newDialog)
-					changed = true;
-				cframe.needAnalyze();
-			}
+	    Object src = e.getSource();
+	    int i;
+	    boolean changed = false;
+	    for (i = 0; i != einfocount; i++) {
+		EditInfo ei = einfos[i];
+		if (ei.choice == src || ei.checkbox == src || ei.button == src) {
+		    
+		    // if we're pressing a button, make sure to apply changes first
+		    if (ei.button == src)
+			apply();
+		    
+		    elm.setEditValue(i, ei);
+		    if (ei.newDialog)
+			changed = true;
+		    cframe.needAnalyze();
 		}
-		if (changed) {
-		//	apply();
-//			setVisible(false);
-//			cframe.editDialog = new EditDialog(elm, cframe);
-//			cframe.editDialog.show();
-			clearDialog();
-			buildDialog();
-		}
+	    }
+	    if (changed) {
+		clearDialog();
+		buildDialog();
+	    }
 	}
 	
 	public void clearDialog() {
-//		Iterator<Widget> wa = vp.iterator();
-//		while (wa.hasNext()){
-//			Widget w=wa.next();
-//			if (w!=hp)
-//				vp.remove(w);
-//		}
 		while (vp.getWidget(0)!=hp)
 			vp.remove(0);
 	}
-//
-//	public boolean handleEvent(Event ev) {
-//		if (ev.id == Event.WINDOW_DESTROY) {
-//			closeDialog();
-//			return true;
-//		}
-//		return super.handleEvent(ev);
-//	}
-//
-//	void setBar(EditInfo ei) {
-//		int x = (int) (barmax*(ei.value-ei.minval)/(ei.maxval-ei.minval));
-//		ei.bar.setValue(x);
-//	}
-//
+	
 	protected void closeDialog()
 	{
 		EditDialog.this.hide();

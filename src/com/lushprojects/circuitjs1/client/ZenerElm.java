@@ -109,5 +109,5 @@ class ZenerElm extends DiodeElm {
 	    zvoltage = ei.value;
 	setup();
     }
-    int getShortcut() { return 0; }
+	int getShortcut() { return 'z'; }
 }

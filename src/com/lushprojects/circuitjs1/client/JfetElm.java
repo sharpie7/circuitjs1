@@ -67,9 +67,9 @@ package com.lushprojects.circuitjs1.client;
 	    int hs2 = hs*dsign;
 	    src = newPointArray(3);
 	    drn = newPointArray(3);
-	    interpPoint2(point1, point2, src[0], drn[0], 1, hs2);
-	    interpPoint2(point1, point2, src[1], drn[1], 1, hs2/2);
-	    interpPoint2(point1, point2, src[2], drn[2], 1-10/dn, hs2/2);
+	    interpPoint2(point1, point2, src[0], drn[0], 1, -hs2);
+	    interpPoint2(point1, point2, src[1], drn[1], 1, -hs2/2);
+	    interpPoint2(point1, point2, src[2], drn[2], 1-10/dn, -hs2/2);
 
 	    gatePt = interpPoint(point1, point2, 1-14/dn);
 
@@ -86,7 +86,7 @@ package com.lushprojects.circuitjs1.client;
 	int getDumpType() { return 'j'; }
 	// these values are taken from Hayes+Horowitz p155
 	double getDefaultThreshold() { return -4; }
-	double getBeta() { return .00125; }
+	double getDefaultBeta() { return .00125; }
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "JFET");
 	}
