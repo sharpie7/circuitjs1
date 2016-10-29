@@ -791,6 +791,7 @@ MouseOutHandler, MouseWheelHandler {
 
     	MenuBar passMenuBar = new MenuBar(true);
     	passMenuBar.addItem(getClassCheckItem("Add Capacitor", "CapacitorElm"));
+    	passMenuBar.addItem(getClassCheckItem("Add Capacitor (polarized)", "PolarCapacitorElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Inductor", "InductorElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Switch", "SwitchElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Push Switch", "PushSwitchElm"));
@@ -1164,7 +1165,6 @@ MouseOutHandler, MouseWheelHandler {
     long mystarttime;
     long myrunstarttime;
     long mydrawstarttime;
-	CircuitElm realMouseElm;
 //	if (winSize == null || winSize.width == 0)
 //	    return;
 	mystarttime=System.currentTimeMillis();
@@ -1174,9 +1174,8 @@ MouseOutHandler, MouseWheelHandler {
 	}
 //	if (editDialog != null && editDialog.elm instanceof CircuitElm)
 //	    mouseElm = (CircuitElm) (editDialog.elm);
-	realMouseElm = mouseElm;
-	if (mouseElm == null)
-	    mouseElm = stopElm;
+	if (stopElm != null && stopElm != mouseElm)
+	    stopElm.setMouseElm(true);
 	setupScopes();
 //        Graphics2D g = null; // hausen: changed to Graphics2D
 //	g = (Graphics2D)dbimage.getGraphics();
@@ -1199,9 +1198,10 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		runCircuit();
 	    } catch (Exception e) {
-		console("exception in runCircuit");
+		console("exception in runCircuit " + e);
 		e.printStackTrace();
-		analyzeFlag = true;
+		if (!stoppedCheck.getState())
+		    analyzeFlag = true;
 //		cv.repaint();
 		return;
 	    }
@@ -1365,7 +1365,8 @@ MouseOutHandler, MouseWheelHandler {
 	    g.setColor(CircuitElm.selectColor);
 	    g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
 	}
-	 mouseElm = realMouseElm;
+	if (stopElm != null && stopElm != mouseElm)
+	    stopElm.setMouseElm(false);
 	frames++;
 	
 	g.setColor(Color.white);
@@ -2122,7 +2123,7 @@ MouseOutHandler, MouseWheelHandler {
 
     void stop(String s, CircuitElm ce) {
 	stopMessage = s;
-	circuitMatrix = null;
+	circuitMatrix = null;  // causes an exception
 	stopElm = ce;
 	stoppedCheck.setState(true);
 	analyzeFlag = false;
@@ -4304,6 +4305,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new WireElm(x1, y1, x2, y2, f, st);
     	if (tint=='c')
     		return (CircuitElm) new CapacitorElm(x1, y1, x2, y2, f, st);   	
+    	if (tint==209)
+		return (CircuitElm) new PolarCapacitorElm(x1, y1, x2, y2, f, st);   	
     	if (tint=='l')
     		return (CircuitElm) new InductorElm(x1, y1, x2, y2, f, st);
     	if (tint=='v')
@@ -4466,7 +4469,9 @@ MouseOutHandler, MouseWheelHandler {
     	if (n=="WireElm")
     		return (CircuitElm) new WireElm(x1, y1);
     	if (n=="CapacitorElm")
-    		return (CircuitElm) new CapacitorElm(x1, y1);   	
+    		return (CircuitElm) new CapacitorElm(x1, y1);
+    	if (n=="PolarCapacitorElm")
+		return (CircuitElm) new PolarCapacitorElm(x1, y1);
     	if (n=="InductorElm")
     		return (CircuitElm) new InductorElm(x1, y1);
     	if (n=="DCVoltageElm")

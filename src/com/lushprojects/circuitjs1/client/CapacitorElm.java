@@ -19,11 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
-
-
     class CapacitorElm extends CircuitElm {
 	double capacitance;
 	double compResistance, voltdiff;
@@ -53,6 +48,9 @@ package com.lushprojects.circuitjs1.client;
 	String dump() {
 	    return super.dump() + " " + capacitance + " " + voltdiff;
 	}
+	
+	Point platePoints[];
+	
 	void setPoints() {
 	    super.setPoints();
 	    double f = (dn/2-4)/dn;
@@ -82,7 +80,13 @@ package com.lushprojects.circuitjs1.client;
 	    setVoltageColor(g, volts[1]);
 	    drawThickLine(g, point2, lead2);
 	    setPowerColor(g, false);
-	    drawThickLine(g, plate2[0], plate2[1]);
+	    if (platePoints == null)
+		drawThickLine(g, plate2[0], plate2[1]);
+	    else {
+		int i;
+		for (i = 0; i != 7; i++)
+		    drawThickLine(g,  platePoints[i], platePoints[i+1]);
+	    }
 	    
 	    updateDotCount();
 	    if (sim.dragElm != this) {
