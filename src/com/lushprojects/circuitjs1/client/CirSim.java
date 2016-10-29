@@ -81,6 +81,7 @@ import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.Navigator;
+import com.google.gwt.i18n.shared.DefaultDateTimeFormatInfo;
 
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
@@ -319,7 +320,8 @@ MouseOutHandler, MouseWheelHandler {
 //	String useFrameStr = null;
 	boolean printable = false;
 	boolean convention = true;
-	boolean euro = false;
+	boolean euroRes = false;
+	boolean usRes = false;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -354,7 +356,8 @@ MouseOutHandler, MouseWheelHandler {
 //			pause = Integer.parseInt(param);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
-		euro = qp.getBooleanValue("euroResistors", false);
+		euroRes = qp.getBooleanValue("euroResistors", false);
+		usRes = qp.getBooleanValue("usResistors",  false);
 //		useFrameStr  = qp.getValue("useFrame");
 //		String x = applet.getParameter("whiteBackground");
 //		if (x != null && x.equalsIgnoreCase("true"))
@@ -366,12 +369,7 @@ MouseOutHandler, MouseWheelHandler {
 		convention = qp.getBooleanValue("conventionalCurrent", true);
 	} catch (Exception e) { }
 	
-//	boolean euro = (euroResistor != null && euroResistor.equalsIgnoreCase("true"));
-//	useFrame = (useFrameStr == null || !useFrameStr.equalsIgnoreCase("false"));
-//	if (useFrame)
-//	    main = this;
-//	else
-//	    main = applet;
+
 	
 	String os = Navigator.getPlatform();
 	isMac = (os.toLowerCase().contains("mac"));
@@ -514,7 +512,12 @@ MouseOutHandler, MouseWheelHandler {
 			}
 	}));
 	m.addItem(euroResistorCheckItem = new CheckboxMenuItem("European Resistors"));
-	euroResistorCheckItem.setState(euro);
+	if (euroRes) 
+		euroResistorCheckItem.setState(true);
+	else if (usRes)
+		euroResistorCheckItem.setState(false);
+	else
+		euroResistorCheckItem.setState(!weAreInUS());
 	m.addItem(printableCheckItem = new CheckboxMenuItem("White Background",
 			new Command() { public void execute(){
 				int i;
@@ -4633,6 +4636,32 @@ MouseOutHandler, MouseWheelHandler {
 	for (i = 0; i != elmList.size(); i++)
 	    elmList.get(i).updateModels();
     }
+    
+    native void jsConsoleLog(String message) /*-{
+    try {
+        console.log(message);
+    } catch (e) {
+    }
+    }-*/;
+    
+    
+    native boolean weAreInUS() /*-{
+    try {
+    	l=window.navigator.language ;
+    	if (l.length > 2) {
+    		l = l.slice(-2);
+    		return (l == "US" || l=="CA");
+    	} else {
+    		return 0;
+    	}
+
+    } catch (e) { return 0;
+    }
+    }-*/;
+    
 }
+
+
+
 
 
