@@ -81,7 +81,6 @@ import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.Navigator;
-import com.google.gwt.i18n.shared.DefaultDateTimeFormatInfo;
 
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
@@ -125,6 +124,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem voltsCheckItem;
     CheckboxMenuItem powerCheckItem;
     CheckboxMenuItem smallGridCheckItem;
+    CheckboxMenuItem crossHairCheckItem;
     CheckboxMenuItem showValuesCheckItem;
     CheckboxMenuItem conductanceCheckItem;
     CheckboxMenuItem euroResistorCheckItem;
@@ -182,6 +182,8 @@ MouseOutHandler, MouseWheelHandler {
     long myruntime=0;
     long mydrawtime=0;
     int dragX, dragY, initDragX, initDragY;
+    int mouseCursorX = -1;
+    int mouseCursorY = -1;
     int selectedSource;
     Rectangle selectedArea;
     int gridSize, gridMask, gridRound;
@@ -511,6 +513,7 @@ MouseOutHandler, MouseWheelHandler {
 				setGrid();
 			}
 	}));
+	m.addItem(crossHairCheckItem = new CheckboxMenuItem("Show Cursor Cross Hairs"));
 	m.addItem(euroResistorCheckItem = new CheckboxMenuItem("European Resistors"));
 	if (euroRes) 
 		euroResistorCheckItem.setState(true);
@@ -710,6 +713,7 @@ MouseOutHandler, MouseWheelHandler {
 		setiFrameHeight();
 		cv.addMouseDownHandler(this);
 		cv.addMouseMoveHandler(this);
+		cv.addMouseOutHandler(this);
 		cv.addMouseUpHandler(this);
 		cv.addClickHandler(this);
 		cv.addDoubleClickHandler(this);
@@ -1370,6 +1374,12 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	 mouseElm = realMouseElm;
 	frames++;
+	if (crossHairCheckItem.getState() && mouseCursorX>=0
+			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
+		g.setColor(Color.gray);
+		g.drawLine(mouseCursorX, 0, mouseCursorX, circuitArea.height);
+		g.drawLine(0,mouseCursorY, circuitArea.width, mouseCursorY);
+	}
 	
 	g.setColor(Color.white);
 //	g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, 10);
@@ -3293,6 +3303,8 @@ MouseOutHandler, MouseWheelHandler {
 
     public void onMouseMove(MouseMoveEvent e) {
     	e.preventDefault();
+    	mouseCursorX=e.getX();
+    	mouseCursorY=e.getY();
     	if (mouseDragging) {
     		mouseDragged(e);
     		return;
@@ -3476,7 +3488,8 @@ MouseOutHandler, MouseWheelHandler {
 //    }
     
     public void onMouseOut(MouseOutEvent e) {
-	clearMouseElm();
+    	mouseCursorX=-1;
+    	clearMouseElm();
     }
 
     void clearMouseElm() {
