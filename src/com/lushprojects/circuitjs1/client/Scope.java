@@ -33,6 +33,7 @@ import com.google.gwt.canvas.dom.client.Context2d;
 
 class Scope {
     final int FLAG_YELM = 32;
+    final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     static final int VAL_POWER = 1;
     static final int VAL_IB = 1;
     static final int VAL_IC = 2;
@@ -75,7 +76,9 @@ class Scope {
     
     void showCurrent(boolean b) { showI = b; value = ivalue = 0; }
     void showVoltage(boolean b) { showV = b; value = ivalue = 0; }
-    void showMax    (boolean b) { 
+
+
+	void showMax    (boolean b) { 
     	showMax = b; 
     	if (b) 
     		showScale=false; 
@@ -738,13 +741,14 @@ class Scope {
     			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
     			(showFFT ? 1024 : 0);
     	flags |= FLAG_YELM; // yelm present
+    	flags |= FLAG_IVALUE; // ivalue present
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
     		return null;
     	int yno = yElm == null ? -1 : sim.locateElm(yElm);
     	String x = "o " + eno + " " +
     			speed + " " + value + " " + flags + " " +
-    			minMaxV + " " + minMaxI + " " + position + " " + yno;
+    			minMaxV + " " + minMaxI + " " + position + " " + yno + " " + ivalue;
     	if (text != null)
     		x += " " + text;
     	return x;
@@ -767,6 +771,7 @@ class Scope {
     		minMaxI = 1;
     	text = null;
     	yElm = null;
+    	ivalue = 0;
     	try {
     		position = new Integer(st.nextToken()).intValue();
     		int ye = -1;
@@ -774,6 +779,9 @@ class Scope {
     			ye = new Integer(st.nextToken()).intValue();
     			if (ye != -1)
     				yElm = sim.getElm(ye);
+    		}
+    		if ((flags & FLAG_IVALUE) !=0) {
+    			ivalue = new Integer(st.nextToken()).intValue();
     		}
     		while (st.hasMoreTokens()) {
     			if (text == null)
