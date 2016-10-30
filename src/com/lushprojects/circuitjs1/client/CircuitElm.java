@@ -48,6 +48,7 @@ public abstract class CircuitElm implements Editable {
 
     int x, y, x2, y2, flags, nodes[], voltSource;
     int dx, dy, dsign;
+    int lastHandleGrabbed=-1;
     double dn, dpx1, dpy1;
     Point point1, point2, lead1, lead2;
     double volts[];
@@ -340,8 +341,23 @@ public abstract class CircuitElm implements Editable {
     
     void drawHandles(Graphics g, Color c) {
     	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
-		g.fillRect(x2-3, y2-3, 7, 7);
+    	if (lastHandleGrabbed==-1)
+    		g.fillRect(x-3, y-3, 7, 7);
+    	else if (lastHandleGrabbed==0)
+    		g.fillRect(x-4, y-4, 9, 9);
+    	if (lastHandleGrabbed==-1)
+    		g.fillRect(x2-3, y2-3, 7, 7);
+    	else if (lastHandleGrabbed==1)
+    		g.fillRect(x2-4, y2-4, 9, 9);
+    }
+    
+    int getHandleGrabbedClose(int xtest, int ytest, int deltaSq) {
+    	lastHandleGrabbed=-1;
+    	if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
+    		lastHandleGrabbed=0;
+    		else if (Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
+    			lastHandleGrabbed=1;
+    	return lastHandleGrabbed;
     }
     
     void stamp() {}

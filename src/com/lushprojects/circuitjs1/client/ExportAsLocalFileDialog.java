@@ -61,7 +61,7 @@ public class ExportAsLocalFileDialog extends DialogBox {
 		url=getBlobUrl(data);
 		Date date = new Date();
 		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
-		String fname = dtf.format(date) + "circuit.circuitjs.txt";
+		String fname = "circuit-"+ dtf.format(date) + ".circuitjs.txt";
 		a=new Anchor(fname, url);
 		a.getElement().setAttribute("Download", fname);
 		vp.add(a);

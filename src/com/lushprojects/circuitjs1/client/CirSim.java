@@ -261,7 +261,7 @@ MouseOutHandler, MouseWheelHandler {
     Context2d backcontext;
     static final int MENUBARHEIGHT=30;
     static int VERTICALPANELWIDTH=166; // default
-    static final int POSTGRABSQ=16;
+    static final int POSTGRABSQ=25;
     final Timer timer = new Timer() {
 	      public void run() {
 	        updateCircuit();
@@ -1060,42 +1060,7 @@ MouseOutHandler, MouseWheelHandler {
 
 
     
-//	void register(Class c, CircuitElm elm) {
-//		int t = elm.getDumpType();
-//		if (t == 0) {
-//			System.out.println("no dump type: " + c);
-//			return;
-//		}
-//
-//		int s = elm.getShortcut();
-//		if (elm.needsShortcut() && s == 0) {
-//			if (s == 0) {
-//				System.err.println("no shortcut " + c + " for " + c);
-//				return;
-//			} else if (s <= ' ' || s >= 127) {
-//				System.err.println("invalid shortcut " + c + " for " + c);
-//				return;
-//			}
-//		}
-//
-//		Class dclass = elm.getDumpClass();
-//
-//		if (dumpTypes[t] != null && dumpTypes[t] != dclass) {
-//			System.out.println("dump type conflict: " + c + " " + dumpTypes[t]);
-//			return;
-//		}
-//		dumpTypes[t] = dclass;
-//
-//		Class sclass = elm.getClass();
-//
-//		if (elm.needsShortcut() && shortcuts[s] != null
-//				&& shortcuts[s] != sclass) {
-//			System.err.println("shortcut conflict: " + c
-//					+ " (previously assigned to " + shortcuts[s] + ")");
-//		} else {
-//			shortcuts[s] = sclass;
-//		}
-//	}
+
     
     void centreCircuit() {
 //    void handleResize() {
@@ -1167,6 +1132,9 @@ MouseOutHandler, MouseWheelHandler {
     int framerate = 0, steprate = 0;
     static CirSim theSim;
 
+// *****************************************************************
+//                     UPDATE CIRCUIT
+    
     public void updateCircuit() {
     long mystarttime;
     long myrunstarttime;
@@ -1238,6 +1206,7 @@ MouseOutHandler, MouseWheelHandler {
 			secTime = sysTime;
 		}
 	   CircuitElm.powerMult = Math.exp(powerBar.getValue()/4.762-7);
+	   
 	
 	int i;
 //	Font oldfont = g.getFont();
@@ -1332,10 +1301,7 @@ MouseOutHandler, MouseWheelHandler {
 		*/
 		
 	    } else {
-	    	// IES Eliminate hack of showFormat
-		// CircuitElm.showFormat.setMinimumFractionDigits(2);
-		info[0] = "t = " + CircuitElm.getUnitText(t, "s");
-		// CircuitElm.showFormat.setMinimumFractionDigits(0);
+	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
 	    }
 	    if (hintType != -1) {
 		for (i = 0; info[i] != null; i++)
@@ -1380,6 +1346,8 @@ MouseOutHandler, MouseWheelHandler {
 		g.drawLine(mouseCursorX, 0, mouseCursorX, circuitArea.height);
 		g.drawLine(0,mouseCursorY, circuitArea.width, mouseCursorY);
 	}
+	
+
 	
 	g.setColor(Color.white);
 //	g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, 10);
@@ -3244,8 +3212,8 @@ MouseOutHandler, MouseWheelHandler {
     void dragPost(int x, int y) {
     	if (draggingPost == -1) {
     		draggingPost =
-    				(distanceSq(mouseElm.x , mouseElm.y , x, y) >
-    				distanceSq(mouseElm.x2, mouseElm.y2, x, y)) ? 1 : 0;
+    				(Graphics.distanceSq(mouseElm.x , mouseElm.y , x, y) >
+    				Graphics.distanceSq(mouseElm.x2, mouseElm.y2, x, y)) ? 1 : 0;
     	}
     	int dx = x-dragX;
     	int dy = y-dragY;
@@ -3328,8 +3296,7 @@ MouseOutHandler, MouseWheelHandler {
 
     	mousePost = -1;
     	plotXElm = plotYElm = null;
-    	if (mouseElm!=null && ( distanceSq(x, y, mouseElm.x, mouseElm.y) <= POSTGRABSQ ||
-    			distanceSq(x, y, mouseElm.x2, mouseElm.y2) <= POSTGRABSQ)) {
+    	if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(x, y, POSTGRABSQ)>=0)) {
     		newMouseElm=mouseElm;
     	} else {
     		int bestDist = 100000;
@@ -3344,7 +3311,7 @@ MouseOutHandler, MouseWheelHandler {
     					jn = 2;
     				for (j = 0; j != jn; j++) {
     					Point pt = ce.getPost(j);
-    					int dist = distanceSq(x, y, pt.x, pt.y);
+    					int dist = Graphics.distanceSq(x, y, pt.x, pt.y);
 
     					// if multiple elements have overlapping bounding boxes,
     					// we prefer selecting elements that have posts close
@@ -3379,11 +3346,8 @@ MouseOutHandler, MouseWheelHandler {
     		for (i = 0; i != elmList.size(); i++) {
     			CircuitElm ce = getElm(i);
     			if (mouseMode==MODE_DRAG_POST ) {
-    				if (distanceSq(ce.x, ce.y, x, y) < 26) {
-    					newMouseElm = ce;
-    					break;
-    				}
-    				if (distanceSq(ce.x2, ce.y2, x, y) < 26) {
+    				if (ce.getHandleGrabbedClose(x, y, POSTGRABSQ)> 0)
+    				{
     					newMouseElm = ce;
     					break;
     				}
@@ -3392,8 +3356,8 @@ MouseOutHandler, MouseWheelHandler {
     			int jn = ce.getPostCount();
     			for (j = 0; j != jn; j++) {
     				Point pt = ce.getPost(j);
-    				//   int dist = distanceSq(x, y, pt.x, pt.y);
-    				if (distanceSq(pt.x, pt.y, x, y) < 26) {
+    				//   int dist = Graphics.distanceSq(x, y, pt.x, pt.y);
+    				if (Graphics.distanceSq(pt.x, pt.y, x, y) < 26) {
     					newMouseElm = ce;
     					mousePost = j;
     					break;
@@ -3405,7 +3369,7 @@ MouseOutHandler, MouseWheelHandler {
     		// look for post close to the mouse pointer
     		for (i = 0; i != newMouseElm.getPostCount(); i++) {
     			Point pt = newMouseElm.getPost(i);
-    			if (distanceSq(pt.x, pt.y, x, y) < 26)
+    			if (Graphics.distanceSq(pt.x, pt.y, x, y) < 26)
     				mousePost = i;
     		}
     	}
@@ -3414,11 +3378,7 @@ MouseOutHandler, MouseWheelHandler {
     	setMouseElm(newMouseElm);
     }
 
-    int distanceSq(int x1, int y1, int x2, int y2) {
-	x2 -= x1;
-	y2 -= y1;
-	return x2*x2+y2*y2;
-    }
+
 
     public void onContextMenu(ContextMenuEvent e) {
     	e.preventDefault();
@@ -3489,7 +3449,6 @@ MouseOutHandler, MouseWheelHandler {
     
     public void onMouseOut(MouseOutEvent e) {
     	mouseCursorX=-1;
-    	clearMouseElm();
     }
 
     void clearMouseElm() {
@@ -3558,20 +3517,23 @@ MouseOutHandler, MouseWheelHandler {
 //		return;
 //	}
 //
+	
+	
+	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
+	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
+			Graphics.distanceSq(mouseElm.x, mouseElm.y, mouseElm.x2, mouseElm.y2) >=256 &&
+			( Graphics.distanceSq(e.getX(), e.getY(), mouseElm.x, mouseElm.y) <= POSTGRABSQ ||
+			  Graphics.distanceSq(e.getX(), e.getY(), mouseElm.x2, mouseElm.y2) <= POSTGRABSQ) &&
+			  !anySelectedButMouse() )
+		tempMouseMode = MODE_DRAG_POST;
 
-	if (doSwitch(e.getX(), e.getY()))
+	if ((tempMouseMode != MODE_ADD_ELM ) && doSwitch(e.getX(), e.getY()))
 	{
             didSwitch = true;
 	    return;
 	}
 
-	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
-	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
-			distanceSq(mouseElm.x, mouseElm.y, mouseElm.x2, mouseElm.y2) >=256 &&
-			( distanceSq(e.getX(), e.getY(), mouseElm.x, mouseElm.y) <= POSTGRABSQ ||
-			  distanceSq(e.getX(), e.getY(), mouseElm.x2, mouseElm.y2) <= POSTGRABSQ) &&
-			  !anySelectedButMouse() )
-		tempMouseMode = MODE_DRAG_POST;
+
 	
 	if (tempMouseMode != MODE_SELECT && tempMouseMode != MODE_DRAG_SELECTED)
 	    clearSelection();
@@ -3593,63 +3555,10 @@ MouseOutHandler, MouseWheelHandler {
 	dragElm = constructElement(mouseModeStr, x0, y0);
     }
 
+ 
     
-    // IES - remove interaction
     
-//    CircuitElm constructElement(Class c, int x0, int y0) {
-//	// find element class
-//	Class carr[] = new Class[2];
-//	//carr[0] = getClass();
-//	carr[0] = carr[1] = int.class;
-//	Constructor cstr = null;
-//	try {
-//	    cstr = c.getConstructor(carr);
-//	} catch (NoSuchMethodException ee) {
-//	    System.out.println("caught NoSuchMethodException " + c);
-//	    return null;
-//	} catch (Exception ee) {
-//	    ee.printStackTrace();
-//	    return null;
-//	}
-//
-//	// invoke constructor with starting coordinates
-//	Object oarr[] = new Object[2];
-//	oarr[0] = new Integer(x0);
-//	oarr[1] = new Integer(y0);
-//	try {
-//	    return (CircuitElm) cstr.newInstance(oarr);
-//	} catch (Exception ee) { ee.printStackTrace(); }
-//	return null;
-//    }
-
     
-     // hausen: add doEditMenu
-//     void doEditMenu(DoubleClickEvent e) {
-//		if( mouseElm != null )
-//			doEdit(mouseElm);
-//	}
-
-//    void doPopupMenu(MouseEvent e) {
-//	menuElm = mouseElm;
-//	// IES - removal of scopes
-////	menuScope = -1;
-////	if (scopeSelected != -1) {
-////	    PopupMenu m = scopes[scopeSelected].getMenu();
-////	    menuScope = scopeSelected;
-////	    if (m != null)
-////		m.show(e.getComponent(), e.getX(), e.getY());
-//	// } else if (mouseElm != null) {
-//	    if (mouseElm != null) {
-//	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
-//	    // IES removal of scopes
-//	//    elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
-//	    elmMenu.show(e.getComponent(), e.getX(), e.getY());
-//	} else {
-//	    doMainMenuChecks(mainMenu);
-//	    mainMenu.show(e.getComponent(), e.getX(), e.getY());
-//	}
-//    }
-//
     void doMainMenuChecks() {
     	int c = mainMenuItems.size();
     	int i;
@@ -3903,6 +3812,7 @@ MouseOutHandler, MouseWheelHandler {
     
     void doDelete() {
     	int i;
+    	jsConsoleLog("In Do Delete");
     	pushUndo();
     	setMenuSelection();
     	boolean hasDeleted = false;
@@ -3915,6 +3825,7 @@ MouseOutHandler, MouseWheelHandler {
     			hasDeleted = true;
     		}
     	}
+    	jsConsoleLog("Out of First Loop "+String.valueOf(hasDeleted));
 
     	if ( !hasDeleted )
     	{
@@ -3929,6 +3840,7 @@ MouseOutHandler, MouseWheelHandler {
     			}
     		}
     	}
+    	jsConsoleLog("Out of Second Loop "+String.valueOf(hasDeleted));
 
     	if ( hasDeleted )
     		needAnalyze();

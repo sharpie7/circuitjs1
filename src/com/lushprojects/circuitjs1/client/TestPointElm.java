@@ -304,10 +304,10 @@ class TestPointElm extends CircuitElm {
         }    
     }
         
-    void drawHandles(Graphics g, Color c) {
-        g.setColor(c);
-        g.fillRect(x-3, y-3, 7, 7);
-    }
+//    void drawHandles(Graphics g, Color c) {
+//        g.setColor(c);
+//        g.fillRect(x-3, y-3, 7, 7);
+//    }
     
     public EditInfo getEditInfo(int n) {
         if (n==0){

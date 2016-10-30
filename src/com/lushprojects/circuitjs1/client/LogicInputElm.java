@@ -114,7 +114,10 @@ package com.lushprojects.circuitjs1.client;
 	
     void drawHandles(Graphics g, Color c) {
     	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
+    	if (lastHandleGrabbed==-1)
+    		g.fillRect(x-3, y-3, 7, 7);
+    	else if (lastHandleGrabbed==0)
+    		g.fillRect(x-4, y-4, 9, 9);
     }
     
     }
