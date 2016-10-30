@@ -65,6 +65,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
@@ -112,6 +113,7 @@ MouseOutHandler, MouseWheelHandler {
     // IES - remove interaction
 //    Label titleLabel;
     Button resetButton;
+    Button runStopButton;
 //    Button dumpMatrixButton;
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
@@ -119,7 +121,6 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
     MenuBar optionsMenuBar;
-    Checkbox stoppedCheck;
     CheckboxMenuItem dotsCheckItem;
     CheckboxMenuItem voltsCheckItem;
     CheckboxMenuItem powerCheckItem;
@@ -218,6 +219,7 @@ MouseOutHandler, MouseWheelHandler {
 	origRightSide[], origMatrix[][];
     RowInfo circuitRowInfo[];
     int circuitPermute[];
+    boolean simRunning;
     boolean circuitNonLinear;
     int voltageSourceCount;
     int circuitMatrixSize, circuitMatrixFullSize;
@@ -247,6 +249,7 @@ MouseOutHandler, MouseWheelHandler {
 	MenuBar menuBar;
 	MenuBar fileMenuBar;
 	VerticalPanel verticalPanel;
+	HorizontalPanel buttonPanel;
 	private boolean mouseDragging;
 	
 	Vector<CheckboxMenuItem> mainMenuItems = new Vector<CheckboxMenuItem>();
@@ -424,31 +427,13 @@ MouseOutHandler, MouseWheelHandler {
 	  menuBar = new MenuBar();
 	  menuBar.addItem("File", fileMenuBar);
 	  verticalPanel=new VerticalPanel();
+	  buttonPanel=new HorizontalPanel();
 	  
 
 	  
 
 	
-// IES - remove interaction
-	/*
-	mainMenu = new PopupMenu();
-	MenuBar mb = null;
-	if (useFrame)
-	    mb = new MenuBar();
-	Menu m = new Menu("File");
-	if (useFrame)
-	    mb.add(m);
-	else
-	    mainMenu.add(m);
-	    */
-	// IES - remove import expoert
-/*	m.add(importItem = getMenuItem("Import"));
-	m.add(exportItem = getMenuItem("Export"));
-	m.add(exportLinkItem = getMenuItem("Export Link"));
-	m.addSeparator();*/
-	// IES - remove interaction
-		
-	//m.add(exitItem   = getMenuItem("Exit"));
+
 
 	m = new MenuBar(true);
 	final String edithtml="<div style=\"display:inline-block;width:80px;\">";
@@ -571,16 +556,25 @@ MouseOutHandler, MouseWheelHandler {
 	    backcontext=backcv.getContext2d();
 	    setCanvasSize();
 		layoutPanel.add(cv);
-		 verticalPanel.add(resetButton = new Button("Reset"));
+		verticalPanel.add(new Label("Simulation Controls"));
+		verticalPanel.add(buttonPanel);
+		 buttonPanel.add(resetButton = new Button("Reset"));
 		 resetButton.addClickHandler(new ClickHandler() {
 			    public void onClick(ClickEvent event) {
 			      resetAction();
 			    }
 			  });
+		 resetButton.setStylePrimaryName("topButton");
+		 buttonPanel.add(runStopButton = new Button("<Strong>RUN</Strong>&nbsp;/&nbsp;Stop"));
+		 runStopButton.addClickHandler(new ClickHandler() {
+			    public void onClick(ClickEvent event) {
+			      setSimRunning(!simIsRunning());
+			    }
+			  });
+		 
 //	dumpMatrixButton = new Button("Dump Matrix");
 //	main.add(dumpMatrixButton);// IES for debugging
-	stoppedCheck = new Checkbox("Stopped");
-	verticalPanel.add(stoppedCheck);
+
 	
 	if (LoadFile.isSupported())
 		verticalPanel.add(loadFileInput = new LoadFile(this));
@@ -649,10 +643,6 @@ MouseOutHandler, MouseWheelHandler {
 	scopeMenuBar = buildScopeMenu(false);
 	transScopeMenuBar = buildScopeMenu(true);
 
-	// IES - remove interaction
-//	getSetupList(circuitsMenu, false);
-//	if (useFrame)
-//	    setMenuBar(mb);
 	
 	if (startCircuitText != null) {
 	    getSetupList(false);
@@ -669,45 +659,6 @@ MouseOutHandler, MouseWheelHandler {
 		
 
 	
-	
-// IES - hardcode circuit
-//	if (startCircuitText != null)
-//	    readSetup(startCircuitText);
-//	else if (stopMessage == null && startCircuit != null)
-//	    readSetupFile(startCircuit, startLabel);
-//	else
-//	    readSetup(null, 0, false);
-
-
-	
-//	if (useFrame) {
-//	    Dimension screen = getToolkit().getScreenSize();
-//	    resize(860, 640);
-//	    handleResize();
-//	    Dimension x = getSize();
-//	    setLocation((screen.width  - x.width)/2,
-//			(screen.height - x.height)/2);
-//	    show();
-//	} else  {
-	  //  if (!powerCheckItem.getState()) {
-	//	main.remove(powerBar);
-	//	main.remove(powerLabel);
-	//	main.validate();
-	 //   }
-	//    hide();
-	//    handleResize();
-//	    applet.validate();
-//	}
-	//requestFocus();
-
-//	addWindowListener(new WindowAdapter()
-//		{
-//			public void windowClosing(WindowEvent we)
-//			{
-//				destroyFrame();
-//			}
-//		}
-//	);
 		enableUndoRedo();
 		enablePaste();
 		setiFrameHeight();
@@ -726,6 +677,7 @@ MouseOutHandler, MouseWheelHandler {
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
+		setSimRunning(true);
 	    // setup timer
 
 	    timer.scheduleRepeating(FASTTIMER);
@@ -1132,6 +1084,24 @@ MouseOutHandler, MouseWheelHandler {
     int framerate = 0, steprate = 0;
     static CirSim theSim;
 
+    
+    public void setSimRunning(boolean s) {
+    	if (s) {
+    		simRunning = true;
+    		runStopButton.setHTML("<strong>RUN</strong>&nbsp;/&nbsp;Stop");
+    		runStopButton.setStylePrimaryName("topButton");
+    	} else {
+    		simRunning = false;
+    		runStopButton.setHTML("Run&nbsp;/&nbsp;<strong>STOP</strong>");
+    		runStopButton.setStylePrimaryName("topButton-red");
+    	}
+    }
+    
+    public boolean simIsRunning() {
+    	return simRunning;
+    }
+    
+    
 // *****************************************************************
 //                     UPDATE CIRCUIT
     
@@ -1170,7 +1140,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
 	myrunstarttime=System.currentTimeMillis();
-	if (!stoppedCheck.getState()) {
+	if (simRunning) {
 	    try {
 		runCircuit();
 	    } catch (Exception e) {
@@ -1183,7 +1153,7 @@ MouseOutHandler, MouseWheelHandler {
 	 myruntime+=System.currentTimeMillis()-myrunstarttime;
 }
 	long sysTime = System.currentTimeMillis();
-		if (!stoppedCheck.getState()) {
+		if (simRunning) {
 			
 			if (lastTime != 0) {
 				int inc = (int) (sysTime - lastTime);
@@ -1360,20 +1330,7 @@ MouseOutHandler, MouseWheelHandler {
 //	g.drawString("ms per frame (draw): "+ CircuitElm.showFormat.format((mydrawtime)/myframes),10,150);
 	
 	cvcontext.drawImage(backcontext.getCanvas(), 0.0, 0.0);
-	// IES - remove interaction and delay
-//	if (!stoppedCheck.getState() && circuitMatrix != null) {
-	    // Limit to 50 fps (thanks to Jurgen Klotzer for this)
-	    // long delay = 1000/50 - (System.currentTimeMillis() - lastFrameTime);
-	    // realg.drawString("delay: " + delay,  10, 110);
-	    // if (delay > 0) {
-		//try {
-		 //   Thread.sleep(delay);
-		//} catch (InterruptedException e) {
-		//}
-	 //   }
-	    
-	//    cv.repaint(0);
-	//}
+
 	lastFrameTime = lastTime;
 	mytime=mytime+System.currentTimeMillis()-mystarttime;
 	myframes++;
@@ -2105,7 +2062,7 @@ MouseOutHandler, MouseWheelHandler {
 	stopMessage = s;
 	circuitMatrix = null;
 	stopElm = ce;
-	stoppedCheck.setState(true);
+	setSimRunning(false);
 	analyzeFlag = false;
 //	cv.repaint();
     }
@@ -2398,7 +2355,7 @@ MouseOutHandler, MouseWheelHandler {
     	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
     	t=0;
-    	stoppedCheck.setState(false);
+    	setSimRunning(true);
     }
     
     // IES - remove interaction
@@ -3812,7 +3769,6 @@ MouseOutHandler, MouseWheelHandler {
     
     void doDelete() {
     	int i;
-    	jsConsoleLog("In Do Delete");
     	pushUndo();
     	setMenuSelection();
     	boolean hasDeleted = false;
@@ -3825,7 +3781,6 @@ MouseOutHandler, MouseWheelHandler {
     			hasDeleted = true;
     		}
     	}
-    	jsConsoleLog("Out of First Loop "+String.valueOf(hasDeleted));
 
     	if ( !hasDeleted )
     	{
@@ -3840,7 +3795,6 @@ MouseOutHandler, MouseWheelHandler {
     			}
     		}
     	}
-    	jsConsoleLog("Out of Second Loop "+String.valueOf(hasDeleted));
 
     	if ( hasDeleted )
     		needAnalyze();

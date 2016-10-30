@@ -221,7 +221,7 @@ public abstract class CircuitElm implements Editable {
     }
 	
     void drawDots(Graphics g, Point pa, Point pb, double pos) {
-	 if (sim.stoppedCheck.getState() || pos == 0 || !sim.dotsCheckItem.getState())
+	 if ((!sim.simIsRunning()) || pos == 0 || !sim.dotsCheckItem.getState())
 	    return;
 	int dx = pb.x-pa.x;
 	int dy = pb.y-pa.y;
@@ -677,7 +677,7 @@ public abstract class CircuitElm implements Editable {
     }
     double updateDotCount(double cur, double cc) {
   
-	 if (sim.stoppedCheck.getState())
+	 if (!sim.simIsRunning())
 	    return cc;
 	double cadd = cur*currentMult;
 	/*if (cur != 0 && cadd <= .05 && cadd >= -.05)
