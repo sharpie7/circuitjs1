@@ -163,6 +163,9 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeResistMenuItem;
     CheckboxMenuItem scopeVceIcMenuItem;
     MenuItem scopeSelectYMenuItem;
+    
+    String lastCursorStyle;
+    boolean mouseWasOverSplitter = false; 
 
 //    Class addingClass;
     PopupPanel contextPanel = null;
@@ -177,6 +180,7 @@ MouseOutHandler, MouseWheelHandler {
     static final int MODE_DRAG_SELECTED = 4;
     static final int MODE_DRAG_POST = 5;
     static final int MODE_SELECT = 6;
+    static final int MODE_DRAG_SPLITTER = 7;
     static final int infoWidth = 120;
     long myframes =1;
     long mytime=0;
@@ -251,6 +255,7 @@ MouseOutHandler, MouseWheelHandler {
 	VerticalPanel verticalPanel;
 	HorizontalPanel buttonPanel;
 	private boolean mouseDragging;
+	double scopeHeightFraction=0.2;
 	
 	Vector<CheckboxMenuItem> mainMenuItems = new Vector<CheckboxMenuItem>();
 	Vector<String> mainMenuItemNames = new Vector<String>();
@@ -298,11 +303,17 @@ MouseOutHandler, MouseWheelHandler {
 			backcv.setCoordinateSpaceWidth(width);
 			backcv.setCoordinateSpaceHeight(height);
 		}
-		int h = height / 5;
+
+    	setCircuitArea();
+    }
+    
+    void setCircuitArea() {
+    	int height = cv.getCanvasElement().getHeight();
+    	int width = cv.getCanvasElement().getWidth();
+		int h = (int) ((double)height * scopeHeightFraction);
 		/*if (h < 128 && winSize.height > 300)
 		  h = 128;*/
 		circuitArea = new Rectangle(0, 0, width, height-h);
-    	
     }
     
 //    Circuit applet;
@@ -321,8 +332,7 @@ MouseOutHandler, MouseWheelHandler {
     
     public void init() {
 
-//	String euroResistor = null;
-//	String useFrameStr = null;
+
 	boolean printable = false;
 	boolean convention = true;
 	boolean euroRes = false;
@@ -379,17 +389,10 @@ MouseOutHandler, MouseWheelHandler {
 	String os = Navigator.getPlatform();
 	isMac = (os.toLowerCase().contains("mac"));
 	ctrlMetaKey = (isMac) ? "Cmd" : "Ctrl";
-//	String jv = System.getProperty("java.class.version");
-//	double jvf = new Double(jv).doubleValue();
-//	if (jvf >= 48) {
-//	    muString = "\u03bc";
-//	    ohmString = "\u03a9";
-//	    useBufferedImage = true;
-//	}
+
 	muString = "\u03bc";
 	ohmString = "\u03a9";
 
-//	dumpTypes = new Class[300];
 	shortcuts = new String[127];
 
 	// these characters are reserved
@@ -904,17 +907,7 @@ MouseOutHandler, MouseWheelHandler {
     	iFrame.setHeight(ih+"px");
     }
     
-//    public void triggerShow() {
-//	if (!shown)
-//	    show();
-//	shown = true;
-//    }
 
-//    public void requestFocus()
-//    {
-//	super.requestFocus();
-//	cv.requestFocus();
-//    }
     MenuBar buildScopeMenu(boolean t) {
     	MenuBar m = new MenuBar(true);
     	m.addItem(new CheckboxAlignedMenuItem("Remove",new MyCommand("scopepop", "remove")));
@@ -950,28 +943,7 @@ MouseOutHandler, MouseWheelHandler {
     	return m;
     }
     
- // IES - remove interaction
- 	/*
-    MenuItem getMenuItem(String s) {
-	MenuItem mi = new MenuItem(s);
-	mi.addActionListener(this);
-	return mi;
-    }
 
-    MenuItem getMenuItem(String s, String ac) {
-	MenuItem mi = new MenuItem(s);
-	mi.setActionCommand(ac);
-	mi.addActionListener(this);
-	return mi;
-    }
-
-    CheckboxMenuItem getCheckItem(String s) {
-	CheckboxMenuItem mi = new CheckboxMenuItem(s);
-	mi.addItemListener(this);
-	mi.setActionCommand("");
-	return mi;
-    }
-    */
 
     CheckboxMenuItem getClassCheckItem(String s, String t) {
     	// try {
@@ -1002,15 +974,6 @@ MouseOutHandler, MouseWheelHandler {
     	return mi;
     }
     
-//    CheckboxMenuItem getCheckItem(String s, String t) {
-//	CheckboxMenuItem mi = new CheckboxMenuItem(s);
-//	mi.addItemListener(this);
-//	mi.setActionCommand(t);
-//	return mi;
-//    }
-
-
-
     
 
     
@@ -1052,30 +1015,7 @@ MouseOutHandler, MouseWheelHandler {
     	needAnalyze();
     	circuitBottom = 0;
     }
-//
-//    void destroyFrame() {
-//	if (applet == null)
-//	{
-//	    dispose();
-//	    System.exit(0);
-//	}
-//	else
-//	{
-//	    applet.destroyFrame();
-//	}
-//    }
-//    
-//    public boolean handleEvent(Event ev) {
-//        if (ev.id == Event.WINDOW_DESTROY) {
-//	    destroyFrame();
-//            return true;
-//        }
-//        return super.handleEvent(ev);
-//    }
-//    
-//    public void paint(Graphics g) {
-//	cv.repaint();
-//    }
+
 
     static final int resct = 6;
     long lastTime = 0, lastFrameTime, lastIterTime, secTime = 0;
@@ -1123,10 +1063,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (mouseElm == null)
 	    mouseElm = stopElm;
 	setupScopes();
-//        Graphics2D g = null; // hausen: changed to Graphics2D
-//	g = (Graphics2D)dbimage.getGraphics();
-//	g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//		RenderingHints.VALUE_ANTIALIAS_ON);
+
 	Graphics g=new Graphics(backcontext);
 	CircuitElm.selectColor = Color.cyan;
 	if (printableCheckItem.getState()) {
@@ -1182,6 +1119,8 @@ MouseOutHandler, MouseWheelHandler {
 //	Font oldfont = g.getFont();
 	Font oldfont = CircuitElm.unitsFont;
 	g.setFont(oldfont);
+	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
+	
 	mydrawstarttime=System.currentTimeMillis();
 	for (i = 0; i != elmList.size(); i++) {
 	    if (powerCheckItem.getState())
@@ -1191,6 +1130,9 @@ MouseOutHandler, MouseWheelHandler {
 	    getElm(i).draw(g);
 	}
 	mydrawtime+=System.currentTimeMillis()-mydrawstarttime;
+	
+	
+	
 	if (tempMouseMode == MODE_DRAG_ROW || tempMouseMode == MODE_DRAG_COLUMN ||
 			tempMouseMode == MODE_DRAG_POST || tempMouseMode == MODE_DRAG_SELECTED)
 		for (i = 0; i != elmList.size(); i++) {
@@ -1244,13 +1186,21 @@ MouseOutHandler, MouseWheelHandler {
 	    	dragElm.draw(g);
 	    	dragElm.drawHandles(g, Color.cyan);
 	}
+	g.restore();
 	g.setFont(oldfont);
 	int ct = scopeCount;
 	if (stopMessage != null)
 	    ct = 0;
 	for (i = 0; i != ct; i++)
 	    scopes[i].draw(g);
+	if (mouseWasOverSplitter) {
+		g.setColor(Color.cyan);
+		g.setLineWidth(4.0);
+		g.drawLine(0, circuitArea.height-2, circuitArea.width, circuitArea.height-2);
+		g.setLineWidth(1.0);
+	}
 	g.setColor(CircuitElm.whiteColor);
+
 	if (stopMessage != null) {
 	    g.drawString(stopMessage, 10, circuitArea.height-10);
 	} else {
@@ -2361,7 +2311,7 @@ MouseOutHandler, MouseWheelHandler {
     // IES - remove interaction
     public void menuPerformed(String menu, String item) {
     	if (item=="about")
-    		aboutBox = new AboutBox(circuitjs1.versionString); 
+    		aboutBox = new AboutBox(circuitjs1.versionString);
     	if (item=="importfromlocalfile") {
     		pushUndo();
     		loadFileInput.click();
@@ -3031,6 +2981,11 @@ MouseOutHandler, MouseWheelHandler {
     				e.isAltKeyDown()))
     			return;
     	}
+    	
+    	if (tempMouseMode==MODE_DRAG_SPLITTER) {
+    		dragSplitter(e.getX(), e.getY());
+    		return;
+    	}
     	if (!circuitArea.contains(e.getX(), e.getY()))
     		return;
     	if (dragElm != null)
@@ -3061,6 +3016,7 @@ MouseOutHandler, MouseWheelHandler {
     	case MODE_DRAG_SELECTED:
     		success = dragSelected(e.getX(), e.getY());
     		break;
+
     	}
     	dragging = true;
     	if (success) {
@@ -3071,6 +3027,19 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
     	//	cv.repaint(pause);
+    }
+    
+    void dragSplitter(int x, int y) {
+    	double h = (double) cv.getCanvasElement().getHeight();
+    	if (h<1)
+    		h=1;
+    	scopeHeightFraction=1.0-(((double)y)/h);
+    	if (scopeHeightFraction<0.1)
+    		scopeHeightFraction=0.1;
+    	if (scopeHeightFraction>0.9)
+    		scopeHeightFraction=0.9;
+    	setCircuitArea();
+    	
     }
 
     void dragAll(int x, int y) {
@@ -3225,6 +3194,20 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	needAnalyze();
     }
+    
+    boolean mouseIsOverSplitter(int x, int y) {
+    	boolean isOverSplitter;
+    	isOverSplitter =((x>=0) && (x<circuitArea.width) && 
+    			(y>=circuitArea.height-5) && (y<circuitArea.height));
+    	if (isOverSplitter!=mouseWasOverSplitter){
+    		if (isOverSplitter)
+    			setCursorStyle("cursorSplitter");
+    		else
+    			setMouseMode(mouseMode);
+    	}
+    	mouseWasOverSplitter=isOverSplitter;
+    	return isOverSplitter;
+    }
 
     public void onMouseMove(MouseMoveEvent e) {
     	e.preventDefault();
@@ -3253,6 +3236,12 @@ MouseOutHandler, MouseWheelHandler {
 
     	mousePost = -1;
     	plotXElm = plotYElm = null;
+    	
+    	if (mouseIsOverSplitter(x,y)) {
+    		setMouseElm(null);
+    		return;
+    	}
+    	
     	if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(x, y, POSTGRABSQ)>=0)) {
     		newMouseElm=mouseElm;
     	} else {
@@ -3433,7 +3422,12 @@ MouseOutHandler, MouseWheelHandler {
     	mouseSelect(e);
     	
     	mouseDragging=true;
-	didSwitch = false;
+    	didSwitch = false;
+	
+    	if (mouseWasOverSplitter) {
+    		tempMouseMode = MODE_DRAG_SPLITTER;
+    		return;
+    	}
 //
 //	System.out.println(e.getModifiers());
 //	int ex = e.getModifiersEx();
@@ -3718,13 +3712,20 @@ MouseOutHandler, MouseWheelHandler {
     {
     	mouseMode = mode;
     	if ( mode == MODE_ADD_ELM ) {
-    		cv.addStyleName("cursorCross");
-    		cv.removeStyleName("cursorPointer");
+    		setCursorStyle("cursorCross");
     	} else {
-    		cv.addStyleName("cursorPointer");
-    		cv.removeStyleName("cursorCross");
+    		setCursorStyle("cursorPointer");
     	}
     }
+    
+    void setCursorStyle(String s) {
+    	if (lastCursorStyle!=null)
+    		cv.removeStyleName(lastCursorStyle);
+    	cv.addStyleName(s);
+    	lastCursorStyle=s;
+    }
+    
+
 
     void setMenuSelection() {
     	if (menuElm != null) {

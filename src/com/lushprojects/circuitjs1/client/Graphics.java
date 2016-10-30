@@ -49,6 +49,16 @@ public class Graphics {
 	      lastColor=null;
 	  }
 	  
+	  public void clipRect(int x, int y, int width, int height) {
+		  context.save();
+		  context.rect(x, y, width, height);
+		  context.clip();
+	  }
+	  
+	  public void restore() {
+		  context.restore();
+	  }
+	  
 	  public void fillRect(int x, int y, int width, int height) {
 		//  context.beginPath();
 		  context.fillRect(x, y, width, height);
