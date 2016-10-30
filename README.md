@@ -15,19 +15,21 @@ Thanks to Edward Calver for 15 new components and other improvements. Thanks to 
 
 The tools you will need to build the project are:
 
-* Eclipse - I am using the Kepler version.
-* Google plugin for Eclipse to provide GWT.
+* Java JDK 8 or newer
+* Maven 3 or newer
 
-This archive is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in development mode is done using the normal Eclipse run button or "Run As..." and choosing "Web Application (Super Dev Mode)" and then picking "Circuitjs1.html" as the initial page. Building for deployment is done using the Google button on the Eclipse taskbar and choosing "GWT Compile Project...".
+1) Checkout the project and open a command line in the project directory
 
-GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
+2) Build the project via:
+> mvn clean install
+
+3) GWT will build it's output in to the "target/circuitjs1-1.0" directory. You can open the "circuitjs.html" file with a browser and run the simulator. "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand panel. It can be used for branding etc.
 
 ##Deployment
 
-* "GWT Compile Project..." as explained above. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
+* The build procedure explained above will output everything you need in the "target/circuitjs1-1.0" directory. You can deploy that directory to a web server, skipping the WEB-INF sub-directory.
 * Customize the header of the file "circuitjs1.html" to include your tracking, favicon etc.
 * Customize the "iframe.html" file to include any branding you want in the right hand panel of the application
-
 
 The link for the full-page version of the application is now:
 `http://<your host>/<your path>/circuitjs1.html`
