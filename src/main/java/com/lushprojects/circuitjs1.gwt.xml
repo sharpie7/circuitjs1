@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to="circuitjs1">
+	<inherits name="com.google.gwt.user.User" />
+	<inherits name="com.google.gwt.http.HTTP" />
+	<inherits name='com.google.gwt.user.theme.clean.Clean' />
+	<source path="circuitjs1" />
+	<entry-point class="com.lushprojects.circuitjs1.client.circuitjs1" />
+</module>
