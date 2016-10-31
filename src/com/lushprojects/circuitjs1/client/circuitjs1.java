@@ -20,9 +20,11 @@
 package com.lushprojects.circuitjs1.client;
 
 //CirSim.java (c) 2010 by Paul Falstad
-//GWT conversion (c) 2015 by Iain Sharp
+//GWT conversion (c) 2015, 2016 by Iain Sharp
 
 //Version History
+//v1.8.0js 16-10-30 Iain Sharp
+// Incorporate latest Falstad updates. Improvements to UI and bug fixes
 //v1.0.1 15-06-15
 //Convert source code to GPLv2
 //Incorporate example files in to project
@@ -53,10 +55,11 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.0.1";
+	public static final String versionString="1.8.0js";
 
 	static CirSim mysim;
 	
@@ -73,6 +76,16 @@ public class circuitjs1 implements EntryPoint {
                 	
             }
         });
+	    
+	    /*
+	    Window.addWindowClosingHandler(new Window.ClosingHandler() {
+
+	        public void onWindowClosing(ClosingEvent event) {
+	            event.setMessage("Are you sure?");
+	        }
+	    });
+	     */
+
 	  mysim.updateCircuit();
 	  
 

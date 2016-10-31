@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 //import java.awt.*;
 //import java.util.StringTokenizer;
 
+// SPDT switch
+
     class Switch2Elm extends SwitchElm {
 	int link;
 	static final int FLAG_CENTER_OFF = 1;
@@ -125,22 +127,26 @@ package com.lushprojects.circuitjs1.client;
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 1) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Center Off", hasCenterOff());
-		return ei;
+	    	EditInfo ei = new EditInfo("", 0, -1, -1);
+	    	ei.checkbox = new Checkbox("Center Off", hasCenterOff());
+	    	return ei;
 	    }
+	    if (n == 2)
+	    	return new EditInfo("Switch Group", link, 0, 100).setDimensionless();
 	    return super.getEditInfo(n);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 1) {
-		flags &= ~FLAG_CENTER_OFF;
-		if (ei.checkbox.getState())
-		    flags |= FLAG_CENTER_OFF;
-		if (hasCenterOff())
-		    momentary = false;
-		setPoints();
+	    	flags &= ~FLAG_CENTER_OFF;
+	    	if (ei.checkbox.getState())
+	    		flags |= FLAG_CENTER_OFF;
+	    	if (hasCenterOff())
+	    		momentary = false;
+	    	setPoints();
+	    } else if (n == 2) {
+	    	link = (int) ei.value;
 	    } else
-		super.setEditValue(n, ei);
+	    	super.setEditValue(n, ei);
 	}
 	boolean hasCenterOff() { return (flags & FLAG_CENTER_OFF) != 0; }
 	int getShortcut() { return 'S'; }

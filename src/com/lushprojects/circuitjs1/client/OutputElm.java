@@ -76,9 +76,9 @@ package com.lushprojects.circuitjs1.client;
 		    (flags & ~FLAG_VALUE);
 	}
 	
-    void drawHandles(Graphics g, Color c) {
-    	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
-    }
+//    void drawHandles(Graphics g, Color c) {
+//    	g.setColor(c);
+//		g.fillRect(x-3, y-3, 7, 7);
+//    }
     
     }

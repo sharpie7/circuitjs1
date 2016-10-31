@@ -68,26 +68,30 @@ class TimerElm extends ChipElm {
 	// calculated for us, and other pins have no current
 	pins[N_VIN].current = (volts[N_CTL]-volts[N_VIN])/5000;
 	pins[N_CTL].current = -volts[N_CTL]/10000 - pins[N_VIN].current;
-	pins[N_DIS].current = (!out && !setOut) ? -volts[N_DIS]/10 : 0;
+	pins[N_DIS].current = (!out) ? -volts[N_DIS]/10 : 0;
     }
-    boolean setOut, out;
+    boolean out;
     void startIteration() {
 	out = volts[N_OUT] > volts[N_VIN]/2;
-	setOut = false;
 	// check comparators
+	if (volts[N_THRES] > volts[N_CTL])
+		out = false;
+	
+	// trigger overrides threshold
 	if (volts[N_CTL]/2 > volts[N_TRIG])
-	    setOut = out = true;
-	if (volts[N_THRES] > volts[N_CTL] || (hasReset() && volts[N_RST] < .7))
+	    out = true;
+	
+	// reset overrides trigger
+	if (hasReset() && volts[N_RST] < .7)
 	    out = false;
     }
     void doStep() {
 	// if output is low, discharge pin 0.  we use a small
 	// resistor because it's easier, and sometimes people tie
 	// the discharge pin to the trigger and threshold pins.
-	// We check setOut to properly emulate the case where
-	// trigger is low and threshold is high.
-	if (!out && !setOut)
+	if (!out)
 	    sim.stampResistor(nodes[N_DIS], 0, 10);
+	
 	// output
 	sim.updateVoltageSource(0, nodes[N_OUT], pins[N_OUT].voltSource,
 			    out ? volts[N_VIN] : 0);

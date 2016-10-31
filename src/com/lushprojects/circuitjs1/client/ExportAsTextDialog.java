@@ -20,6 +20,8 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -34,12 +36,15 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 public class ExportAsTextDialog extends DialogBox {
 	
 	VerticalPanel vp;
+	CirSim sim;
+	TextArea textArea;
 	
-	public ExportAsTextDialog( String s) {
+	public ExportAsTextDialog(CirSim asim, String s) {
 		super();
+		sim = asim;
 	//	RichTextArea tb;
 		TextArea ta;
-		Button okButton;
+		Button okButton, importButton;
 		Label  la2;
 		SafeHtml html;
 		vp=new VerticalPanel();
@@ -54,12 +59,32 @@ public class ExportAsTextDialog extends DialogBox {
 		ta.setWidth("300px");
 		ta.setHeight("200px");
 		ta.setText(s);
+		textArea = ta;
 		vp.add(la2 = new Label("To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file.", true));
 		la2.setWidth("300px");
-		vp.add(okButton = new Button("OK"));
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setWidth("100%");
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		hp.setStyleName("topSpace");
+		vp.add(hp);
+		hp.add(okButton = new Button("OK"));
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		hp.add(importButton = new Button("Re-Import"));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
+			}
+		});
+		importButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				String s;
+				sim.pushUndo();
+				closeDialog();
+//				s=textBox.getHTML();
+//				s=s.replace("<br>", "\r");
+				s=textArea.getText();
+				if (s!=null)
+					sim.readSetup(s, true);
 			}
 		});
 		this.center();
