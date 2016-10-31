@@ -48,6 +48,8 @@ public abstract class CircuitElm implements Editable {
 
     int x, y, x2, y2, flags, nodes[], voltSource;
     int dx, dy, dsign;
+    int lastHandleGrabbed=-1;
+    int numHandles=2;
     double dn, dpx1, dpy1;
     Point point1, point2, lead1, lead2;
     double volts[];
@@ -220,7 +222,7 @@ public abstract class CircuitElm implements Editable {
     }
 	
     void drawDots(Graphics g, Point pa, Point pb, double pos) {
-	 if (sim.stoppedCheck.getState() || pos == 0 || !sim.dotsCheckItem.getState())
+	 if ((!sim.simIsRunning()) || pos == 0 || !sim.dotsCheckItem.getState())
 	    return;
 	int dx = pb.x-pa.x;
 	int dy = pb.y-pa.y;
@@ -340,8 +342,27 @@ public abstract class CircuitElm implements Editable {
     
     void drawHandles(Graphics g, Color c) {
     	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
-		g.fillRect(x2-3, y2-3, 7, 7);
+    	if (lastHandleGrabbed==-1)
+    		g.fillRect(x-3, y-3, 7, 7);
+    	else if (lastHandleGrabbed==0)
+    		g.fillRect(x-4, y-4, 9, 9);
+    	if (numHandles==2) {
+    		if (lastHandleGrabbed==-1)
+    			g.fillRect(x2-3, y2-3, 7, 7);
+    		else if (lastHandleGrabbed==1)
+    			g.fillRect(x2-4, y2-4, 9, 9);
+    	}
+    }
+    
+    int getHandleGrabbedClose(int xtest, int ytest, int deltaSq, int minSize) {
+    	lastHandleGrabbed=-1;
+    	if ( Graphics.distanceSq(x , y , x2, y2)>=minSize) {
+    		if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
+    			lastHandleGrabbed=0;
+    		else if (Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
+    			lastHandleGrabbed=1;
+    	}
+    	return lastHandleGrabbed;
     }
     
     void stamp() {}
@@ -661,7 +682,7 @@ public abstract class CircuitElm implements Editable {
     }
     double updateDotCount(double cur, double cc) {
   
-	 if (sim.stoppedCheck.getState())
+	 if (!sim.simIsRunning())
 	    return cc;
 	double cadd = cur*currentMult;
 	/*if (cur != 0 && cadd <= .05 && cadd >= -.05)

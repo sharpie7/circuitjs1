@@ -21,12 +21,23 @@ package com.lushprojects.circuitjs1.client;
 import com.google.gwt.i18n.client.NumberFormat;
 
 class RailElm extends VoltageElm {
-    public RailElm(int xx, int yy) { super(xx, yy, WF_DC); }
-    RailElm(int xx, int yy, int wf) { super(xx, yy, wf); }
-    public RailElm(int xa, int ya, int xb, int yb, int f,
-		   StringTokenizer st) {
-	super(xa, ya, xb, yb, f, st);
-    }
+	public RailElm(int xx, int yy) { 
+		super(xx, yy, WF_DC); 
+		numHandles=1;
+
+	}
+	RailElm(int xx, int yy, int wf) {
+		super(xx, yy, wf); 
+		numHandles=1;
+	}
+
+	public RailElm(int xa, int ya, int xb, int yb, int f,
+			StringTokenizer st) {
+		super(xa, ya, xb, yb, f, st);
+		numHandles=1;
+	}
+
+    
     final int FLAG_CLOCK = 1;
     int getDumpType() { return 'R'; }
     int getPostCount() { return 1; }
@@ -83,9 +94,9 @@ class RailElm extends VoltageElm {
     boolean hasGroundConnection(int n1) { return true; }
     int getShortcut() { return 'V'; }
     
-    void drawHandles(Graphics g, Color c) {
-    	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
-    }
+//    void drawHandles(Graphics g, Color c) {
+//    	g.setColor(c);
+//		g.fillRect(x-3, y-3, 7, 7);
+//    }
     
 }

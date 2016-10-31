@@ -28,12 +28,15 @@ package com.lushprojects.circuitjs1.client;
 	double hiV, loV;
 	public LogicInputElm(int xx, int yy) {
 	    super(xx, yy, false);
+	    numHandles=1;
 	    hiV = 5;
 	    loV = 0;
+	    
 	}
 	public LogicInputElm(int xa, int ya, int xb, int yb, int f,
 			     StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
+	    numHandles=1;
 	    try {
 		hiV = new Double(st.nextToken()).doubleValue();
 		loV = new Double(st.nextToken()).doubleValue();
@@ -112,9 +115,6 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getShortcut() { return 'i'; }
 	
-    void drawHandles(Graphics g, Color c) {
-    	g.setColor(c);
-		g.fillRect(x-3, y-3, 7, 7);
-    }
+
     
     }
