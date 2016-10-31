@@ -1083,7 +1083,7 @@ MouseOutHandler, MouseWheelHandler {
 	    } catch (Exception e) {
 		console("exception in runCircuit " + e);
 		e.printStackTrace();
-		if (!stoppedCheck.getState())
+		if (!simRunning)
 		    analyzeFlag = true;
 //		cv.repaint();
 		return;
@@ -4533,7 +4533,7 @@ MouseOutHandler, MouseWheelHandler {
     try {
     	l=window.navigator.language ;
     	if (l.length > 2) {
-    		l = l.slice(-2);
+    		l = l.slice(-2).toUpperCase();
     		return (l == "US" || l=="CA");
     	} else {
     		return 0;
