@@ -49,6 +49,7 @@ public abstract class CircuitElm implements Editable {
     int x, y, x2, y2, flags, nodes[], voltSource;
     int dx, dy, dsign;
     int lastHandleGrabbed=-1;
+    int numHandles=2;
     double dn, dpx1, dpy1;
     Point point1, point2, lead1, lead2;
     double volts[];
@@ -345,10 +346,12 @@ public abstract class CircuitElm implements Editable {
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (lastHandleGrabbed==-1)
-    		g.fillRect(x2-3, y2-3, 7, 7);
-    	else if (lastHandleGrabbed==1)
-    		g.fillRect(x2-4, y2-4, 9, 9);
+    	if (numHandles==2) {
+    		if (lastHandleGrabbed==-1)
+    			g.fillRect(x2-3, y2-3, 7, 7);
+    		else if (lastHandleGrabbed==1)
+    			g.fillRect(x2-4, y2-4, 9, 9);
+    	}
     }
     
     int getHandleGrabbedClose(int xtest, int ytest, int deltaSq, int minSize) {
