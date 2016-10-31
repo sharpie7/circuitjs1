@@ -270,6 +270,7 @@ MouseOutHandler, MouseWheelHandler {
     static final int MENUBARHEIGHT=30;
     static int VERTICALPANELWIDTH=166; // default
     static final int POSTGRABSQ=25;
+    static final int MINPOSTGRABSIZE = 256;
     final Timer timer = new Timer() {
 	      public void run() {
 	        updateCircuit();
@@ -3242,7 +3243,7 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	}
     	
-    	if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(x, y, POSTGRABSQ)>=0)) {
+    	if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(x, y, POSTGRABSQ, MINPOSTGRABSIZE)>=0)) {
     		newMouseElm=mouseElm;
     	} else {
     		int bestDist = 100000;
@@ -3292,7 +3293,7 @@ MouseOutHandler, MouseWheelHandler {
     		for (i = 0; i != elmList.size(); i++) {
     			CircuitElm ce = getElm(i);
     			if (mouseMode==MODE_DRAG_POST ) {
-    				if (ce.getHandleGrabbedClose(x, y, POSTGRABSQ)> 0)
+    				if (ce.getHandleGrabbedClose(x, y, POSTGRABSQ, 0)> 0)
     				{
     					newMouseElm = ce;
     					break;
@@ -3472,10 +3473,8 @@ MouseOutHandler, MouseWheelHandler {
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
-			Graphics.distanceSq(mouseElm.x, mouseElm.y, mouseElm.x2, mouseElm.y2) >=256 &&
-			( Graphics.distanceSq(e.getX(), e.getY(), mouseElm.x, mouseElm.y) <= POSTGRABSQ ||
-			  Graphics.distanceSq(e.getX(), e.getY(), mouseElm.x2, mouseElm.y2) <= POSTGRABSQ) &&
-			  !anySelectedButMouse() )
+			mouseElm.getHandleGrabbedClose(e.getX(),e.getY(),POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
+		    !anySelectedButMouse() )
 		tempMouseMode = MODE_DRAG_POST;
 
 	if ((tempMouseMode != MODE_ADD_ELM ) && doSwitch(e.getX(), e.getY()))

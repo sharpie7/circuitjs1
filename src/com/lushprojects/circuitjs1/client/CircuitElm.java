@@ -351,12 +351,14 @@ public abstract class CircuitElm implements Editable {
     		g.fillRect(x2-4, y2-4, 9, 9);
     }
     
-    int getHandleGrabbedClose(int xtest, int ytest, int deltaSq) {
+    int getHandleGrabbedClose(int xtest, int ytest, int deltaSq, int minSize) {
     	lastHandleGrabbed=-1;
-    	if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
-    		lastHandleGrabbed=0;
+    	if ( Graphics.distanceSq(x , y , x2, y2)>=minSize) {
+    		if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
+    			lastHandleGrabbed=0;
     		else if (Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
     			lastHandleGrabbed=1;
+    	}
     	return lastHandleGrabbed;
     }
     
