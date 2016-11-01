@@ -3470,19 +3470,23 @@ MouseOutHandler, MouseWheelHandler {
 //		return;
 //	}
 //
-	
+
+	// take out the check for MODE_ADD_ELM because it makes switches not work.  It would be nice
+	// to find some other way to avoid hitting switches when adding elements.  Maybe doSwitch()
+	// should be smarter.
+	if (/*(tempMouseMode != MODE_ADD_ELM ) &&*/ doSwitch(e.getX(), e.getY()))
+	{
+	    // do this BEFORE we change the mouse mode to MODE_DRAG_POST!  Or else logic inputs
+	    // will add dots to the whole circuit when we click on them!
+            didSwitch = true;
+	    return;
+	}
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
 			mouseElm.getHandleGrabbedClose(e.getX(),e.getY(),POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
 		    !anySelectedButMouse() )
 		tempMouseMode = MODE_DRAG_POST;
-
-	if ((tempMouseMode != MODE_ADD_ELM ) && doSwitch(e.getX(), e.getY()))
-	{
-            didSwitch = true;
-	    return;
-	}
 
 
 	
