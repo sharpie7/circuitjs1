@@ -32,6 +32,7 @@ import java.util.Random;
 import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -253,7 +254,7 @@ MouseOutHandler, MouseWheelHandler {
 	MenuBar menuBar;
 	MenuBar fileMenuBar;
 	VerticalPanel verticalPanel;
-	HorizontalPanel buttonPanel;
+	CellPanel buttonPanel;
 	private boolean mouseDragging;
 	double scopeHeightFraction=0.2;
 	
@@ -427,11 +428,20 @@ MouseOutHandler, MouseWheelHandler {
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
 //	  fileMenuBar.addItem("Exit", cmd);
-	  
+
+	  int width=(int)RootLayoutPanel.get().getOffsetWidth();
+	  VERTICALPANELWIDTH = width/5;
+	  if (VERTICALPANELWIDTH > 166)
+	      VERTICALPANELWIDTH = 166;
+	  if (VERTICALPANELWIDTH < 128)
+	      VERTICALPANELWIDTH = 128;
+
 	  menuBar = new MenuBar();
 	  menuBar.addItem("File", fileMenuBar);
 	  verticalPanel=new VerticalPanel();
-	  buttonPanel=new HorizontalPanel();
+	  
+	  // make buttons side by side if there's room
+	  buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 	  
 
 	  
@@ -536,13 +546,6 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar);
 
 	  
-    	int width=(int)RootLayoutPanel.get().getOffsetWidth();
-    	VERTICALPANELWIDTH = width/5;
-    	if (VERTICALPANELWIDTH > 166)
-    	    VERTICALPANELWIDTH = 166;
-    	if (VERTICALPANELWIDTH < 128)
-    	    VERTICALPANELWIDTH = 128;
-
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
@@ -560,7 +563,7 @@ MouseOutHandler, MouseWheelHandler {
 	    backcontext=backcv.getContext2d();
 	    setCanvasSize();
 		layoutPanel.add(cv);
-		verticalPanel.add(new Label("Simulation Controls"));
+//		verticalPanel.add(new Label("Simulation Controls"));
 		verticalPanel.add(buttonPanel);
 		 buttonPanel.add(resetButton = new Button("Reset"));
 		 resetButton.addClickHandler(new ClickHandler() {
