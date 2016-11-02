@@ -1269,8 +1269,10 @@ MouseOutHandler, MouseWheelHandler {
 	if (crossHairCheckItem.getState() && mouseCursorX>=0
 			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
 		g.setColor(Color.gray);
-		g.drawLine(mouseCursorX, 0, mouseCursorX, circuitArea.height);
-		g.drawLine(0,mouseCursorY, circuitArea.width, mouseCursorY);
+		int x = snapGrid(mouseCursorX);
+		int y = snapGrid(mouseCursorY);
+		g.drawLine(x, 0, x, circuitArea.height);
+		g.drawLine(0,y, circuitArea.width, y);
 	}
 	
 
