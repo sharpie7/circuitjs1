@@ -38,6 +38,13 @@ public class Rectangle {
         this.height = height;
     }
     
+    public Rectangle(Point pt) {
+	this.x = pt.x;
+	this.y = pt.y;
+	this.width = 0;
+	this.height = 0;
+    }
+    
     public Rectangle(Rectangle r) {
         this(r.x, r.y, r.width, r.height);
     }

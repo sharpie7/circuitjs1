@@ -2965,6 +2965,8 @@ MouseOutHandler, MouseWheelHandler {
 		if (mouseElm == null || !(mouseElm instanceof SwitchElm))
 			return false;
 		SwitchElm se = (SwitchElm) mouseElm;
+		if (!se.getSwitchRect().contains(x, y))
+		    return false;
 		se.toggle();
 		if (se.momentary)
 			heldSwitchElm = se;
