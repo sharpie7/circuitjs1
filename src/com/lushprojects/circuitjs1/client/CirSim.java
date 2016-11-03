@@ -754,6 +754,7 @@ MouseOutHandler, MouseWheelHandler {
 
     	MenuBar passMenuBar = new MenuBar(true);
     	passMenuBar.addItem(getClassCheckItem("Add Capacitor", "CapacitorElm"));
+    	passMenuBar.addItem(getClassCheckItem("Add Capacitor (polarized)", "PolarCapacitorElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Inductor", "InductorElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Switch", "SwitchElm"));
     	passMenuBar.addItem(getClassCheckItem("Add Push Switch", "PushSwitchElm"));
@@ -1050,7 +1051,6 @@ MouseOutHandler, MouseWheelHandler {
     long mystarttime;
     long myrunstarttime;
     long mydrawstarttime;
-	CircuitElm realMouseElm;
 //	if (winSize == null || winSize.width == 0)
 //	    return;
 	mystarttime=System.currentTimeMillis();
@@ -1060,9 +1060,8 @@ MouseOutHandler, MouseWheelHandler {
 	}
 //	if (editDialog != null && editDialog.elm instanceof CircuitElm)
 //	    mouseElm = (CircuitElm) (editDialog.elm);
-	realMouseElm = mouseElm;
-	if (mouseElm == null)
-	    mouseElm = stopElm;
+	if (stopElm != null && stopElm != mouseElm)
+	    stopElm.setMouseElm(true);
 	setupScopes();
 
 	Graphics g=new Graphics(backcontext);
@@ -1082,9 +1081,10 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		runCircuit();
 	    } catch (Exception e) {
-		console("exception in runCircuit");
+		console("exception in runCircuit " + e);
 		e.printStackTrace();
-		analyzeFlag = true;
+		if (!simRunning)
+		    analyzeFlag = true;
 //		cv.repaint();
 		return;
 	    }
@@ -1259,7 +1259,8 @@ MouseOutHandler, MouseWheelHandler {
 	    g.setColor(CircuitElm.selectColor);
 	    g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
 	}
-	 mouseElm = realMouseElm;
+	if (stopElm != null && stopElm != mouseElm)
+	    stopElm.setMouseElm(false);
 	frames++;
 	if (crossHairCheckItem.getState() && mouseCursorX>=0
 			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
@@ -2011,7 +2012,7 @@ MouseOutHandler, MouseWheelHandler {
 
     void stop(String s, CircuitElm ce) {
 	stopMessage = s;
-	circuitMatrix = null;
+	circuitMatrix = null;  // causes an exception
 	stopElm = ce;
 	setSimRunning(false);
 	analyzeFlag = false;
@@ -3469,19 +3470,23 @@ MouseOutHandler, MouseWheelHandler {
 //		return;
 //	}
 //
-	
+
+	// take out the check for MODE_ADD_ELM because it makes switches not work.  It would be nice
+	// to find some other way to avoid hitting switches when adding elements.  Maybe doSwitch()
+	// should be smarter.
+	if (/*(tempMouseMode != MODE_ADD_ELM ) &&*/ doSwitch(e.getX(), e.getY()))
+	{
+	    // do this BEFORE we change the mouse mode to MODE_DRAG_POST!  Or else logic inputs
+	    // will add dots to the whole circuit when we click on them!
+            didSwitch = true;
+	    return;
+	}
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
 			mouseElm.getHandleGrabbedClose(e.getX(),e.getY(),POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
 		    !anySelectedButMouse() )
 		tempMouseMode = MODE_DRAG_POST;
-
-	if ((tempMouseMode != MODE_ADD_ELM ) && doSwitch(e.getX(), e.getY()))
-	{
-            didSwitch = true;
-	    return;
-	}
 
 
 	
@@ -4186,6 +4191,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new WireElm(x1, y1, x2, y2, f, st);
     	if (tint=='c')
     		return (CircuitElm) new CapacitorElm(x1, y1, x2, y2, f, st);   	
+    	if (tint==209)
+		return (CircuitElm) new PolarCapacitorElm(x1, y1, x2, y2, f, st);   	
     	if (tint=='l')
     		return (CircuitElm) new InductorElm(x1, y1, x2, y2, f, st);
     	if (tint=='v')
@@ -4348,7 +4355,9 @@ MouseOutHandler, MouseWheelHandler {
     	if (n=="WireElm")
     		return (CircuitElm) new WireElm(x1, y1);
     	if (n=="CapacitorElm")
-    		return (CircuitElm) new CapacitorElm(x1, y1);   	
+    		return (CircuitElm) new CapacitorElm(x1, y1);
+    	if (n=="PolarCapacitorElm")
+		return (CircuitElm) new PolarCapacitorElm(x1, y1);
     	if (n=="InductorElm")
     		return (CircuitElm) new InductorElm(x1, y1);
     	if (n=="DCVoltageElm")
@@ -4528,7 +4537,7 @@ MouseOutHandler, MouseWheelHandler {
     try {
     	l=window.navigator.language ;
     	if (l.length > 2) {
-    		l = l.slice(-2);
+    		l = l.slice(-2).toUpperCase();
     		return (l == "US" || l=="CA");
     	} else {
     		return 0;

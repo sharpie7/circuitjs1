@@ -59,7 +59,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.8.0js";
+	public static final String versionString="1.8.1js (pfalstad)";
 
 	static CirSim mysim;
 	

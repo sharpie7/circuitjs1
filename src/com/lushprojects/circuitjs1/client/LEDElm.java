@@ -74,9 +74,13 @@ package com.lushprojects.circuitjs1.client;
 	    int cr = 12;
 	    drawThickCircle(g, ledCenter.x, ledCenter.y, cr);
 	    cr -= 4;
-	    double w = 255*current/maxBrightnessCurrent;
+	    double w = current/maxBrightnessCurrent;
+	    if (w > 0)
+		w = 255*(1+.2*Math.log(w));
 	    if (w > 255)
 		w = 255;
+	    if (w < 0)
+		w = 0;
 	    Color cc = new Color((int) (colorR*w), (int) (colorG*w),
 				 (int) (colorB*w));
 	    g.setColor(cc);

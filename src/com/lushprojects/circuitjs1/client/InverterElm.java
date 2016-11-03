@@ -37,12 +37,12 @@ package com.lushprojects.circuitjs1.client;
 			      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    noDiagonal = true;
+	    slewRate = .5;
 	    highVoltage = 5;
 	    try {
 		slewRate = new Double (st.nextToken()).doubleValue();
 		highVoltage = new Double (st.nextToken()).doubleValue();
 	    } catch (Exception e) {
-		slewRate = .5;
 	    }
 	}
 	String dump() {
