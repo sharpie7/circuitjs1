@@ -23,6 +23,8 @@ package com.lushprojects.circuitjs1.client;
 //GWT conversion (c) 2015, 2016 by Iain Sharp
 
 //Version History
+//v1.9.0js 16-11-06 Iain Sharp
+// Add URL-shortener and Dropbox integration
 //v1.8.0js 16-10-30 Iain Sharp
 // Incorporate latest Falstad updates. Improvements to UI and bug fixes
 //v1.0.1 15-06-15
@@ -59,7 +61,10 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.8.1js (pfalstad)";
+	public static final String versionString="1.9.0js (isharp)";
+	
+	// Set to true if the server runs the shortrelay.php file in the same directory as the circuit simulator
+	public static final boolean shortRelaySupported = true;
 
 	static CirSim mysim;
 	

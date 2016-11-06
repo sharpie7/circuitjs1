@@ -18,7 +18,7 @@ The tools you will need to build the project are:
 * Eclipse - I am using the Kepler version.
 * Google plugin for Eclipse to provide GWT.
 
-This archive is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in development mode is done using the normal Eclipse run button or "Run As..." and choosing "Web Application (Super Dev Mode)" and then picking "Circuitjs1.html" as the initial page. Building for deployment is done using the Google button on the Eclipse taskbar and choosing "GWT Compile Project...".
+This archive is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in development mode is done using the normal Eclipse run button or "Run As..." and choosing "Web Application (Super Dev Mode)" and then picking "Circuitjs1.html" as the initial page. Building for deployment is done by selecting the project root node and using the Google button on the Eclipse taskbar and choosing "GWT Compile Project...".
 
 GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
 
@@ -27,11 +27,13 @@ GWT will build it's output in to the "war" directory. In the "war" directory the
 * "GWT Compile Project..." as explained above. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
 * Customize the header of the file "circuitjs1.html" to include your tracking, favicon etc.
 * Customize the "iframe.html" file to include any branding you want in the right hand panel of the application
+* The optional file "shortrelay.php" is a server-side script to act as a relay to a URL shortening service to avoid cross-origin problems with a purely client solution. You may want to customize this for your site. If you don't want to use this feature edit the circuitjs1.java file before compiling.
+* If you wish to enable dropbox loading and saving a dropbox API app-key is needed. This should be edited in to the circuitjs.html file where needed. If this is not included the relevant features will be disabled.
 
 
 The link for the full-page version of the application is now:
 `http://<your host>/<your path>/circuitjs1.html`
-(you can rename the "circuitjs1.html" file if you want too).
+(you can rename the "circuitjs1.html" file if you want too though you should also update "shortrelay.php" if you do).
 
 Just for reference the files should look like this
 
@@ -39,6 +41,7 @@ Just for reference the files should look like this
 -+ Directory containing the front page (eg "circuitjs")
   +- circuitjs.html - full page version of application
   +- iframe.html - see notes above
+  +- shortrelay.php - see notes above
   ++ circuitjs1 (directory)
    +- various files built by GWT
    +- circuits (directory, containing example circuits)
