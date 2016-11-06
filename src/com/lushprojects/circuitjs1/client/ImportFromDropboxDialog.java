@@ -29,27 +29,35 @@ public class ImportFromDropboxDialog extends DialogBox {
 	static CirSim sim;
 	
 	
+	static public void setSim(CirSim csim) {
+		sim=csim;
+	}
+	
 	static public void doLoadCallback(String s) {
 		sim.pushUndo();
 		sim.readSetup(s, true);
 	}
 	
 	
-	public final native void doDropboxImport(String link)  /*-{
+	static public final native void doDropboxImport(String link)  /*-{
+		try {
+			var xhr= new XMLHttpRequest();
+		  	xhr.addEventListener("load", function reqListener() { 
+	//			console.log(xhr.responseText);
+				var text = xhr.responseText;
+	       		@com.lushprojects.circuitjs1.client.ImportFromDropboxDialog::doLoadCallback(Ljava/lang/String;)(text);
+			});
+			xhr.open("GET", link, false);
+			xhr.send();
+		}
+		catch(err) {
 
-		var xhr= new XMLHttpRequest();
-	  	xhr.addEventListener("load", function reqListener() { 
-			console.log(xhr.responseText);
-			var text = xhr.responseText;
-       		@com.lushprojects.circuitjs1.client.ImportFromDropboxDialog::doLoadCallback(Ljava/lang/String;)(text);
-		});
-		xhr.open("GET", link, false);
-		xhr.send();
-		         
+		}
+
  	}-*/;
 
-	public void doImportDropboxLink(String link) {
-		if (link.indexOf("https://www.dropbox.com/") != 0)
+	static public void doImportDropboxLink(String link, Boolean validateIsDropbox) {
+		if (validateIsDropbox && link.indexOf("https://www.dropbox.com/") != 0)
 		{
 			Window.alert("Dropbox links must start https://www.dropbox.com/");
 			return;
@@ -63,7 +71,7 @@ public class ImportFromDropboxDialog extends DialogBox {
 
 	public ImportFromDropboxDialog(CirSim csim) {
 		super();
-		sim = csim;
+		setSim(csim);
 
 		vp=new VerticalPanel();
 		setWidget(vp);
@@ -98,7 +106,7 @@ public class ImportFromDropboxDialog extends DialogBox {
 		importButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
-				doImportDropboxLink(ta.getText());
+				doImportDropboxLink(ta.getText(), true);
 			}
 		});
 		hp.add(importButton);

@@ -39,18 +39,21 @@ public class ImportFromDropbox {
 
 		    // Required. Called when a user selects an item in the Chooser.
 		    success: function(files) {
-		        console.log("Here's the file link: " + files[0].link);
-		        if (files[0].bytes < 100000) {
-			        var xhr= new XMLHttpRequest();
-			        xhr.addEventListener("load", function reqListener() { 
-//			        	console.log(xhr.responseText);
-			        	var text = xhr.responseText;
-      					@com.lushprojects.circuitjs1.client.ImportFromDropbox::doLoadCallback(Ljava/lang/String;)(text);
-			        });
-		        }
-		        xhr.open("GET", files[0].link, false);
-		        xhr.send();
-		         
+		    	try {
+			        //console.log("Here's the file link: " + files[0].link);
+			        if (files[0].bytes < 100000) {
+				        var xhr= new XMLHttpRequest();
+				        xhr.addEventListener("load", function reqListener() { 
+	//			        	console.log(xhr.responseText);
+				        	var text = xhr.responseText;
+	      					@com.lushprojects.circuitjs1.client.ImportFromDropbox::doLoadCallback(Ljava/lang/String;)(text);
+				        });
+			        }
+			        xhr.open("GET", files[0].link, false);
+			        xhr.send();
+		    	}
+		        catch(err) {
+		        } 
 		    },
 		
 		    // Optional. Called when the user closes the dialog without selecting a file

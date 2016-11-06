@@ -335,6 +335,7 @@ MouseOutHandler, MouseWheelHandler {
     String startCircuit = null;
     String startLabel = null;
     String startCircuitText = null;
+    String startCircuitLink = null;
 //    String baseURL = "http://www.falstad.com/circuit/";
     
     public void init() {
@@ -378,6 +379,7 @@ MouseOutHandler, MouseWheelHandler {
 //			pause = Integer.parseInt(param);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
+		startCircuitLink = qp.getValue("startCircuitLink");
 		euroRes = qp.getBooleanValue("euroResistors", false);
 		usRes = qp.getBooleanValue("usResistors",  false);
 //		useFrameStr  = qp.getValue("useFrame");
@@ -660,17 +662,25 @@ MouseOutHandler, MouseWheelHandler {
 
 	
 	if (startCircuitText != null) {
-	    getSetupList(false);
-	    readSetup(startCircuitText, false);
-	} else {
-	    readSetup(null, 0, false, false);
-	    if (stopMessage == null && startCircuit != null) {
 		getSetupList(false);
-		readSetupFile(startCircuit, startLabel, true);
-	    }
-	    else
-		getSetupList(true);
+		readSetup(startCircuitText, false);
+	} else {
+		if (stopMessage == null && startCircuitLink!=null) {
+			readSetup(null, 0, false, false);
+			getSetupList(false);
+			ImportFromDropboxDialog.setSim(this);
+			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
+		} else {
+			readSetup(null, 0, false, false);
+			if (stopMessage == null && startCircuit != null) {
+				getSetupList(false);
+				readSetupFile(startCircuit, startLabel, true);
+			}
+			else
+				getSetupList(true);
+		}
 	}
+
 		
 
 	
