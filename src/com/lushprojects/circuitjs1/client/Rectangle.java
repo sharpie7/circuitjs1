@@ -56,6 +56,10 @@ public class Rectangle {
         this.height = height;
     }
     
+    public void translate(int dx, int dy) {
+        x += dx;
+        y += dy;
+    }
     
     public boolean contains(int X, int Y) {
         int w = this.width;
@@ -77,10 +81,12 @@ public class Rectangle {
                 (h < y || h > Y));
     }
     
+    /*
     public void move(int x, int y) {
         this.x = x;
         this.y = y;
     }
+    */
     
     public boolean intersects(Rectangle r) {
         int tw = this.width;
@@ -144,6 +150,8 @@ public class Rectangle {
         return new Rectangle(tx1, ty1, (int) tx2, (int) ty2);
     }
     
+    public String toString() { return "Rect(" + x + "," + y + "," + width + "," + height + ")"; }
+
     
     public boolean equals(Object obj) {
         if (obj instanceof Rectangle) {
