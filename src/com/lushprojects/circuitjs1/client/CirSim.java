@@ -1078,6 +1078,7 @@ MouseOutHandler, MouseWheelHandler {
 //	if (winSize == null || winSize.width == 0)
 //	    return;
 	mystarttime=System.currentTimeMillis();
+	boolean didAnalyze = analyzeFlag;
 	if (analyzeFlag) {
 	    analyzeCircuit();
 	    analyzeFlag = false;
@@ -1103,7 +1104,7 @@ MouseOutHandler, MouseWheelHandler {
 	myrunstarttime=System.currentTimeMillis();
 	if (simRunning) {
 	    try {
-		runCircuit();
+		runCircuit(didAnalyze);
 	    } catch (Exception e) {
 		console("exception in runCircuit " + e);
 		e.printStackTrace();
@@ -2179,7 +2180,7 @@ MouseOutHandler, MouseWheelHandler {
     
     boolean converged;
     int subIterations;
-    void runCircuit() {
+    void runCircuit(boolean didAnalyze) {
 	if (circuitMatrix == null || elmList.size() == 0) {
 	    circuitMatrix = null;
 	    return;
@@ -2195,7 +2196,10 @@ MouseOutHandler, MouseWheelHandler {
 	    lastIterTime = tm;
 	    return;
 	}
-	if (1000 >= steprate*(tm-lastIterTime))
+	
+	// Check if we don't need to run simulation (for very slow simulation speeds).
+	// If the circuit changed, do at least one iteration to make sure everything is consistent.
+	if (1000 >= steprate*(tm-lastIterTime) && !didAnalyze)
 	    return;
 	for (iter = 1; ; iter++) {
 	    int i, j, k, subiter;
