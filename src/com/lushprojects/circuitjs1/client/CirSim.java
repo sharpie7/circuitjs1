@@ -103,6 +103,7 @@ MouseOutHandler, MouseWheelHandler {
     
     public static final int sourceRadius = 7;
     public static final double freqMult = 3.14159265*2*4;
+
     
     
     
@@ -119,6 +120,8 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
     	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem;
+    MenuItem importFromDropboxItem;
+    MenuItem exportToDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
     MenuBar optionsMenuBar;
@@ -239,8 +242,11 @@ MouseOutHandler, MouseWheelHandler {
     static ExportAsTextDialog exportAsTextDialog;
     static ExportAsLocalFileDialog exportAsLocalFileDialog;
     static ImportFromTextDialog importFromTextDialog;
+    static ImportFromDropbox importFromDropbox;
+    static ExportToDropbox exportToDropbox;
     static ScrollValuePopup scrollValuePopup;
     static AboutBox aboutBox;
+    static ImportFromDropboxDialog importFromDropboxDialog;
 //    Class dumpTypes[], shortcuts[];
     String shortcuts[];
     static String muString = "u";
@@ -330,6 +336,7 @@ MouseOutHandler, MouseWheelHandler {
     String startCircuit = null;
     String startLabel = null;
     String startCircuitText = null;
+    String startCircuitLink = null;
 //    String baseURL = "http://www.falstad.com/circuit/";
     
     public void init() {
@@ -373,6 +380,7 @@ MouseOutHandler, MouseWheelHandler {
 //			pause = Integer.parseInt(param);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
+		startCircuitLink = qp.getValue("startCircuitLink");
 		euroRes = qp.getBooleanValue("euroResistors", false);
 		usRes = qp.getBooleanValue("usResistors",  false);
 //		useFrameStr  = qp.getValue("useFrame");
@@ -415,13 +423,18 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(importFromLocalFileItem);
 	  importFromTextItem = new MenuItem("Import From Text", new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
-	  exportAsUrlItem = new MenuItem("Export as Link", new MyCommand("file","exportasurl"));
+	  importFromDropboxItem = new MenuItem("Import From Dropbox", new MyCommand("file", "importfromdropbox"));
+	  fileMenuBar.addItem(importFromDropboxItem); 
+	  exportAsUrlItem = new MenuItem("Export As Link", new MyCommand("file","exportasurl"));
 	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsLocalFileItem = new MenuItem("Export as Local File", new MyCommand("file","exportaslocalfile"));
+	  exportAsLocalFileItem = new MenuItem("Export As Local File", new MyCommand("file","exportaslocalfile"));
 	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	  fileMenuBar.addItem(exportAsLocalFileItem);
-	  exportAsTextItem = new MenuItem("Export as Text", new MyCommand("file","exportastext"));
+	  exportAsTextItem = new MenuItem("Export As Text", new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
+	  exportToDropboxItem = new MenuItem("Export To Dropbox", new MyCommand("file", "exporttodropbox"));
+	  exportToDropboxItem.setEnabled(ExportToDropbox.isSupported());
+	  fileMenuBar.addItem(exportToDropboxItem);
 	  fileMenuBar.addSeparator();
 	  aboutItem=new MenuItem("About",(Command)null);
 	  fileMenuBar.addItem(aboutItem);
@@ -652,17 +665,25 @@ MouseOutHandler, MouseWheelHandler {
 
 	
 	if (startCircuitText != null) {
-	    getSetupList(false);
-	    readSetup(startCircuitText, false);
-	} else {
-	    readSetup(null, 0, false, false);
-	    if (stopMessage == null && startCircuit != null) {
 		getSetupList(false);
-		readSetupFile(startCircuit, startLabel, true);
-	    }
-	    else
-		getSetupList(true);
+		readSetup(startCircuitText, false);
+	} else {
+		if (stopMessage == null && startCircuitLink!=null) {
+			readSetup(null, 0, false, false);
+			getSetupList(false);
+			ImportFromDropboxDialog.setSim(this);
+			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
+		} else {
+			readSetup(null, 0, false, false);
+			if (stopMessage == null && startCircuit != null) {
+				getSetupList(false);
+				readSetupFile(startCircuit, startLabel, true);
+			}
+			else
+				getSetupList(true);
+		}
 	}
+
 		
 
 	
@@ -1166,7 +1187,7 @@ MouseOutHandler, MouseWheelHandler {
 		int bb = 0, j;
 		CircuitNodeLink cnl = cn.links.elementAt(0);
 		for (j = 0; j != elmList.size(); j++)
-		{ // TODO: (hausen) see if this change does not break stuff
+		{ // TO-DO: (hausen) see if this change does not break stuff
 		    CircuitElm ce = getElm(j);
 		    if ( ce instanceof GraphicElm )
 			continue;
@@ -2288,21 +2309,7 @@ MouseOutHandler, MouseWheelHandler {
 
     
     
-    void editFuncPoint(int x, int y) {
-	// XXX
-//	cv.repaint(pause);
-    }
 
-//    public void componentHidden(ComponentEvent e){}
-//    public void componentMoved(ComponentEvent e){}
-//    public void componentShown(ComponentEvent e) {
-//	//cv.repaint();
-//    }
-
-//    public void componentResized(ComponentEvent e) {
-////	handleResize();
-//	//cv.repaint(100);
-//    }
     
     public void resetAction(){
     	int i;
@@ -2316,7 +2323,7 @@ MouseOutHandler, MouseWheelHandler {
     	setSimRunning(true);
     }
     
-    // IES - remove interaction
+    
     public void menuPerformed(String menu, String item) {
     	if (item=="about")
     		aboutBox = new AboutBox(circuitjs1.versionString);
@@ -2327,6 +2334,9 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="importfromtext") {
     		importFromTextDialog = new ImportFromTextDialog(this);
     	}
+    	if (item=="importfromdropbox") {
+    		importFromDropboxDialog = new ImportFromDropboxDialog(this);
+    	}
     	if (item=="exportasurl") {
     		doExportAsUrl();
     	}
@@ -2334,6 +2344,9 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
+    	if (item=="exporttodropbox")
+    		doExportToDropbox();
+
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
     	if (menu=="options" && item=="other")
@@ -2548,25 +2561,11 @@ MouseOutHandler, MouseWheelHandler {
     	editDialog.show();
     }
     
-// IES - remove import export
-    /*
-    void doImport() {
-	if (impDialog == null)
-	    impDialog = ImportExportDialogFactory.Create(this,
-		ImportExportDialog.Action.IMPORT);
-//	    impDialog = new ImportExportClipboardDialog(this,
-//		ImportExportDialog.Action.IMPORT);
-	pushUndo();
-	impDialog.execute();
-    }
-    */
+
 
     void doExportAsUrl()
     {
-    	String start[] = Location.getHref().split("\\?");
     	String dump = dumpCircuit();
-    	dump=dump.replace(' ', '+');
-	    dump = start[0] + "?cct=" + URL.encode(dump);
 //	if (expDialog == null) {
 //	    expDialog = ImportExportDialogFactory.Create(this,
 //		 ImportExportDialog.Action.EXPORT);
@@ -2588,11 +2587,19 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     
+    
     void doExportAsLocalFile() {
     	String dump = dumpCircuit();
     	exportAsLocalFileDialog = new ExportAsLocalFileDialog(dump);
     	exportAsLocalFileDialog.show();
     }
+    
+    void doExportToDropbox() {
+    	String dump = dumpCircuit();
+    	exportToDropbox = new ExportToDropbox(dump);
+    }
+    
+
     
     String dumpCircuit() {
 	int i;
@@ -3924,6 +3931,8 @@ MouseOutHandler, MouseWheelHandler {
     		return true;
     	if (importFromTextDialog !=null && importFromTextDialog.isShowing())
     		return true;
+    	if (importFromDropboxDialog != null && importFromDropboxDialog.isShowing())
+    		return true;
     	return false;
     }
     
@@ -4533,12 +4542,7 @@ MouseOutHandler, MouseWheelHandler {
 	    elmList.get(i).updateModels();
     }
     
-    native void jsConsoleLog(String message) /*-{
-    try {
-        console.log(message);
-    } catch (e) {
-    }
-    }-*/;
+
     
     
     native boolean weAreInUS() /*-{
