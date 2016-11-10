@@ -387,14 +387,21 @@ MouseOutHandler, MouseWheelHandler {
 //		String x = applet.getParameter("whiteBackground");
 //		if (x != null && x.equalsIgnoreCase("true"))
 //			printable = true;
-		printable = qp.getBooleanValue("whiteBackground", false);
+		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
 //		x = applet.getParameter("conventionalCurrent");
 //		if (x != null && x.equalsIgnoreCase("true"))
 //			convention = false;
-		convention = qp.getBooleanValue("conventionalCurrent", true);
+		convention = qp.getBooleanValue("conventionalCurrent",
+			getOptionFromStorage("conventionalCurrent", true));
 	} catch (Exception e) { }
 	
-
+	boolean euroSetting = false;
+	if (euroRes)
+	    euroSetting = true;
+	else if (usRes)
+	    euroSetting = false;
+	else
+	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
 	
 	String os = Navigator.getPlatform();
 	isMac = (os.toLowerCase().contains("mac"));
@@ -489,7 +496,7 @@ MouseOutHandler, MouseWheelHandler {
 	sn=edithtml+"Select All</div>Ctrl-A";
 	m.addItem(selectAllItem = new MenuItem(SafeHtmlUtils.fromTrustedString(sn), new MyCommand("edit","selectAll")));
 	//selectAllItem.setShortcut(new MenuShortcut(KeyEvent.VK_A));
-	m.addItem(new MenuItem("Centre Circuit", new MyCommand("edit", "centrecircuit")));
+	m.addItem(new MenuItem(weAreInUS() ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	menuBar.addItem("Edit",m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -529,23 +536,32 @@ MouseOutHandler, MouseWheelHandler {
 				setGrid();
 			}
 	}));
-	m.addItem(crossHairCheckItem = new CheckboxMenuItem("Show Cursor Cross Hairs"));
-	m.addItem(euroResistorCheckItem = new CheckboxMenuItem("European Resistors"));
-	if (euroRes) 
-		euroResistorCheckItem.setState(true);
-	else if (usRes)
-		euroResistorCheckItem.setState(false);
-	else
-		euroResistorCheckItem.setState(!weAreInUS());
+	m.addItem(crossHairCheckItem = new CheckboxMenuItem("Show Cursor Cross Hairs",
+		new Command() { public void execute(){
+		    setOptionInStorage("crossHair", crossHairCheckItem.getState());
+		}
+	}));
+	crossHairCheckItem.setState(getOptionFromStorage("crossHair", false));
+	m.addItem(euroResistorCheckItem = new CheckboxMenuItem("European Resistors",
+		new Command() { public void execute(){
+		    setOptionInStorage("euroResistors", euroResistorCheckItem.getState());
+		}
+	}));
+	euroResistorCheckItem.setState(euroSetting);
 	m.addItem(printableCheckItem = new CheckboxMenuItem("White Background",
 			new Command() { public void execute(){
 				int i;
 				for (i=0;i<scopeCount;i++)
 					scopes[i].setRect(scopes[i].rect);
+				setOptionInStorage("whiteBackground", printableCheckItem.getState());
 			}
 	}));
 	printableCheckItem.setState(printable);
-	m.addItem(conventionCheckItem = new CheckboxMenuItem("Conventional Current Motion"));
+	m.addItem(conventionCheckItem = new CheckboxMenuItem("Conventional Current Motion",
+		new Command() { public void execute(){
+		    setOptionInStorage("conventionalCurrent", conventionCheckItem.getState());
+		}
+	}));
 	conventionCheckItem.setState(convention);
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem("Other Options...",
 			new MyCommand("options","other")));
@@ -718,6 +734,23 @@ MouseOutHandler, MouseWheelHandler {
 
     }
 
+    boolean getOptionFromStorage(String key, boolean val) {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return val;
+        String s = stor.getItem(key);
+        if (s == null)
+            return val;
+        return s == "true";
+    }
+
+    void setOptionInStorage(String key, boolean val) {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        stor.setItem(key,  val ? "true" : "false");
+    }
+    
     // install touch handlers
     // don't feel like rewriting this in java.  Anyway, java doesn't let us create mouse
     // events and dispatch them.
