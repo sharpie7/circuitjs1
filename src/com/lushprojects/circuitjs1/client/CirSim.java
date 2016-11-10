@@ -1113,9 +1113,6 @@ MouseOutHandler, MouseWheelHandler {
 	    } catch (Exception e) {
 		console("exception in runCircuit " + e);
 		e.printStackTrace();
-		if (!simRunning)
-		    analyzeFlag = true;
-//		cv.repaint();
 		return;
 	    }
 	 myruntime+=System.currentTimeMillis()-myrunstarttime;

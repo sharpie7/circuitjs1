@@ -129,4 +129,12 @@ class DiodeElm extends CircuitElm {
 	setup();
     }
     int getShortcut() { return 'd'; }
+    
+    void stepFinished() {
+        // stop for huge currents that make simulator act weird
+        if (Math.abs(current) > 1e12)
+            sim.stop("max current exceeded", this);
+    }
+
+
 }

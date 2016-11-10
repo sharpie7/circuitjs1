@@ -302,5 +302,12 @@ import com.google.gwt.i18n.client.NumberFormat;
 		setPoints();
 	    }
 	}
+	
+        void stepFinished() {
+            // stop for huge currents that make simulator act weird
+            if (Math.abs(ic) > 1e12 || Math.abs(ib) > 1e12)
+                sim.stop("max current exceeded", this);
+        }
+
 	boolean canViewInScope() { return true; }
     }
