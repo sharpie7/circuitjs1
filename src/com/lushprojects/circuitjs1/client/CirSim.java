@@ -481,6 +481,10 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(pasteItem = new MenuItem(SafeHtmlUtils.fromTrustedString(sn), new MyCommand("edit","paste")));
 	//pasteItem.setShortcut(new MenuShortcut(KeyEvent.VK_V));
 	pasteItem.setEnabled(false);
+	
+	sn=edithtml+"Duplicate</div>";
+	m.addItem(new MenuItem(SafeHtmlUtils.fromTrustedString(sn), new MyCommand("edit","duplicate")));
+	
 	m.addSeparator();
 	sn=edithtml+"Select All</div>Ctrl-A";
 	m.addItem(selectAllItem = new MenuItem(SafeHtmlUtils.fromTrustedString(sn), new MyCommand("edit","selectAll")));
@@ -658,6 +662,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem("Cut",new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem("Copy",new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem("Delete",new MyCommand("elm","delete")));
+	elmMenuBar.addItem(                    new MenuItem("Duplicate",new MyCommand("elm","duplicate")));
 //	main.add(elmMenu);
 	
 	scopeMenuBar = buildScopeMenu(false);
@@ -2400,7 +2405,12 @@ MouseOutHandler, MouseWheelHandler {
     		doCopy();
     	}
     	if (item=="paste")
-    		doPaste();
+    		doPaste(null);
+    	if (item=="duplicate") {
+		if (menu!="elm")
+			menuElm = null;
+    	    	doDuplicate();
+    	}
     	if (item=="selectAll")
     		doSelectAll();
     	//	if (e.getSource() == exitItem) {
@@ -3843,7 +3853,19 @@ MouseOutHandler, MouseWheelHandler {
     	pasteItem.setEnabled(clipboard != null && clipboard.length() > 0);
     }
 
-    void doPaste() {
+    void doDuplicate() {
+    	int i;
+    	String s = "";
+    	setMenuSelection();
+    	for (i = elmList.size()-1; i >= 0; i--) {
+    		CircuitElm ce = getElm(i);
+    		if (ce.isSelected())
+    			s += ce.dump() + "\n";
+    	}
+    	doPaste(s);
+    }
+    
+    void doPaste(String dump) {
     	pushUndo();
     	clearSelection();
     	int i;
@@ -3857,8 +3879,12 @@ MouseOutHandler, MouseWheelHandler {
     			oldbb = bb;
     	}
     	int oldsz = elmList.size();
-    	readClipboardFromStorage();
-    	readSetup(clipboard, true, false);
+    	if (dump != null)
+    	    readSetup(dump, true, false);
+    	else {
+    	    readClipboardFromStorage();
+    	    readSetup(clipboard, true, false);
+    	}
 
     	// select new items
     	Rectangle newbb = null;
