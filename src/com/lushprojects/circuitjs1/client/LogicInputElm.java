@@ -75,6 +75,11 @@ package com.lushprojects.circuitjs1.client;
 	    drawPosts(g);
 	    g.setFont(oldf);
 	}
+	
+	Rectangle getSwitchRect() {
+	    return new Rectangle(x2-10, y2-10, 20, 20);
+	}	
+
 	void setCurrent(int vs, double c) { current = -c; }
 	void stamp() {
 	    double v = (position == 0) ? loV : hiV;

@@ -153,7 +153,7 @@ import com.google.gwt.i18n.client.NumberFormat;
             s = myGetUnitText(getCurrent(), "A",false);
             break;
         case AM_RMS:
-            s = myGetUnitText(rmsI, "Arms",false);
+            s = myGetUnitText(rmsI, "A(rms)",false);
             break;
         }
 

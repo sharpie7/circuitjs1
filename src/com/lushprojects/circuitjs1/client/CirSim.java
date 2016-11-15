@@ -32,6 +32,7 @@ import java.util.Random;
 import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -259,7 +260,7 @@ MouseOutHandler, MouseWheelHandler {
 	MenuBar menuBar;
 	MenuBar fileMenuBar;
 	VerticalPanel verticalPanel;
-	HorizontalPanel buttonPanel;
+	CellPanel buttonPanel;
 	private boolean mouseDragging;
 	double scopeHeightFraction=0.2;
 	
@@ -440,11 +441,20 @@ MouseOutHandler, MouseWheelHandler {
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
 //	  fileMenuBar.addItem("Exit", cmd);
-	  
+
+	  int width=(int)RootLayoutPanel.get().getOffsetWidth();
+	  VERTICALPANELWIDTH = width/5;
+	  if (VERTICALPANELWIDTH > 166)
+	      VERTICALPANELWIDTH = 166;
+	  if (VERTICALPANELWIDTH < 128)
+	      VERTICALPANELWIDTH = 128;
+
 	  menuBar = new MenuBar();
 	  menuBar.addItem("File", fileMenuBar);
 	  verticalPanel=new VerticalPanel();
-	  buttonPanel=new HorizontalPanel();
+	  
+	  // make buttons side by side if there's room
+	  buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 	  
 
 	  
@@ -549,13 +559,6 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar);
 
 	  
-    	int width=(int)RootLayoutPanel.get().getOffsetWidth();
-    	VERTICALPANELWIDTH = width/5;
-    	if (VERTICALPANELWIDTH > 166)
-    	    VERTICALPANELWIDTH = 166;
-    	if (VERTICALPANELWIDTH < 128)
-    	    VERTICALPANELWIDTH = 128;
-
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
@@ -573,7 +576,7 @@ MouseOutHandler, MouseWheelHandler {
 	    backcontext=backcv.getContext2d();
 	    setCanvasSize();
 		layoutPanel.add(cv);
-		verticalPanel.add(new Label("Simulation Controls"));
+//		verticalPanel.add(new Label("Simulation Controls"));
 		verticalPanel.add(buttonPanel);
 		 buttonPanel.add(resetButton = new Button("Reset"));
 		 resetButton.addClickHandler(new ClickHandler() {
@@ -1244,6 +1247,7 @@ MouseOutHandler, MouseWheelHandler {
 		
 	    } else {
 	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
+	    	info[1] = "time step = " + CircuitElm.getUnitText(timeStep, "s");
 	    }
 	    if (hintType != -1) {
 		for (i = 0; info[i] != null; i++)
@@ -1286,8 +1290,10 @@ MouseOutHandler, MouseWheelHandler {
 	if (crossHairCheckItem.getState() && mouseCursorX>=0
 			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
 		g.setColor(Color.gray);
-		g.drawLine(mouseCursorX, 0, mouseCursorX, circuitArea.height);
-		g.drawLine(0,mouseCursorY, circuitArea.width, mouseCursorY);
+		int x = snapGrid(mouseCursorX);
+		int y = snapGrid(mouseCursorY);
+		g.drawLine(x, 0, x, circuitArea.height);
+		g.drawLine(0,y, circuitArea.width, y);
 	}
 	
 
@@ -2966,6 +2972,8 @@ MouseOutHandler, MouseWheelHandler {
 		if (mouseElm == null || !(mouseElm instanceof SwitchElm))
 			return false;
 		SwitchElm se = (SwitchElm) mouseElm;
+		if (!se.getSwitchRect().contains(x, y))
+		    return false;
 		se.toggle();
 		if (se.momentary)
 			heldSwitchElm = se;
