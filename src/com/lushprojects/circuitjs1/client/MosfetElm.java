@@ -28,9 +28,12 @@ package com.lushprojects.circuitjs1.client;
 	int FLAG_SHOWVT = 2;
 	int FLAG_DIGITAL = 4;
 	int FLAG_FLIP = 8;
+	int FLAG_HIDE_BULK = 16;
+	int FLAGS_GLOBAL = (FLAG_HIDE_BULK|FLAG_DIGITAL);
 	double vt;
 	// beta = 1/(RdsON*(Vgs-Vt))
 	double beta;
+	static int globalFlags;
 	MosfetElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
 	    pnp = (pnpflag) ? -1 : 1;
@@ -50,11 +53,13 @@ package com.lushprojects.circuitjs1.client;
 		vt = new Double(st.nextToken()).doubleValue();
 		beta = new Double(st.nextToken()).doubleValue();
 	    } catch (Exception e) {}
+	    globalFlags = flags & (FLAGS_GLOBAL);
 	}
 	double getDefaultThreshold() { return 1.5; }
 	double getDefaultBeta() { return .02; }
 	boolean nonLinear() { return true; }
 	boolean drawDigital() { return (flags & FLAG_DIGITAL) != 0; }
+	boolean showBulk() { return (flags & (FLAG_DIGITAL|FLAG_HIDE_BULK)) == 0; }
 	void reset() {
 	    lastv1 = lastv2 = volts[0] = volts[1] = volts[2] = curcount = 0;
 	}
@@ -65,37 +70,60 @@ package com.lushprojects.circuitjs1.client;
 	final int hs = 16;
 	
 	void draw(Graphics g) {
+	    // pick up global flags changes
+	    if ((flags & FLAGS_GLOBAL) != globalFlags)
+		setPoints();
+	    
 		setBbox(point1, point2, hs);
+		
+		// draw source/drain terminals
 		setVoltageColor(g, volts[1]);
 		drawThickLine(g, src[0], src[1]);
 		setVoltageColor(g, volts[2]);
 		drawThickLine(g, drn[0], drn[1]);
+		
+		// draw line connecting source and drain
 		int segments = 6;
 		int i;
 		setPowerColor(g, true);
 		double segf = 1./segments;
+		boolean enhancement = vt > 0 && showBulk();
 		for (i = 0; i != segments; i++) {
-			double v = volts[1]+(volts[2]-volts[1])*i/segments;
-			setVoltageColor(g, v);
-			interpPoint(src[1], drn[1], ps1, i*segf);
-			interpPoint(src[1], drn[1], ps2, (i+1)*segf);
-			drawThickLine(g, ps1, ps2);
+		    if ((i == 1 || i == 4) && enhancement) continue;
+		    double v = volts[1]+(volts[2]-volts[1])*i/segments;
+		    setVoltageColor(g, v);
+		    interpPoint(src[1], drn[1], ps1, i*segf);
+		    interpPoint(src[1], drn[1], ps2, (i+1)*segf);
+		    drawThickLine(g, ps1, ps2);
 		}
+		
+		// draw little extensions of that line
 		setVoltageColor(g, volts[1]);
 		drawThickLine(g, src[1], src[2]);
 		setVoltageColor(g, volts[2]);
 		drawThickLine(g, drn[1], drn[2]);
+		
+		if (showBulk()) {
+		    setVoltageColor(g, pnp == -1 ? volts[2] : volts[1]);
+		    drawThickLine(g, pnp == -1 ? drn[0] : src[0], body[0]);
+		    drawThickLine(g, body[0], body[1]);
+		}
+		
+		// draw arrow
 		if (!drawDigital()) {
-			setVoltageColor(g, pnp == 1 ? volts[1] : volts[2]);
+		    setVoltageColor(g, pnp == -1 ? volts[2] : volts[1]);
 			g.fillPolygon(arrowPoly);
 		}
 		if (sim.powerCheckItem.getState())
 			g.setColor(Color.gray);
+		
+		// draw gate
 		setVoltageColor(g, volts[0]);
 		drawThickLine(g, point1, gate[1]);
 		drawThickLine(g, gate[0], gate[2]);
 		if (drawDigital() && pnp == -1)
 			drawThickCircle(g, pcircle.x, pcircle.y, pcircler);
+		
 		if ((flags & FLAG_SHOWVT) != 0) {
 			String s = "" + (vt*pnp);
 			g.setColor(whiteColor);
@@ -124,12 +152,16 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() { return 3; }
 
 	int pcircler;
-	Point src[], drn[], gate[], pcircle;
+	Point src[], drn[], gate[], body[], pcircle;
 	Polygon arrowPoly;
 	
 	void setPoints() {
 	    super.setPoints();
 
+	    // these two flags apply to all mosfets
+	    flags &= ~FLAGS_GLOBAL;
+	    flags |= globalFlags;
+	    
 	    // find the coordinates of the various points we need to draw
 	    // the MOSFET.
 	    int hs2 = hs*dsign;
@@ -145,11 +177,24 @@ package com.lushprojects.circuitjs1.client;
 	    interpPoint2(point1, point2, gate[0], gate[2], 1-28/dn, hs2/2); // was 1-20/dn
 	    interpPoint(gate[0], gate[2], gate[1], .5);
 
+	    if (showBulk()) {
+		body = newPointArray(2);
+		interpPoint(src[0], drn[0], body[0], .5);
+		interpPoint(src[1], drn[1], body[1], .5);
+	    }
+	    
 	    if (!drawDigital()) {
-		if (pnp == 1)
-		    arrowPoly = calcArrow(src[1], src[0], 10, 4);
-		else
-		    arrowPoly = calcArrow(drn[0], drn[1], 12, 5);
+		if (pnp == 1) {
+		    if (!showBulk())
+			arrowPoly = calcArrow(src[1], src[0], 10, 4);
+		    else
+			arrowPoly = calcArrow(body[0], body[1], 12, 5);
+		} else {
+		    if (!showBulk())
+			arrowPoly = calcArrow(drn[0], drn[1], 12, 5);
+		    else
+			arrowPoly = calcArrow(body[1], body[0], 12, 5);
+		}
 	    } else if (pnp == -1) {
 		interpPoint(point1, point2, gate[1], 1-36/dn);
 		int dist = (dsign < 0) ? 32 : 31;
@@ -274,6 +319,11 @@ package com.lushprojects.circuitjs1.client;
 		}
 		if (n == 3) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Show Bulk", showBulk());
+			return ei;
+		}
+		if (n == 4) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Swap D/S", (flags & FLAG_FLIP) != 0);
 			return ei;
 		}
@@ -286,11 +336,16 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 1)
 			beta = ei.value;	
 		if (n == 2) {
-			flags = (ei.checkbox.getState()) ? (flags | FLAG_DIGITAL) :
-				(flags & ~FLAG_DIGITAL);
-			setPoints();
+		    globalFlags = (ei.checkbox.getState()) ? (globalFlags|FLAG_DIGITAL) :
+				(globalFlags & ~FLAG_DIGITAL);
+		    setPoints();
 		}
 		if (n == 3) {
+		    globalFlags = (!ei.checkbox.getState()) ? (globalFlags|FLAG_HIDE_BULK) :
+				(globalFlags & ~FLAG_HIDE_BULK);
+		    setPoints();
+		}
+		if (n == 4) {
 			flags = (ei.checkbox.getState()) ? (flags | FLAG_FLIP) :
 				(flags & ~FLAG_FLIP);
 			setPoints();

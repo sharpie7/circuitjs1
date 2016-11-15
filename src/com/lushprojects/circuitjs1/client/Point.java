@@ -42,4 +42,7 @@ public class Point {
 		 x=p.x;
 		 y=p.y;
 	 }
+	 
+         public String toString() { return "Point(" + x + "," + y + ")"; }
+
 }

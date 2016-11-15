@@ -86,6 +86,11 @@ package com.lushprojects.circuitjs1.client;
 		drawDots(g, swpoles[position], swposts[position], curcount);
 	    drawPosts(g);
 	}
+	
+	Rectangle getSwitchRect() {
+	    return new Rectangle(lead1).union(new Rectangle(swpoles[0])).union(new Rectangle(swpoles[1]));
+	}	
+
 	Point getPost(int n) {
 	    return (n == 0) ? point1 : swposts[n-1];
 	}

@@ -76,7 +76,7 @@ class TestPointElm extends CircuitElm {
         case TP_VOL:
             return "V";
         case TP_RMS:
-            return "Vrms";
+            return "V(rms)";
         case TP_MAX:
             return "Vmax";
         case TP_MIN:
@@ -113,7 +113,7 @@ class TestPointElm extends CircuitElm {
                 s = myGetUnitText(volts[0],"V",false);
                 break;
             case TP_RMS:
-                s = myGetUnitText(rmsV,"Vrms",false);
+                s = myGetUnitText(rmsV,"V(rms)",false);
                 break;
             case TP_MAX:
                 s = myGetUnitText(lastMaxV,"Vpk",false);
@@ -275,7 +275,7 @@ class TestPointElm extends CircuitElm {
                 arr[1] = "V = " + myGetUnitText(volts[0], "V", false);
                 break;
             case TP_RMS:
-                arr[1] = "Vrms = " + myGetUnitText(rmsV, "Vrms", false);
+                arr[1] = "V(rms) = " + myGetUnitText(rmsV, "V", false);
                 break;
             case TP_MAX:
                 arr[1] = "Vmax = " + myGetUnitText(lastMaxV, "Vpk", false);
