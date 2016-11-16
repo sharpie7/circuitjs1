@@ -1276,12 +1276,12 @@ MouseOutHandler, MouseWheelHandler {
 		else
 		    info[0] = "V = " +
 			CircuitElm.getUnitText(mouseElm.getPostVoltage(mousePost), "V");
-		 //shownodes
+		/* //shownodes
 		for (i = 0; i != mouseElm.getPostCount(); i++)
 		    info[0] += " " + mouseElm.nodes[i];
 		if (mouseElm.getVoltageSourceCount() > 0)
 		    info[0] += ";" + (mouseElm.getVoltageSource()+nodeList.size());
-		
+		*/
 		
 	    } else {
 	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
