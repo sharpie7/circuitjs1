@@ -100,6 +100,14 @@ package com.lushprojects.circuitjs1.client;
 	    drawPosts(g);
 	}
 	
+	double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x && ya == y)
+		return -current;
+	    if (xa == swposts[position].x && ya == swposts[position].y)
+		return current;
+	    return 0;
+	}
+
 	Rectangle getSwitchRect() {
 	    return new Rectangle(lead1).union(new Rectangle(swpoles[0])).union(new Rectangle(swpoles[throwCount-1]));
 	}	

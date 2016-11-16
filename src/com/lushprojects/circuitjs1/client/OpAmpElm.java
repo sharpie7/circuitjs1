@@ -129,7 +129,7 @@ package com.lushprojects.circuitjs1.client;
 	    // convergence easier.  so we hide that here.
 	    double vo = Math.max(Math.min(volts[2], maxOut), minOut);
 	    arr[3] = "Vout = " + getVoltageText(vo);
-	    arr[4] = "Iout = " + getCurrentText(getCurrent());
+	    arr[4] = "Iout = " + getCurrentText(-current);
 	    arr[5] = "range = " + getVoltageText(minOut) + " to " +
 		getVoltageText(maxOut);
 	}
@@ -191,5 +191,10 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 1)
 		minOut = ei.value;
 	}
-	 int getShortcut() { return 'a'; }
+	int getShortcut() { return 'a'; }
+	@Override double getCurrentIntoPoint(int xa, int ya) { 
+	    if (xa == x2 && ya == y2)
+		return -current;
+	    return 0;
+	}
     }

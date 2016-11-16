@@ -95,6 +95,7 @@ class SwitchElm extends CircuitElm {
 	if (position == 1)
 	    current = 0;
     }
+    
     void stamp() {
 	if (position == 0)
 	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource, 0);

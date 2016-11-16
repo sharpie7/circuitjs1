@@ -310,4 +310,11 @@ import com.google.gwt.i18n.client.NumberFormat;
         }
 
 	boolean canViewInScope() { return true; }
+	double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x && ya == y)
+		return -ib;
+	    if (xa == coll[0].x && ya == coll[0].y)
+		return -ic;
+	    return -ie;
+	}
     }

@@ -109,5 +109,14 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
 	arr[0] = "analog switch (SPDT)";
 	arr[1] = "I = " + getCurrentDText(getCurrent());
     }
+    
+    double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == x && ya == y)
+	    return -current;
+	int position = (open) ? 1 : 0;
+	if (xa == swposts[position].x && ya == swposts[position].y)
+	    return current;
+	return 0;
+    }	
 }
 

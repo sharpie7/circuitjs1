@@ -821,4 +821,10 @@ public abstract class CircuitElm implements Editable {
     boolean isMouseElm() {return iAmMouseElm; }
     void updateModels() {}
     void stepFinished() {}
+    
+    double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == x && ya == y && getPostCount() == 2)
+	    return -current;
+	return current;
+    }
 }

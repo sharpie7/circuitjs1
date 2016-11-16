@@ -351,4 +351,11 @@ package com.lushprojects.circuitjs1.client;
 			setPoints();
 		}
 	}
+	double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x && ya == y)
+		return 0;
+	    if (xa == src[0].x && ya == src[0].y)
+		return ids;
+	    return -ids;
+	}
     }

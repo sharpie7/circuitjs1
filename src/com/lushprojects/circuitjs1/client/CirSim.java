@@ -28,6 +28,8 @@ package com.lushprojects.circuitjs1.client;
 
 
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
@@ -1274,12 +1276,12 @@ MouseOutHandler, MouseWheelHandler {
 		else
 		    info[0] = "V = " +
 			CircuitElm.getUnitText(mouseElm.getPostVoltage(mousePost), "V");
-		/* //shownodes
+		 //shownodes
 		for (i = 0; i != mouseElm.getPostCount(); i++)
 		    info[0] += " " + mouseElm.nodes[i];
 		if (mouseElm.getVoltageSourceCount() > 0)
 		    info[0] += ";" + (mouseElm.getVoltageSource()+nodeList.size());
-		*/
+		
 		
 	    } else {
 	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
@@ -1514,6 +1516,130 @@ MouseOutHandler, MouseWheelHandler {
 	    console.log(text);
 	}-*/;
 
+    class NodeMapEntry {
+	int node;
+	NodeMapEntry() { node = -1; }
+	NodeMapEntry(int n) { node = n; }
+    }
+    // map points to node numbers
+    HashMap<Point,NodeMapEntry> nodeMap;
+    
+    class WireInfo {
+	WireElm wire;
+	Vector<CircuitElm> neighbors;
+	int post;
+	WireInfo(WireElm w) {
+	    wire = w;
+	}
+    }
+    // info about each wire and its neighbors, used to calculate wire currents
+    Vector<WireInfo> wireInfoList;
+    
+    // find groups of nodes connected by wires and map them to the same node.  this speeds things
+    // up considerably by reducing the size of the matrix
+    void calculateWireClosure() {
+	int i;
+	nodeMap = new HashMap<Point,NodeMapEntry>();
+//	int mergeCount = 0;
+	wireInfoList = new Vector<WireInfo>();
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (!(ce instanceof WireElm))
+		continue;
+	    WireElm we = (WireElm) ce;
+	    we.hasWireInfo = false;
+	    wireInfoList.add(new WireInfo(we));
+	    NodeMapEntry cn  = nodeMap.get(ce.getPost(0));
+	    NodeMapEntry cn2 = nodeMap.get(ce.getPost(1));
+	    if (cn != null && cn2 != null) {
+		// merge nodes; go through map and change all keys pointing to cn2 to point to cn
+		for (Map.Entry<Point, NodeMapEntry> entry : nodeMap.entrySet()) {
+		    if (entry.getValue() == cn2)
+			entry.setValue(cn);
+		}
+//		mergeCount++;
+		continue;
+	    }
+	    if (cn != null) {
+		nodeMap.put(ce.getPost(1), cn);
+		continue;
+	    }
+	    if (cn2 != null) {
+		nodeMap.put(ce.getPost(0), cn2);
+		continue;
+	    }
+	    // new entry
+	    cn = new NodeMapEntry();
+	    nodeMap.put(ce.getPost(0), cn);
+	    nodeMap.put(ce.getPost(1), cn);
+	}
+	
+//	console("got " + (groupCount-mergeCount) + " groups with " + nodeMap.size() + " nodes " + mergeCount);
+    }
+    
+    // generate info we need to calculate wire currents.  Most other elements calculate currents using
+    // the voltage on their terminal nodes.  But wires have the same voltage at both ends, so we need
+    // to use the neighbors' currents instead.
+    boolean calcWireInfo() {
+	int i;
+	int moved = 0;
+	for (i = 0; i != wireInfoList.size(); i++) {
+	    WireInfo wi = wireInfoList.get(i);
+	    WireElm wire = wi.wire;
+	    CircuitNode cn1 = nodeList.get(wire.getNode(0));  // both ends of wire have same node #
+	    int j;
+
+	    Vector<CircuitElm> neighbors0 = new Vector<CircuitElm>();
+	    Vector<CircuitElm> neighbors1 = new Vector<CircuitElm>();
+	    boolean isReady0 = true, isReady1 = true;
+	    
+	    // go through elements sharing a node with this wire (may be connected indirectly
+	    // by other wires, but at least it's faster than going through all elements)
+	    for (j = 0; j != cn1.links.size(); j++) {
+		CircuitNodeLink cnl = cn1.links.get(j);
+		CircuitElm ce = cnl.elm;
+		if (ce == wire)
+		    continue;
+		Point pt = cnl.elm.getPost(cnl.num);
+		
+		// is this a wire that doesn't have wire info yet?  If so we can't use it.
+		// That would create a circular dependency
+		boolean notReady = (ce instanceof WireElm && !((WireElm) ce).hasWireInfo);
+		
+		// which post does this element connect to, if any?
+		if (pt.x == wire.x && pt.y == wire.y) {
+		    neighbors0.add(ce);
+		    if (notReady) isReady0 = false;
+		} else if (pt.x == wire.x2 && pt.y == wire.y2) {
+		    neighbors1.add(ce);
+		    if (notReady) isReady1 = false;
+		}
+	    }
+
+	    // does one of the posts have all information necessary to calculate current
+	    if (isReady0) {
+		wi.neighbors = neighbors0;
+		wi.post = 0;
+		wire.hasWireInfo = true;
+	    } else if (isReady1) {
+		wi.neighbors = neighbors1;
+		wi.post = 1;
+		wire.hasWireInfo = true;
+	    } else {
+		// move to the end of the list and try again later
+		wireInfoList.add(wireInfoList.remove(i--));
+		moved++; 
+		console("moved to end " + moved);
+		if (moved > wireInfoList.size() * 2) {
+		    stop("wire loop detected", wire);
+		    return false;
+		}
+	    }
+	}
+	
+	return true;
+    }
+    
     void analyzeCircuit() {
 	calcCircuitBottom();
 	if (elmList.isEmpty())
@@ -1527,6 +1653,8 @@ MouseOutHandler, MouseWheelHandler {
 	boolean gotRail = false;
 	CircuitElm volt = null;
 
+	calculateWireClosure();
+	
 	//System.out.println("ac1");
 	// look for voltage or ground element
 	for (i = 0; i != elmList.size(); i++) {
@@ -1549,6 +1677,13 @@ MouseOutHandler, MouseWheelHandler {
 	    cn.x = (int) pt.x;
 	    cn.y = (int) pt.y;
 	    nodeList.addElement(cn);
+
+	    // update node map
+	    NodeMapEntry cln = nodeMap.get(pt);
+	    if (cln != null)
+		cln.node = 0;
+	    else
+		nodeMap.put(pt, new NodeMapEntry(0));
 	} else {
 	    // otherwise allocate extra node for ground
 	    CircuitNode cn = new CircuitNode();
@@ -1568,13 +1703,13 @@ MouseOutHandler, MouseWheelHandler {
 	    // allocate a node for each post and match posts to nodes
 	    for (j = 0; j != posts; j++) {
 		Point pt = ce.getPost(j);
-		int k;
-		for (k = 0; k != nodeList.size(); k++) {
-		    CircuitNode cn = getCircuitNode(k);
-		    if (pt.x == cn.x && pt.y == cn.y)
-			break;
-		}
-		if (k == nodeList.size()) {
+		NodeMapEntry cln = nodeMap.get(pt);
+		
+		// is this node not in map yet?  or is the node number unallocated?
+		// (we don't allocate nodes before this because changing the allocation order
+		// of nodes changes circuit behavior and breaks backward compatibility;
+		// the code below to connect unconnected nodes may connect a different node to ground) 
+		if (cln == null || cln.node == -1) {
 		    CircuitNode cn = new CircuitNode();
 		    cn.x = (int) pt.x;
 		    cn.y = (int) pt.y;
@@ -1583,16 +1718,21 @@ MouseOutHandler, MouseWheelHandler {
 		    cnl.elm = ce;
 		    cn.links.addElement(cnl);
 		    ce.setNode(j, nodeList.size());
+		    if (cln != null)
+			cln.node = nodeList.size();
+		    else
+			nodeMap.put(pt, new NodeMapEntry(nodeList.size()));
 		    nodeList.addElement(cn);
 		} else {
+		    int n = cln.node;
 		    CircuitNodeLink cnl = new CircuitNodeLink();
 		    cnl.num = j;
 		    cnl.elm = ce;
-		    getCircuitNode(k).links.addElement(cnl);
-		    ce.setNode(j, k);
+		    getCircuitNode(n).links.addElement(cnl);
+		    ce.setNode(j, n);
 		    // if it's the ground node, make sure the node voltage is 0,
 		    // cause it may not get set later
-		    if (k == 0)
+		    if (n == 0)
 			ce.setNodeVoltage(j, 0);
 		}
 	    }
@@ -1609,6 +1749,11 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    vscount += ivs;
 	}
+	
+	if (!calcWireInfo())
+	    return;
+	nodeMap = null; // done with this
+	
 	voltageSources = new CircuitElm[vscount];
 	vscount = 0;
 	circuitNonLinear = false;
@@ -1635,7 +1780,6 @@ MouseOutHandler, MouseWheelHandler {
 	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
 	circuitRowInfo = new RowInfo[matrixSize];
 	circuitPermute = new int[matrixSize];
-	int vs = 0;
 	for (i = 0; i != matrixSize; i++)
 	    circuitRowInfo[i] = new RowInfo();
 	circuitNeedsMap = false;
@@ -1647,15 +1791,16 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	//System.out.println("ac4");
 
-	// determine nodes that are unconnected
+	// determine nodes that are not connected indirectly to ground
 	boolean closure[] = new boolean[nodeList.size()];
-	boolean tempclosure[] = new boolean[nodeList.size()];
 	boolean changed = true;
 	closure[0] = true;
 	while (changed) {
 	    changed = false;
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
+		if (ce instanceof WireElm)
+		    continue;
 		// loop through all ce's nodes to see if they are connected
 		// to other nodes not in closure
 		for (j = 0; j < ce.getConnectionNodeCount(); j++) {
@@ -1679,7 +1824,7 @@ MouseOutHandler, MouseWheelHandler {
 	    if (changed)
 		continue;
 
-	    // connect unconnected nodes
+	    // connect one of the unconnected nodes to ground with a big resistor, then try again
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
 		    console("node " + i + " unconnected");
@@ -1715,7 +1860,7 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    // look for voltage source loops
 	    // IES
-	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) || ce instanceof WireElm) {
+	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) /*|| ce instanceof WireElm*/) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
@@ -1741,7 +1886,8 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	//System.out.println("ac6");
 
-	// simplify the matrix; this speeds things up quite a bit
+	// simplify the matrix; this speeds things up quite a bit, especially for
+	// digital circuits
 	for (i = 0; i != matrixSize; i++) {
 	    int qm = -1, qp = -1;
 	    double qv = 0;
@@ -1917,6 +2063,8 @@ MouseOutHandler, MouseWheelHandler {
 	    ii++;
 	}
 
+//	console("old size = " + matrixSize + " new size = " + newsize);
+	
 	circuitMatrix = newmatx;
 	circuitRightSide = newrs;
 	matrixSize = circuitMatrixSize = newsize;
@@ -2212,6 +2360,16 @@ MouseOutHandler, MouseWheelHandler {
 	 return .1*Math.exp((speedBar.getValue()-61)/24.);
 
     }
+
+    // we need to calculate wire currents for every iteration if someone is viewing a wire in the
+    // scope.  Otherwise we can do it only once per frame.
+    boolean canDelayWireProcessing() {
+	int i;
+	for (i = 0; i != scopeCount; i++)
+	    if (scopes[i].elm instanceof WireElm)
+		return false;
+	return true;
+    }
     
     boolean converged;
     int subIterations;
@@ -2236,6 +2394,9 @@ MouseOutHandler, MouseWheelHandler {
 	// If the circuit changed, do at least one iteration to make sure everything is consistent.
 	if (1000 >= steprate*(tm-lastIterTime) && !didAnalyze)
 	    return;
+	
+	boolean delayWireProcessing = canDelayWireProcessing();
+	
 	for (iter = 1; ; iter++) {
 	    int i, j, k, subiter;
 	    for (i = 0; i != elmList.size(); i++) {
@@ -2332,6 +2493,8 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		ce.stepFinished();
 	    }
+	    if (!delayWireProcessing)
+		calcWireCurrents();
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
 	    tm = System.currentTimeMillis();
@@ -2340,9 +2503,36 @@ MouseOutHandler, MouseWheelHandler {
 		break;
 	} // for (iter = 1; ; iter++)
 	lastIterTime = lit;
+	if (delayWireProcessing)
+	    calcWireCurrents();
 //	System.out.println((System.currentTimeMillis()-lastFrameTime)/(double) iter);
     }
 
+    // we removed wires from the matrix to speed things up.  in order to display wire currents,
+    // we need to calculate them now.
+    void calcWireCurrents() {
+	int i;
+	
+	// for debugging
+	for (i = 0; i != wireInfoList.size(); i++)
+	    wireInfoList.get(i).wire.setCurrent(-1, 1.23);
+	
+	for (i = 0; i != wireInfoList.size(); i++) {
+	    WireInfo wi = wireInfoList.get(i);
+	    double cur = 0;
+	    int j;
+	    Point p = wi.wire.getPost(wi.post);
+	    for (j = 0; j != wi.neighbors.size(); j++) {
+		CircuitElm ce = wi.neighbors.get(j);
+		cur += ce.getCurrentIntoPoint(p.x, p.y);
+	    }
+	    if (wi.post == 0)
+		wi.wire.setCurrent(-1, cur);
+	    else
+		wi.wire.setCurrent(-1, -cur);
+	}
+    }
+    
     int min(int a, int b) { return (a < b) ? a : b; }
     int max(int a, int b) { return (a > b) ? a : b; }
 
