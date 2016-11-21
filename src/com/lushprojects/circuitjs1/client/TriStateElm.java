@@ -138,18 +138,12 @@ if(point4==null)System.out.print("Hello\n");
 	arr[3] = "I = " + getCurrentDText(getCurrent());
 	arr[4] = "Vc = " + getVoltageText(volts[2]);
     }
-    // we have to just assume current will flow either way, even though that
-    // might cause singular matrix errors
 
-
-//     0---3----------1
-//            /
-//           2
-
-    boolean getConnection(int n1, int n2) {
-	if ((n1==1&&n2==3)||(n1==3&&n2==1))
-	    return true;
-	return false;
+    // there is no current path through the input, but there
+    // is an indirect path through the output to ground.
+    boolean getConnection(int n1, int n2) { return false; }
+    boolean hasGroundConnection(int n1) {
+        return (n1 == 1);
     }
     public EditInfo getEditInfo(int n) {
 

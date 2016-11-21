@@ -23,6 +23,8 @@ package com.lushprojects.circuitjs1.client;
 //import java.util.StringTokenizer;
 
     class WireElm extends CircuitElm {
+	boolean hasWireInfo; // used in CirSim to calculate wire currents
+	
 	public WireElm(int xx, int yy) { super(xx, yy); }
 	public WireElm(int xa, int ya, int xb, int yb, int f,
 		       StringTokenizer st) {
@@ -45,7 +47,7 @@ package com.lushprojects.circuitjs1.client;
 	    drawPosts(g);
 	}
 	void stamp() {
-	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource, 0);
+//	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource, 0);
 	}
 	boolean mustShowCurrent() {
 	    return (flags & FLAG_SHOWCURRENT) != 0;
@@ -53,7 +55,7 @@ package com.lushprojects.circuitjs1.client;
 	boolean mustShowVoltage() {
 	    return (flags & FLAG_SHOWVOLTAGE) != 0;
 	}
-	int getVoltageSourceCount() { return 1; }
+//	int getVoltageSourceCount() { return 1; }
 	void getInfo(String arr[]) {
 	    arr[0] = "wire";
 	    arr[1] = "I = " + getCurrentDText(getCurrent());

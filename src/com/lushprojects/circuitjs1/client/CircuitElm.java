@@ -290,7 +290,7 @@ public abstract class CircuitElm implements Editable {
     }
     void move(int dx, int dy) {
 	x += dx; y += dy; x2 += dx; y2 += dy;
-	boundingBox.move(dx, dy);
+	boundingBox.translate(dx, dy);
 	setPoints();
     }
 
@@ -821,4 +821,10 @@ public abstract class CircuitElm implements Editable {
     boolean isMouseElm() {return iAmMouseElm; }
     void updateModels() {}
     void stepFinished() {}
+    
+    double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == x && ya == y && getPostCount() == 2)
+	    return -current;
+	return current;
+    }
 }

@@ -178,4 +178,11 @@ package com.lushprojects.circuitjs1.client;
 	boolean hasGroundConnection(int n1) {
 	    return (n1 == 1);
 	}
+	
+	@Override double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x2 && ya == y2)
+		return current;
+	    return 0;
+	}
+
     }

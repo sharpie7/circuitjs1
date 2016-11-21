@@ -239,6 +239,14 @@ import com.google.gwt.canvas.dom.client.TextMetrics;
 	    return pins[n1].output;
 	}
 	
+	double getCurrentIntoPoint(int xa, int ya) {
+	    int i;
+	    for (i = 0; i != getPostCount(); i++)
+		if (pins[i].post.x == xa && pins[i].post.y == ya)
+		    return pins[i].current;
+	    return 0;
+	}
+	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);

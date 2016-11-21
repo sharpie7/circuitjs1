@@ -78,15 +78,8 @@ class Scope {
     void showVoltage(boolean b) { showV = b; value = ivalue = 0; }
 
 
-	void showMax    (boolean b) { 
-    	showMax = b; 
-    	if (b) 
-    		showScale=false; 
-    }
-    void showScale    (boolean b) { 
-    	showScale = b; 
-    	if (b) showMax=false;
-    	}
+    void showMax    (boolean b) { showMax = b; }
+    void showScale    (boolean b) { showScale = b; }
     void showMin    (boolean b) { showMin = b; }
     void showFreq   (boolean b) { showFreq = b; }
     void setLockScale  (boolean b) { lockScale = b; }
@@ -122,8 +115,8 @@ class Scope {
     	minMaxV = 5;
     	minMaxI = .1;
     	speed = 64;
-    	showI = showV = showScale = true;
-    	showFreq = lockScale = showMin = showMax = false;
+    	showI = showV = showMax = true;
+    	showScale = showFreq = lockScale = showMin = false;
     	showFFT = false;
     	plot2d = false;
     	// no showI for Output
@@ -401,7 +394,7 @@ class Scope {
     	double realMinV =  1e8;
     	double realMinI =  1e8;
     	String curColor = "#FFFF00";
-    	String voltColor = (value > 0) ? "#FFFFFF" : "#00FF00";
+    	String voltColor = (value > 0) ? CircuitElm.whiteColor.getHexValue() : "#00FF00";
     	if (sim.scopeSelected == -1 && elm.isMouseElm())
     		curColor = voltColor = "#00FFFF";
     	int ipa = ptr+scopePointCount-rect.width;
@@ -430,6 +423,13 @@ class Scope {
 
     	// Horizontal gridlines
     	int ll;
+    	String minorDiv = "#707070";
+    	String majorDiv = "#A0A0A0";
+    	if (sim.printableCheckItem.getState()) {
+    	    minorDiv = "#D0D0D0";
+    	    majorDiv = "#808080";
+    	    curColor = "#A0A000";
+    	}
  //   	boolean sublines = (maxy*gridStep/gridMax > 3);
     	// don't show gridlines if plotting multiple values, or just FFT, or if
     	// lines are too close together (except for center line)
@@ -444,7 +444,7 @@ class Scope {
     		int yl = maxy-(int) (maxy*ll*gridStepY/gridMax);
     		if (yl < 0 || yl >= rect.height-1)
     			continue;
-    		col = ll == 0 ? "#909090" : "#404040";
+    		col = ll == 0 ? majorDiv : minorDiv;
 //    		if (ll % 10 != 0) {
 //    			col = "#101010";
 //    			if (!sublines)
@@ -482,12 +482,12 @@ class Scope {
     				continue;
     			if (tl < 0)
     				continue;
-    			col = "#202020";
+    			col = minorDiv;
     			// first = 0;
     			if (((tl+gridStepX/4) % (gridStepX*10)) < gridStepX) {
-    				col = "#909090";
-    				if (((tl+gridStepX/4) % (gridStepX*100)) < gridStepX)
-    					col = "#4040D0";
+    				col = majorDiv;
+//    				if (((tl+gridStepX/4) % (gridStepX*100)) < gridStepX)
+//    					col = "#A0A0A0";
     			}
     			g.setColor(col);
     			g.drawLine(gx,0,gx,rect.height-1);
@@ -522,9 +522,6 @@ class Scope {
     					if (miniy == oy && maxiy == oy)
     						continue;
     					// Horizontal line from (ox,y-oy) to (x+i-1,y-oy)
-    					
-//    					for (j = ox; j != x+i; j++)
-//    						pixels[j+r.width*(y-oy)] = curColor;
     					g.drawLine(ox, y-oy, x+i-1, y-oy);
     					ox = oy = -1;
     				}
@@ -534,8 +531,6 @@ class Scope {
     					continue;
     				}
     				// Vertical line from (x+i,y-miniy) to (x+i,y-maxiy-1)
-//    				for (j = miniy; j <= maxiy; j++)
-//    					pixels[x+i+r.width*(y-j)] = curColor;
     				g.drawLine(x+i, y-miniy, x+i, y-maxiy-1);
     			}
     		}
@@ -649,6 +644,7 @@ class Scope {
     		}
     		g.drawString("H="+CircuitElm.getShortUnitText(gridStepX, "s")+"/div" +
     				vScaleText, x,yt);
+    		yt += 15;
     	}
     	if (showMax) {
     		if (value != 0)
@@ -684,7 +680,52 @@ class Scope {
     		if (!gotV && minMaxV > 1e-4)
     			minMaxV /= 2;
     	}
+    	
     	g.context.restore();
+	if (rect.contains(sim.mouseCursorX, sim.mouseCursorY)) {
+	    String info[] = new String[3];
+	    int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
+	    int ct = 0;
+	    if (value != 0) {
+		info[ct++] = CircuitElm.getUnitText(maxV[ip], elm.getScopeUnits(value));
+		int maxvy = (int) ((maxy/minMaxV)*maxV[ip]);
+		g.setColor(voltColor);
+		g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+	    } else {
+		if (showV) {
+		    info[ct++] = CircuitElm.getVoltageText(maxV[ip]);
+		    int maxvy = (int) ((maxy/minMaxV)*maxV[ip]);
+		    g.setColor(voltColor);
+		    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+		}		    
+		if (showI) {
+		    info[ct++] = CircuitElm.getUnitText(maxI[ip], "A");
+		    int maxvy = (int) ((maxy/minMaxI)*maxI[ip]);
+		    g.setColor(curColor);
+		    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+		}
+	    }
+	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
+	    info[ct++] = CircuitElm.getUnitText(t, "s");
+	    int szw = 0, szh = 15*ct;
+	    for (i = 0; i != ct; i++) {
+	        int w=(int)g.context.measureText(info[i]).getWidth();
+	        if (w > szw)
+	            szw = w;
+	    }
+
+	    g.setColor(CircuitElm.whiteColor);
+	    g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
+//	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
+	    g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
+	    g.fillRect(sim.mouseCursorX-szw/2, rect.y-szh, szw, szh);
+	    g.setColor(CircuitElm.whiteColor);
+	    for (i = 0; i != ct; i++) {
+	        int w=(int)g.context.measureText(info[i]).getWidth();
+		g.drawString(info[i], sim.mouseCursorX-w/2, rect.y-2-(ct-1-i)*15);
+	    }
+	}
+
     }
 	
     void speedUp() {
@@ -813,54 +854,6 @@ class Scope {
 		}
     }
     
-//    void allocImage() {
-//    	pixels = null;
-//    	int w = r.width;
-//    	int h = r.height;
-//    	if (w == 0 || h == 0)
-//    		return;
-//    	if (sim.useBufferedImage) {
-//    		try {
-//    			/* simulate the following code using reflection:
-//		   dbimage = new BufferedImage(d.width, d.height,
-//		   BufferedImage.TYPE_INT_RGB);
-//		   DataBuffer db = (DataBuffer)(((BufferedImage)dbimage).
-//		   getRaster().getDataBuffer());
-//		   DataBufferInt dbi = (DataBufferInt) db;
-//		   pixels = dbi.getData();
-//    			 */
-//    			Class biclass = Class.forName("java.awt.image.BufferedImage");
-//    			Class dbiclass = Class.forName("java.awt.image.DataBufferInt");
-//    			Class rasclass = Class.forName("java.awt.image.Raster");
-//    			Constructor cstr = biclass.getConstructor(
-//    					new Class[] { int.class, int.class, int.class });
-//    			image = (Image) cstr.newInstance(new Object[] {
-//    					new Integer(w), new Integer(h),
-//    					new Integer(BufferedImage.TYPE_INT_RGB)});
-//    			Method m = biclass.getMethod("getRaster");
-//    			Object ras = m.invoke(image);
-//    			Object db = rasclass.getMethod("getDataBuffer").invoke(ras);
-//    			pixels = (int[])
-//    					dbiclass.getMethod("getData").invoke(db);
-//    		} catch (Exception ee) {
-//    			// ee.printStackTrace();
-//    			System.out.println("BufferedImage failed");
-//    		}
-//    	}
-//    	if (pixels == null) {
-//    		pixels = new int[w*h];
-//    		int i;
-//    		for (i = 0; i != w*h; i++)
-//    			pixels[i] = 0xFF000000;
-//    		imageSource = new MemoryImageSource(w, h, pixels, 0, w);
-//    		imageSource.setAnimated(true);
-//    		imageSource.setFullBufferUpdates(true);
-//    		image = sim.cv.createImage(imageSource);
-//    	}
-//    	dpixels = new float[w*h];
-//    	draw_ox = draw_oy = -1;
-//    }
-
     void handleMenu(String mi) {
     	if (mi == "showvoltage")
     		showVoltage(sim.scopeVMenuItem.getState());
