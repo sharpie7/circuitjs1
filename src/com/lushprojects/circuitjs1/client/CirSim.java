@@ -491,7 +491,7 @@ MouseOutHandler, MouseWheelHandler {
 	//pasteItem.setShortcut(new MenuShortcut(KeyEvent.VK_V));
 	pasteItem.setEnabled(false);
 	
-	sn=edithtml+"Duplicate</div>";
+	sn=edithtml+"Duplicate</div>Ctrl-D";
 	m.addItem(new MenuItem(SafeHtmlUtils.fromTrustedString(sn), new MyCommand("edit","duplicate")));
 	
 	m.addSeparator();
@@ -4241,6 +4241,10 @@ MouseOutHandler, MouseWheelHandler {
     			if (code==KEY_Y) {
     				menuPerformed("key", "redo");
     				e.cancel();
+    			}
+    			if (code==KEY_D) {
+    			    	menuPerformed("key", "duplicate");
+    			    	e.cancel();
     			}
     			if (code==KEY_A) {
     				menuPerformed("key", "selectAll");
