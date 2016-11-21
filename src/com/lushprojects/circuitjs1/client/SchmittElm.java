@@ -95,4 +95,10 @@ class SchmittElm extends InvertingSchmittElm{
             arr[0] = "Schmitt Trigger";
         }
 
+	@Override double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x2 && ya == y2)
+		return current;
+	    return 0;
+	}
+
     }

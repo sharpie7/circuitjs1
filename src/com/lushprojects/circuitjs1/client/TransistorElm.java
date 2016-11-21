@@ -302,5 +302,19 @@ import com.google.gwt.i18n.client.NumberFormat;
 		setPoints();
 	    }
 	}
+	
+        void stepFinished() {
+            // stop for huge currents that make simulator act weird
+            if (Math.abs(ic) > 1e12 || Math.abs(ib) > 1e12)
+                sim.stop("max current exceeded", this);
+        }
+
 	boolean canViewInScope() { return true; }
+	double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == x && ya == y)
+		return -ib;
+	    if (xa == coll[0].x && ya == coll[0].y)
+		return -ic;
+	    return -ie;
+	}
     }

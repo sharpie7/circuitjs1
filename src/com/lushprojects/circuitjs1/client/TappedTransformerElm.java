@@ -223,6 +223,17 @@ package com.lushprojects.circuitjs1.client;
 	    //arr[5] = "I2 = " + getCurrentText(current2);
 	    arr[4] = "Vd2 = " + getVoltageText(volts[1]-volts[3]);
 	}
+	@Override double getCurrentIntoPoint(int xa, int ya) {
+	    if (xa == ptEnds[0].x && ya == ptEnds[0].y)
+		return -current[0];
+	    if (xa == ptEnds[1].x && ya == ptEnds[1].y)
+		return current[0];
+	    if (xa == ptEnds[2].x && ya == ptEnds[2].y)
+		return -current[1];
+	    if (xa == ptEnds[3].x && ya == ptEnds[3].y)
+		return current[3];
+	    return current[2];
+	}
 	boolean getConnection(int n1, int n2) {
 	    if (comparePair(n1, n2, 0, 1))
 		return true;

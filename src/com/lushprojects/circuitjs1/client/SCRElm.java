@@ -150,6 +150,14 @@ class SCRElm extends CircuitElm {
 	drawPosts(g);
     }
 	
+    @Override double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == point1.x && ya == point1.y)
+	    return -ia;
+	if (xa == point2.x && ya == point2.y)
+	    return -ic;
+	return -ig;
+    }
+
     
     Point getPost(int n) {
 	return (n == 0) ? point1 : (n == 1) ? point2 : gate[1];

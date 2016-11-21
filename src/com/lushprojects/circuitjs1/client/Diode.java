@@ -121,13 +121,22 @@ class Diode {
 	voltdiff = limitStep(voltdiff, lastvoltdiff);
 	lastvoltdiff = voltdiff;
 
+	double gmin = 0;
+	if (sim.subIterations > 100) {
+	    // if we have trouble converging, put a conductance in parallel with the diode.
+	    // Gradually increase the conductance value for each iteration.
+	    gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/3000.));
+	    if (gmin > .1)
+		gmin = .1;
+	}
+
 	if (voltdiff >= 0 || zvoltage == 0) {
 	    // regular diode or forward-biased zener
 	    double eval = Math.exp(voltdiff*vdcoef);
 	    // make diode linear with negative voltages; aids convergence
 	    if (voltdiff < 0)
 		eval = 1;
-	    double geq = vdcoef*leakage*eval;
+	    double geq = vdcoef*leakage*eval + gmin;
 	    double nc = (eval-1)*leakage - geq*voltdiff;
 	    sim.stampConductance(nodes[0], nodes[1], geq);
 	    sim.stampCurrentSource(nodes[0], nodes[1], nc);
@@ -143,7 +152,7 @@ class Diode {
 
 	    double geq = leakage*vdcoef* ( 
 		Math.exp(voltdiff*vdcoef) + Math.exp((-voltdiff-zoffset)*vdcoef)
-		);
+		) + gmin;
 
 	    double nc = leakage* (
 		Math.exp(voltdiff*vdcoef) 
