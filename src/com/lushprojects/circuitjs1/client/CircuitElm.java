@@ -333,10 +333,18 @@ public abstract class CircuitElm implements Editable {
     }
     
     void drawPosts(Graphics g) {
+	// we normally do this in updateCircuit() now because the logic is more complicated.
+	// we only handle the case where we have to draw all the posts.  That happens when
+	// this element is selected or is being created
+	if (sim.dragElm == null && !needsHighlight())
+	    return;
+	if (sim.mouseMode == CirSim.MODE_DRAG_ROW ||
+	    sim.mouseMode == CirSim.MODE_DRAG_COLUMN)
+	    return;
 	int i;
 	for (i = 0; i != getPostCount(); i++) {
 	    Point p = getPost(i);
-	    drawPost(g, p.x, p.y, nodes[i]);
+	    drawPost(g, p);
 	}
     }
     
@@ -380,6 +388,7 @@ public abstract class CircuitElm implements Editable {
     Point getPost(int n) {
 	return (n == 0) ? point1 : (n == 1) ? point2 : null;
     }
+    /*
     void drawPost(Graphics g, int x0, int y0, int n) {
 	if (sim.dragElm == null && !needsHighlight() &&
 	    sim.getCircuitNode(n).links.size() == 2)
@@ -389,9 +398,10 @@ public abstract class CircuitElm implements Editable {
 	    return;
 	drawPost(g, x0, y0);
     }
-    void drawPost(Graphics g, int x0, int y0) {
+    */
+    static void drawPost(Graphics g, Point pt) {
 	g.setColor(whiteColor);
-	g.fillOval(x0-3, y0-3, 7, 7);
+	g.fillOval(pt.x-3, pt.y-3, 7, 7);
     }
     void setBbox(int x1, int y1, int x2, int y2) {
 	if (x1 > x2) { int q = x1; x1 = x2; x2 = q; }

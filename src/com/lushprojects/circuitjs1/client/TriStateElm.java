@@ -70,13 +70,6 @@ class TriStateElm extends CircuitElm {
 	lead3  = interpPoint(point1, point2, .5, -hs/2);
     }
 
-    void drawPosts(Graphics g) {
-	int i;
-	for (i = 0; i != 3; i++) {
-	    Point p = getPost(i);
-	    drawPost(g, p.x, p.y, nodes[i]);
-	}
-    }
     void draw(Graphics g) {
 	int hs =16;
 	setBbox(point1, point2, hs);

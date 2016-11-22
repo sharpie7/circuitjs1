@@ -104,8 +104,7 @@ import com.google.gwt.canvas.dom.client.TextMetrics;
 	    drawThickPolygon(g, rectPointsX, rectPointsY, 4);
 	    if (clockPointsX != null)
 		g.drawPolyline(clockPointsX, clockPointsY, 3);
-	    for (i = 0; i != getPostCount(); i++)
-		drawPost(g, pins[i].post.x, pins[i].post.y, nodes[i]);
+	    drawPosts(g);
 	    g.setFont(oldfont);
 	}
 	int rectPointsX[], rectPointsY[];
