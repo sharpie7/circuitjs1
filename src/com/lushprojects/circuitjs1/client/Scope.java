@@ -361,8 +361,6 @@ class Scope {
     }
 	
     void draw(Graphics g) {
-
-
     	if (elm == null)
     		return;
     	if (plot2d) {

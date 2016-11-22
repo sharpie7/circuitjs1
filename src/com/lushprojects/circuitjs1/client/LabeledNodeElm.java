@@ -104,7 +104,7 @@ class LabeledNodeElm extends CircuitElm {
 	drawDots(g, point1, lead1, curcount);
 	interpPoint(point1, point2, ps2, 1+11./dn);
 	setBbox(point1, ps2, circleSize);
-	drawPost(g, x, y, nodes[0]);
+	drawPosts(g);
     }
     void setCurrent(int x, double c) { current = -c; }
     void stamp() {
