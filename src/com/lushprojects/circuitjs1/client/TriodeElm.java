@@ -200,5 +200,18 @@ class TriodeElm extends CircuitElm {
     }
     // grid not connected to other terminals
     boolean getConnection(int n1, int n2) { return !(n1 == 1 || n2 == 1); }
+    public EditInfo getEditInfo(int n) {
+	if (n == 0)
+	    return new EditInfo("mu", mu, 0, 0).setDimensionless();
+	if (n == 1)
+	    return new EditInfo("kg1", kg1, 0, 0).setDimensionless();
+	return null;
+    }
+    public void setEditValue(int n, EditInfo ei) {
+	if (n == 0 && ei.value > 0)
+	    mu = ei.value;
+	if (n == 1 && ei.value > 0)
+	    kg1 = ei.value;
+    }
 }
 
