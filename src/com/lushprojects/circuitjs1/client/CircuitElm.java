@@ -827,6 +827,7 @@ public abstract class CircuitElm implements Editable {
     boolean isGraphicElmt() { return false; }
     
     void setMouseElm(boolean v) {iAmMouseElm=v;}
+    void draggingDone() {}
     
     boolean isMouseElm() {return iAmMouseElm; }
     void updateModels() {}

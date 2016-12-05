@@ -19,6 +19,7 @@
 
 package com.lushprojects.circuitjs1.client;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
 
@@ -52,7 +53,7 @@ class EditInfo {
 	Checkbox checkbox;
 	Button button;
 	TextArea textArea;
-	
+	Anchor anchor;
 	boolean newDialog;
 	boolean forceLargeM;
 	boolean dimensionless;

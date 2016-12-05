@@ -141,6 +141,8 @@ class EditDialog extends DialogBox  {
 			    });
 			} else if (ei.textArea != null) {
 			    vp.insert(ei.textArea, idx);
+			} else if (ei.anchor != null) {
+			    vp.insert(ei.anchor, idx);
 			} else {
 				vp.insert(ei.textf = new TextBox(), idx);
 				if (ei.text != null)

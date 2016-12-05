@@ -859,6 +859,8 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem("Add Labeled Node", "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Test Point", "TestPointElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Ammeter", "AmmeterElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Data Export", "DataRecorderElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Audio Output", "AudioOutputElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+"&nbsp;</div>Outputs and Labels"), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -3858,6 +3860,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     		else {
     			elmList.addElement(dragElm);
+    			dragElm.draggingDone();
     			circuitChanged = true;
     		}
     		dragElm = null;
@@ -4636,6 +4639,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
     	if (tint==208)
     	    return (CircuitElm) new CustomLogicElm(x1, y1, x2, y2, f, st);
+    	if (tint==210)
+    	    return (CircuitElm) new DataRecorderElm(x1, y1, x2, y2, f, st);
+    	if (tint==211)
+    	    return (CircuitElm) new AudioOutputElm(x1, y1, x2, y2, f, st);
     	if (tint==368)
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
@@ -4823,6 +4830,10 @@ MouseOutHandler, MouseWheelHandler {
     	    	return new TestPointElm(x1, y1);
     	if (n=="AmmeterElm")
 	    	return new AmmeterElm(x1, y1);
+    	if (n=="DataRecorderElm")
+		return (CircuitElm) new DataRecorderElm(x1, y1);
+    	if (n=="AudioOutputElm")
+		return (CircuitElm) new AudioOutputElm(x1, y1);
     	return null;
     }
     
