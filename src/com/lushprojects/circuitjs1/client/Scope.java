@@ -62,6 +62,7 @@ class Scope {
     Canvas imageCanvas;
     Context2d imageContext;
     int alphadiv =0;
+    double scopeTimeStep;
 
     
     Scope(CirSim s) {
@@ -104,6 +105,7 @@ class Scope {
     		maxI[i] = 0;
     	}
     	ptr = ctr = 0;
+    	scopeTimeStep = sim.timeStep;
     	allocImage();
     }
     
@@ -363,6 +365,13 @@ class Scope {
     void draw(Graphics g) {
     	if (elm == null)
     		return;
+    	
+    	// reset if timestep changed
+    	if (scopeTimeStep != sim.timeStep) {
+    	    scopeTimeStep = sim.timeStep;
+    	    resetGraph();
+    	}
+    	
     	if (plot2d) {
     		draw2d(g);
     		return;
