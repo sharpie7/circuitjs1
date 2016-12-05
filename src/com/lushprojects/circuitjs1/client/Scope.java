@@ -124,6 +124,7 @@ class Scope {
     	// no showI for Output
     		if (elm != null && (elm instanceof OutputElm ||
     				    elm instanceof LogicOutputElm ||
+    				    elm instanceof AudioOutputElm ||
     				    elm instanceof ProbeElm))
     		    showI = false;
     	
