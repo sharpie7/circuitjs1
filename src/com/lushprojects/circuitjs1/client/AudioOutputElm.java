@@ -301,10 +301,22 @@ public class AudioOutputElm extends CircuitElm {
             srclist.push(wav.getBuffer(1000));
         }
 
+	var oldblob = $doc.audioBlob;
+	var oldobj = $doc.audioObject;
+	// remove old blob and audio obj if any.  We should do this when audio is done playing, but this is easier
+	if (oldblob) {
+	    oldobj.parentNode.removeChild(oldobj);
+            URL.revokeObjectURL(oldblob);
+	}
+
         var b = new Blob(srclist, {type:'audio/wav'});
-        var URLObject = $wnd.webkitURL || $wnd.URL;
-        var url = URLObject.createObjectURL(b);
+//        var URLObject = $wnd.webkitURL || $wnd.URL;
+//        var url = URLObject.createObjectURL(b);
+        var url = URL.createObjectURL(b);
+        $doc.audioBlob = url;
+//        console.log(url);
 	var audio = $doc.createElement("audio");
+	$doc.audioObject = audio;
 	audio.src = url;
 	$doc.body.appendChild(audio);
 	audio.play();

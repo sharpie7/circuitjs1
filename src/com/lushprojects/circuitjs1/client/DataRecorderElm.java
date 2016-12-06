@@ -72,8 +72,13 @@ public class DataRecorderElm extends CircuitElm {
         /*-{
                 var datain=[""];
                 datain[0]=data;
+		var oldblob = $doc.recorderBlob;
+		// remove old blob if any.  We should do this when dialog is dismissed, but this is easier
+		if (oldblob)
+		    URL.revokeObjectURL(oldblob);
                 var blob=new Blob(datain, {type: 'text/plain' } );
                 var url = URL.createObjectURL(blob);
+                $doc.recorderBlob = url;
                 return url;
         }-*/;
 
