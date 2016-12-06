@@ -26,6 +26,7 @@ package com.lushprojects.circuitjs1.client;
 //import java.lang.reflect.Constructor;
 //import java.lang.reflect.Method;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.canvas.client.Canvas;
@@ -63,7 +64,7 @@ class Scope {
     Context2d imageContext;
     int alphadiv =0;
     double scopeTimeStep;
-
+    int wheelDeltaY;
     
     Scope(CirSim s) {
     	sim = s;
@@ -744,7 +745,8 @@ class Scope {
     }
     
     void slowDown() {
-    	speed *= 2;
+	if (speed < 1024)
+	    speed *= 2;
     	resetGraph();
     }
 	
@@ -939,5 +941,16 @@ class Scope {
     			return;
     		e = firstE = -1;
     	}
+    }
+    
+    void onMouseWheel(MouseWheelEvent e) {
+	wheelDeltaY += e.getDeltaY();
+	if (wheelDeltaY > 5) {
+	    slowDown();
+	    wheelDeltaY = 0;
+	}
+	if (wheelDeltaY < -5)
+	    speedUp();
+	    wheelDeltaY = 0;
     }
 }

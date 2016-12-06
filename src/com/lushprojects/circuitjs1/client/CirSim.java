@@ -2706,6 +2706,8 @@ MouseOutHandler, MouseWheelHandler {
     			//handleResize();
     		}
     		scopes[i].setElm(menuElm);
+    		if (i > 0)
+    		    scopes[i].speed = scopes[i-1].speed;
     	}
     	if (menu=="scopepop") {
     		pushUndo();
@@ -3878,6 +3880,8 @@ MouseOutHandler, MouseWheelHandler {
     	scrollValues(e.getNativeEvent().getClientX(), e.getNativeEvent().getClientY(), e.getDeltaY());
     	if (mouseElm instanceof MouseWheelHandler)
     		((MouseWheelHandler) mouseElm).onMouseWheel(e);
+    	if (scopeSelected != -1)
+    	    scopes[scopeSelected].onMouseWheel(e);
     }
     
     void setPowerBarEnable() {
@@ -3891,7 +3895,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void scrollValues(int x, int y, int deltay) {
-    	if (mouseElm!=null && !dialogIsShowing())
+    	if (mouseElm!=null && !dialogIsShowing() && scopeSelected == -1)
     		if (mouseElm instanceof ResistorElm || mouseElm instanceof CapacitorElm ||  mouseElm instanceof InductorElm) {
     			scrollValuePopup = new ScrollValuePopup(x, y, deltay, mouseElm, this);
     		}
