@@ -1637,8 +1637,11 @@ MouseOutHandler, MouseWheelHandler {
     
     void analyzeCircuit() {
 	calcCircuitBottom();
-	if (elmList.isEmpty())
+	if (elmList.isEmpty()) {
+	    postDrawList = new Vector<Point>();
+	    badConnectionList = new Vector<Point>();
 	    return;
+	}
 	stopMessage = null;
 	stopElm = null;
 	int i, j;
