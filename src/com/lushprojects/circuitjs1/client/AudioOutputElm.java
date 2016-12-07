@@ -132,6 +132,7 @@ public class AudioOutputElm extends CircuitElm {
 	    dataPtr = 0;
 	    dataFull = false;
 	    sampleStep = 1./samplingRate;
+	    nextDataSample = sim.t+sampleStep;
 	}
 	
 	int samplingRateChoices[] = { 8000, 11025, 16000, 22050, 44100 };
@@ -184,9 +185,12 @@ public class AudioOutputElm extends CircuitElm {
 		sim.timeStep = sampleStep;
 	    }
 	    */
-	    if (sim.timeStep != sampleStep) {
+	    
+//	    int frac = (int)Math.round(Math.max(sampleStep*33000, 1));
+	    double target = sampleStep/8;
+	    if (sim.timeStep != target) {
                 if (okToChangeTimeStep || Window.confirm("Adjust timestep for best audio quality and performance?")) {
-                    sim.timeStep = sampleStep;
+                    sim.timeStep = target;
                     okToChangeTimeStep = true;
                 }
 	    }
