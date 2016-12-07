@@ -1184,7 +1184,9 @@ MouseOutHandler, MouseWheelHandler {
 //	Font oldfont = g.getFont();
 	Font oldfont = CircuitElm.unitsFont;
 	g.setFont(oldfont);
-	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
+	
+	// this causes bad behavior on Chrome 55
+//	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
 	
 	mydrawstarttime=System.currentTimeMillis();
 	
@@ -1240,7 +1242,9 @@ MouseOutHandler, MouseWheelHandler {
 	    g.fillOval(cn.x-3, cn.y-3, 7, 7);
 	}
 
-	g.restore();
+	g.setColor(Color.black);
+	g.fillRect(0, circuitArea.height, circuitArea.width, cv.getCoordinateSpaceHeight()-circuitArea.height);
+//	g.restore();
 	g.setFont(oldfont);
 	int ct = scopeCount;
 	if (stopMessage != null)
