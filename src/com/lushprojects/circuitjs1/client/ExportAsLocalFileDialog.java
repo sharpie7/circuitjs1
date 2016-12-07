@@ -49,7 +49,7 @@ public class ExportAsLocalFileDialog extends DialogBox {
 		    URL.revokeObjectURL(oldblob);
 		var blob=new Blob(datain, {type: 'text/plain' } );
 		var url = URL.createObjectURL(blob);
-		$doc.exportBlob = oldblob;
+		$doc.exportBlob = url;
 		return url;
 	}-*/;
 	
