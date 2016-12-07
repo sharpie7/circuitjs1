@@ -335,6 +335,10 @@ public class AudioOutputElm extends CircuitElm {
         	ct = dataCount;
         	base = dataPtr;
             }
+            if (ct * sampleStep < .05) {
+        	Window.alert("Audio data is not ready yet.  Increase simulation speed to make data ready sooner.");
+        	return;
+            }
             
             // rescale data to maximize
             double max = -1e8;
