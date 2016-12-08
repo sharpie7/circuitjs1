@@ -50,6 +50,8 @@ package com.lushprojects.circuitjs1.client;
 		maxOut = new Double(st.nextToken()).doubleValue();
 		minOut = new Double(st.nextToken()).doubleValue();
 		gbw = new Double(st.nextToken()).doubleValue();
+		volts[0] = new Double(st.nextToken()).doubleValue();
+		volts[1] = new Double(st.nextToken()).doubleValue();
 	    } catch (Exception e) {
 	    }
 	    noDiagonal = true;
@@ -63,7 +65,7 @@ package com.lushprojects.circuitjs1.client;
 	    
 	}
 	String dump() {
-	    return super.dump() + " " + maxOut + " " + minOut + " " + gbw;
+	    return super.dump() + " " + maxOut + " " + minOut + " " + gbw + " " + volts[0] + " " + volts[1];
 	}
 	boolean nonLinear() { return true; }
 	void draw(Graphics g) {

@@ -859,6 +859,8 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem("Add Labeled Node", "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Test Point", "TestPointElm"));
     	outputMenuBar.addItem(getClassCheckItem("Add Ammeter", "AmmeterElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Data Export", "DataRecorderElm"));
+    	outputMenuBar.addItem(getClassCheckItem("Add Audio Output", "AudioOutputElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+"&nbsp;</div>Outputs and Labels"), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -1182,9 +1184,13 @@ MouseOutHandler, MouseWheelHandler {
 //	Font oldfont = g.getFont();
 	Font oldfont = CircuitElm.unitsFont;
 	g.setFont(oldfont);
-	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
+	
+	// this causes bad behavior on Chrome 55
+//	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
 	
 	mydrawstarttime=System.currentTimeMillis();
+	
+	// draw elements
 	for (i = 0; i != elmList.size(); i++) {
 	    if (powerCheckItem.getState())
 	    	g.setColor(Color.gray);
@@ -1194,8 +1200,14 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	mydrawtime+=System.currentTimeMillis()-mydrawstarttime;
 	
+	// draw posts normally
+	if (mouseMode != CirSim.MODE_DRAG_ROW && mouseMode != CirSim.MODE_DRAG_COLUMN) {
+	    for (i = 0; i != postDrawList.size(); i++)
+		CircuitElm.drawPost(g, postDrawList.get(i));
+	}
 	
-	
+	// for some mouse modes, what matters is not the posts but the endpoints (which are only
+	// the same for 2-terminal elements).  We draw those now if needed
 	if (tempMouseMode == MODE_DRAG_ROW || tempMouseMode == MODE_DRAG_COLUMN ||
 			tempMouseMode == MODE_DRAG_POST || tempMouseMode == MODE_DRAG_SELECTED)
 		for (i = 0; i != elmList.size(); i++) {
@@ -1211,45 +1223,28 @@ MouseOutHandler, MouseWheelHandler {
 				ce.drawHandles(g, Color.cyan);
 			}
 		}
+	// draw handles for elm we're creating
 	if (tempMouseMode==MODE_SELECT && mouseElm!=null) {
 		mouseElm.drawHandles(g, Color.cyan);
 	}
-	int badnodes = 0;
-	// find bad connections, nodes not connected to other elements which
-	// intersect other elements' bounding boxes
-	// debugged by hausen: nullPointerException
-	if ( nodeList != null )
-	for (i = 0; i != nodeList.size(); i++) {
-	    CircuitNode cn = getCircuitNode(i);
-	    if (!cn.internal && cn.links.size() == 1) {
-		int bb = 0, j;
-		CircuitNodeLink cnl = cn.links.elementAt(0);
-		for (j = 0; j != elmList.size(); j++)
-		{ // TO-DO: (hausen) see if this change does not break stuff
-		    CircuitElm ce = getElm(j);
-		    if ( ce instanceof GraphicElm )
-			continue;
-		    if (cnl.elm != ce &&
-			getElm(j).boundingBox.contains(cn.x, cn.y))
-			bb++;
-		}
-		if (bb > 0) {
-		    g.setColor(Color.red);
-		    g.fillOval(cn.x-3, cn.y-3, 7, 7);
-		    badnodes++;
-		}
-	    }
-	}
-	/*if (mouseElm != null) {
-	    g.setFont(oldfont);
-	    g.drawString("+", mouseElm.x+10, mouseElm.y);
-	    }*/
+	
+	// draw handles for elm we're dragging
 	if (dragElm != null &&
-	      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
-	    	dragElm.draw(g);
-	    	dragElm.drawHandles(g, Color.cyan);
+		      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
+		    	dragElm.draw(g);
+		    	dragElm.drawHandles(g, Color.cyan);
+		}
+
+	// draw bad connections.  do this last so they will not be overdrawn.
+	for (i = 0; i != badConnectionList.size(); i++) {
+	    Point cn = badConnectionList.get(i);
+	    g.setColor(Color.red);
+	    g.fillOval(cn.x-3, cn.y-3, 7, 7);
 	}
-	g.restore();
+
+	g.setColor(Color.black);
+	g.fillRect(0, circuitArea.height, circuitArea.width, cv.getCoordinateSpaceHeight()-circuitArea.height);
+//	g.restore();
 	g.setFont(oldfont);
 	int ct = scopeCount;
 	if (stopMessage != null)
@@ -1305,6 +1300,7 @@ MouseOutHandler, MouseWheelHandler {
 	    // count lines of data
 	    for (i = 0; info[i] != null; i++)
 		;
+	    int badnodes = badConnectionList.size();
 	    if (badnodes > 0)
 		info[i++] = badnodes + ((badnodes == 1) ?
 					" bad connection" : " bad connections");
@@ -1497,6 +1493,8 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     Vector<CircuitNode> nodeList;
+    Vector<Point> postDrawList = new Vector<Point>();
+    Vector<Point> badConnectionList = new Vector<Point>();
     CircuitElm voltageSources[];
 
     public CircuitNode getCircuitNode(int n) {
@@ -1523,6 +1521,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     // map points to node numbers
     HashMap<Point,NodeMapEntry> nodeMap;
+    HashMap<Point,Integer> postCountMap;
     
     class WireInfo {
 	WireElm wire;
@@ -1642,13 +1641,17 @@ MouseOutHandler, MouseWheelHandler {
     
     void analyzeCircuit() {
 	calcCircuitBottom();
-	if (elmList.isEmpty())
+	if (elmList.isEmpty()) {
+	    postDrawList = new Vector<Point>();
+	    badConnectionList = new Vector<Point>();
 	    return;
+	}
 	stopMessage = null;
 	stopElm = null;
 	int i, j;
 	int vscount = 0;
 	nodeList = new Vector<CircuitNode>();
+	postCountMap = new HashMap<Point,Integer>();
 	boolean gotGround = false;
 	boolean gotRail = false;
 	CircuitElm volt = null;
@@ -1703,6 +1706,8 @@ MouseOutHandler, MouseWheelHandler {
 	    // allocate a node for each post and match posts to nodes
 	    for (j = 0; j != posts; j++) {
 		Point pt = ce.getPost(j);
+		Integer g = postCountMap.get(pt);
+		postCountMap.put(pt, g == null ? 1 : g+1);
 		NodeMapEntry cln = nodeMap.get(pt);
 		
 		// is this node not in map yet?  or is the node number unallocated?
@@ -1750,6 +1755,7 @@ MouseOutHandler, MouseWheelHandler {
 	    vscount += ivs;
 	}
 	
+	makePostDrawList();
 	if (!calcWireInfo())
 	    return;
 	nodeMap = null; // done with this
@@ -2108,6 +2114,45 @@ MouseOutHandler, MouseWheelHandler {
 
     }
 
+    // make list of posts we need to draw.  posts shared by 2 elements should be hidden, all
+    // others should be drawn.  We can't use the node list anymore because wires have the same
+    // node number at both ends.
+    void makePostDrawList() {
+	postDrawList = new Vector<Point>();
+	badConnectionList = new Vector<Point>();
+	for (Map.Entry<Point, Integer> entry : postCountMap.entrySet()) {
+	    if (entry.getValue() != 2)
+		postDrawList.add(entry.getKey());
+	    
+	    // look for bad connections, posts not connected to other elements which intersect
+	    // other elements' bounding boxes
+	    if (entry.getValue() == 1) {
+		int j;
+		boolean bad = false;
+		Point cn = entry.getKey();
+		for (j = 0; j != elmList.size() && !bad; j++) {
+		    CircuitElm ce = getElm(j);
+		    if ( ce instanceof GraphicElm )
+			continue;
+		    // does this post intersect elm's bounding box?
+		    if (!ce.boundingBox.contains(cn.x, cn.y))
+			continue;
+		    int k;
+		    // does this post belong to the elm?
+		    int pc = ce.getPostCount();
+		    for (k = 0; k != pc; k++)
+			if (ce.getPost(k).equals(cn))
+			    break;
+		    if (k == pc)
+			bad = true;
+		}
+		if (bad)
+		    badConnectionList.add(cn);
+	    }
+	}
+	postCountMap = null;
+    }
+    
     void calcCircuitBottom() {
 	int i;
 	circuitBottom = 0;
@@ -2668,6 +2713,8 @@ MouseOutHandler, MouseWheelHandler {
     			//handleResize();
     		}
     		scopes[i].setElm(menuElm);
+    		if (i > 0)
+    		    scopes[i].speed = scopes[i-1].speed;
     	}
     	if (menu=="scopepop") {
     		pushUndo();
@@ -3822,6 +3869,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     		else {
     			elmList.addElement(dragElm);
+    			dragElm.draggingDone();
     			circuitChanged = true;
     		}
     		dragElm = null;
@@ -3839,6 +3887,8 @@ MouseOutHandler, MouseWheelHandler {
     	scrollValues(e.getNativeEvent().getClientX(), e.getNativeEvent().getClientY(), e.getDeltaY());
     	if (mouseElm instanceof MouseWheelHandler)
     		((MouseWheelHandler) mouseElm).onMouseWheel(e);
+    	if (scopeSelected != -1)
+    	    scopes[scopeSelected].onMouseWheel(e);
     }
     
     void setPowerBarEnable() {
@@ -3852,7 +3902,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void scrollValues(int x, int y, int deltay) {
-    	if (mouseElm!=null && !dialogIsShowing())
+    	if (mouseElm!=null && !dialogIsShowing() && scopeSelected == -1)
     		if (mouseElm instanceof ResistorElm || mouseElm instanceof CapacitorElm ||  mouseElm instanceof InductorElm) {
     			scrollValuePopup = new ScrollValuePopup(x, y, deltay, mouseElm, this);
     		}
@@ -4600,6 +4650,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
     	if (tint==208)
     	    return (CircuitElm) new CustomLogicElm(x1, y1, x2, y2, f, st);
+    	if (tint==210)
+    	    return (CircuitElm) new DataRecorderElm(x1, y1, x2, y2, f, st);
+    	if (tint==211)
+    	    return (CircuitElm) new AudioOutputElm(x1, y1, x2, y2, f, st);
     	if (tint==368)
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
@@ -4787,6 +4841,10 @@ MouseOutHandler, MouseWheelHandler {
     	    	return new TestPointElm(x1, y1);
     	if (n=="AmmeterElm")
 	    	return new AmmeterElm(x1, y1);
+    	if (n=="DataRecorderElm")
+		return (CircuitElm) new DataRecorderElm(x1, y1);
+    	if (n=="AudioOutputElm")
+		return (CircuitElm) new AudioOutputElm(x1, y1);
     	return null;
     }
     

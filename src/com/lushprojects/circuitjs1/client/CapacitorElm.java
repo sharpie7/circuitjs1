@@ -40,7 +40,8 @@ package com.lushprojects.circuitjs1.client;
 	    voltdiff = volts[0]-volts[1];
 	}
 	void reset() {
-	    current = curcount = 0;
+	    super.reset();
+	    current = curcount = curSourceValue = 0;
 	    // put small charge on caps when reset to start oscillators
 	    voltdiff = 1e-3;
 	}
@@ -118,7 +119,6 @@ package com.lushprojects.circuitjs1.client;
 		curSourceValue = -voltdiff/compResistance-current;
 	    else
 		curSourceValue = -voltdiff/compResistance;
-	    //System.out.println("cap " + compResistance + " " + curSourceValue + " " + current + " " + voltdiff);
 	}
 	void calculateCurrent() {
 	    double voltdiff = volts[0] - volts[1];
