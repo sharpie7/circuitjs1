@@ -1241,8 +1241,11 @@ MouseOutHandler, MouseWheelHandler {
 	    g.setColor(Color.red);
 	    g.fillOval(cn.x-3, cn.y-3, 7, 7);
 	}
-
-	g.setColor(Color.black);
+	
+	if (printableCheckItem.getState())
+	    g.setColor(Color.white);
+	else
+	    g.setColor(Color.black);
 	g.fillRect(0, circuitArea.height, circuitArea.width, cv.getCoordinateSpaceHeight()-circuitArea.height);
 //	g.restore();
 	g.setFont(oldfont);
