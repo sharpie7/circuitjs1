@@ -26,6 +26,7 @@ package com.lushprojects.circuitjs1.client;
 //import java.lang.reflect.Constructor;
 //import java.lang.reflect.Method;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.canvas.client.Canvas;
@@ -62,7 +63,8 @@ class Scope {
     Canvas imageCanvas;
     Context2d imageContext;
     int alphadiv =0;
-
+    double scopeTimeStep;
+    int wheelDeltaY;
     
     Scope(CirSim s) {
     	sim = s;
@@ -104,6 +106,7 @@ class Scope {
     		maxI[i] = 0;
     	}
     	ptr = ctr = 0;
+    	scopeTimeStep = sim.timeStep;
     	allocImage();
     }
     
@@ -122,6 +125,7 @@ class Scope {
     	// no showI for Output
     		if (elm != null && (elm instanceof OutputElm ||
     				    elm instanceof LogicOutputElm ||
+    				    elm instanceof AudioOutputElm ||
     				    elm instanceof ProbeElm))
     		    showI = false;
     	
@@ -363,6 +367,13 @@ class Scope {
     void draw(Graphics g) {
     	if (elm == null)
     		return;
+    	
+    	// reset if timestep changed
+    	if (scopeTimeStep != sim.timeStep) {
+    	    scopeTimeStep = sim.timeStep;
+    	    resetGraph();
+    	}
+    	
     	if (plot2d) {
     		draw2d(g);
     		return;
@@ -734,7 +745,8 @@ class Scope {
     }
     
     void slowDown() {
-    	speed *= 2;
+	if (speed < 1024)
+	    speed *= 2;
     	resetGraph();
     }
 	
@@ -929,5 +941,16 @@ class Scope {
     			return;
     		e = firstE = -1;
     	}
+    }
+    
+    void onMouseWheel(MouseWheelEvent e) {
+	wheelDeltaY += e.getDeltaY();
+	if (wheelDeltaY > 5) {
+	    slowDown();
+	    wheelDeltaY = 0;
+	}
+	if (wheelDeltaY < -5)
+	    speedUp();
+	    wheelDeltaY = 0;
     }
 }
