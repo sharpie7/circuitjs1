@@ -137,6 +137,14 @@ class VoltageElm extends CircuitElm {
 	    setBbox(point1, point2, circleSize);
 	    interpPoint(lead1, lead2, ps1, .5);
 	    drawWaveform(g, ps1);
+	    if (bias!=0) {
+		g.setColor(Color.white);
+	        g.setFont(unitsFont);
+	        Point plusPoint = interpPoint(point1, point2, (dn/2+circleSize+4)/dn, 10*dsign );
+		plusPoint.y += 4;
+	        int w = (int)g.context.measureText("+").getWidth();;
+	        g.drawString("+", plusPoint.x-w/2, plusPoint.y);
+	    }
 	}
 	updateDotCount();
 	if (sim.dragElm != this) {
