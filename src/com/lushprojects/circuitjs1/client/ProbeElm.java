@@ -97,16 +97,14 @@ class ProbeElm extends CircuitElm {
     long periodStart, periodLength, pulseStart;//time between consecutive max values
 
     Point center;
-    void setPoints() {
-	super.setPoints();
-	// swap points so that we subtract higher from lower
-	if (point2.y < point1.y) {
-	    Point x = point1;
-	    point1 = point2;
-	    point2 = x;
+	
+	void setPoints() {
+	    super.setPoints();
+	    center = interpPoint(point1, point2, .5);
 	}
-	center = interpPoint(point1, point2, .5);
-    }
+	
+	
+
     void draw(Graphics g) {
 	int hs = 8;
 	setBbox(point1, point2, hs);
@@ -163,6 +161,15 @@ class ProbeElm extends CircuitElm {
 	        }
 	    drawValues(g, s, 4);
 	}
+	   g.setColor(Color.white);
+           g.setFont(unitsFont);
+           Point plusPoint = interpPoint(point1, point2, (dn/2-len/2-4)/dn, -10*dsign );
+           if (y2 > y)
+		plusPoint.y += 4;
+	    if (y > y2)
+		plusPoint.y += 3;
+           int w = (int)g.context.measureText("+").getWidth();;
+           g.drawString("+", plusPoint.x-w/2, plusPoint.y);
 	drawPosts(g);
     }
 	
