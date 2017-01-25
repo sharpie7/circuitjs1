@@ -39,7 +39,10 @@ class Inductor {
     }
     boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
     void reset() {
-	current = 0;
+	// need to set curSourceValue here in case one of inductor nodes is node 0.  In that case
+	// calculateCurrent() may get called (from setNodeVoltage()) when analyzing circuit, before
+	// startIteration() gets called
+	current = curSourceValue = 0;
     }
     void stamp(int n0, int n1) {
 	// inductor companion model using trapezoidal or backward euler

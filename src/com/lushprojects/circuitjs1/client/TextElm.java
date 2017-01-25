@@ -44,6 +44,7 @@ class TextElm extends GraphicElm {
 	text = st.nextToken();
 	while (st.hasMoreTokens())
 	    text += ' ' + st.nextToken();
+	text=text.replaceAll("%2[bB]", "+");
 	split();
     }
     void split() {
@@ -66,7 +67,8 @@ class TextElm extends GraphicElm {
 	lines.add(sb.toString());
     }
     String dump() {
-	return super.dump() + " " + size + " " + text;
+	return super.dump() + " " + size + " " + text.replaceAll("\\+","%2B");
+	//return super.dump() + " " + size + " " + text;
     }
     int getDumpType() { return 'x'; }
     void drag(int xx, int yy) {
