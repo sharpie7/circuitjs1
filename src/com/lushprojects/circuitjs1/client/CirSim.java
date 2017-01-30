@@ -193,6 +193,7 @@ MouseOutHandler, MouseWheelHandler {
     long myruntime=0;
     long mydrawtime=0;
     int dragX, dragY, initDragX, initDragY;
+    long mouseDownTime;
     int mouseCursorX = -1;
     int mouseCursorY = -1;
     int selectedSource;
@@ -3310,8 +3311,13 @@ MouseOutHandler, MouseWheelHandler {
     		if (mouseElm == null)
     			selectArea(e.getX(), e.getY());
     		else {
-    			tempMouseMode = MODE_DRAG_SELECTED;
-    			success = dragSelected(e.getX(), e.getY());
+    		    // wait short delay before dragging.  This is to fix problem where switches were accidentally getting
+    		    // dragged when tapped on mobile devices
+    		    if (System.currentTimeMillis()-mouseDownTime < 150)
+    			return;
+    		
+    		    tempMouseMode = MODE_DRAG_SELECTED;
+    		    success = dragSelected(e.getX(), e.getY());
     		}
     		break;
     	case MODE_DRAG_SELECTED:
@@ -3710,6 +3716,7 @@ MouseOutHandler, MouseWheelHandler {
     	e.preventDefault();
     	menuX = e.getX();
     	menuY = e.getY();
+    	mouseDownTime = System.currentTimeMillis();
     	
     	// maybe someone did copy in another window?  should really do this when
     	// window receives focus
