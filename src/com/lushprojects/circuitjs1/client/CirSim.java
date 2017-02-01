@@ -151,7 +151,8 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeResistMenuItem;
     CheckboxMenuItem scopeVceIcMenuItem;
     MenuItem scopeSelectYMenuItem;
-    
+    static HashMap<String,String> localizationMap;
+   
     String lastCursorStyle;
     boolean mouseWasOverSplitter = false; 
 
@@ -4608,7 +4609,7 @@ MouseOutHandler, MouseWheelHandler {
     
     native boolean weAreInUS() /*-{
     try {
-    	l=window.navigator.language ;
+	l = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;  
     	if (l.length > 2) {
     		l = l.slice(-2).toUpperCase();
     		return (l == "US" || l=="CA");
@@ -4620,11 +4621,9 @@ MouseOutHandler, MouseWheelHandler {
     }
     }-*/;
     
-    static String LS(String s) { console("string " + s); return s; } // .toUpperCase(); }
+    static String LS(String s) {
+	String sm = localizationMap.get(s);
+	return sm != null ? sm : s;
+    }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
 }
-
-
-
-
-

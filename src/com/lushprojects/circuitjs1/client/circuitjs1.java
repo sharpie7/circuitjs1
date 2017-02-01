@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import java.util.HashMap;
+
 //CirSim.java (c) 2010 by Paul Falstad
 //GWT conversion (c) 2015, 2016 by Iain Sharp
 
@@ -56,22 +58,99 @@ package com.lushprojects.circuitjs1.client;
 //Coil drawing - find out why my alternative code doesn't work
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="1.9.9js (isharp)";
+	public static final String versionString="1.9.9js (pfalstad)";
 	
 	// Set to true if the server runs the shortrelay.php file in the same directory as the circuit simulator
 	public static final boolean shortRelaySupported = true;
 
 	static CirSim mysim;
+	HashMap<String,String> localizationMap;
 	
   public void onModuleLoad() {
+      localizationMap = new HashMap<String,String>();
+      loadLocale();
+  }
+
+  native String language()  /*-{
+	return navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;  
+  }-*/;
+
+  void loadLocale() {
+  	String url;
+  	String lang = language();
+  	GWT.log("got language " + lang);
+  	if (lang.startsWith("en")) {
+  	    // no need to load locale file for English
+  	    loadSimulator();
+  	    return;
+  	}
+  	url = GWT.getModuleBaseURL()+"locale_" + lang + ".txt";
+		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
+		try {
+			requestBuilder.sendRequest(null, new RequestCallback() {
+				public void onError(Request request, Throwable exception) {
+					GWT.log("File Error Response", exception);
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					// processing goes here
+					if (response.getStatusCode()==Response.SC_OK) {
+					String text = response.getText();
+					processLocale(text);
+					// end or processing
+					}
+					else {
+						GWT.log("Bad file server response:"+response.getStatusText() );
+						loadSimulator();
+					}
+				}
+			});
+		} catch (RequestException e) {
+			GWT.log("failed file reading", e);
+		}
+
+  }
+  
+  void processLocale(String data) {
+      String lines[] = data.split("\r?\n");
+      int i;
+      for (i = 0; i != lines.length; i++) {
+	  String line = lines[i];
+	  if (line.length() == 0)
+	      continue;
+	  if (line.charAt(0) != '"') {
+	      CirSim.console("ignoring line in string catalog: " + line);
+	      continue;
+	  }
+	  int q2 = line.indexOf('"', 1);
+	  if (q2 < 0 || line.charAt(q2+1) != '=' || line.charAt(q2+2) != '"' ||
+		  line.charAt(line.length()-1) != '"') {
+	      CirSim.console("ignoring line in string catalog: " + line);
+	      continue;
+	  }
+	  String str1 = line.substring(1, q2);
+	  String str2 = line.substring(q2+3, line.length()-1);
+	  localizationMap.put(str1, str2);
+      }
+      loadSimulator();
+  }
+  
+  public void loadSimulator() {
 	  mysim = new CirSim();
+	  mysim.localizationMap = localizationMap;
 	  mysim.init();
 
 	    Window.addResizeHandler(new ResizeHandler() {
