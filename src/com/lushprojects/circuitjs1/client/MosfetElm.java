@@ -290,13 +290,13 @@ package com.lushprojects.circuitjs1.client;
 		ids = -ids;
 	}
 	void getFetInfo(String arr[], String n) {
-	    arr[0] = ((pnp == -1) ? "p-" : "n-") + n;
+	    arr[0] = sim.LS(((pnp == -1) ? "p-" : "n-") + n);
 	    arr[0] += " (Vt = " + getVoltageText(pnp*vt) + ")";
 	    arr[1] = ((pnp == 1) ? "Ids = " : "Isd = ") + getCurrentText(ids);
 	    arr[2] = "Vgs = " + getVoltageText(volts[0]-volts[pnp == -1 ? 2 : 1]);
 	    arr[3] = ((pnp == 1) ? "Vds = " : "Vsd = ") + getVoltageText(volts[2]-volts[1]);
-	    arr[4] = (mode == 0) ? "off" :
-		(mode == 1) ? "linear" : "saturation";
+	    arr[4] = sim.LS((mode == 0) ? "off" :
+		(mode == 1) ? "linear" : "saturation");
 	    arr[5] = "gm = " + getUnitText(gm, "A/V");
 	}
 	void getInfo(String arr[]) {

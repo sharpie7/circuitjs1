@@ -49,7 +49,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 	int getDumpType() { return 172; }
 	void createSlider() {
 	    waveform = WF_VAR;
-	    sim.addWidgetToVerticalPanel(label = new Label(sliderText));
+	    sim.addWidgetToVerticalPanel(label = new Label(sim.LS(sliderText)));
 	    label.addStyleName("topSpace");
 	    int value = (int) ((frequency-bias)*100/(maxVoltage-bias));
 	    sim.addWidgetToVerticalPanel(slider = new Scrollbar(Scrollbar.HORIZONTAL, value, 1, 0, 101 ,

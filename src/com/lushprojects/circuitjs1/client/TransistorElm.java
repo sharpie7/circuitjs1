@@ -244,7 +244,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    sim.stampRightSide(nodes[2], -ie + gee*vbe + gec*vbc);
 	}
 	void getInfo(String arr[]) {
-	    arr[0] = "transistor (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
+	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
 	    double vbc = volts[0]-volts[1];
 	    double vbe = volts[0]-volts[2];
 	    double vce = volts[1]-volts[2];
@@ -252,6 +252,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 		arr[1] = vbe*pnp > .2 ? "saturation" : "reverse active";
 	    else
 		arr[1] = vbe*pnp > .2 ? "fwd active" : "cutoff";
+	    arr[1] = sim.LS(arr[1]);
 	    arr[2] = "Ic = " + getCurrentText(ic);
 	    arr[3] = "Ib = " + getCurrentText(ib);
 	    arr[4] = "Vbe = " + getVoltageText(vbe);
