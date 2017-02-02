@@ -61,7 +61,7 @@ class EditDialog extends DialogBox  {
 	EditDialog(Editable ce, CirSim f) {
 //		super(f, "Edit Component", false);
 		super(); // Do we need this?
-		setText("Edit Component");
+		setText(CirSim.LS("Edit Component"));
 		cframe = f;
 		elm = ce;
 //		setLayout(new EditDialogLayout());
@@ -77,13 +77,13 @@ class EditDialog extends DialogBox  {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(applyButton = new Button("Apply"));
+		hp.add(applyButton = new Button(CirSim.LS("Apply")));
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
 			}
 		});
-		hp.add(okButton = new Button("OK"));
+		hp.add(okButton = new Button(CirSim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -91,7 +91,7 @@ class EditDialog extends DialogBox  {
 			}
 		});
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button("Cancel"));
+		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -111,10 +111,11 @@ class EditDialog extends DialogBox  {
 				break;
 			EditInfo ei = einfos[i];
 			idx = vp.getWidgetIndex(hp);
+			String name = CirSim.LS(ei.name);
 			if (ei.name.startsWith("<"))
-			    vp.insert(l = new HTML(ei.name),idx);
+			    vp.insert(l = new HTML(name),idx);
 			else
-			    vp.insert(l = new Label(ei.name),idx);
+			    vp.insert(l = new Label(name),idx);
 			if (i!=0 && l != null)
 				l.setStyleName("topSpace");
 			idx = vp.getWidgetIndex(hp);

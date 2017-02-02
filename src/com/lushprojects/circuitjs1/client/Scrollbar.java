@@ -36,7 +36,8 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.Command;
- import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.core.client.GWT;
  import com.google.gwt.event.dom.client.MouseWheelEvent;
  import com.google.gwt.event.dom.client.MouseWheelHandler;
 
@@ -170,7 +171,9 @@ public class Scrollbar extends  Composite implements
 				}
 				else {
 					val=calcValueFromPos(e.getX());	
-					dragging=true;}
+					dragging=true;
+					Event.setCapture(can.getElement());
+				}
 			}
 			draw();
 			if (command!=null)
@@ -195,6 +198,7 @@ public class Scrollbar extends  Composite implements
 	public void onMouseUp(MouseUpEvent e){
 //		GWT.log("Up");
 		e.preventDefault();
+		Event.releaseCapture(can.getElement());
 		if (enabled && dragging) {
 			val=calcValueFromPos(e.getX());	
 			dragging=false;
@@ -207,16 +211,10 @@ public class Scrollbar extends  Composite implements
 	public void onMouseOut(MouseOutEvent e){
 //		GWT.log("Out");
 //		e.preventDefault();
+	    	if (dragging)
+	    	    return;
 		if (enabled && attachedElm!=null && attachedElm.isMouseElm())
 			CircuitElm.sim.setMouseElm(null);
-		if (enabled && dragging) {
-			val=calcValueFromPos(e.getX());	
-			dragging=false;
-			draw();
-			if (command!=null)
-				command.execute();
-		}
-
 	}
 	
 	public void onMouseOver(MouseOverEvent e){
