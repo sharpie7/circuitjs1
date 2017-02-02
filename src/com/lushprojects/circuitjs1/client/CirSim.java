@@ -2475,8 +2475,8 @@ MouseOutHandler, MouseWheelHandler {
 	int i;
 	
 	// for debugging
-	for (i = 0; i != wireInfoList.size(); i++)
-	    wireInfoList.get(i).wire.setCurrent(-1, 1.23);
+	//for (i = 0; i != wireInfoList.size(); i++)
+	 //   wireInfoList.get(i).wire.setCurrent(-1, 1.23);
 	
 	for (i = 0; i != wireInfoList.size(); i++) {
 	    WireInfo wi = wireInfoList.get(i);
