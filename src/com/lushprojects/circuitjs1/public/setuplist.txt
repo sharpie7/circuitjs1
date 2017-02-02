@@ -176,6 +176,7 @@ colpitts.txt Colpitts Oscillator
 hartley.txt Hartley Oscillator
 eclosc.txt Emitter-Coupled LC Oscillator
 -
+gilbertcell.txt Gilbert Cell Multiplier
 -
 +MOSFETs
 nmosfet.txt n-MOSFET

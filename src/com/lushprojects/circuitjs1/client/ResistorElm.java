@@ -26,7 +26,7 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 
     class ResistorElm extends CircuitElm {
 	double resistance;
-	public ResistorElm(int xx, int yy) { super(xx, yy); resistance = 100; }
+	public ResistorElm(int xx, int yy) { super(xx, yy); resistance = 1000; }
 	public ResistorElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
