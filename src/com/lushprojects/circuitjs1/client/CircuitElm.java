@@ -836,6 +836,9 @@ public abstract class CircuitElm implements Editable {
     double getCurrentIntoPoint(int xa, int ya) {
 	if (xa == x && ya == y && getPostCount() == 2)
 	    return -current;
+//	if ((xa == x2 && ya == y2) || getPostCount() == 1)
+//	    return current;
+//	sim.stop("bad current into point", this);  // for debugging
 	return current;
     }
 }

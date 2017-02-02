@@ -106,6 +106,7 @@ class LabeledNodeElm extends CircuitElm {
 	setBbox(point1, ps2, circleSize);
 	drawPosts(g);
     }
+    double getCurrentIntoPoint(int xa, int ya) { return -current; }
     void setCurrent(int x, double c) { current = -c; }
     void stamp() {
 	sim.stampVoltageSource(nodeNumber, nodes[0], voltSource, 0);

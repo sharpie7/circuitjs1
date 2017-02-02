@@ -87,6 +87,11 @@ class TriStateElm extends CircuitElm {
 	current = (volts[0]-volts[1])/resistance;
     }
 	
+    double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == x2 && ya == y2)
+	    return current;
+	return 0;
+    }
     // we need this to be able to change the matrix for each step
     boolean nonLinear() { return true; }
 
