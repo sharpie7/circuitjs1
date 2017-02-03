@@ -1773,12 +1773,15 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    // look for current sources with no current path
 	    if (ce instanceof CurrentElm) {
+		CurrentElm cur = (CurrentElm) ce;
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
 		if (!fpi.findPath(ce.getNode(0))) {
-		    stop(LS("No path for current source!"), ce);
-		    return;
-		}
+//		    stop(LS("No path for current source!"), ce);
+//		    return;
+		    cur.stampCurrentSource(true);
+		} else
+		    cur.stampCurrentSource(false);
 	    }
 	    // look for voltage source loops
 	    // IES
