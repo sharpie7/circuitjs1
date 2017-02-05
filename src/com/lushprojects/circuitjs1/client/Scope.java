@@ -281,8 +281,11 @@ class Scope {
       double[] real = new double[scopePointCount];
       double[] imag = new double[scopePointCount];
       for (int i = 0; i < scopePointCount; i++) {
-        real[i] = maxV[(ptr - i + scopePointCount) & (scopePointCount - 1)];
-        imag[i] = 0;
+	  int ii = (ptr - i + scopePointCount) & (scopePointCount - 1);
+	  // need to average max and min or else it could cause average of function to be > 0, which
+	  // produces spike at 0 Hz that hides rest of spectrum
+	  real[i] = .5*(maxV[ii]+minV[ii]);
+	  imag[i] = 0;
       }
       fft.fft(real, imag);
       double maxM = 1e-8;
@@ -692,7 +695,7 @@ class Scope {
     	
     	g.context.restore();
 	if (rect.contains(sim.mouseCursorX, sim.mouseCursorY)) {
-	    String info[] = new String[3];
+	    String info[] = new String[4];
 	    int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
 	    int ct = 0;
 	    if (value != 0) {
@@ -713,9 +716,15 @@ class Scope {
 		    g.setColor(curColor);
 		    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
 		}
+		if (showFFT) {
+		    double maxFrequency = 1 / (sim.timeStep * speed * 2);
+		    info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
+		}
 	    }
-	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
-	    info[ct++] = CircuitElm.getUnitText(t, "s");
+	    if (showV || showI) {
+		double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
+		info[ct++] = CircuitElm.getUnitText(t, "s");
+	    }
 	    int szw = 0, szh = 15*ct;
 	    for (i = 0; i != ct; i++) {
 	        int w=(int)g.context.measureText(info[i]).getWidth();
@@ -727,11 +736,14 @@ class Scope {
 	    g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
 //	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
 	    g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
-	    g.fillRect(sim.mouseCursorX-szw/2, rect.y-szh, szw, szh);
+	    int bx = sim.mouseCursorX;
+	    if (bx < szw/2)
+		bx = szw/2;
+	    g.fillRect(bx-szw/2, rect.y-szh, szw, szh);
 	    g.setColor(CircuitElm.whiteColor);
 	    for (i = 0; i != ct; i++) {
 	        int w=(int)g.context.measureText(info[i]).getWidth();
-		g.drawString(info[i], sim.mouseCursorX-w/2, rect.y-2-(ct-1-i)*15);
+		g.drawString(info[i], bx-w/2, rect.y-2-(ct-1-i)*15);
 	    }
 	}
 
