@@ -687,7 +687,7 @@ MouseOutHandler, MouseWheelHandler {
   		} else {
   		    tmout = setTimeout(function() {
   		        sim.@com.lushprojects.circuitjs1.client.CirSim::longPress()();
-  		    }, 1000);
+  		    }, 500);
   		}
   		lastTap = e.timeStamp;
   		
@@ -762,6 +762,7 @@ MouseOutHandler, MouseWheelHandler {
     	inputMenuBar.addItem(getClassCheckItem(LS("Add AM Source"), "AMElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add FM Source"), "FMElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Current Source"), "CurrentElm"));
+    	inputMenuBar.addItem(getClassCheckItem(LS("Add Noise Generator"), "NoiseElm"));
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Inputs and Sources")), inputMenuBar);
     	
@@ -4311,6 +4312,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new AMElm(x1, y1, x2, y2, f, st);
     	if (tint==201)
     		return (CircuitElm) new FMElm(x1, y1, x2, y2, f, st);
+    	if (tint=='n')
+		return (CircuitElm) new NoiseElm(x1, y1, x2, y2, f, st);
     	if (tint==181)
     		return (CircuitElm) new LampElm(x1, y1, x2, y2, f, st);
     	if (tint=='a')
@@ -4598,6 +4601,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
+    	if (n=="NoiseElm")
+		return (CircuitElm) new NoiseElm(x1, y1);
     	return null;
     }
     

@@ -46,40 +46,44 @@ class RailElm extends VoltageElm {
 	super.setPoints();
 	lead1 = interpPoint(point1, point2, 1-circleSize/dn);
     }
+    
     void draw(Graphics g) {
-    String s;
 	setBbox(point1, point2, circleSize);
 	setVoltageColor(g, volts[0]);
 	drawThickLine(g, point1, lead1);
-	boolean clock = waveform == WF_SQUARE && (flags & FLAG_CLOCK) != 0;
-	if (waveform == WF_DC || waveform == WF_VAR || clock) {
-// 	IES
-		//	Font f = new Font("SansSerif", 0, 12);
-//	    g.setFont(f);
+	drawRail(g);
+	drawPosts(g);
+	curcount = updateDotCount(-current, curcount);
+	if (sim.dragElm != this)
+	    drawDots(g, point1, lead1, curcount);
+    }
+
+    void drawRail(Graphics g) {
+	if (waveform == WF_SQUARE && (flags & FLAG_CLOCK) != 0)
+	    drawRailText(g, "CLK");
+	else if (waveform == WF_DC || waveform == WF_VAR) {
 	    g.setColor(needsHighlight() ? selectColor : whiteColor);
 	    setPowerColor(g, false);
 	    double v = getVoltage();
-	//    String s = getShortUnitText(v, "V");
+	    String s;
 	    if (Math.abs(v) < 1)
 	    	s = showFormat.format(v)+" V";
 	    else
 	    	s = getShortUnitText(v, "V");
 	    if (getVoltage() > 0)
 		s = "+" + s;
-	    // ies
-	    if (this instanceof AntennaElm)
-		s = "Ant";
-	    if (clock)
-		s = "CLK";
 	    drawCenteredText(g, s, x2, y2, true);
 	} else {
 	    drawWaveform(g, point2);
 	}
-	drawPosts(g);
-	curcount = updateDotCount(-current, curcount);
-	if (sim.dragElm != this)
-	    drawDots(g, point1, lead1, curcount);
     }
+    
+    void drawRailText(Graphics g, String s) {
+	g.setColor(needsHighlight() ? selectColor : whiteColor);
+	setPowerColor(g, false);
+	drawCenteredText(g, s, x2, y2, true);
+    }
+    
     double getVoltageDiff() { return volts[0]; }
     void stamp() {
 	if (waveform == WF_DC)

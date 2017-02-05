@@ -19,31 +19,33 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class AntennaElm extends RailElm {
-	public AntennaElm(int xx, int yy) { super(xx, yy, WF_AC); }
-	public AntennaElm(int xa, int ya, int xb, int yb, int f,
+    class NoiseElm extends RailElm {
+	public NoiseElm(int xx, int yy) { super(xx, yy, WF_AC); }
+	public NoiseElm(int xa, int ya, int xb, int yb, int f,
 		       StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	    waveform = WF_AC;
 	}
-	double fmphase;
 	
 	void drawRail(Graphics g) {
-	    drawRailText(g, "Ant");
+	    drawRailText(g, CirSim.LS("Noise"));
+	}
+
+	void stepFinished() {
+	    val = (sim.random.nextDouble()*2-1) * maxVoltage;
 	}
 	
+	double val;
 	double getVoltage() {
-	    fmphase += 2*pi*(2200+Math.sin(2*pi*sim.t*13)*100)*sim.timeStep;
-	    double fm = 3*Math.sin(fmphase);
-	    return Math.sin(2*pi*sim.t*3000)*(1.3+Math.sin(2*pi*sim.t*12))*3 +
-	           Math.sin(2*pi*sim.t*2710)*(1.3+Math.sin(2*pi*sim.t*13))*3 +
-		   Math.sin(2*pi*sim.t*2433)*(1.3+Math.sin(2*pi*sim.t*14))*3 + fm;
+	    return val;
 	}
 	
-	int getDumpType() { return 'A'; }
+	int getDumpType() { return 'n'; }
 	int getShortcut() { return 0; }
 	
 	public EditInfo getEditInfo(int n) {
+	    if (n == 0)
+		return super.getEditInfo(n);
 	    return null;
 	}
     }
