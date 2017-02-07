@@ -206,13 +206,18 @@ class VoltageElm extends CircuitElm {
 	{
 	    int i;
 	    int xl = 10;
-	    int ox = -1, oy = -1;
+		g.context.beginPath();
+		g.context.setLineWidth(3.0);
+
 	    for (i = -xl; i <= xl; i++) {
 		int yy = yc+(int) (.95*Math.sin(i*pi/xl)*wl);
-		if (ox != -1)
-		    drawThickLine(g, ox, oy, xc+i, yy);
-		ox = xc+i; oy = yy;
+		if (i == -xl)
+		    g.context.moveTo(xc+i, yy);
+		else
+		    g.context.lineTo(xc+i, yy);
 	    }
+	    g.context.stroke();
+		g.context.setLineWidth(1.0);
 	    break;
 	}
 	}
