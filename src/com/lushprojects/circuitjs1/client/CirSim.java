@@ -954,15 +954,20 @@ MouseOutHandler, MouseWheelHandler {
 	Rectangle bounds = getCircuitBounds();
 	
 	// add some space on edges because bounds calculation is not perfect
-    	double scale = Math.min(circuitArea.width /(double)(bounds.width+140),
-    				circuitArea.height/(double)(bounds.height+100));
-    	circuitBottom = 0;
+    	double scale = 1;
     	
+    	if (bounds != null)
+    	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
+    			     circuitArea.height/(double)(bounds.height+100));
+    	circuitBottom = 0;
+
     	// calculate transform so circuit fills most of screen
     	transform[0] = transform[3] = scale;
-    	transform[1] = transform[2] = 0;
-    	transform[4] = (circuitArea.width -bounds.width *scale)/2 - bounds.x*scale;
-    	transform[5] = (circuitArea.height-bounds.height*scale)/2 - bounds.y*scale;
+    	transform[1] = transform[2] = transform[4] = transform[5] = 0;
+    	if (bounds != null) {
+    	    transform[4] = (circuitArea.width -bounds.width *scale)/2 - bounds.x*scale;
+    	    transform[5] = (circuitArea.height-bounds.height*scale)/2 - bounds.y*scale;
+    	}
     }
 
     // get circuit bounds.  remember this doesn't use setBbox().  That is calculated when we draw
@@ -981,6 +986,8 @@ MouseOutHandler, MouseWheelHandler {
     		miny = min(ce.y, min(ce.y2, miny));
     		maxy = max(ce.y, max(ce.y2, maxy));
     	}
+    	if (minx > maxx)
+    	    return null;
     	return new Rectangle(minx, miny, maxx-minx, maxy-miny);
     }
 
@@ -3360,6 +3367,7 @@ MouseOutHandler, MouseWheelHandler {
     	mouseSelect(e);
     }
     
+    // convert screen coordinates to grid coordinates by inverting circuit transform
     int inverseTransformX(double x) {
 	return (int) ((x-transform[4])/transform[0]);
     }
