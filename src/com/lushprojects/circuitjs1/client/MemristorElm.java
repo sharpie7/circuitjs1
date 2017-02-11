@@ -41,12 +41,15 @@ class MemristorElm extends CircuitElm {
 	dopeWidth = new Double(st.nextToken()).doubleValue();
 	totalWidth = new Double(st.nextToken()).doubleValue();
 	mobility = new Double(st.nextToken()).doubleValue();
+	try {
+	    current = Double.parseDouble(st.nextToken());
+	} catch (Exception e) {}
 	resistance = 100;
     }
     int getDumpType() { return 'm'; }
     String dump() {
 	return super.dump() + " " + r_on + " " + r_off + " " + dopeWidth + " " +
-	    totalWidth + " " + mobility;
+	    totalWidth + " " + mobility + " " + current;
     }
 
     Point ps3, ps4;
@@ -120,10 +123,10 @@ class MemristorElm extends CircuitElm {
 	arr[4] = "P = " + getUnitText(getPower(), "W");
     }
     double getScopeValue(int x) {
-	return (x == 2) ? resistance : (x == 1) ? getPower() : getVoltageDiff();
+	return (x == Scope.VAL_R) ? resistance : super.getScopeValue(x);
     }
-    String getScopeUnits(int x) {
-	return (x == 2) ? sim.ohmString : (x == 1) ? "W" : "V";
+    int getScopeUnits(int x) {
+	return (x == Scope.VAL_R) ? Scope.UNITS_OHMS : super.getScopeUnits(x);
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)

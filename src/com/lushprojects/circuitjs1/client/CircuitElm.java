@@ -761,10 +761,12 @@ public abstract class CircuitElm implements Editable {
     }
     double getPower() { return getVoltageDiff()*current; }
     double getScopeValue(int x) {
-	return (x == 1) ? getPower() : getVoltageDiff();
+	return (x == Scope.VAL_CURRENT) ? getCurrent() :
+	    (x == Scope.VAL_POWER) ? getPower() : getVoltageDiff();
     }
-    String getScopeUnits(int x) {
-	return (x == 1) ? "W" : "V";
+    int getScopeUnits(int x) {
+	return (x == Scope.VAL_CURRENT) ? Scope.UNITS_A :
+	    (x == Scope.VAL_POWER) ? Scope.UNITS_W : Scope.UNITS_V;
     }
     public EditInfo getEditInfo(int n) { return null; }
     public void setEditValue(int n, EditInfo ei) {}
@@ -788,7 +790,7 @@ public abstract class CircuitElm implements Editable {
     boolean comparePair(int x1, int x2, int y1, int y2) {
 	return ((x1 == y1 && x2 == y2) || (x1 == y2 && x2 == y1));
     }
-    boolean needsHighlight() { return iAmMouseElm || selected; }
+    boolean needsHighlight() { return iAmMouseElm || selected || sim.plotYElm == this; }
     boolean isSelected() { return selected; }
     void setSelected(boolean x) { selected = x; }
     void selectRect(Rectangle r) {

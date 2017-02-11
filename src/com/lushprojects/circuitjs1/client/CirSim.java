@@ -151,6 +151,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeXYMenuItem;
     CheckboxMenuItem scopeResistMenuItem;
     CheckboxMenuItem scopeVceIcMenuItem;
+    MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     static HashMap<String,String> localizationMap;
    
@@ -194,6 +195,7 @@ MouseOutHandler, MouseWheelHandler {
     int pause = 10;
     int scopeSelected = -1;
     int menuScope = -1;
+    int menuPlot = -1;
     int hintType = -1, hintItem1, hintItem2;
     String stopMessage;
     double timeStep;
@@ -883,13 +885,16 @@ MouseOutHandler, MouseWheelHandler {
 
     MenuBar buildScopeMenu(boolean t) {
     	MenuBar m = new MenuBar(true);
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Remove"),new MyCommand("scopepop", "remove")));
+    	m.addItem(new CheckboxAlignedMenuItem(LS("Remove Scope"),new MyCommand("scopepop", "remove")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 2x"), new MyCommand("scopepop", "speed2")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 1/2x"), new MyCommand("scopepop", "speed1/2")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Scale 2x"), new MyCommand("scopepop", "scale")));
+//    	m.addItem(new CheckboxAlignedMenuItem(LS("Scale 2x"), new MyCommand("scopepop", "scale")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Stack"), new MyCommand("scopepop", "stack")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Unstack"), new MyCommand("scopepop", "unstack")));
+    	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
+    	if (!t)
+    	    m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Reset"), new MyCommand("scopepop", "reset")));
     	if (t) {
     		m.addItem(scopeIbMenuItem = new CheckboxMenuItem(LS("Show Ib"), new MyCommand("scopepop", "showib")));
@@ -1277,9 +1282,9 @@ MouseOutHandler, MouseWheelHandler {
     	// unused scopes/columns
     	int pos = -1;
     	for (i = 0; i < scopeCount; i++) {
-    		if (locateElm(scopes[i].elm) < 0)
+    		if (locateElm(scopes[i].getElm()) < 0)
     			scopes[i].setElm(null);
-    		if (scopes[i].elm == null) {
+    		if (scopes[i].getElm() == null) {
     			int j;
     			for (j = i; j != scopeCount; j++)
     				scopes[j] = scopes[j+1];
@@ -1291,7 +1296,7 @@ MouseOutHandler, MouseWheelHandler {
     			scopes[i].position = pos+1;
     		pos = scopes[i].position;
     	}
-    	while (scopeCount > 0 && scopes[scopeCount-1].elm == null)
+    	while (scopeCount > 0 && scopes[scopeCount-1].getElm() == null)
     		scopeCount--;
     	int h = cv.getCoordinateSpaceHeight() - circuitArea.height;
     	pos = 0;
@@ -2334,7 +2339,7 @@ MouseOutHandler, MouseWheelHandler {
     boolean canDelayWireProcessing() {
 	int i;
 	for (i = 0; i != scopeCount; i++)
-	    if (scopes[i].elm instanceof WireElm)
+	    if (scopes[i].getElm() instanceof WireElm)
 		return false;
 	return true;
     }
@@ -2599,7 +2604,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="viewInScope" && menuElm != null) {
     		int i;
     		for (i = 0; i != scopeCount; i++)
-    			if (scopes[i].elm == null)
+    			if (scopes[i].getElm() == null)
     				break;
     		if (i == scopeCount) {
     			if (scopeCount == scopes.length)
@@ -2617,6 +2622,8 @@ MouseOutHandler, MouseWheelHandler {
     		pushUndo();
     		if (item=="remove")
     			scopes[menuScope].setElm(null);
+    		if (item=="removeplot")
+			scopes[menuScope].removePlot(menuPlot);
     		if (item=="speed2")
     			scopes[menuScope].speedUp();
     		if (item=="speed1/2")
@@ -2629,12 +2636,15 @@ MouseOutHandler, MouseWheelHandler {
     			stackScope(menuScope);
     		if (item=="unstack")
     			unstackScope(menuScope);
+    		if (item=="combine")
+			combineScope(menuScope);
     		if (item=="selecty")
     			scopes[menuScope].selectY();
     		if (item=="reset")
     			scopes[menuScope].resetGraph();
-    		if (item.indexOf("show")==0 || item=="plotxy" || item=="showfft")
+    		if (item.indexOf("show")==0 || item=="plotxy" || item=="showfft") {
     			scopes[menuScope].handleMenu(item);
+    		}
     		//cv.repaint();
     	}
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
@@ -2709,6 +2719,16 @@ MouseOutHandler, MouseWheelHandler {
     		scopes[s].position++;
     }
 
+    void combineScope(int s) {
+    	if (s == 0) {
+    		if (scopeCount < 2)
+    			return;
+    		s = 1;
+    	}
+    	scopes[s-1].combine(scopes[s]);
+    	scopes[s].setElm(null);
+    }
+    
 
     void stackAll() {
     	int i;
@@ -3042,6 +3062,7 @@ MouseOutHandler, MouseWheelHandler {
 //		    break;
 		} catch (Exception ee) {
 		    ee.printStackTrace();
+		    console("exception while undumping " + ee);
 		    break;
 		}
 		break;
@@ -3440,10 +3461,10 @@ MouseOutHandler, MouseWheelHandler {
     		for (i = 0; i != scopeCount; i++) {
     			Scope s = scopes[i];
     			if (s.rect.contains(sx, sy)) {
-    				newMouseElm=s.elm;
+    				newMouseElm=s.getElm();
     		    	if (s.plotXY) {
-    		    		plotXElm = s.elm;
-    		    		plotYElm = s.yElm;
+    		    		plotXElm = s.getXElm();
+    		    		plotYElm = s.getYElm();
     		    	}
     				scopeSelected = i;
     			}
@@ -3497,10 +3518,12 @@ MouseOutHandler, MouseWheelHandler {
     void doPopupMenu() {
     	menuElm = mouseElm;
     	menuScope=-1;
+    	menuPlot=-1;
     	int x, y;
     	if (scopeSelected!=-1) {
     		MenuBar m=scopes[scopeSelected].getMenu();
     		menuScope=scopeSelected;
+    		menuPlot=scopes[scopeSelected].selectedPlot;
     		if (m!=null) {
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(m);
@@ -3720,7 +3743,6 @@ MouseOutHandler, MouseWheelHandler {
 	double newScale = Math.max(oldScale+val, .2);
 	newScale = Math.min(newScale, 2.5);
 	transform[0] = transform[3] = newScale;
-//	console("zoom " + transform[0] + " " + dy);
 
 	// adjust translation to keep center of screen constant
 	// inverse transform = (x-t4)/t0

@@ -272,11 +272,11 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    return 0;
 	}
 	
-	String getScopeUnits(int x) {
+	int getScopeUnits(int x) {
 	    switch (x) {
 	    case Scope.VAL_IB: case Scope.VAL_IC:
-	    case Scope.VAL_IE: return "A";
-	    default: return "V";
+	    case Scope.VAL_IE: return Scope.UNITS_A;
+	    default: return Scope.UNITS_V;
 	    }
 	}
 	public EditInfo getEditInfo(int n) {

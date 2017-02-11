@@ -206,8 +206,8 @@ class VoltageElm extends CircuitElm {
 	{
 	    int i;
 	    int xl = 10;
-		g.context.beginPath();
-		g.context.setLineWidth(3.0);
+	    g.context.beginPath();
+	    g.context.setLineWidth(3.0);
 
 	    for (i = -xl; i <= xl; i++) {
 		int yy = yc+(int) (.95*Math.sin(i*pi/xl)*wl);
@@ -217,7 +217,7 @@ class VoltageElm extends CircuitElm {
 		    g.context.lineTo(xc+i, yy);
 	    }
 	    g.context.stroke();
-		g.context.setLineWidth(1.0);
+	    g.context.setLineWidth(1.0);
 	    break;
 	}
 	}
