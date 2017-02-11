@@ -114,7 +114,7 @@ class ScopePlot {
 	    color = "#FFFF00";
 	    break;
 	default:
-	    color = "#FFFFFF";
+	    color = (CirSim.theSim.printableCheckItem.getState()) ? "#000000" : "#FFFFFF";
 	    break;
 	}
     }
@@ -288,6 +288,7 @@ class Scope {
 	CircuitElm ce = plots.firstElement().elm;
 	if (plots.size() == 2 && plots.get(1).elm != ce)
 	    return;
+	plot2d = plotXY = false;
 	setValue(val, ce);
     }
     
@@ -303,7 +304,12 @@ class Scope {
 		    ce instanceof ProbeElm))
 		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT));
 	} else {
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits(val), val));
+	    int u = ce.getScopeUnits(val);
+	    plots.add(new ScopePlot(ce, u, val));
+	    if (u == UNITS_V)
+		showV = true;
+	    if (u == UNITS_A)
+		showI = true;
 	}
 	calcVisiblePlots();
 	resetGraph();
