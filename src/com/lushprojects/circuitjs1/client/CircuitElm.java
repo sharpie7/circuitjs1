@@ -110,6 +110,8 @@ public abstract class CircuitElm implements Editable {
 	initBoundingBox();
     }
     
+
+    
     void initBoundingBox() {
 	boundingBox = new Rectangle();
 	boundingBox.setBounds(min(x, x2), min(y, y2),

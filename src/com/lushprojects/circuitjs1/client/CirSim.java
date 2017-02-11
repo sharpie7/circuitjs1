@@ -2027,6 +2027,8 @@ MouseOutHandler, MouseWheelHandler {
 		    gotVoltageSource = true;
 	    }
 	}
+	
+	dumpNodelist();
 
     }
 
@@ -4408,6 +4410,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
     	    return new AmmeterElm(x1, y1, x2, y2, f, st);
+    	if (tint==400)
+    	    return new DarlingtonElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4595,6 +4599,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
+    	if (n=="DarlingtonElm")
+		return (CircuitElm) new DarlingtonElm(x1, y1, false);
     	return null;
     }
     
@@ -4626,4 +4632,33 @@ MouseOutHandler, MouseWheelHandler {
 	return sm != null ? sm : s;
     }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
+    
+    
+    // For debugging
+    void dumpNodelist() {
+	console("Node List Dump");
+	CircuitNode nd;
+	CircuitElm e;
+	int i,j;
+	String s;
+
+	for(i=0; i<nodeList.size(); i++) {
+	    s="Node "+i;
+	    nd=nodeList.get(i);
+	    for(j=0; j<nd.links.size();j++) {
+		s=s+" " + nd.links.get(j).num + " " +nd.links.get(j).elm.getDumpType();
+	    }
+	    console(s);
+	}
+	console("Elm list Dump");
+	for (i=0;i<elmList.size(); i++) {
+	    s="Elm "+i;
+	    e=elmList.get(i);
+	    for(j=0; j<e.getPostCount(); j++) {
+		s=s+" "+e.nodes[j];
+	    }
+	    console(s);
+	}
+    }
+    
 }
