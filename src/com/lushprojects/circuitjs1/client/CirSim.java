@@ -2028,7 +2028,7 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	}
 	
-	dumpNodelist();
+//	dumpNodelist();
 
     }
 
@@ -4599,8 +4599,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
-    	if (n=="DarlingtonElm")
-		return (CircuitElm) new DarlingtonElm(x1, y1, false);
+    	if (n=="NDarlingtonElm")
+		return (CircuitElm) new NDarlingtonElm(x1, y1);
     	return null;
     }
     

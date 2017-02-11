@@ -28,39 +28,46 @@ public abstract class CompositeElm extends CircuitElm {
 
     CompositeElm(int xx, int yy, String s, int externalNodes[]) {
 	super(xx, yy);
-	loadComposite(s, externalNodes);
+	loadComposite(null, s, externalNodes);
 	allocNodes();
     }
 
     public CompositeElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st, String s, int externalNodes[]) {
 	super(xa, ya, xb, yb, f);
-	loadComposite(s, externalNodes);
+	loadComposite(st, s, externalNodes);
 	allocNodes();
     }
 
-    public void loadComposite(String s, int externalNodes[]) {
+    public void loadComposite(StringTokenizer stIn, String model, int externalNodes[]) {
 	// TODO Optimize for wires
 	HashMap<Integer, CircuitNode> compNodeHash = new HashMap<Integer, CircuitNode>();
-	StringTokenizer linet = new StringTokenizer(s, "\r");
+	StringTokenizer modelLinet = new StringTokenizer(model, "\r");
 	CircuitNode cn;
 	CircuitNodeLink cnLink;
 
 	// Build compElmList and compNodeHash from input string
 
-	while (linet.hasMoreTokens()) {
-	    String line = linet.nextToken();
-	    StringTokenizer st = new StringTokenizer(line, " +\t\n\r\f");
-	    String ceType = st.nextToken();
+	while (modelLinet.hasMoreTokens()) {
+	    String line = modelLinet.nextToken();
+	    StringTokenizer stModel = new StringTokenizer(line, " +\t\n\r\f");
+	    String ceType = stModel.nextToken();
 	    CircuitElm newce = CirSim.constructElement(ceType, 0, 0);
+	    if (stIn!=null) {
+		int tint = newce.getDumpType();
+		String dumpedCe= stIn.nextToken();
+		StringTokenizer stCe = new StringTokenizer(dumpedCe, "_");
+		int flags = new Integer(stCe.nextToken()).intValue();
+		newce = CirSim.createCe(tint, 0, 0, 0, 0, flags, stCe);
+	    }
 	    compElmList.add(newce);
 
 	    int thisPost = 0;
-	    while (st.hasMoreTokens()) {
-		int nodeOfThisPost = new Integer(st.nextToken()).intValue();
+	    while (stModel.hasMoreTokens()) {
+		int nodeOfThisPost = new Integer(stModel.nextToken()).intValue();
 		cnLink = new CircuitNodeLink();
 		cnLink.num = thisPost;
 		cnLink.elm = newce;
-		if (! compNodeHash.containsKey(nodeOfThisPost)) {
+		if (!compNodeHash.containsKey(nodeOfThisPost)) {
 		    cn = new CircuitNode();
 		    cn.links.add(cnLink);
 		    compNodeHash.put(nodeOfThisPost, cn);
@@ -77,23 +84,21 @@ public abstract class CompositeElm extends CircuitElm {
 	for (int i = 0; i < externalNodes.length; i++) { // External Nodes First
 	    if (compNodeHash.containsKey(externalNodes[i])) {
 		compNodeList.add(compNodeHash.get(externalNodes[i]));
-	    	compNodeHash.remove(externalNodes[i]);
+		compNodeHash.remove(externalNodes[i]);
 	    } else
 		throw new IllegalArgumentException();
 	}
-	CirSim.console("Dumping compNodeHash");
 	for (Entry<Integer, CircuitNode> entry : compNodeHash.entrySet()) {
 	    int key = entry.getKey();
-	    CirSim.console("old node"+key+" Size of links"+compNodeHash.get(key).links.size());
 	    compNodeList.add(compNodeHash.get(key));
 	}
 
 	numNodes = compNodeList.size();
-	
-	CirSim.console("Dumping compNodeList");
-	for (int i=0;i<numNodes;i++) {
-	    CirSim.console("New node"+i+" Size of links:"+compNodeList.get(i).links.size());
-	}
+
+//	CirSim.console("Dumping compNodeList");
+//	for (int i = 0; i < numNodes; i++) {
+//	    CirSim.console("New node" + i + " Size of links:" + compNodeList.get(i).links.size());
+//	}
 
 	posts = new Point[numPosts];
 
@@ -102,6 +107,38 @@ public abstract class CompositeElm extends CircuitElm {
     public boolean nonLinear() {
 	return true; // Lets assume that any useful composite elements are
 		     // non-linear
+    }
+    
+    abstract public int getDumpType();
+    
+    public String dump() {
+		String dumpStr=super.dump();
+		for (int i = 0; i < compElmList.size(); i++) {
+		    String tstring = compElmList.get(i).dump().replace(' ', '_');
+		    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
+		    dumpStr += " "+ tstring;
+		}
+//		for (int i=0; i<numPosts; i++) {
+//		    dumpStr += " "+posts[i].x + " " + posts[i].y;
+//		}
+		return dumpStr;
+    }
+    
+    public boolean getConnection(int n1, int n2) {
+	// TODO Find out if more sophisticated handling is needed here
+	// In the meantime subclasses should override this if they know  nodes are not connected
+	return true;
+    }
+    
+    // is n1 connected to ground somehow?
+    public boolean hasGroundConnection(int n1) {
+	Vector<CircuitNodeLink> cnLinks;
+	cnLinks = compNodeList.get(n1).links;
+	for (int i = 0; i < cnLinks.size(); i++) {
+	    if (cnLinks.get(i).elm.hasGroundConnection(cnLinks.get(i).num))
+		    return true;
+	}
+	return false; 
     }
 
     public void reset() {
@@ -122,9 +159,9 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     void setPost(int n, Point p) {
-	posts[n]=p;
+	posts[n] = p;
     }
-    
+
     void setPost(int n, int x, int y) {
 	posts[n].x = x;
 	posts[n].y = y;
@@ -154,7 +191,6 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     abstract void getInfo(String arr[]);
-
 
     public void setNode(int p, int n) {
 	// nodes[p] = n
@@ -186,6 +222,55 @@ public abstract class CompositeElm extends CircuitElm {
 	    compElmList.get(i).delete();
     }
 
-    abstract double getCurrentIntoPoint(int xa, int ya);
+    // Have to admit that I don't really understand the voltageSourceCount, but
+    // this would appear
+    // to be the right thing to do based on other parts of the code
+    public int getVoltageSourceCount() {
+	int vsc = 0;
+	for (int i = 0; i < compElmList.size(); i++)
+	    vsc += compElmList.get(i).getVoltageSourceCount();
+	return vsc;
+    }
+
+    // Find the component with the nth voltage source by iterating over the list
+    // and set the
+    // appropriate source in that component
+    void setVoltageSource(int n, int v) {
+	// voltSource(n) = v;
+	int vsc = 0;
+	int oldvsc;
+	for (int i = 0; i < compElmList.size(); i++) {
+	    oldvsc = vsc;
+	    vsc += compElmList.get(i).getVoltageSourceCount();
+	    if (vsc > n) {
+		compElmList.get(i).setVoltageSource(n - oldvsc, v);
+		return;
+	    }
+	}
+    }
+
+ // It is hard to write a general purpose getCurrentIntoNode routine because this is not defined
+ // for many circuit elements. Working-around by using getCurrentIntoPoint doesn't work for 
+    // internal components as they don't have points.
+    // If all components in the composite have "getCurrentIntoNode" implemented then you can use this
+    // routine. If not then you must override with your own code.
+    double getCurrentIntoNode(int n) {
+	double c=0;
+	Vector<CircuitNodeLink> cnLinks;
+	cnLinks = compNodeList.get(n).links;
+	for (int i = 0; i < cnLinks.size(); i++) {
+	    c+=cnLinks.get(i).elm.getCurrentIntoNode(cnLinks.get(i).num);
+	}
+	return c;
+    }
+    
+    
+    double getCurrentIntoPoint(int xa, int ya) {
+	for(int i=0; i<posts.length; i++) {
+	    if (posts[i].x==xa && posts[i].y == ya)
+		return getCurrentIntoNode(i);
+	}
+	return 0;
+    }
 
 }
