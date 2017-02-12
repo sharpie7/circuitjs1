@@ -790,6 +790,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (P-Channel)"), "PJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add SCR"), "SCRElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (NPN)"), "NDarlingtonElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (PNP)"), "PDarlingtonElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Varactor/Varicap", "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
@@ -4602,6 +4603,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new AudioOutputElm(x1, y1);
     	if (n=="NDarlingtonElm")
 		return (CircuitElm) new NDarlingtonElm(x1, y1);
+    	if (n=="PDarlingtonElm")
+		return (CircuitElm) new PDarlingtonElm(x1, y1);
     	return null;
     }
     

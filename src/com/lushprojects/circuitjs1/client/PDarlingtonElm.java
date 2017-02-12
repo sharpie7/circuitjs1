@@ -1,11 +1,12 @@
 package com.lushprojects.circuitjs1.client;
 
-public class NDarlingtonElm extends DarlingtonElm {
+
+public class PDarlingtonElm extends DarlingtonElm {
 
 
 
-    public NDarlingtonElm(int xx, int yy) {
-	super(xx, yy, false);
+    public PDarlingtonElm(int xx, int yy) {
+	super(xx, yy, true);
     }
 
 
@@ -13,3 +14,4 @@ public class NDarlingtonElm extends DarlingtonElm {
 	return DarlingtonElm.class;
     }
 }
+

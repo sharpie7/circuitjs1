@@ -22,6 +22,8 @@ public class DarlingtonElm extends CompositeElm {
     DarlingtonElm(int xx, int yy, boolean pnpflag) {
 	super(xx, yy, modelString, modelExternalNodes);
 	pnp = (pnpflag) ? -1 : 1;
+	((TransistorElm) compElmList.get(0)).pnp=pnp;
+	((TransistorElm) compElmList.get(1)).pnp=pnp;
 	noDiagonal = true;
 	
     }
@@ -141,20 +143,20 @@ public class DarlingtonElm extends CompositeElm {
 	CirSim.console("settingpoints");
 	super.setPoints();
 	int hs = 16;
-	int hs2 = hs * dsign;
+	int hs2 = hs * dsign * pnp;
 	// calc collector, emitter posts
 	coll = newPointArray(2);
 	coll2 = newPointArray(2);
 	emit = newPointArray(2);
 	interpPoint2(point1, point2, coll[0], emit[0], 1, hs2);
-	coll2[0]=interpPoint(point1, point2, 1, hs2-5*dsign);
+	coll2[0]=interpPoint(point1, point2, 1, hs2-5*dsign*pnp);
 	// calc rectangle edges
 	rect = newPointArray(4);
 	interpPoint2(point1, point2, rect[0], rect[1], 1 - 16 / dn, hs);
 	interpPoint2(point1, point2, rect[2], rect[3], 1 - 13 / dn, hs);
 	// calc points where collector/emitter leads contact rectangle
-	interpPoint2(point1, point2, coll[1], emit[1], 1 - 13 / dn, 6 * dsign);
-	coll2[1]=interpPoint(point1, point2, 1-13/dn, dsign);
+	interpPoint2(point1, point2, coll[1], emit[1], 1 - 13 / dn, 6 * dsign * pnp);
+	coll2[1]=interpPoint(point1, point2, 1-13/dn, dsign*pnp);
 	// calc point where base lead contacts rectangle
 	base = new Point();
 	interpPoint(point1, point2, base, 1 - 16 / dn);
