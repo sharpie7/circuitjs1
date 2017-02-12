@@ -135,8 +135,15 @@ public class DarlingtonElm extends CompositeElm {
 
 
     void getInfo(String arr[]) {
-	// TODO
-	arr[0] = sim.LS("darlington");
+	arr[0] = sim.LS("darlington pair") + " (" + ((pnp == -1) ? "PNP)" : "NPN)");
+	double vbc = volts[0] - volts[1];
+	double vbe = volts[0] - volts[2];
+	double vce = volts[1] - volts[2];
+	arr[1] = "Ic = " + getCurrentText(-getCurrentIntoNode(1));
+	arr[2] = "Ib = " + getCurrentText(-getCurrentIntoNode(0));
+	arr[3] = "Vbe = " + getVoltageText(vbe);
+	arr[4] = "Vbc = " + getVoltageText(vbc);
+	arr[5] = "Vce = " + getVoltageText(vce);
     }
 
     void setPoints() {
