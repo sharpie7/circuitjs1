@@ -265,8 +265,10 @@ class Scope {
     }
     
     void setRect(Rectangle r) {
-    	this.rect = r;
-    	resetGraph();
+	int w = this.rect.width;
+	this.rect = r;
+	if (this.rect.width != w)
+	    resetGraph();
     }
     
     int getWidth() { return rect.width; }
