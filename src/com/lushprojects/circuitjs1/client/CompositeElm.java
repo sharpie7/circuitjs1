@@ -222,9 +222,6 @@ public abstract class CompositeElm extends CircuitElm {
 	    compElmList.get(i).delete();
     }
 
-    // Have to admit that I don't really understand the voltageSourceCount, but
-    // this would appear
-    // to be the right thing to do based on other parts of the code
     public int getVoltageSourceCount() {
 	int vsc = 0;
 	for (int i = 0; i < compElmList.size(); i++)

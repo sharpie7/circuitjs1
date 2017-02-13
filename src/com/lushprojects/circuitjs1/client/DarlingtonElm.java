@@ -2,14 +2,11 @@ package com.lushprojects.circuitjs1.client;
 
 // Test element to evaluate if constructing compound elements from individual transistors is feasible
 
-// Not intended for public use/visibility without further work
 // Iain Sharp, Feb 2017
 
-import java.util.Vector;
 
 public class DarlingtonElm extends CompositeElm {
 
-//    private Vector<TransistorElm> transistorList;
     private Polygon rectPoly, arrowPoly;
     private Point rect[], coll[], emit[], base, coll2[];
     
@@ -32,7 +29,6 @@ public class DarlingtonElm extends CompositeElm {
     public DarlingtonElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 	super(xa, ya, xb, yb, f, st, modelString, modelExternalNodes);
 	pnp = new Integer(st.nextToken()).intValue();
-	CirSim.console("pnp="+pnp);
 	noDiagonal = true;
     }
 
@@ -96,41 +92,6 @@ public class DarlingtonElm extends CompositeElm {
 	drawPosts(g);
     }
 
-//    void draw(Graphics g) {
-//	setBbox(point1, point2, 16);
-//	setPowerColor(g, true);
-//	// draw collector
-//	setVoltageColor(g, volts[1]);
-//	drawThickLine(g, coll[0], coll[1]);
-//	// draw emitter
-//	setVoltageColor(g, volts[2]);
-//	drawThickLine(g, emit[0], emit[1]);
-//	// draw base
-//	setVoltageColor(g, volts[0]);
-//	if (sim.powerCheckItem.getState())
-//	    g.setColor(Color.gray);
-//	drawThickLine(g, point1, base);
-//	int ds = sign(dx);
-//	g.drawString("B", base.x - 10 * ds, base.y - 5);
-//	g.drawString("C", coll[0].x - 3 + 9 * ds, coll[0].y + 4); // x+6 if
-//								  // ds=1, -12
-//								  // if -1
-//	g.drawString("E", emit[0].x - 3 + 9 * ds, emit[0].y + 4);
-//
-//	if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
-//	    g.setColor(Color.white);
-//
-//	}
-//	drawPosts(g);
-//    }
-
-    int getPostCount() {
-	return 3;
-    }
-
-    int getInternalNodeCount() {
-	return 1;
-    }
 
 
 
@@ -147,7 +108,6 @@ public class DarlingtonElm extends CompositeElm {
     }
 
     void setPoints() {
-	CirSim.console("settingpoints");
 	super.setPoints();
 	int hs = 16;
 	int hs2 = hs * dsign * pnp;

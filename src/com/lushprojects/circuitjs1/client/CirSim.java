@@ -810,6 +810,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Comparator (HiZ/GND output)"), "ComparatorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -2030,7 +2031,7 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	}
 	
-//	dumpNodelist();
+	dumpNodelist();
 
     }
 
@@ -4414,6 +4415,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new AmmeterElm(x1, y1, x2, y2, f, st);
     	if (tint==400)
     	    return new DarlingtonElm(x1, y1, x2, y2, f, st);
+    	if (tint==401)
+    	    return new ComparatorElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4605,6 +4608,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new NDarlingtonElm(x1, y1);
     	if (n=="PDarlingtonElm")
 		return (CircuitElm) new PDarlingtonElm(x1, y1);
+    	if (n=="ComparatorElm")
+		return (CircuitElm) new ComparatorElm(x1, y1);
     	return null;
     }
     
