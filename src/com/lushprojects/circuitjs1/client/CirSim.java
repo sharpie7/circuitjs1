@@ -538,7 +538,7 @@ MouseOutHandler, MouseWheelHandler {
 			  });
 		 
 //	dumpMatrixButton = new Button("Dump Matrix");
-//	main.add(dumpMatrixButton);// IES for debugging
+//	verticalPanel.add(dumpMatrixButton);// IES for debugging
 
 	
 	if (LoadFile.isSupported())
@@ -804,6 +804,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Custom Device"), "CustomAnalogElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -2407,11 +2408,13 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		if (printit) {
 		    for (j = 0; j != circuitMatrixSize; j++) {
+			String x = "";
 			for (i = 0; i != circuitMatrixSize; i++)
-			    System.out.print(circuitMatrix[j][i] + ",");
-			System.out.print("  " + circuitRightSide[j] + "\n");
+			    x += circuitMatrix[j][i] + ",";
+			x += "\n";
+			console(x);
 		    }
-		    System.out.print("\n");
+		    console("");
 		}
 		if (circuitNonLinear) {
 		    if (converged && subiter > 0)
@@ -4437,6 +4440,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return (CircuitElm) new DataRecorderElm(x1, y1, x2, y2, f, st);
     	if (tint==211)
     	    return (CircuitElm) new AudioOutputElm(x1, y1, x2, y2, f, st);
+    	if (tint==212)
+    	    return (CircuitElm) new CustomAnalogElm(x1, y1, x2, y2, f, st);
     	if (tint==368)
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
@@ -4630,6 +4635,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new AudioOutputElm(x1, y1);
     	if (n=="NoiseElm")
 		return (CircuitElm) new NoiseElm(x1, y1);
+    	if (n=="CustomAnalogElm")
+		return (CircuitElm) new CustomAnalogElm(x1, y1);
     	return null;
     }
     
