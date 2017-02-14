@@ -2668,7 +2668,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
     		pushUndo();
     		int sp = item.indexOf(' ', 6);
-    		readSetupFile(item.substring(6, sp-6), item.substring(sp+1), true);
+    		readSetupFile(item.substring(6, sp), item.substring(sp+1), true);
     	}
     		
     	//	if (ac.indexOf("setup ") == 0) {
