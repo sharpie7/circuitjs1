@@ -121,6 +121,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem printableCheckItem;
     CheckboxMenuItem conventionCheckItem;
     private Label powerLabel;
+    private Label titleLabel;
     private Scrollbar speedBar;
    private Scrollbar currentBar;
     private Scrollbar powerBar;
@@ -440,6 +441,7 @@ MouseOutHandler, MouseWheelHandler {
 	m = new MenuBar(true);
 	m.addItem(new MenuItem(LS("Stack All"), new MyCommand("scopes", "stackAll")));
 	m.addItem(new MenuItem(LS("Unstack All"),new MyCommand("scopes", "unstackAll")));
+	m.addItem(new MenuItem(LS("Combine All"),new MyCommand("scopes", "combineAll")));
 	menuBar.addItem(LS("Scopes"), m);
 		
 	optionsMenuBar = m = new MenuBar(true );
@@ -560,6 +562,17 @@ MouseOutHandler, MouseWheelHandler {
 	verticalPanel.add(powerBar = new Scrollbar(Scrollbar.HORIZONTAL,
 		    50, 1, 1, 100));
 	setPowerBarEnable();
+	
+//	verticalPanel.add(new Label(""));
+//        Font f = new Font("SansSerif", 0, 10);
+        l = new Label("Current Circuit:");
+	l.addStyleName("topSpace");
+//        l.setFont(f);
+        titleLabel = new Label("Label");
+//        titleLabel.setFont(f);
+        verticalPanel.add(l);
+        verticalPanel.add(titleLabel);
+
 	verticalPanel.add(iFrame = new Frame("iframe.html"));
 	iFrame.setWidth(VERTICALPANELWIDTH+"px");
 	iFrame.setHeight("100 px");
@@ -2592,6 +2605,8 @@ MouseOutHandler, MouseWheelHandler {
     		stackAll();
     	if (item=="unstackAll")
     		unstackAll();
+    	if (item=="combineAll")
+		combineAll();
     	if (item=="zoomin")
     	    zoomCircuit(20);
     	if (item=="zoomout")
@@ -2652,7 +2667,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
     		pushUndo();
-    		readSetupFile(item.substring(6),"", true);
+    		int sp = item.indexOf(' ', 6);
+    		readSetupFile(item.substring(6, sp-6), item.substring(sp+1), true);
     	}
     		
     	//	if (ac.indexOf("setup ") == 0) {
@@ -2748,7 +2764,15 @@ MouseOutHandler, MouseWheelHandler {
     		scopes[i].showMax = true;
     	}
     }
-   
+
+    void combineAll() {
+    	int i;
+    	for (i = scopeCount-2; i >= 0; i--) {
+    	    scopes[i].combine(scopes[i+1]);
+    	    scopes[i+1].setElm(null);
+    	}
+    }
+    
 
     void doEdit(Editable eable) {
     	clearSelection();
@@ -2898,7 +2922,12 @@ MouseOutHandler, MouseWheelHandler {
     				if (line.charAt(0) == '>')
     					first = true;
     				String file = line.substring(first ? 1 : 0, i);
-    				currentMenuBar.addItem(new MenuItem(title, new MyCommand("circuits", "setup "+file)));
+    				currentMenuBar.addItem(new MenuItem(title,
+    					new MyCommand("circuits", "setup "+file+" " + title)));
+    				if (file.equals(startCircuit) && startLabel == null) {
+    				    startLabel = title;
+    				    titleLabel.setText(title);
+    				}
     				if (first && startCircuit == null) {
     					startCircuit = file;
     					startLabel = title;
@@ -2928,8 +2957,10 @@ MouseOutHandler, MouseWheelHandler {
 		t = 0;
 		System.out.println(str);
 		// TODO: Maybe think about some better approach to cache management!
-			String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
-			loadFileFromURL(url, centre);
+		String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
+		loadFileFromURL(url, centre);
+		if (title != null)
+		    titleLabel.setText(title);
 	}
 	
 	void loadFileFromURL(String url, final boolean centre) {
