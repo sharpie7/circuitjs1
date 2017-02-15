@@ -101,7 +101,7 @@ MouseOutHandler, MouseWheelHandler {
     // IES - remove interaction
     Button resetButton;
     Button runStopButton;
-//    Button dumpMatrixButton;
+    Button dumpMatrixButton;
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
     	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem;
@@ -539,9 +539,12 @@ MouseOutHandler, MouseWheelHandler {
 			    }
 			  });
 		 
-//	dumpMatrixButton = new Button("Dump Matrix");
-//	verticalPanel.add(dumpMatrixButton);// IES for debugging
-
+		 /*
+	dumpMatrixButton = new Button("Dump Matrix");
+	dumpMatrixButton.addClickHandler(new ClickHandler() {
+	    public void onClick(ClickEvent event) { dumpMatrix = true; }});
+	verticalPanel.add(dumpMatrixButton);// IES for debugging
+*/
 	
 	if (LoadFile.isSupported())
 		verticalPanel.add(loadFileInput = new LoadFile(this));
@@ -1567,7 +1570,7 @@ MouseOutHandler, MouseWheelHandler {
 		// move to the end of the list and try again later
 		wireInfoList.add(wireInfoList.remove(i--));
 		moved++; 
-		console("moved to end " + moved);
+//		console("moved to end " + moved);
 		if (moved > wireInfoList.size() * 2) {
 		    stop(LS("wire loop detected"), wire);
 		    return false;
@@ -1834,195 +1837,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	//System.out.println("ac6");
 
-	// simplify the matrix; this speeds things up quite a bit, especially for
-	// digital circuits
-	for (i = 0; i != matrixSize; i++) {
-	    int qm = -1, qp = -1;
-	    double qv = 0;
-	    RowInfo re = circuitRowInfo[i];
-	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
-			       re.dropRow);*/
-	    if (re.lsChanges || re.dropRow || re.rsChanges)
-		continue;
-	    double rsadd = 0;
-
-	    // look for rows that can be removed
-	    for (j = 0; j != matrixSize; j++) {
-		double q = circuitMatrix[i][j];
-		if (circuitRowInfo[j].type == RowInfo.ROW_CONST) {
-		    // keep a running total of const values that have been
-		    // removed already
-		    rsadd -= circuitRowInfo[j].value*q;
-		    continue;
-		}
-		if (q == 0)
-		    continue;
-		if (qp == -1) {
-		    qp = j;
-		    qv = q;
-		    continue;
-		}
-		if (qm == -1 && q == -qv) {
-		    qm = j;
-		    continue;
-		}
-		break;
-	    }
-	    //System.out.println("line " + i + " " + qp + " " + qm + " " + j);
-	    /*if (qp != -1 && circuitRowInfo[qp].lsChanges) {
-		System.out.println("lschanges");
-		continue;
-	    }
-	    if (qm != -1 && circuitRowInfo[qm].lsChanges) {
-		System.out.println("lschanges");
-		continue;
-		}*/
-	    if (j == matrixSize) {
-		if (qp == -1) {
-		    stop(LS("Matrix error"), null);
-		    return;
-		}
-		RowInfo elt = circuitRowInfo[qp];
-		if (qm == -1) {
-		    // we found a row with only one nonzero entry; that value
-		    // is a constant
-		    int k;
-		    for (k = 0; elt.type == RowInfo.ROW_EQUAL && k < 100; k++) {
-			// follow the chain
-			/*System.out.println("following equal chain from " +
-					   i + " " + qp + " to " + elt.nodeEq);*/
-			qp = elt.nodeEq;
-			elt = circuitRowInfo[qp];
-		    }
-		    if (elt.type == RowInfo.ROW_EQUAL) {
-			// break equal chains
-			//System.out.println("Break equal chain");
-			elt.type = RowInfo.ROW_NORMAL;
-			continue;
-		    }
-		    if (elt.type != RowInfo.ROW_NORMAL) {
-			System.out.println("type already " + elt.type + " for " + qp + "!");
-			continue;
-		    }
-		    elt.type = RowInfo.ROW_CONST;
-		    elt.value = (circuitRightSide[i]+rsadd)/qv;
-		    circuitRowInfo[i].dropRow = true;
-		    //System.out.println(qp + " * " + qv + " = const " + elt.value);
-		    i = -1; // start over from scratch
-		} else if (circuitRightSide[i]+rsadd == 0) {
-		    // we found a row with only two nonzero entries, and one
-		    // is the negative of the other; the values are equal
-		    if (elt.type != RowInfo.ROW_NORMAL) {
-			//System.out.println("swapping");
-			int qq = qm;
-			qm = qp; qp = qq;
-			elt = circuitRowInfo[qp];
-			if (elt.type != RowInfo.ROW_NORMAL) {
-			    // we should follow the chain here, but this
-			    // hardly ever happens so it's not worth worrying
-			    // about
-			    System.out.println("swap failed");
-			    continue;
-			}
-		    }
-		    elt.type = RowInfo.ROW_EQUAL;
-		    elt.nodeEq = qm;
-		    circuitRowInfo[i].dropRow = true;
-		    //System.out.println(qp + " = " + qm);
-		}
-	    }
-	}
-	//System.out.println("ac7");
-
-	// find size of new matrix
-	int nn = 0;
-	for (i = 0; i != matrixSize; i++) {
-	    RowInfo elt = circuitRowInfo[i];
-	    if (elt.type == RowInfo.ROW_NORMAL) {
-		elt.mapCol = nn++;
-		//System.out.println("col " + i + " maps to " + elt.mapCol);
-		continue;
-	    }
-	    if (elt.type == RowInfo.ROW_EQUAL) {
-		RowInfo e2 = null;
-		// resolve chains of equality; 100 max steps to avoid loops
-		for (j = 0; j != 100; j++) {
-		    e2 = circuitRowInfo[elt.nodeEq];
-		    if (e2.type != RowInfo.ROW_EQUAL)
-			break;
-		    if (i == e2.nodeEq)
-			break;
-		    elt.nodeEq = e2.nodeEq;
-		}
-	    }
-	    if (elt.type == RowInfo.ROW_CONST)
-		elt.mapCol = -1;
-	}
-	for (i = 0; i != matrixSize; i++) {
-	    RowInfo elt = circuitRowInfo[i];
-	    if (elt.type == RowInfo.ROW_EQUAL) {
-		RowInfo e2 = circuitRowInfo[elt.nodeEq];
-		if (e2.type == RowInfo.ROW_CONST) {
-		    // if something is equal to a const, it's a const
-		    elt.type = e2.type;
-		    elt.value = e2.value;
-		    elt.mapCol = -1;
-		    //System.out.println(i + " = [late]const " + elt.value);
-		} else {
-		    elt.mapCol = e2.mapCol;
-		    //System.out.println(i + " maps to: " + e2.mapCol);
-		}
-	    }
-	}
-	//System.out.println("ac8");
-
-	/*System.out.println("matrixSize = " + matrixSize);
-	
-	for (j = 0; j != circuitMatrixSize; j++) {
-	    System.out.println(j + ": ");
-	    for (i = 0; i != circuitMatrixSize; i++)
-		System.out.print(circuitMatrix[j][i] + " ");
-	    System.out.print("  " + circuitRightSide[j] + "\n");
-	}
-	System.out.print("\n");*/
-	
-
-	// make the new, simplified matrix
-	int newsize = nn;
-	double newmatx[][] = new double[newsize][newsize];
-	double newrs  []   = new double[newsize];
-	int ii = 0;
-	for (i = 0; i != matrixSize; i++) {
-	    RowInfo rri = circuitRowInfo[i];
-	    if (rri.dropRow) {
-		rri.mapRow = -1;
-		continue;
-	    }
-	    newrs[ii] = circuitRightSide[i];
-	    rri.mapRow = ii;
-	    //System.out.println("Row " + i + " maps to " + ii);
-	    for (j = 0; j != matrixSize; j++) {
-		RowInfo ri = circuitRowInfo[j];
-		if (ri.type == RowInfo.ROW_CONST)
-		    newrs[ii] -= ri.value*circuitMatrix[i][j];
-		else
-		    newmatx[ii][ri.mapCol] += circuitMatrix[i][j];
-	    }
-	    ii++;
-	}
-
-//	console("old size = " + matrixSize + " new size = " + newsize);
-	
-	circuitMatrix = newmatx;
-	circuitRightSide = newrs;
-	matrixSize = circuitMatrixSize = newsize;
-	for (i = 0; i != matrixSize; i++)
-	    origRightSide[i] = circuitRightSide[i];
-	for (i = 0; i != matrixSize; i++)
-	    for (j = 0; j != matrixSize; j++)
-		origMatrix[i][j] = circuitMatrix[i][j];
-	circuitNeedsMap = true;
-
+	simplifyMatrix(matrixSize);
 	/*
 	System.out.println("matrixSize = " + matrixSize + " " + circuitNonLinear);
 	for (j = 0; j != circuitMatrixSize; j++) {
@@ -2056,6 +1871,112 @@ MouseOutHandler, MouseWheelHandler {
 
     }
 
+    // simplify the matrix; this speeds things up quite a bit, especially for
+    // digital circuits
+    void simplifyMatrix(int matrixSize) {
+	int i, j;
+	for (i = 0; i != matrixSize; i++) {
+	    int qp = -1;
+	    double qv = 0;
+	    RowInfo re = circuitRowInfo[i];
+	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
+			       re.dropRow);*/
+	    if (re.lsChanges || re.dropRow || re.rsChanges)
+		continue;
+	    double rsadd = 0;
+
+	    // look for rows that can be removed
+	    for (j = 0; j != matrixSize; j++) {
+		double q = circuitMatrix[i][j];
+		if (circuitRowInfo[j].type == RowInfo.ROW_CONST) {
+		    // keep a running total of const values that have been
+		    // removed already
+		    rsadd -= circuitRowInfo[j].value*q;
+		    continue;
+		}
+		// ignore zeroes
+		if (q == 0)
+		    continue;
+		// keep track of first nonzero element that is not ROW_CONST
+		if (qp == -1) {
+		    qp = j;
+		    qv = q;
+		    continue;
+		}
+		// more than one nonzero element?  give up
+		break;
+	    }
+	    if (j == matrixSize) {
+		if (qp == -1) {
+		    stop(LS("Matrix error"), null);
+		    return;
+		}
+		RowInfo elt = circuitRowInfo[qp];
+		// we found a row with only one nonzero nonconst entry; that value
+		// is a constant
+		if (elt.type != RowInfo.ROW_NORMAL) {
+		    System.out.println("type already " + elt.type + " for " + qp + "!");
+		    continue;
+		}
+		elt.type = RowInfo.ROW_CONST;
+		console("ROW_CONST " + i + " " + rsadd);
+		elt.value = (circuitRightSide[i]+rsadd)/qv;
+		circuitRowInfo[i].dropRow = true;
+		i = -1; // start over from scratch
+	    }
+	}
+	//System.out.println("ac7");
+
+	// find size of new matrix
+	int nn = 0;
+	for (i = 0; i != matrixSize; i++) {
+	    RowInfo elt = circuitRowInfo[i];
+	    if (elt.type == RowInfo.ROW_NORMAL) {
+		elt.mapCol = nn++;
+		//System.out.println("col " + i + " maps to " + elt.mapCol);
+		continue;
+	    }
+	    if (elt.type == RowInfo.ROW_CONST)
+		elt.mapCol = -1;
+	}
+
+	// make the new, simplified matrix
+	int newsize = nn;
+	double newmatx[][] = new double[newsize][newsize];
+	double newrs  []   = new double[newsize];
+	int ii = 0;
+	for (i = 0; i != matrixSize; i++) {
+	    RowInfo rri = circuitRowInfo[i];
+	    if (rri.dropRow) {
+		rri.mapRow = -1;
+		continue;
+	    }
+	    newrs[ii] = circuitRightSide[i];
+	    rri.mapRow = ii;
+	    //System.out.println("Row " + i + " maps to " + ii);
+	    for (j = 0; j != matrixSize; j++) {
+		RowInfo ri = circuitRowInfo[j];
+		if (ri.type == RowInfo.ROW_CONST)
+		    newrs[ii] -= ri.value*circuitMatrix[i][j];
+		else
+		    newmatx[ii][ri.mapCol] += circuitMatrix[i][j];
+	    }
+	    ii++;
+	}
+
+	console("old size = " + matrixSize + " new size = " + newsize);
+	
+	circuitMatrix = newmatx;
+	circuitRightSide = newrs;
+	matrixSize = circuitMatrixSize = newsize;
+	for (i = 0; i != matrixSize; i++)
+	    origRightSide[i] = circuitRightSide[i];
+	for (i = 0; i != matrixSize; i++)
+	    for (j = 0; j != matrixSize; j++)
+		origMatrix[i][j] = circuitMatrix[i][j];
+	circuitNeedsMap = true;
+    }
+    
     // make list of posts we need to draw.  posts shared by 2 elements should be hidden, all
     // others should be drawn.  We can't use the node list anymore because wires have the same
     // node number at both ends.
