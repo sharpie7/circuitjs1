@@ -1619,8 +1619,6 @@ MouseOutHandler, MouseWheelHandler {
 	if (!gotGround && volt != null && !gotRail) {
 	    CircuitNode cn = new CircuitNode();
 	    Point pt = volt.getPost(0);
-	    cn.x = (int) pt.x;
-	    cn.y = (int) pt.y;
 	    nodeList.addElement(cn);
 
 	    // update node map
@@ -1632,7 +1630,6 @@ MouseOutHandler, MouseWheelHandler {
 	} else {
 	    // otherwise allocate extra node for ground
 	    CircuitNode cn = new CircuitNode();
-	    cn.x = cn.y = -1;
 	    nodeList.addElement(cn);
 	}
 	//System.out.println("ac2");
@@ -1658,8 +1655,6 @@ MouseOutHandler, MouseWheelHandler {
 		// the code below to connect unconnected nodes may connect a different node to ground) 
 		if (cln == null || cln.node == -1) {
 		    CircuitNode cn = new CircuitNode();
-		    cn.x = (int) pt.x;
-		    cn.y = (int) pt.y;
 		    CircuitNodeLink cnl = new CircuitNodeLink();
 		    cnl.num = j;
 		    cnl.elm = ce;
@@ -1685,7 +1680,6 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    for (j = 0; j != inodes; j++) {
 		CircuitNode cn = new CircuitNode();
-		cn.x = cn.y = -1;
 		cn.internal = true;
 		CircuitNodeLink cnl = new CircuitNodeLink();
 		cnl.num = j+posts;
@@ -2867,10 +2861,12 @@ MouseOutHandler, MouseWheelHandler {
 
     void readSetup(String text, boolean centre) {
 	readSetup(text, false, centre);
+	titleLabel.setText(null);
     }
     
     void readSetup(String text, boolean retain, boolean centre) {
 	readSetup(text.getBytes(), text.length(), retain, centre);
+	titleLabel.setText(null);
     }
 
 
