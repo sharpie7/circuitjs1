@@ -51,9 +51,10 @@ public class ComparatorElm extends CompositeElm {
 	    g.setFont(plusFont);
 	    drawCenteredText(g, "-", textp[0].x, textp[0].y-2, true);
 	    drawCenteredText(g, "+", textp[1].x, textp[1].y  , true);
+	    drawCenteredText(g, "\u2265?", textp[2].x, textp[2].y  , true);
 	    setVoltageColor(g, volts[2]);
 	    drawThickLine(g, lead2, point2);
-	    curcount = updateDotCount(-current, curcount);
+	    curcount = updateDotCount(-getCurrentIntoNode(2), curcount);
 	    drawDots(g, point2, lead2, curcount);
 	    drawPosts(g);
 	}
@@ -71,10 +72,11 @@ public class ComparatorElm extends CompositeElm {
 //		hs = -hs;
 	    in1p = newPointArray(2);
 	    in2p = newPointArray(2);
-	    textp = newPointArray(2);
+	    textp = newPointArray(3);
 	    interpPoint2(point1, point2, in1p[0],  in2p[0], 0, hs);
 	    interpPoint2(lead1 , lead2,  in1p[1],  in2p[1], 0, hs);
 	    interpPoint2(lead1 , lead2,  textp[0], textp[1], .2, hs);
+	    interpPoint(lead1, lead2, textp[2], 0.5, 0);
 	    Point tris[] = newPointArray(2);
 	    interpPoint2(lead1,  lead2,  tris[0], tris[1],  0, hs*2);
 	    triangle = createPolygon(tris[0], tris[1], lead2);
