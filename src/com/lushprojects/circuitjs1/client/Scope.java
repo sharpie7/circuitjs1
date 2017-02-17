@@ -125,6 +125,7 @@ class Scope {
     // bunch of other flags go here, see dump()
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
+    // other flags go here too, see dump()
     static final int VAL_POWER = 1;
     static final int VAL_CURRENT = 3;
     static final int VAL_IB = 1;
@@ -145,8 +146,8 @@ class Scope {
     int speed;
     String text;
     Rectangle rect;
-    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY;
-    boolean showFFT;
+    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
+    boolean showFFT, showNegative;
     Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
 //    Image image;
@@ -193,7 +194,6 @@ class Scope {
     void showScale    (boolean b) { showScale = b; }
     void showMin    (boolean b) { showMin = b; }
     void showFreq   (boolean b) { showFreq = b; }
-    void setLockScale  (boolean b) { lockScale = b; }
     void showFFT(boolean b) {
       showFFT = b;
       if (!showFFT)
@@ -206,6 +206,7 @@ class Scope {
     		scopePointCount *= 2;
     	if (plots == null)
     	    plots = new Vector<ScopePlot>();
+    	showNegative = false;
     	int i;
     	for (i = 0; i != plots.size(); i++)
     	    plots.get(i).reset(scopePointCount, speed);
@@ -425,6 +426,7 @@ class Scope {
     	draw_ox = draw_oy = -1;
     }
 	
+    /*
     void adjustScale(double x) {
 	scale[UNITS_V] *= x;
 	scale[UNITS_A] *= x;
@@ -432,6 +434,26 @@ class Scope {
 	scale[UNITS_W] *= x;
 	scaleX *= x;
 	scaleY *= x;
+    }
+    */
+    void maxScale() {
+	if (plot2d) {
+	    double x = 1e-8;
+	    scale[UNITS_V] *= x;
+	    scale[UNITS_A] *= x;
+	    scale[UNITS_OHMS] *= x;
+	    scale[UNITS_W] *= x;
+	    scaleX *= x;
+	    scaleY *= x;
+	    return;
+	}
+	// toggle max scale.  Why isn't this on by default?  For the examples, we sometimes want two plots
+	// matched to the same scale so we can show one is larger.  Also, for some fast-moving scopes
+	// (like for AM detector), the amplitude varies over time but you can't see that if the scale is
+	// constantly adjusting.  It's also nice to set the default scale to hide noise and to avoid
+	// having the scale moving around a lot when a circuit starts up.
+	maxScale = !maxScale;
+	showNegative = false;
     }
 
     void drawFFTVerticalGridLines(Graphics g) {
@@ -562,8 +584,11 @@ class Scope {
         }
 
     	int i;
-    	for (i = 0; i != UNITS_COUNT; i++)
+    	for (i = 0; i != UNITS_COUNT; i++) {
     	    expandRange[i] = false;
+    	    if (maxScale)
+    		scale[i] = 1e-4;
+    	}
     	
     	int si;
     	somethingSelected = false;  // is one of our plots selected?
@@ -582,10 +607,15 @@ class Scope {
 
     	drawGridLines = true;
     	boolean hGridLines = true;
+    	int onlyVisibleUnits = visiblePlots.get(0).units;
     	for (i = 1; i < visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units != visiblePlots.get(0).units)
     		hGridLines = false;
     	}
+    	
+    	if (hGridLines || showMax || showMin)
+    	    calcMaxAndMin(visiblePlots.firstElement().units);
+    	
     	// draw volts on top (last), then current underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
@@ -609,6 +639,7 @@ class Scope {
     	g.context.restore();
     	drawCrosshairs(g);
     	
+    	// there is no UI for setting lockScale but it's used in some of the example circuits (like crossover)
     	if (plots.get(0).ptr > 5 && !lockScale) {
     	    for (i = 0; i != UNITS_COUNT; i++)
     		if (scale[i] > 1e-4 && expandRange[i])
@@ -621,6 +652,7 @@ class Scope {
     double gridStepX, gridStepY;
     double maxValue, minValue;
     
+    // calculate maximum and minimum values for all plots of given units
     void calcMaxAndMin(int units) {
 	maxValue = -1e8;
 	minValue = 1e8;
@@ -643,22 +675,33 @@ class Scope {
         }
     }
     
+    // adjust scale of a plot
     void calcPlotScale(ScopePlot plot) {
     	int i;
     	int ipa = plot.startIndex(rect.width);
     	double maxV[] = plot.maxValues;
     	double minV[] = plot.minValues;
+    	double max = 0;
     	double gridMax = scale[plot.units];
     	for (i = 0; i != rect.width; i++) {
     	    int ip = (i+ipa) & (scopePointCount-1);
-    	    while (maxV[ip] > gridMax)
-    		gridMax *= 2;
-    	    while (minV[ip] < -gridMax)
-    		gridMax *= 2;
+    	    if (maxV[ip] > max)
+    		max = maxV[ip];
+    	    if (minV[ip] < -max)
+    		max = -minV[ip];
     	}
+    	// scale fixed at maximum?
+    	if (maxScale)
+    	    gridMax = Math.max(max, gridMax);
+    	else
+    	    // adjust in powers of two
+    	    while (max > gridMax)
+    		gridMax *= 2;
     	scale[plot.units] = gridMax;
     }
 
+    double mainGridMult, mainGridMid;
+    
     void drawPlot(Graphics g, ScopePlot plot, boolean drawHGridLines, boolean selected) {
     	int i;
     	String col;
@@ -671,7 +714,6 @@ class Scope {
     	int x = 0;
     	int maxy = (rect.height-1)/2;
     	int y = maxy;
-    	int minRange = 4;
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
 	if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
@@ -682,6 +724,30 @@ class Scope {
     	double maxV[] = plot.maxValues;
     	double minV[] = plot.minValues;
     	double gridMax = scale[plot.units];
+    	double gridMid = 0;
+    	if (drawHGridLines) {
+    	    // if we don't have overlapping scopes of different units, we can move zero around.
+    	    // Put it at the bottom if the scope is never negative.
+    	    double mx = gridMax;
+    	    double mn = 0;
+    	    if (maxScale) {
+    		// scale is maxed out, so fix boundaries of scope at maximum and minimum. 
+    		mx = maxValue;
+    		mn = minValue;
+    	    } else if (showNegative || minValue < (mx+mn)*.5 - (mx-mn)*.55) {
+    		mn = -gridMax;
+    		showNegative = true;
+    	    }
+    	    gridMid = (mx+mn)*.5;
+    	    gridMax = (mx-mn)*.55;  // leave space at top and bottom
+    	}
+    	double gridMult = maxy/gridMax;
+    	if (selected) {
+    	    mainGridMult = gridMult;
+    	    mainGridMid  = gridMid;
+    	}
+    	int minRangeLo = -10-(int) (gridMid*gridMult);
+    	int minRangeHi =  10-(int) (gridMid*gridMult);
 
     	gridStepY = 1e-8;    	
     	while (gridStepY < 20*gridMax/maxy) {
@@ -690,7 +756,7 @@ class Scope {
 
     	// Horizontal gridlines
     	int ll;
-    	String minorDiv = "#707070";
+    	String minorDiv = "#303030";
     	String majorDiv = "#A0A0A0";
     	if (sim.printableCheckItem.getState()) {
     	    minorDiv = "#D0D0D0";
@@ -717,7 +783,7 @@ class Scope {
     	    for (ll = -100; ll <= 100; ll++) {
     		if (ll != 0 && !showGridLines)
     		    continue;
-    		int yl = maxy-(int) (maxy*ll*gridStepY/gridMax);
+    		int yl = maxy-(int) ((ll*gridStepY-gridMid)*gridMult);
     		if (yl < 0 || yl >= rect.height-1)
     		    continue;
     		col = ll == 0 ? majorDiv : minorDiv;
@@ -756,13 +822,14 @@ class Scope {
         int ox = -1, oy = -1;
         for (i = 0; i != rect.width; i++) {
             int ip = (i+ipa) & (scopePointCount-1);
-            int minvy = (int) ((maxy/gridMax)*minV[ip]);
-            int maxvy = (int) ((maxy/gridMax)*maxV[ip]);
+            int minvy = (int) (gridMult*(minV[ip]-gridMid));
+            int maxvy = (int) (gridMult*(maxV[ip]-gridMid));
             if (minvy <= maxy) {
-        	if (minvy < -minRange || maxvy > minRange) {
+        	if (minvy < minRangeLo || maxvy > minRangeHi) {
         	    // we got a value outside min range, so we don't need to rescale later
         	    expandRange[plot.units] = false;
-        	    minRange = 1000; // avoid triggering this test again
+        	    minRangeLo = -1000;
+        	    minRangeHi = 1000; // avoid triggering this test again
         	}
         	if (ox != -1) {
         	    if (minvy == oy && maxvy == oy)
@@ -783,6 +850,7 @@ class Scope {
         
     }
 
+    // find selected plot
     void checkForSelection() {
 	if (sim.dialogIsShowing())
 	    return;
@@ -822,7 +890,7 @@ class Scope {
     	int y = maxy;
     	ScopePlot plot = visiblePlots.get(selectedPlot);
     	info[ct++] = plot.getUnitText(plot.maxValues[ip]);
-    	int maxvy = (int) ((maxy/scale[plot.units])*plot.maxValues[ip]);
+    	int maxvy = (int) (mainGridMult*(plot.maxValues[ip]-mainGridMid));
     	g.setColor(plot.color);
     	g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
         if (showFFT) {
@@ -931,8 +999,8 @@ class Scope {
     	    drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" +
     		    vScaleText);
     	}
-    	if (showMax || showMin)
-    	    calcMaxAndMin(plot.units);
+//    	if (showMax || showMin)
+//    	    calcMaxAndMin(plot.units);
     	if (showMax)
     	    drawInfoText(g, plot.getUnitText(maxValue));
     	if (showMin) {
@@ -982,6 +1050,7 @@ class Scope {
     		sim.scopeVbcMenuItem.setState(showingValue(VAL_VBC));
     		sim.scopeVceMenuItem.setState(showingValue(VAL_VCE));
     		sim.scopeVceIcMenuItem.setState(isShowingVceAndIc());
+    	    	sim.scopeMaxScaleTransMenuItem.setState(maxScale && !plot2d);
     		return sim.transScopeMenuBar;
     	} else {
     	    	sim.scopeRemovePlotMenuItem.setEnabled(visiblePlots.size() > 1 && !plot2d);
@@ -998,6 +1067,7 @@ class Scope {
     		sim.scopeFFTMenuItem.setState(showFFT);
     		sim.scopeResistMenuItem.setState(showingValue(VAL_R));
     		sim.scopeResistMenuItem.setEnabled(elm != null && elm instanceof MemristorElm);
+    	    	sim.scopeMaxScaleMenuItem.setState(maxScale && !plot2d);
     		return sim.scopeMenuBar;
     	}
     }
@@ -1017,7 +1087,7 @@ class Scope {
     			(showFreq ? 8 : 0) |
     			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
     			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
-    			(showFFT ? 1024 : 0);
+    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0);
     	flags |= FLAG_PLOTS;
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
@@ -1057,8 +1127,9 @@ class Scope {
     	    scale[UNITS_A] = 1;
     	scaleX = scale[UNITS_V];
     	scaleY = scale[UNITS_A];
-    	scale[UNITS_OHMS] = scale[UNITS_W] = 5;
+    	scale[UNITS_OHMS] = scale[UNITS_W] = scale[UNITS_V];
     	text = null;
+    	boolean plot2dFlag = (flags & 64) != 0;
     	if ((flags & FLAG_PLOTS) != 0) {
     	    // new-style dump
     	    try {
@@ -1102,6 +1173,9 @@ class Scope {
     		    ye = new Integer(st.nextToken()).intValue();
     		    if (ye != -1)
     			yElm = sim.getElm(ye);
+    		    // sinediode.txt has yElm set to something even though there's no xy plot...?
+    		    if (!plot2dFlag)
+    			yElm = null;
     		}
     		if ((flags & FLAG_IVALUE) !=0) {
     		    ivalue = new Integer(st.nextToken()).intValue();
@@ -1121,11 +1195,12 @@ class Scope {
     	showMax = (flags & 4) == 0;
     	showFreq = (flags & 8) != 0;
     	lockScale = (flags & 16) != 0;
-    	plot2d = (flags & 64) != 0;
+    	plot2d = plot2dFlag;
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
     	showFFT((flags & 1024) != 0);
+    	maxScale = (flags & 8192) != 0;
     }
     
     void allocImage() {

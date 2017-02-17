@@ -152,6 +152,8 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeXYMenuItem;
     CheckboxMenuItem scopeResistMenuItem;
     CheckboxMenuItem scopeVceIcMenuItem;
+    CheckboxMenuItem scopeMaxScaleMenuItem;
+    CheckboxMenuItem scopeMaxScaleTransMenuItem;
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     static HashMap<String,String> localizationMap;
@@ -906,7 +908,12 @@ MouseOutHandler, MouseWheelHandler {
     	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 2x"), new MyCommand("scopepop", "speed2")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 1/2x"), new MyCommand("scopepop", "speed1/2")));
 //    	m.addItem(new CheckboxAlignedMenuItem(LS("Scale 2x"), new MyCommand("scopepop", "scale")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
+    	CheckboxMenuItem mi;
+    	m.addItem(mi = new CheckboxMenuItem(LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
+    	if (t)
+    	    scopeMaxScaleTransMenuItem = mi;
+    	else
+    	    scopeMaxScaleMenuItem = mi;
     	m.addItem(new CheckboxAlignedMenuItem(LS("Stack"), new MyCommand("scopepop", "stack")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Unstack"), new MyCommand("scopepop", "unstack")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
@@ -2561,10 +2568,10 @@ MouseOutHandler, MouseWheelHandler {
     			scopes[menuScope].speedUp();
     		if (item=="speed1/2")
     			scopes[menuScope].slowDown();
-    		if (item=="scale")
-    			scopes[menuScope].adjustScale(.5);
+//    		if (item=="scale")
+//    			scopes[menuScope].adjustScale(.5);
     		if (item=="maxscale")
-    			scopes[menuScope].adjustScale(1e-50);
+    			scopes[menuScope].maxScale();
     		if (item=="stack")
     			stackScope(menuScope);
     		if (item=="unstack")
@@ -3355,6 +3362,8 @@ MouseOutHandler, MouseWheelHandler {
     	//    	if (e.getNativeButton()==NativeEvent.BUTTON_LEFT)
     	//	    return;
     	CircuitElm newMouseElm=null;
+    	mouseCursorX=e.getX();
+    	mouseCursorY=e.getY();
     	int sx = e.getX();
     	int sy = e.getY();
     	int gx = inverseTransformX(sx);
