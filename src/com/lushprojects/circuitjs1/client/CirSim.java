@@ -612,15 +612,15 @@ MouseOutHandler, MouseWheelHandler {
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
-		readSetup(startCircuitText, false);
+		readSetup(startCircuitText, true);
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
-			readSetup(null, 0, false, false);
+			readSetup(null, 0, false, true);
 			getSetupList(false);
 			ImportFromDropboxDialog.setSim(this);
 			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
 		} else {
-			readSetup(null, 0, false, false);
+			readSetup(null, 0, false, true);
 			if (stopMessage == null && startCircuit != null) {
 				getSetupList(false);
 				readSetupFile(startCircuit, startLabel, true);
