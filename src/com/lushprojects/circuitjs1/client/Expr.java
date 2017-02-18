@@ -78,6 +78,12 @@ class Expr {
 	    double x = posmod(left.eval(es), Math.PI*2)/Math.PI;
 	    return (x < 1) ? -1+x*2 : x*2-1;
 	}
+	case E_SAWTOOTH: {
+	    double x = posmod(left.eval(es), Math.PI*2)/Math.PI;
+	    return x-1;
+	}
+	case E_MOD:
+	    return left.eval(es) % right.eval(es);
 	default:
 	    if (type >= E_A)
 		return es.values[type-E_A];
