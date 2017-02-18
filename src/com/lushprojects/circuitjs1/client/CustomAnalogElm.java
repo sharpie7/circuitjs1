@@ -86,6 +86,8 @@ package com.lushprojects.circuitjs1.client;
         	    exprState.values[i] = volts[i];
         	exprState.t = sim.t;
         	double v0 = expr.eval(exprState);
+        	if (Math.abs(volts[inputCount]-v0) > Math.abs(v0)*.01)
+        	    sim.converged = false;
         	double rs = v0;
         	
         	// calculate and stamp output derivatives

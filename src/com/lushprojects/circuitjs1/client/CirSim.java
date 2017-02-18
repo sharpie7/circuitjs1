@@ -822,7 +822,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Custom Device"), "CustomAnalogElm"));
+//    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Custom Device"), "CustomAnalogElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -1306,9 +1306,7 @@ MouseOutHandler, MouseWheelHandler {
     	// unused scopes/columns
     	int pos = -1;
     	for (i = 0; i < scopeCount; i++) {
-    		if (locateElm(scopes[i].getElm()) < 0)
-    			scopes[i].setElm(null);
-    		if (scopes[i].getElm() == null) {
+    	    	if (scopes[i].needToRemove()) {
     			int j;
     			for (j = i; j != scopeCount; j++)
     				scopes[j] = scopes[j+1];
@@ -1920,7 +1918,7 @@ MouseOutHandler, MouseWheelHandler {
 		    continue;
 		}
 		elt.type = RowInfo.ROW_CONST;
-		console("ROW_CONST " + i + " " + rsadd);
+//		console("ROW_CONST " + i + " " + rsadd);
 		elt.value = (circuitRightSide[i]+rsadd)/qv;
 		circuitRowInfo[i].dropRow = true;
 		i = -1; // start over from scratch
@@ -1965,7 +1963,7 @@ MouseOutHandler, MouseWheelHandler {
 	    ii++;
 	}
 
-	console("old size = " + matrixSize + " new size = " + newsize);
+//	console("old size = " + matrixSize + " new size = " + newsize);
 	
 	circuitMatrix = newmatx;
 	circuitRightSide = newrs;

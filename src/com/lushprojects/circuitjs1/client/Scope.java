@@ -1325,4 +1325,21 @@ class Scope {
 	    return plots.get(1).elm;
 	return null;
     }
+    
+    boolean needToRemove() {
+	boolean ret = true;
+	boolean removed = false;
+	int i;
+	for (i = 0; i != plots.size(); i++) {
+	   ScopePlot plot = plots.get(i);
+	   if (sim.locateElm(plot.elm) < 0) {
+	       plots.remove(i--);
+	       removed = true;
+	   } else
+	       ret = false;
+	}
+	if (removed)
+	    calcVisiblePlots();
+	return ret;
+    }
 }

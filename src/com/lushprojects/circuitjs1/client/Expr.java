@@ -1,5 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
+import java.util.Vector;
+
 class ExprState {
     int n;
     double values[];
@@ -12,8 +14,10 @@ class ExprState {
 
 class Expr {
     Expr(Expr e1, Expr e2, int v) {
-	left = e1;
-	right = e2;
+	children = new Vector<Expr>();
+	children.add(e1);
+	if (e2 != null)
+	    children.add(e2);
 	type = v;
     }
     Expr(int v, double vv) {
@@ -24,6 +28,13 @@ class Expr {
 	type = v;
     }
     double eval(ExprState es) {
+	Expr left = null;
+	Expr right = null;
+	if (children != null && children.size() > 0) {
+	    left = children.firstElement();
+	    if (children.size() == 2)
+		right = children.lastElement();
+	}
 	switch (type) {
 	case E_ADD: return left.eval(es)+right.eval(es);
 	case E_SUB: return left.eval(es)-right.eval(es);
@@ -40,6 +51,33 @@ class Expr {
 	case E_LOG: return java.lang.Math.log(left.eval(es));
 	case E_SQRT: return java.lang.Math.sqrt(left.eval(es));
 	case E_TAN: return java.lang.Math.tan(left.eval(es));
+	case E_MIN: {
+	    int i;
+	    double x = left.eval(es);
+	    for (i = 1; i < children.size(); i++)
+		x = Math.min(x,  children.get(i).eval(es));
+	    return x;
+	}
+	case E_MAX: {
+	    int i;
+	    double x = left.eval(es);
+	    for (i = 1; i < children.size(); i++)
+		x = Math.max(x,  children.get(i).eval(es));
+	    return x;
+	}
+	case E_CLAMP:
+	    CirSim.console("clamp " + children.size() + " " + children);
+	    return Math.min(Math.max(left.eval(es), children.get(1).eval(es)), children.get(2).eval(es));
+	case E_STEP: {
+	    double x = left.eval(es); 
+	    if (right == null)
+		return (x < 0) ? 0 : 1;
+	    return (x > right.eval(es)) ? 0 : (x < 0) ? 0 : 1;
+	}
+	case E_TRIANGLE: {
+	    double x = posmod(left.eval(es), Math.PI*2)/Math.PI;
+	    return (x < 1) ? -1+x*2 : x*2-1;
+	}
 	default:
 	    if (type >= E_A)
 		return es.values[type-E_A];
@@ -47,7 +85,13 @@ class Expr {
 	}
 	return 0;
     }
-    Expr left, right;
+    
+    double posmod(double x, double y) {
+	x %= y;
+	return (x >= 0) ? x : x+y;
+    }
+    
+    Vector<Expr> children;
     double value;
     int type;
     static final int E_ADD = 1;
@@ -66,7 +110,16 @@ class Expr {
     static final int E_SQRT = 16;
     static final int E_TAN = 17;
     static final int E_R = 18;
-    static final int E_A = 19; // should be at end
+    static final int E_MAX = 19;
+    static final int E_MIN = 20;
+    static final int E_CLAMP = 21;
+    static final int E_PWL = 22;
+    static final int E_TRIANGLE = 23;
+    static final int E_SAWTOOTH = 24;
+    static final int E_MOD = 25;
+    static final int E_STEP = 26;
+    static final int E_SELECT = 27;
+    static final int E_A = 28; // should be at end
 };
 
 class ExprParser {
@@ -175,6 +228,22 @@ class ExprParser {
 	return new Expr(e, null, t);
     }
 
+    Expr parseFuncMulti(int t, int minArgs, int maxArgs) {
+	int args = 1;
+	skipOrError("(");
+	Expr e1 = parse();
+	Expr e = new Expr(e1, null, t);
+	while (skip(",")) {
+	    Expr enext = parse();
+	    e.children.add(enext);
+	    args++;
+	}
+	skipOrError(")");
+	if (args < minArgs || args > maxArgs)
+	    err = true;
+	return e;
+    }
+
     Expr parseTerm() {
 	if (skip("(")) {
 	    Expr e = parse();
@@ -208,6 +277,24 @@ class ExprParser {
 	    return parseFunc(Expr.E_SQRT);
 	if (skip("tan"))
 	    return parseFunc(Expr.E_TAN);
+	if (skip("tri"))
+	    return parseFunc(Expr.E_TRIANGLE);
+	if (skip("saw"))
+	    return parseFunc(Expr.E_SAWTOOTH);
+	if (skip("min"))
+	    return parseFuncMulti(Expr.E_MIN, 2, 1000);
+	if (skip("max"))
+	    return parseFuncMulti(Expr.E_MAX, 2, 1000);
+	if (skip("pwl"))
+	    return parseFuncMulti(Expr.E_PWL, 2, 1000);
+	if (skip("mod"))
+	    return parseFuncMulti(Expr.E_MOD, 2, 2);
+	if (skip("step"))
+	    return parseFuncMulti(Expr.E_STEP, 1, 2);
+	if (skip("select"))
+	    return parseFuncMulti(Expr.E_SELECT, 3, 1000);
+	if (skip("clamp"))
+	    return parseFuncMulti(Expr.E_CLAMP, 3, 3);
 	try {
 	    Expr e = new Expr(Expr.E_VAL, Double.valueOf(token).doubleValue());
 	    getToken();
