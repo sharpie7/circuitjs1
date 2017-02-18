@@ -607,13 +607,12 @@ class Scope {
 
     	drawGridLines = true;
     	boolean hGridLines = true;
-    	int onlyVisibleUnits = visiblePlots.get(0).units;
     	for (i = 1; i < visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units != visiblePlots.get(0).units)
     		hGridLines = false;
     	}
     	
-    	if (hGridLines || showMax || showMin)
+    	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
     	    calcMaxAndMin(visiblePlots.firstElement().units);
     	
     	// draw volts on top (last), then current underneath, then everything else
@@ -880,7 +879,9 @@ class Scope {
     void drawCrosshairs(Graphics g) {
 	if (sim.dialogIsShowing())
 	    return;
-	if (selectedPlot < 0)
+	if (!rect.contains(sim.mouseCursorX, sim.mouseCursorY))
+	    return;
+	if (selectedPlot < 0 && !showFFT)
 	    return;
 	String info[] = new String[4];
 	int ipa = plots.get(0).startIndex(rect.width);
@@ -888,11 +889,13 @@ class Scope {
 	int ct = 0;
     	int maxy = (rect.height-1)/2;
     	int y = maxy;
-    	ScopePlot plot = visiblePlots.get(selectedPlot);
-    	info[ct++] = plot.getUnitText(plot.maxValues[ip]);
-    	int maxvy = (int) (mainGridMult*(plot.maxValues[ip]-mainGridMid));
-    	g.setColor(plot.color);
-    	g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+    	if (selectedPlot >= 0) {
+    	    ScopePlot plot = visiblePlots.get(selectedPlot);
+    	    info[ct++] = plot.getUnitText(plot.maxValues[ip]);
+    	    int maxvy = (int) (mainGridMult*(plot.maxValues[ip]-mainGridMid));
+    	    g.setColor(plot.color);
+    	    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+    	}
         if (showFFT) {
     		double maxFrequency = 1 / (sim.timeStep * speed * 2);
     		info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
