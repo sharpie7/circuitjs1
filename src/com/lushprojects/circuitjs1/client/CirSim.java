@@ -131,6 +131,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmCopyMenuItem;
     MenuItem elmDeleteMenuItem;
     MenuItem elmScopeMenuItem;
+    MenuItem elmFlipMenuItem;
     MenuBar scopeMenuBar;
     MenuBar transScopeMenuBar;
     MenuBar mainMenuBar;
@@ -605,6 +606,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
+	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
 	
 	scopeMenuBar = buildScopeMenu(false);
 	transScopeMenuBar = buildScopeMenu(true);
@@ -2510,6 +2512,8 @@ MouseOutHandler, MouseWheelHandler {
 			menuElm = null;
     	    	doDuplicate();
     	}
+    	if (item=="flip")
+    	    doFlip();
     	if (item=="selectAll")
     		doSelectAll();
     	//	if (e.getSource() == exitItem) {
@@ -3273,6 +3277,11 @@ MouseOutHandler, MouseWheelHandler {
     	needAnalyze();
     }
 
+    void doFlip() {
+	mouseElm.flipPosts();
+    	needAnalyze();
+    }
+    
     void selectArea(int x, int y) {
     	int x1 = min(x, initDragGridX);
     	int x2 = max(x, initDragGridX);
@@ -3492,6 +3501,7 @@ MouseOutHandler, MouseWheelHandler {
     	} else if (mouseElm != null) {
     		elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
     		elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
+    		elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(elmMenuBar);
     		contextPanel.setPopupPosition(menuX, menuY);
