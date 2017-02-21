@@ -89,5 +89,8 @@ public class ComparatorElm extends CompositeElm {
 	
     
     void getInfo(String arr[]) {
+	 arr[0] = "Comparator";
+	    arr[1] = "V+ = " + getVoltageText(volts[1]);
+	    arr[2] = "V- = " + getVoltageText(volts[0]);
     }
 }

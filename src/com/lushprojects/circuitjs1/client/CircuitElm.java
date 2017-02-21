@@ -59,7 +59,12 @@ public abstract class CircuitElm implements Editable {
     public boolean selected;
     private boolean iAmMouseElm=false;
     
-    int getDumpType() { return 0; }
+    int getDumpType() {
+	throw new IllegalStateException(); // Seems necessary to work-around what appears to be a compiler
+	// bug affecting OTAElm to make sure this method (which should really be abstract) throws
+	// an exception
+ }
+    
     Class getDumpClass() { return getClass(); }
     int getDefaultFlags() { return 0; }
 

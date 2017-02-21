@@ -40,7 +40,6 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     public void loadComposite(StringTokenizer stIn, String model, int externalNodes[]) {
-	// TODO Optimize for wires
 	HashMap<Integer, CircuitNode> compNodeHash = new HashMap<Integer, CircuitNode>();
 	StringTokenizer modelLinet = new StringTokenizer(model, "\r");
 	CircuitNode cn;
@@ -224,6 +223,7 @@ public abstract class CompositeElm extends CircuitElm {
 	for (int i = 0; i < cnLinks.size(); i++) {
 	    cnLinks.get(i).elm.setNodeVoltage(cnLinks.get(i).num, c);
 	}
+	volts[n]=c;
     }
 
     public boolean canViewInScope() {
