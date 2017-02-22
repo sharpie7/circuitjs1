@@ -123,6 +123,7 @@ public abstract class CompositeElm extends CircuitElm {
     
     abstract public int getDumpType();
     
+    
     public String dump() {
 		String dumpStr=super.dump();
 		for (int i = 0; i < compElmList.size(); i++) {
@@ -156,7 +157,7 @@ public abstract class CompositeElm extends CircuitElm {
     public void reset() {
 	for (int i = 0; i < compElmList.size(); i++)
 	    compElmList.get(i).reset();
-    }
+    } 
 
     int getPostCount() {
 	return numPosts;
