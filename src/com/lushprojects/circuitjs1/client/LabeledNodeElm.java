@@ -111,7 +111,7 @@ class LabeledNodeElm extends CircuitElm {
     void stamp() {
 	sim.stampVoltageSource(nodeNumber, nodes[0], voltSource, 0);
     }
-    double getVoltageDiff() { return 0; }
+    double getVoltageDiff() { return volts[0]; }
     int getVoltageSourceCount() { return 1; }
     void getInfo(String arr[]) {
 	arr[0] = text;
