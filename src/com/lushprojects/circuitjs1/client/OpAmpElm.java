@@ -194,6 +194,14 @@ package com.lushprojects.circuitjs1.client;
 		minOut = ei.value;
 	}
 	int getShortcut() { return 'a'; }
+	
+	@Override double getCurrentIntoNode(int n) { 
+	    if (n==2)
+		return -current;
+	   return 0;
+	}
+	
+	
 	@Override double getCurrentIntoPoint(int xa, int ya) { 
 	    if (xa == x2 && ya == y2)
 		return -current;

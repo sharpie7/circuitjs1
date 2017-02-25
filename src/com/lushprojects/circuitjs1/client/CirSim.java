@@ -431,7 +431,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut(LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
+	m.addSeparator();
 	m.addItem(new MenuItem(weAreInUS() ? LS("Center Circuit") : LS("Centre Circuit"), new MyCommand("edit", "centrecircuit")));
+	m.addItem(menuItemWithShortcut(LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
 	m.addItem(menuItemWithShortcut(LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
 	m.addItem(menuItemWithShortcut(LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
 	menuBar.addItem(LS("Edit"),m);
@@ -805,6 +807,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (N-Channel)"), "NJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (P-Channel)"), "PJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add SCR"), "SCRElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (NPN)"), "NDarlingtonElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (PNP)"), "PDarlingtonElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Varactor/Varicap", "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
@@ -824,6 +828,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Comparator (Hi-Z/GND output)"), "ComparatorElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add OTA (LM13700 style)"), "OTAElm"));
 //    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Custom Device"), "CustomAnalogElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
@@ -990,6 +996,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (bounds != null)
     	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
     			     circuitArea.height/(double)(bounds.height+100));
+    	scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
     	circuitBottom = 0;
 
     	// calculate transform so circuit fills most of screen
@@ -2535,6 +2542,8 @@ MouseOutHandler, MouseWheelHandler {
     	    zoomCircuit(20);
     	if (item=="zoomout")
     	    zoomCircuit(-20);
+    	if (item=="zoom100")
+    	    zoomCircuit(0);
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
@@ -3704,12 +3713,17 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void zoomCircuit(int dy) {
-	double val = dy*.01;
+	double newScale;
 	int cx = inverseTransformX(circuitArea.width/2);
 	int cy = inverseTransformY(circuitArea.height/2);
-	double oldScale = transform[0];
-	double newScale = Math.max(oldScale+val, .2);
-	newScale = Math.min(newScale, 2.5);
+	if (dy!=0) {
+    	double oldScale = transform[0];
+    	double val = dy*.01;
+    	newScale = Math.max(oldScale+val, .2);
+    	newScale = Math.min(newScale, 2.5);
+	}
+	else
+	    newScale=1.0;
 	transform[0] = transform[3] = newScale;
 
 	// adjust translation to keep center of screen constant
@@ -4077,6 +4091,10 @@ MouseOutHandler, MouseWheelHandler {
     		    menuPerformed("key", "zoomin");
     		    e.cancel();
     		}
+		if (cc=='0') {
+    		    menuPerformed("key", "zoom100");
+    		    e.cancel();
+		}
 
     		if (cc>32 && cc<127){
     			String c=shortcuts[cc];
@@ -4411,6 +4429,12 @@ MouseOutHandler, MouseWheelHandler {
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
     	    return new AmmeterElm(x1, y1, x2, y2, f, st);
+    	if (tint==400)
+    	    return new DarlingtonElm(x1, y1, x2, y2, f, st);
+    	if (tint==401)
+    	    return new ComparatorElm(x1, y1, x2, y2, f, st);
+    	if (tint==402)
+    	    return new OTAElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4598,6 +4622,14 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
+    	if (n=="NDarlingtonElm")
+		return (CircuitElm) new NDarlingtonElm(x1, y1);
+    	if (n=="PDarlingtonElm")
+		return (CircuitElm) new PDarlingtonElm(x1, y1);
+    	if (n=="ComparatorElm")
+		return (CircuitElm) new ComparatorElm(x1, y1);
+    	if (n=="OTAElm")
+		return (CircuitElm) new OTAElm(x1, y1);
     	if (n=="NoiseElm")
 		return (CircuitElm) new NoiseElm(x1, y1);
     	if (n=="CustomAnalogElm")
@@ -4633,4 +4665,47 @@ MouseOutHandler, MouseWheelHandler {
 	return sm != null ? sm : s;
     }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
+    
+    
+    // For debugging
+    void dumpNodelist() {
+
+	CircuitNode nd;
+	CircuitElm e;
+	int i,j;
+	String s;
+	String cs;
+//
+//	for(i=0; i<nodeList.size(); i++) {
+//	    s="Node "+i;
+//	    nd=nodeList.get(i);
+//	    for(j=0; j<nd.links.size();j++) {
+//		s=s+" " + nd.links.get(j).num + " " +nd.links.get(j).elm.getDumpType();
+//	    }
+//	    console(s);
+//	}
+	console("Elm list Dump");
+	for (i=0;i<elmList.size(); i++) {
+	    e=elmList.get(i);
+	    cs = e.getDumpClass().toString();
+	    int p = cs.lastIndexOf('.');
+	    cs = cs.substring(p+1);
+	    if (cs=="WireElm") 
+		continue;
+	    if (cs=="LabeledNodeElm")
+		cs = cs+" "+((LabeledNodeElm)e).text;
+	    if (cs=="TransistorElm") {
+		if (((TransistorElm)e).pnp == -1)
+		    cs= "PTransistorElm";
+		else
+		    cs = "NTransistorElm";
+	    }
+	    s=cs;
+	    for(j=0; j<e.getPostCount(); j++) {
+		s=s+" "+e.nodes[j];
+	    }
+	    console(s);
+	}
+    }
+    
 }

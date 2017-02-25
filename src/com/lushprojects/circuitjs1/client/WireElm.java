@@ -37,13 +37,14 @@ package com.lushprojects.circuitjs1.client;
 	    drawThickLine(g, point1, point2);
 	    doDots(g);
 	    setBbox(point1, point2, 3);
+	    String s = "";
 	    if (mustShowCurrent()) {
-	        String s = getShortUnitText(Math.abs(getCurrent()), "A");
-	        drawValues(g, s, 4);
-	    } else if (mustShowVoltage()) {
-	        String s = getShortUnitText(volts[0], "V");
-	        drawValues(g, s, 4);
+	        s = getShortUnitText(Math.abs(getCurrent()), "A");
+	    } 
+	    if (mustShowVoltage()) {
+	        s = (s.length() > 0 ? s + " " : "") + getShortUnitText(volts[0], "V");
 	    }
+	    drawValues(g, s, 4);
 	    drawPosts(g);
 	}
 	void stamp() {
@@ -81,13 +82,13 @@ package com.lushprojects.circuitjs1.client;
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
 		if (ei.checkbox.getState())
-		    flags = FLAG_SHOWCURRENT;
+		    flags |= FLAG_SHOWCURRENT;
 		else
 		    flags &= ~FLAG_SHOWCURRENT;
 	    }
 	    if (n == 1) {
 		if (ei.checkbox.getState())
-		    flags = FLAG_SHOWVOLTAGE;
+		    flags |= FLAG_SHOWVOLTAGE;
 		else
 		    flags &= ~FLAG_SHOWVOLTAGE;
 	    }
