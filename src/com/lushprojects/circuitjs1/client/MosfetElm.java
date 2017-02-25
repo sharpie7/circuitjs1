@@ -212,6 +212,21 @@ package com.lushprojects.circuitjs1.client;
 	    sim.stampNonLinear(nodes[1]);
 	    sim.stampNonLinear(nodes[2]);
 	}
+	
+	boolean nonConvergence(double last, double now) {
+	    double diff = Math.abs(last-now);
+	    // difference of less than 10mV is fine
+	    if (diff < .01)
+		return false;
+	    // larger differences are fine if value is large
+	    if (sim.subIterations > 10 && diff < Math.abs(now)*.001)
+		return false;
+	    // if we're having trouble converging, get more lenient
+	    if (sim.subIterations > 100 && diff < .01+(sim.subIterations-100)*.0001)
+		return false;
+	    return true;
+	}
+	
 	void doStep() {
 	    double vs[] = new double[3];
 	    vs[0] = volts[0];
@@ -237,8 +252,7 @@ package com.lushprojects.circuitjs1.client;
 	    int gate = 0;
 	    double vgs = vs[gate ]-vs[source];
 	    double vds = vs[drain]-vs[source];
-	    if (Math.abs(lastv1-vs[1]) > .01 ||
-		Math.abs(lastv2-vs[2]) > .01)
+	    if (nonConvergence(lastv1, vs[1]) || nonConvergence(lastv2, vs[2]))
 		sim.converged = false;
 	    lastv1 = vs[1];
 	    lastv2 = vs[2];

@@ -28,12 +28,18 @@ filt-lopass.txt Low-Pass Filter (RC)
 filt-hipass-l.txt High-Pass Filter (RL)
 filt-lopass-l.txt Low-Pass Filter (RL)
 bandpass.txt Band-pass Filter
+bandnoise.txt Band-pass w/ Noise
 notch.txt Notch Filter
 twint.txt Twin-T Filter
 crossover.txt Crossover
 butter10lo.txt Butterworth Low-Pass (10 pole)
+butter10hi.txt Butterworth High-Pass (10 pole)
+butter10loaud.txt Butterworth Low-Pass w/ Noise
+butter10hiaud.txt Butterworth High-Pass w/ Noise
+butterbandstop.txt Butterworth Band-Stop
 besselbutter.txt Bessel vs Butterworth
 ringing.txt Band-pass with Ringing
+comb.txt Comb Filter
 -
 +Other Passive Circuits
 +Series/Parallel
@@ -217,6 +223,9 @@ filt-vcvs-hipass.txt VCVS High-Pass Filter
 switchedcap.txt Switched-Capacitor Filter
 allpass1.txt Allpass
 allpass2.txt Allpass w/ Square
+actbutterlo.txt Butterworth Low-Pass
+actbutterhi.txt Butterworth High-Pass
+actbutterband.txt Butterworth Band-Pass
 -
 +Logic Families
 +RTL

@@ -41,10 +41,11 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 	    sliderText = st.nextToken();
 	    while (st.hasMoreTokens())
 		sliderText += ' ' + st.nextToken();
+	    sliderText=sliderText.replaceAll("%2[bB]", "+");
 	    createSlider();
 	}
 	String dump() {
-	    return super.dump() + " " + sliderText;
+	    return super.dump() + " " + sliderText.replaceAll("\\+","%2B");
 	}
 	int getDumpType() { return 172; }
 	void createSlider() {

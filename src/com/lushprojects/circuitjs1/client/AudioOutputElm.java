@@ -75,7 +75,7 @@ public class AudioOutputElm extends CircuitElm {
 	    lead1 = new Point();
 	}
 	void draw(Graphics g) {
-	    boolean selected = (needsHighlight() || sim.plotYElm == this);
+	    boolean selected = (needsHighlight());
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    String s = "audio out";
 	    if (labelNum > 1)

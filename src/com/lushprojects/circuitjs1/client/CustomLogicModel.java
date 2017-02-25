@@ -218,13 +218,13 @@ public class CustomLogicModel implements Editable {
 		escape(arrayToList(outputs)) + " " + escape(infoText) + " " + escape(rules); 
     }
     
-    String escape(String s) {
+    static String escape(String s) {
 	if (s.length() == 0)
 	    return "\\0";
 	return s.replace("\\", "\\\\").replace("\n", "\\n").replace(" ", "\\s").replace("+", "\\p");
     }
     
-    String unescape(String s) {
+    static String unescape(String s) {
 	if (s.equals("\\0"))
 	    return "";
 	int i;
