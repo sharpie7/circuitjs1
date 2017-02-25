@@ -1196,6 +1196,15 @@ MouseOutHandler, MouseWheelHandler {
 	    g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
 	}
 
+	if (crossHairCheckItem.getState() && mouseCursorX>=0
+		&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
+	    g.setColor(Color.gray);
+	    int x = snapGrid(inverseTransformX(mouseCursorX));
+	    int y = snapGrid(inverseTransformY(mouseCursorY));
+	    g.drawLine(x, inverseTransformY(0), x, inverseTransformY(circuitArea.height));
+	    g.drawLine(inverseTransformX(0), y, inverseTransformX(circuitArea.width), y);
+	}
+
 	backcontext.setTransform(1, 0, 0, 1, 0, 0);
 
 	if (printableCheckItem.getState())
@@ -1279,16 +1288,6 @@ MouseOutHandler, MouseWheelHandler {
 	if (stopElm != null && stopElm != mouseElm)
 	    stopElm.setMouseElm(false);
 	frames++;
-	if (crossHairCheckItem.getState() && mouseCursorX>=0
-			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
-		g.setColor(Color.gray);
-		int x = snapGrid(mouseCursorX);
-		int y = snapGrid(mouseCursorY);
-		g.drawLine(x, 0, x, circuitArea.height);
-		g.drawLine(0,y, circuitArea.width, y);
-	}
-	
-
 	
 	g.setColor(Color.white);
 //	g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, 10);
