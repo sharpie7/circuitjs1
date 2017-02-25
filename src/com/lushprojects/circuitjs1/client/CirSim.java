@@ -789,6 +789,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (N-Channel)"), "NJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (P-Channel)"), "PJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add SCR"), "SCRElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (NPN)"), "NDarlingtonElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (PNP)"), "PDarlingtonElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Varactor/Varicap", "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
@@ -808,6 +810,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Comparator (Hi-Z/GND output)"), "ComparatorElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add OTA (LM13700 style)"), "OTAElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -2027,6 +2031,8 @@ MouseOutHandler, MouseWheelHandler {
 		    gotVoltageSource = true;
 	    }
 	}
+	
+	dumpNodelist();
 
     }
 
@@ -4408,6 +4414,12 @@ MouseOutHandler, MouseWheelHandler {
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
     	    return new AmmeterElm(x1, y1, x2, y2, f, st);
+    	if (tint==400)
+    	    return new DarlingtonElm(x1, y1, x2, y2, f, st);
+    	if (tint==401)
+    	    return new ComparatorElm(x1, y1, x2, y2, f, st);
+    	if (tint==402)
+    	    return new OTAElm(x1, y1, x2, y2, f, st);
     	return
     			null;
     }
@@ -4595,6 +4607,14 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
+    	if (n=="NDarlingtonElm")
+		return (CircuitElm) new NDarlingtonElm(x1, y1);
+    	if (n=="PDarlingtonElm")
+		return (CircuitElm) new PDarlingtonElm(x1, y1);
+    	if (n=="ComparatorElm")
+		return (CircuitElm) new ComparatorElm(x1, y1);
+    	if (n=="OTAElm")
+		return (CircuitElm) new OTAElm(x1, y1);
     	return null;
     }
     
@@ -4626,4 +4646,47 @@ MouseOutHandler, MouseWheelHandler {
 	return sm != null ? sm : s;
     }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
+    
+    
+    // For debugging
+    void dumpNodelist() {
+
+	CircuitNode nd;
+	CircuitElm e;
+	int i,j;
+	String s;
+	String cs;
+//
+//	for(i=0; i<nodeList.size(); i++) {
+//	    s="Node "+i;
+//	    nd=nodeList.get(i);
+//	    for(j=0; j<nd.links.size();j++) {
+//		s=s+" " + nd.links.get(j).num + " " +nd.links.get(j).elm.getDumpType();
+//	    }
+//	    console(s);
+//	}
+	console("Elm list Dump");
+	for (i=0;i<elmList.size(); i++) {
+	    e=elmList.get(i);
+	    cs = e.getDumpClass().toString();
+	    int p = cs.lastIndexOf('.');
+	    cs = cs.substring(p+1);
+	    if (cs=="WireElm") 
+		continue;
+	    if (cs=="LabeledNodeElm")
+		cs = cs+" "+((LabeledNodeElm)e).text;
+	    if (cs=="TransistorElm") {
+		if (((TransistorElm)e).pnp == -1)
+		    cs= "PTransistorElm";
+		else
+		    cs = "NTransistorElm";
+	    }
+	    s=cs;
+	    for(j=0; j<e.getPostCount(); j++) {
+		s=s+" "+e.nodes[j];
+	    }
+	    console(s);
+	}
+    }
+    
 }

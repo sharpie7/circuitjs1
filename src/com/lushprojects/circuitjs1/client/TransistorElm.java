@@ -311,6 +311,15 @@ import com.google.gwt.i18n.client.NumberFormat;
         }
 
 	boolean canViewInScope() { return true; }
+	
+	double getCurrentIntoNode(int n) {
+	    if (n==0)
+		return -ib;
+	    if (n==1)
+		return -ic;
+	    return -ie;
+	}
+	
 	double getCurrentIntoPoint(int xa, int ya) {
 	    if (xa == x && ya == y)
 		return -ib;

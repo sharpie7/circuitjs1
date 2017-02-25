@@ -54,5 +54,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	boolean hasGroundConnection(int n1) { return true; }
 	int getShortcut() { return 'g'; }
+	
+	@Override double getCurrentIntoNode(int n) { return -current; }
+	
 	@Override double getCurrentIntoPoint(int xa, int ya) { return -current; }
     }

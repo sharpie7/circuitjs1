@@ -59,7 +59,14 @@ public abstract class CircuitElm implements Editable {
     public boolean selected;
     private boolean iAmMouseElm=false;
     
-    int getDumpType() { return 0; }
+//    abstract int getDumpType();
+    
+    int getDumpType() {
+	throw new IllegalStateException(); // Seems necessary to work-around what appears to be a compiler
+	// bug affecting OTAElm to make sure this method (which should really be abstract) throws
+	// an exception
+ }
+    
     Class getDumpClass() { return getClass(); }
     int getDefaultFlags() { return 0; }
 
@@ -109,6 +116,8 @@ public abstract class CircuitElm implements Editable {
 	allocNodes();
 	initBoundingBox();
     }
+    
+
     
     void initBoundingBox() {
 	boundingBox = new Rectangle();
@@ -189,11 +198,31 @@ public abstract class CircuitElm implements Editable {
 	c.x = (int) Math.floor(a.x*(1-f)+b.x*f+g*gx+.48);
 	c.y = (int) Math.floor(a.y*(1-f)+b.y*f+g*gy+.48);
     }
+    
+    /**
+     * Returns a point fraction f along the line between a and b and offset perpendicular by g
+     * @param a 1st Point
+     * @param b 2nd Point
+     * @param f Fraction along line
+     * @param g Fraction perpendicular to line
+     * @return Interpolated point
+     */
     Point interpPoint(Point a, Point b, double f, double g) {
 	Point p = new Point();
 	interpPoint(a, b, p, f, g);
 	return p;
     }
+    
+    
+    /**
+     * Calculates two points fraction f along the line between a and b and offest perpendicular by +/-g
+     * @param a 1st point (In)
+     * @param b 2nd point (In)
+     * @param c 1st point (Out)
+     * @param d 2nd point (Out)
+     * @param f Fraction along line
+     * @param g Fraction perpendicular to line
+     */
     void interpPoint2(Point a, Point b, Point c, Point d, double f, double g) {
 //	int xpd = b.x-a.x;
 //	int ypd = b.y-a.y;
@@ -378,7 +407,7 @@ public abstract class CircuitElm implements Editable {
     int getInternalNodeCount() { return 0; }
     void setNode(int p, int n) { nodes[p] = n; }
     void setVoltageSource(int n, int v) { voltSource = v; }
-    int getVoltageSource() { return voltSource; }
+//    int getVoltageSource() { return voltSource; } // Never used
     double getVoltageDiff() {
 	return volts[0] - volts[1];
     }
@@ -832,6 +861,20 @@ public abstract class CircuitElm implements Editable {
     boolean isMouseElm() {return iAmMouseElm; }
     void updateModels() {}
     void stepFinished() {}
+    
+    // Sadly not all elements override this routine to set it correctly.
+    // If you depend on it (eg if you have a compositeElement) then check it is implemented correctly in
+    // all relevant element types.
+    //
+    // In general it would be better if the future standard was to define getCurrentIntoNode for 
+    // each element and then to define getCurrentIntoPoint to map the point to the node and then
+    // call getCurrentIntoNode
+    double getCurrentIntoNode(int n) {
+	if (n==0 && getPostCount() == 2)
+	    return -current;
+	else
+	    return current;
+    }
     
     double getCurrentIntoPoint(int xa, int ya) {
 	if (xa == x && ya == y && getPostCount() == 2)
