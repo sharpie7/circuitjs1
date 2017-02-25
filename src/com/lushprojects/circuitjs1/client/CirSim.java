@@ -430,7 +430,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut(LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
+	m.addSeparator();
 	m.addItem(new MenuItem(weAreInUS() ? LS("Center Circuit") : LS("Centre Circuit"), new MyCommand("edit", "centrecircuit")));
+	m.addItem(menuItemWithShortcut(LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
 	m.addItem(menuItemWithShortcut(LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
 	m.addItem(menuItemWithShortcut(LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
 	menuBar.addItem(LS("Edit"),m);
@@ -992,6 +994,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (bounds != null)
     	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
     			     circuitArea.height/(double)(bounds.height+100));
+    	scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
     	circuitBottom = 0;
 
     	// calculate transform so circuit fills most of screen
@@ -2535,6 +2538,8 @@ MouseOutHandler, MouseWheelHandler {
     	    zoomCircuit(20);
     	if (item=="zoomout")
     	    zoomCircuit(-20);
+    	if (item=="zoom100")
+    	    zoomCircuit(0);
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
@@ -3698,12 +3703,17 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void zoomCircuit(int dy) {
-	double val = dy*.01;
+	double newScale;
 	int cx = inverseTransformX(circuitArea.width/2);
 	int cy = inverseTransformY(circuitArea.height/2);
-	double oldScale = transform[0];
-	double newScale = Math.max(oldScale+val, .2);
-	newScale = Math.min(newScale, 2.5);
+	if (dy!=0) {
+    	double oldScale = transform[0];
+    	double val = dy*.01;
+    	newScale = Math.max(oldScale+val, .2);
+    	newScale = Math.min(newScale, 2.5);
+	}
+	else
+	    newScale=1.0;
 	transform[0] = transform[3] = newScale;
 
 	// adjust translation to keep center of screen constant
@@ -4071,6 +4081,10 @@ MouseOutHandler, MouseWheelHandler {
     		    menuPerformed("key", "zoomin");
     		    e.cancel();
     		}
+		if (cc=='0') {
+    		    menuPerformed("key", "zoom100");
+    		    e.cancel();
+		}
 
     		if (cc>32 && cc<127){
     			String c=shortcuts[cc];
