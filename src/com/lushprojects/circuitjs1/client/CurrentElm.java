@@ -72,10 +72,20 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    drawPosts(g);
 	}
-	void stamp() {
-	    current = currentValue;
-	    sim.stampCurrentSource(nodes[0], nodes[1], current);
+	
+	// we defer stamping current sources until we can tell if they have a current path or not
+	void stampCurrentSource(boolean broken) {
+	    if (broken) {
+		// no current path; stamping a current source would cause a matrix error.
+		sim.stampResistor(nodes[0], nodes[1], 1e8);
+		current = 0;
+	    } else {
+		// ok to stamp a current source
+		sim.stampCurrentSource(nodes[0], nodes[1], currentValue);
+		current = currentValue;
+	    }
 	}
+	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
 		return new EditInfo("Current (A)", currentValue, 0, .1);

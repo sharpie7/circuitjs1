@@ -26,12 +26,13 @@ package com.lushprojects.circuitjs1.client;
 	double inductance, ratio, couplingCoef;
 	Point ptEnds[], ptCoil[], ptCore[];
 	double current[], curcount[];
-	int width;
-	public static final int FLAG_BACK_EULER = 2;
+	Point dots[];
+	int width, polarity;
+	public static final int FLAG_REVERSE = 4;
 	public TransformerElm(int xx, int yy) {
 	    super(xx, yy);
 	    inductance = 4;
-	    ratio = 1;
+	    ratio = polarity = 1;
 	    width = 32;
 	    noDiagonal = true;
 	    couplingCoef = .999;
@@ -53,6 +54,7 @@ package com.lushprojects.circuitjs1.client;
 		couplingCoef = new Double(st.nextToken()).doubleValue();
 	    } catch (Exception e) { }
 	    noDiagonal = true;
+	    polarity = ((flags & FLAG_REVERSE) != 0) ? -1 : 1; 
 	}
 	void drag(int xx, int yy) {
 	    xx = sim.snapGrid(xx);
@@ -68,7 +70,7 @@ package com.lushprojects.circuitjs1.client;
 	    return super.dump() + " " + inductance + " " + ratio + " " +
 		current[0] + " " + current[1] + " " + couplingCoef;
 	}
-	boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
+	boolean isTrapezoidal() { return (flags & Inductor.FLAG_BACK_EULER) == 0; }
 	void draw(Graphics g) {
 	    int i;
 	    for (i = 0; i != 4; i++) {
@@ -77,11 +79,13 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    for (i = 0; i != 2; i++) {
 		setPowerColor(g, current[i]*(volts[i]-volts[i+2]));
-		drawCoil(g, dsign*(i == 1 ? -6 : 6), ptCoil[i], ptCoil[i+2], volts[i], volts[i+2]);
+		drawCoil(g, dsign*(i == 1 ? -6*polarity : 6), ptCoil[i], ptCoil[i+2], volts[i], volts[i+2]);
 	    }
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    for (i = 0; i != 2; i++) {
 		drawThickLine(g, ptCore[i], ptCore[i+2]);
+		if (dots != null)
+		    g.fillOval(dots[i].x-2, dots[i].y-2, 5, 5);
 		curcount[i] = updateDotCount(current[i], curcount[i]);
 	    }
 	    for (i = 0; i != 2; i++) {
@@ -91,7 +95,7 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    
 	    drawPosts(g);
-	    setBbox(ptEnds[0], ptEnds[3], 0);
+	    setBbox(ptEnds[0], ptEnds[polarity == 1 ? 3 : 1], 0);
 	}
 	
 	void setPoints() {
@@ -113,6 +117,15 @@ package com.lushprojects.circuitjs1.client;
 		interpPoint(ptEnds[i], ptEnds[i+1], ptCore[i],   cd);
 		interpPoint(ptEnds[i], ptEnds[i+1], ptCore[i+1], 1-cd);
 	    }
+	    if (polarity == -1) {
+		dots = new Point[2];
+		double dotp = Math.abs(7./width);
+		dots[0] = interpPoint(ptCoil[0], ptCoil[2], dotp, -7*dsign);
+		dots[1] = interpPoint(ptCoil[3], ptCoil[1], dotp, -7*dsign);
+		Point x = ptEnds[1]; ptEnds[1] = ptEnds[3]; ptEnds[3] = x;
+		x = ptCoil[1]; ptCoil[1] = ptCoil[3]; ptCoil[3] = x;
+	    } else
+		dots = null;
 	}
 	Point getPost(int n) {
 	    return ptEnds[n];
@@ -231,6 +244,12 @@ package com.lushprojects.circuitjs1.client;
 					   isTrapezoidal());
 		return ei;
 	    }
+	    if (n == 4) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Swap Secondary Polarity",
+					   polarity == -1);
+		return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -245,6 +264,14 @@ package com.lushprojects.circuitjs1.client;
 		    flags &= ~Inductor.FLAG_BACK_EULER;
 		else
 		    flags |= Inductor.FLAG_BACK_EULER;
+	    }
+	    if (n == 4) {
+		polarity = (ei.checkbox.getState()) ? -1 : 1;
+		if (ei.checkbox.getState())
+		    flags |= FLAG_REVERSE;
+		else
+		    flags &= ~FLAG_REVERSE;
+		setPoints();
 	    }
 	}
     }

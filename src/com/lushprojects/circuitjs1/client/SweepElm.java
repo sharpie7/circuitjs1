@@ -68,7 +68,6 @@ class SweepElm extends CircuitElm {
 		   xc+circleSize, yc+circleSize);
 	int i;
 	int xl = 10;
-	int ox = -1, oy = -1;
 	long tm = System.currentTimeMillis();
 	//double w = (this == mouseElm ? 3 : 2);
 	tm %= 2000;
@@ -77,12 +76,19 @@ class SweepElm extends CircuitElm {
 	double w = 1+tm*.002;
 	if (sim.simIsRunning())
 	    w = 1+2*(frequency-minF)/(maxF-minF);
+	
+	g.context.beginPath();
+	g.context.setLineWidth(3.0);
 	for (i = -xl; i <= xl; i++) {
 	    int yy = yc+(int) (.95*Math.sin(i*pi*w/xl)*wl);
-	    if (ox != -1)
-		drawThickLine(g, ox, oy, xc+i, yy);
-	    ox = xc+i; oy = yy;
+	    if (i == -xl)
+		g.context.moveTo(xc+i, yy);
+	    else
+		g.context.lineTo(xc+i, yy);
 	}
+	g.context.stroke();
+	g.context.setLineWidth(1.0);
+
 	if (sim.showValuesCheckItem.getState()) {
 	    String s = getShortUnitText(frequency, "Hz");
 	    if (dx == 0 || dy == 0)
