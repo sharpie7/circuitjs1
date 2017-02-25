@@ -2543,7 +2543,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="zoomout")
     	    zoomCircuit(-20);
     	if (item=="zoom100")
-    	    zoomCircuit(0);
+    	    setCircuitScale(1);
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
@@ -3714,16 +3714,16 @@ MouseOutHandler, MouseWheelHandler {
 
     void zoomCircuit(int dy) {
 	double newScale;
-	int cx = inverseTransformX(circuitArea.width/2);
-	int cy = inverseTransformY(circuitArea.height/2);
-	if (dy!=0) {
     	double oldScale = transform[0];
     	double val = dy*.01;
     	newScale = Math.max(oldScale+val, .2);
     	newScale = Math.min(newScale, 2.5);
-	}
-	else
-	    newScale=1.0;
+    	setCircuitScale(newScale);
+    }
+    
+    void setCircuitScale(double newScale) {
+	int cx = inverseTransformX(circuitArea.width/2);
+	int cy = inverseTransformY(circuitArea.height/2);
 	transform[0] = transform[3] = newScale;
 
 	// adjust translation to keep center of screen constant
