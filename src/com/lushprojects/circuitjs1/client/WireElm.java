@@ -40,7 +40,8 @@ package com.lushprojects.circuitjs1.client;
 	    String s = "";
 	    if (mustShowCurrent()) {
 	        s = getShortUnitText(Math.abs(getCurrent()), "A");
-	    } else if (mustShowVoltage()) {
+	    } 
+	    if (mustShowVoltage()) {
 	        s = (s.length() > 0 ? s + " " : "") + getShortUnitText(volts[0], "V");
 	    }
 	    drawValues(g, s, 4);
