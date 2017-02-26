@@ -131,6 +131,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmCopyMenuItem;
     MenuItem elmDeleteMenuItem;
     MenuItem elmScopeMenuItem;
+    MenuItem elmFlipMenuItem;
     MenuBar scopeMenuBar;
     MenuBar transScopeMenuBar;
     MenuBar mainMenuBar;
@@ -607,6 +608,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
+	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
 	
 	scopeMenuBar = buildScopeMenu(false);
 	transScopeMenuBar = buildScopeMenu(true);
@@ -1194,6 +1196,15 @@ MouseOutHandler, MouseWheelHandler {
 	    g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
 	}
 
+	if (crossHairCheckItem.getState() && mouseCursorX>=0
+		&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
+	    g.setColor(Color.gray);
+	    int x = snapGrid(inverseTransformX(mouseCursorX));
+	    int y = snapGrid(inverseTransformY(mouseCursorY));
+	    g.drawLine(x, inverseTransformY(0), x, inverseTransformY(circuitArea.height));
+	    g.drawLine(inverseTransformX(0), y, inverseTransformX(circuitArea.width), y);
+	}
+
 	backcontext.setTransform(1, 0, 0, 1, 0, 0);
 
 	if (printableCheckItem.getState())
@@ -1277,16 +1288,6 @@ MouseOutHandler, MouseWheelHandler {
 	if (stopElm != null && stopElm != mouseElm)
 	    stopElm.setMouseElm(false);
 	frames++;
-	if (crossHairCheckItem.getState() && mouseCursorX>=0
-			&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
-		g.setColor(Color.gray);
-		int x = snapGrid(mouseCursorX);
-		int y = snapGrid(mouseCursorY);
-		g.drawLine(x, 0, x, circuitArea.height);
-		g.drawLine(0,y, circuitArea.width, y);
-	}
-	
-
 	
 	g.setColor(Color.white);
 //	g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, 10);
@@ -2517,6 +2518,8 @@ MouseOutHandler, MouseWheelHandler {
 			menuElm = null;
     	    	doDuplicate();
     	}
+    	if (item=="flip")
+    	    doFlip();
     	if (item=="selectAll")
     		doSelectAll();
     	//	if (e.getSource() == exitItem) {
@@ -2539,7 +2542,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="zoomout")
     	    zoomCircuit(-20);
     	if (item=="zoom100")
-    	    zoomCircuit(0);
+    	    setCircuitScale(1);
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
@@ -3282,6 +3285,11 @@ MouseOutHandler, MouseWheelHandler {
     	needAnalyze();
     }
 
+    void doFlip() {
+	mouseElm.flipPosts();
+    	needAnalyze();
+    }
+    
     void selectArea(int x, int y) {
     	int x1 = min(x, initDragGridX);
     	int x2 = max(x, initDragGridX);
@@ -3501,6 +3509,7 @@ MouseOutHandler, MouseWheelHandler {
     	} else if (mouseElm != null) {
     		elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
     		elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
+    		elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(elmMenuBar);
     		contextPanel.setPopupPosition(menuX, menuY);
@@ -3704,16 +3713,16 @@ MouseOutHandler, MouseWheelHandler {
 
     void zoomCircuit(int dy) {
 	double newScale;
-	int cx = inverseTransformX(circuitArea.width/2);
-	int cy = inverseTransformY(circuitArea.height/2);
-	if (dy!=0) {
     	double oldScale = transform[0];
     	double val = dy*.01;
     	newScale = Math.max(oldScale+val, .2);
     	newScale = Math.min(newScale, 2.5);
-	}
-	else
-	    newScale=1.0;
+    	setCircuitScale(newScale);
+    }
+    
+    void setCircuitScale(double newScale) {
+	int cx = inverseTransformX(circuitArea.width/2);
+	int cy = inverseTransformY(circuitArea.height/2);
 	transform[0] = transform[3] = newScale;
 
 	// adjust translation to keep center of screen constant

@@ -869,4 +869,14 @@ public abstract class CircuitElm implements Editable {
 //	sim.stop("bad current into point", this);  // for debugging
 	return current;
     }
+    
+    void flipPosts() {
+	int oldx = x;
+	int oldy = y;
+	x = x2;
+	y = y2;
+	x2 = oldx;
+	y2 = oldy;
+	setPoints();
+    }
 }
