@@ -30,6 +30,7 @@ class TextElm extends GraphicElm {
     int size;
     final int FLAG_CENTER = 1;
     final int FLAG_BAR = 2;
+    final int FLAG_ESCAPE = 4;
     public TextElm(int xx, int yy) {
 	super(xx, yy);
 	text = "hello";
@@ -42,9 +43,15 @@ class TextElm extends GraphicElm {
 	super(xa, ya, xb, yb, f);
 	size = new Integer(st.nextToken()).intValue();
 	text = st.nextToken();
-	while (st.hasMoreTokens())
-	    text += ' ' + st.nextToken();
-	text=text.replaceAll("%2[bB]", "+");
+	if ((flags & FLAG_ESCAPE) == 0) {
+	    // old-style dump before escape/unescape
+	    while (st.hasMoreTokens())
+		text += ' ' + st.nextToken();
+	    text=text.replaceAll("%2[bB]", "+");
+	} else {
+	    // new-style dump
+	    text = CustomLogicModel.unescape(text); 
+	}
 	split();
     }
     void split() {
@@ -67,7 +74,8 @@ class TextElm extends GraphicElm {
 	lines.add(sb.toString());
     }
     String dump() {
-	return super.dump() + " " + size + " " + text.replaceAll("\\+","%2B");
+	flags |= FLAG_ESCAPE;
+	return super.dump() + " " + size + " " + CustomLogicModel.escape(text);
 	//return super.dump() + " " + size + " " + text;
     }
     int getDumpType() { return 'x'; }
