@@ -93,12 +93,12 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	super.setPoints();
 	int offset = 0;
 	if (abs(dx) > abs(dy)) {
-	    dx = sim.snapGrid(dx/2)*2;
+	    dx = Integer.signum(dx) * sim.snapGrid(Math.abs(dx)/2)*2;
 	    point2.x = x2 = point1.x + dx;
 	    offset = (dx < 0) ? dy : -dy;
 	    point2.y = point1.y;
 	} else {
-	    dy = sim.snapGrid(dy/2)*2;
+	    dy = Integer.signum(dy) * sim.snapGrid(Math.abs(dy)/2)*2;
 	    point2.y = y2 = point1.y + dy;
 	    offset = (dy > 0) ? dx : -dx;
 	    point2.x = point1.x;
