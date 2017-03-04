@@ -1782,7 +1782,7 @@ MouseOutHandler, MouseWheelHandler {
 	    // connect one of the unconnected nodes to ground with a big resistor, then try again
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
-		    console("node " + i + " unconnected");
+//		    console("node " + i + " unconnected");
 		    stampResistor(0, i, 1e8);
 		    closure[i] = true;
 		    changed = true;
@@ -1800,7 +1800,7 @@ MouseOutHandler, MouseWheelHandler {
 		// first try findPath with maximum depth of 5, to avoid slowdowns
 		if (!fpi.findPath(ce.getNode(0), 5) &&
 		    !fpi.findPath(ce.getNode(0))) {
-		    console(ce + " no path");
+//		    console(ce + " no path");
 		    ce.reset();
 		}
 	    }
@@ -3158,9 +3158,10 @@ MouseOutHandler, MouseWheelHandler {
     	if (success) {
     	    dragScreenX = e.getX();
     	    dragScreenY = e.getY();
+    //	    console("setting dragGridx in mousedragged");
     	    dragGridX = inverseTransformX(dragScreenX);
     	    dragGridY = inverseTransformY(dragScreenY);
-    	    if (!(tempMouseMode == MODE_DRAG_SELECTED && mouseElm instanceof GraphicElm)) {
+    	    if (!(tempMouseMode == MODE_DRAG_SELECTED && onlyGraphicsElmsSelected())) {
     		dragGridX = snapGrid(dragGridX);
     		dragGridY = snapGrid(dragGridY);
     	    }
@@ -3221,24 +3222,32 @@ MouseOutHandler, MouseWheelHandler {
     	removeZeroLengthElements();
     }
 
-    boolean dragSelected(int x, int y) {
-    	boolean me = false;
-    	if (mouseElm != null && !mouseElm.isSelected())
-    	    mouseElm.setSelected(me = true);
-
-    	// snap grid, unless we're only dragging text elements
+    boolean onlyGraphicsElmsSelected() {
+	if (mouseElm!=null && !(mouseElm instanceof GraphicElm))
+	    return false;
     	int i;
     	for (i = 0; i != elmList.size(); i++) {
     	    CircuitElm ce = getElm(i);
     	    if ( ce.isSelected() && !(ce instanceof GraphicElm) )
-    		break;
+    		return false;
     	}
-    	if (i != elmList.size()) {
+    	return true;
+    }
+    
+    boolean dragSelected(int x, int y) {
+    	boolean me = false;
+    	int i;
+    	if (mouseElm != null && !mouseElm.isSelected())
+    	    mouseElm.setSelected(me = true);
+
+    	if (! onlyGraphicsElmsSelected()) {
+    //	    console("Snapping x and y");
     	    x = snapGrid(x);
     	    y = snapGrid(y);
     	}
 
     	int dx = x-dragGridX;
+  //  	console("dx="+dx+"dragGridx="+dragGridX);
     	int dy = y-dragGridY;
     	if (dx == 0 && dy == 0) {
     	    // don't leave mouseElm selected if we selected it above
@@ -3383,6 +3392,7 @@ MouseOutHandler, MouseWheelHandler {
     	int sy = e.getY();
     	int gx = inverseTransformX(sx);
     	int gy = inverseTransformY(sy);
+   // 	console("Settingd draggridx in mouseEvent");
     	dragGridX = snapGrid(gx);
     	dragGridY = snapGrid(gy);
     	dragScreenX = sx;
