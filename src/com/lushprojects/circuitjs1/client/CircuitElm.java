@@ -633,7 +633,8 @@ public abstract class CircuitElm implements Editable {
     }
 	double va = Math.abs(v);
 	if (va < 1e-14)
-	    return sf ? null : "0 " + u;
+	    // this used to return null, but then wires would display "null" with 0V
+	    return "0" + sp + u;
 	if (va < 1e-9)
 	    return s.format(v*1e12) + sp + "p" + u;
 	if (va < 1e-6)
