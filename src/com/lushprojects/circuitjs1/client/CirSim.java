@@ -830,7 +830,10 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Comparator (Hi-Z/GND output)"), "ComparatorElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add OTA (LM13700 style)"), "OTAElm"));
-//    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Custom Device"), "CustomAnalogElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Voltage-Controlled Voltage Source"), "VCVSElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Voltage-Controlled Current Source"), "VCCSElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Voltage Source"), "CCVSElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source"), "CCCSElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -1782,7 +1785,7 @@ MouseOutHandler, MouseWheelHandler {
 	    // connect one of the unconnected nodes to ground with a big resistor, then try again
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
-//		    console("node " + i + " unconnected");
+		    console("node " + i + " unconnected");
 		    stampResistor(0, i, 1e8);
 		    closure[i] = true;
 		    changed = true;
@@ -1810,11 +1813,18 @@ MouseOutHandler, MouseWheelHandler {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
 		if (!fpi.findPath(ce.getNode(0))) {
-//		    stop(LS("No path for current source!"), ce);
-//		    return;
 		    cur.stampCurrentSource(true);
 		} else
 		    cur.stampCurrentSource(false);
+	    }
+	    if (ce instanceof VCCSElm) {
+		VCCSElm cur = (VCCSElm) ce;
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
+						    cur.getOutputNode(0));
+		if (cur.hasCurrentOutput() && !fpi.findPath(cur.getOutputNode(1))) {
+		    cur.broken = true;
+		} else
+		    cur.broken = false;
 	    }
 	    // look for voltage source loops
 	    // IES
@@ -4433,7 +4443,13 @@ MouseOutHandler, MouseWheelHandler {
     	if (tint==211)
     	    return (CircuitElm) new AudioOutputElm(x1, y1, x2, y2, f, st);
     	if (tint==212)
-    	    return (CircuitElm) new CustomAnalogElm(x1, y1, x2, y2, f, st);
+    	    return (CircuitElm) new VCVSElm(x1, y1, x2, y2, f, st);
+    	if (tint==213)
+    	    return (CircuitElm) new VCCSElm(x1, y1, x2, y2, f, st);
+    	if (tint==214)
+    	    return (CircuitElm) new CCVSElm(x1, y1, x2, y2, f, st);
+    	if (tint==215)
+    	    return (CircuitElm) new CCCSElm(x1, y1, x2, y2, f, st);
     	if (tint==368)
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
@@ -4641,8 +4657,14 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OTAElm(x1, y1);
     	if (n=="NoiseElm")
 		return (CircuitElm) new NoiseElm(x1, y1);
-    	if (n=="CustomAnalogElm")
-		return (CircuitElm) new CustomAnalogElm(x1, y1);
+    	if (n=="VCVSElm")
+		return (CircuitElm) new VCVSElm(x1, y1);
+    	if (n=="VCCSElm")
+		return (CircuitElm) new VCCSElm(x1, y1);
+    	if (n=="CCVSElm")
+		return (CircuitElm) new CCVSElm(x1, y1);
+    	if (n=="CCCSElm")
+		return (CircuitElm) new CCCSElm(x1, y1);
     	return null;
     }
     
