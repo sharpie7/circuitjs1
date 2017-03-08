@@ -1361,6 +1361,7 @@ MouseOutHandler, MouseWheelHandler {
     			row = 0;
     			speed = s.speed;
     		}
+    		s.stackCount = scopeColCount[pos];
     		if (s.speed != speed) {
     			s.speed = speed;
     			s.resetGraph();

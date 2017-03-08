@@ -731,6 +731,11 @@ public abstract class CircuitElm implements Editable {
 	arr[2] = "Vd = " + getVoltageDText(getVoltageDiff());
 	return 3;
     }
+    String getScopeText(int v) {
+        String info[] = new String[10];
+        getInfo(info);
+        return info[0];
+    }
     
     Color getVoltageColor(Graphics g, double volts) {
     	if (needsHighlight()) {

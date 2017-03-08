@@ -144,6 +144,7 @@ class Scope {
     FFT fft;
     int position;
     int speed;
+    int stackCount; // number of scopes in this column
     String text;
     Rectangle rect;
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
@@ -1072,10 +1073,28 @@ class Scope {
     	}
     	if (showRMS)
     	    drawRMS(g);
-    	if (text != null)
-    	    drawInfoText(g, text);
+    	String t = text;
+    	if (t == null)
+    	    t = getScopeText();
+    	if (t != null)
+    	    drawInfoText(g, t);
     	if (showFreq)
     	    drawFrequency(g);
+    }
+
+    String getScopeText() {
+	// stacked scopes?  don't show text
+	if (stackCount != 1)
+	    return null;
+	
+	// multiple elms?  don't show text (unless one is selected)
+	if (selectedPlot < 0 && getSingleElm() == null)
+	    return null;
+	
+	ScopePlot plot = visiblePlots.firstElement();
+	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
+	    plot = visiblePlots.get(selectedPlot);
+	return plot.elm.getScopeText(plot.value);
     }
     
     void speedUp() {

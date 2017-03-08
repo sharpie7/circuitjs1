@@ -243,6 +243,20 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    sim.stampRightSide(nodes[1], -ic + gce*vbe + gcc*vbc);
 	    sim.stampRightSide(nodes[2], -ie + gee*vbe + gec*vbc);
 	}
+	
+	@Override String getScopeText(int x) {
+	    String t ="";
+	    switch (x) {
+	    case Scope.VAL_IB: t = "Ib"; break; 
+	    case Scope.VAL_IC: t = "Ic"; break;
+	    case Scope.VAL_IE: t = "Ie"; break;
+	    case Scope.VAL_VBE: t = "Vbe"; break;
+	    case Scope.VAL_VBC: t = "Vbc"; break;
+	    case Scope.VAL_VCE: t = "Vce"; break;
+	    }
+	    return sim.LS("transistor") + ", " + t;
+	}
+	
 	void getInfo(String arr[]) {
 	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
 	    double vbc = volts[0]-volts[1];
