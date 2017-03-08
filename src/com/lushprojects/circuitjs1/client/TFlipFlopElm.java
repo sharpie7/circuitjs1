@@ -69,7 +69,6 @@ package com.lushprojects.circuitjs1.client;
 	    	if(pins[0].value) //if T = 1
 	    	{
 	    		pins[1].value = !pins[1].value;
-	    		pins[2].value = !pins[1].value;
 	    	}
 	    	//else no change
 			
@@ -77,13 +76,12 @@ package com.lushprojects.circuitjs1.client;
 	    if(hasSet() && pins[5].value)
 		{
 			pins[1].value = true;
-			pins[2].value = false;
 		}
 	    if(hasReset() && pins[4].value)
 		{
 			pins[1].value = false;
-			pins[2].value = true;
 	    }
+	    pins[2].value = !pins[1].value;
 	    lastClock = pins[3].value;
 	}
 	int getDumpType() { return 193; }
