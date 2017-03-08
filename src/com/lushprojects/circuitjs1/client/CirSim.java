@@ -142,6 +142,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem scopeMinMenuItem;
     CheckboxMenuItem scopeFreqMenuItem;
     CheckboxMenuItem scopeFFTMenuItem;
+    CheckboxMenuItem scopeRMSMenuItem;
     CheckboxMenuItem scopePowerMenuItem;
     CheckboxMenuItem scopeIbMenuItem;
     CheckboxMenuItem scopeIcMenuItem;
@@ -786,7 +787,7 @@ MouseOutHandler, MouseWheelHandler {
     	MenuBar outputMenuBar = new MenuBar(true);
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Analog Output"), "OutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED"), "LEDElm"));
-    	outputMenuBar.addItem(getClassCheckItem(LS("Add Lamp (beta)"), "LampElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Lamp"), "LampElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Text"), "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Box"), "BoxElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Voltmeter/Scobe Probe"), "ProbeElm"));
@@ -948,6 +949,7 @@ MouseOutHandler, MouseWheelHandler {
     		m.addItem(scopeMinMenuItem = new CheckboxMenuItem(LS("Show Negative Peak Value"), new MyCommand("scopepop", "shownegpeak")));
     		m.addItem(scopeFreqMenuItem = new CheckboxMenuItem(LS("Show Frequency"), new MyCommand("scopepop", "showfreq")));
     		m.addItem(scopeFFTMenuItem = new CheckboxMenuItem(LS("Show Spectrum"), new MyCommand("scopepop", "showfft")));
+    		m.addItem(scopeRMSMenuItem = new CheckboxMenuItem(LS("Show RMS Average"), new MyCommand("scopepop", "showrms")));
     		m.addItem(scopeVIMenuItem = new CheckboxMenuItem(LS("Show V vs I"), new MyCommand("scopepop", "showvvsi")));
     		m.addItem(scopeXYMenuItem = new CheckboxMenuItem(LS("Plot X/Y"), new MyCommand("scopepop", "plotxy")));
     		m.addItem(scopeSelectYMenuItem = new CheckboxAlignedMenuItem(LS("Select Y"), new MyCommand("scopepop", "selecty")));

@@ -189,4 +189,15 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 3 && ei.value > 0)
 		coolTime = ei.value;
 	}
+	
+	double getScopeValue(int x) {
+	    return (x == Scope.VAL_R) ? resistance : super.getScopeValue(x);
+	}
+	int getScopeUnits(int x) {
+	    return (x == Scope.VAL_R) ? Scope.UNITS_OHMS : super.getScopeUnits(x);
+	}
+	boolean canShowValueInScope(int x) {
+	    return x == Scope.VAL_R;
+	}
+
     }

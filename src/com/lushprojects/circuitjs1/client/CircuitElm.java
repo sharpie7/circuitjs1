@@ -822,6 +822,7 @@ public abstract class CircuitElm implements Editable {
     }
     boolean needsHighlight() { return iAmMouseElm || selected || sim.plotYElm == this; }
     boolean isSelected() { return selected; }
+    boolean canShowValueInScope(int v) { return false; }
     void setSelected(boolean x) { selected = x; }
     void selectRect(Rectangle r) {
 	selected = r.intersects(boundingBox);

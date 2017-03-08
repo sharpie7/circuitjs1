@@ -156,8 +156,22 @@ class EditDialog extends DialogBox  {
 		einfocount = i;
 	}
 
+	static final double ROOT2 = 1.41421356237309504880;
+	
+	double diffFromInteger(double x) {
+	    return Math.abs(x-Math.round(x));
+	}
+	
 	String unitString(EditInfo ei) {
-		double v = ei.value;
+	    // for voltage elements, express values in rms if that would be shorter
+	    if (elm != null && elm instanceof VoltageElm &&
+		Math.abs(ei.value) > 1e-4 &&
+		diffFromInteger(ei.value*1e4) > diffFromInteger(ei.value*1e4/ROOT2))
+		return unitString(ei, ei.value/ROOT2) + "rms";
+	    return unitString(ei, ei.value);
+	}
+
+	String unitString(EditInfo ei, double v) {
 		double va = Math.abs(v);
 		if (ei.dimensionless)
 			return noCommaFormat.format(v);
@@ -182,6 +196,11 @@ class EditDialog extends DialogBox  {
 	double parseUnits(EditInfo ei) throws java.text.ParseException {
 		String s = ei.textf.getText();
 		s = s.trim();
+		double rmsMult = 1;
+		if (s.endsWith("rms")) {
+		    s = s.substring(0, s.length()-3).trim();
+		    rmsMult = ROOT2;
+		}
 		// rewrite shorthand (eg "2k2") in to normal format (eg 2.2k) using regex
 		s=s.replaceAll("([0-9]+)([pPnNuUmMkKgG])([0-9]+)", "$1.$3$2");
 		int len = s.length();
@@ -201,7 +220,7 @@ class EditDialog extends DialogBox  {
 		}
 		if (mult != 1)
 			s = s.substring(0, len-1).trim();
-		return noCommaFormat.parse(s) * mult;
+		return noCommaFormat.parse(s) * mult * rmsMult;
 	}
 
 	void apply() {
