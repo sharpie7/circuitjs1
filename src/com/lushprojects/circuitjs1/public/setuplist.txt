@@ -383,5 +383,6 @@ ota-vcf-single.txt OTA Single Stage VCF (low pass)
 ota-ringmod.txt OTA Ring Modulator
 ota-gain.txt LM137000 Gain Oddity
 -
+lightbulb.txt Light Bulb
 -
 blank.txt Blank Circuit
