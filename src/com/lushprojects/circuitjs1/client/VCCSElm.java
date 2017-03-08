@@ -205,5 +205,12 @@ package com.lushprojects.circuitjs1.client;
             ExprParser parser = new ExprParser(exprString);
             expr = parser.parseExpression();
         }
+        
+        void getInfo(String arr[]) {
+            super.getInfo(arr);
+            int i;
+            for (i = 0; arr[i] != null; i++) ;
+            arr[i] = "I = " + getCurrentText(pins[inputCount].current);
+        }
     }
 
