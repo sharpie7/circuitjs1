@@ -189,9 +189,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    if (sim.subIterations > 100) {
 		// if we have trouble converging, put a conductance in parallel with all P-N junctions.
 		// Gradually increase the conductance value for each iteration.
-		gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/3000.));
+		gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/300.));
 		if (gmin > .1)
 		    gmin = .1;
+//		sim.console("gmin " + gmin + " vbc " + vbc + " vbe " + vbe);
 	    }
 	    //System.out.print("T " + vbc + " " + vbe + "\n");
 	    vbc = pnp*limitStep(pnp*vbc, pnp*lastvbc);
