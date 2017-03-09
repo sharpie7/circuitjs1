@@ -127,8 +127,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getPostCount() { return 5; }
 	void reset() {
-	    current[0] = current[1] = volts[0] = volts[1] = volts[2] =
-		volts[3] = curcount[0] = curcount[1] = 0;
+	    current[0] = current[1] = current[2] = volts[0] = volts[1] = volts[2] =
+		volts[3] = volts[4] = curcount[0] = curcount[1] = curcount[2] = 0;
 	}
 	double a[];
 	void stamp() {
@@ -158,19 +158,20 @@ package com.lushprojects.circuitjs1.client;
 	    // we square the 1/2 to divide by 4
 	    double l2 = inductance*ratio*ratio/4;
 	    double cc = .99;
-	    //double m1 = .999*Math.sqrt(l1*l2);
+	    double m1 = cc*Math.sqrt(l1*l2);
 	    // mutual inductance between two halves of the second winding
 	    // is equal to self-inductance of either half (slightly less
 	    // because the coupling is not perfect)
-	    //double m2 = .999*l2;
+	    double m2 = cc*l2;
 	    // load pre-inverted matrix
-	    a[0] = (1+cc)/(l1*(1+cc-2*cc*cc));
-	    a[1] = a[2] = a[3] = a[6] = 2*cc/((2*cc*cc-cc-1)*inductance*ratio);
-	    a[4] = a[8] = -4*(1+cc)/((2*cc*cc-cc-1)*l1*ratio*ratio);
-	    a[5] = a[7] = 4*cc/((2*cc*cc-cc-1)*l1*ratio*ratio);
+	    a[0] = l2+m2;
+	    a[1] = a[2] = a[3] = a[6] = -m1;
+	    a[4] = a[8] = (l1*l2-m1*m1)/(l2-m2);
+	    a[5] = a[7] = (m1*m1-l1*m2)/(l2-m2);
 	    int i;
+	    double det = l1*(l2+m2)-2*m1*m1;
 	    for (i = 0; i != 9; i++)
-		a[i] *= sim.timeStep/2;
+		a[i] *= (isTrapezoidal() ? sim.timeStep/2 : sim.timeStep)/det;
 	    sim.stampConductance(nodes[0], nodes[1], a[0]);
 	    sim.stampVCCurrentSource(nodes[0], nodes[1], nodes[2], nodes[3], a[1]);
 	    sim.stampVCCurrentSource(nodes[0], nodes[1], nodes[3], nodes[4], a[2]);
@@ -186,6 +187,7 @@ package com.lushprojects.circuitjs1.client;
 	    for (i = 0; i != 5; i++)
 		sim.stampRightSide(nodes[i]);
 	}
+	boolean isTrapezoidal() { return true; }
 	void startIteration() {
 	    voltdiff[0] = volts[0]-volts[1];
 	    voltdiff[1] = volts[2]-volts[3];
@@ -193,8 +195,9 @@ package com.lushprojects.circuitjs1.client;
 	    int i, j;
 	    for (i = 0; i != 3; i++) {
 		curSourceValue[i] = current[i];
-		for (j = 0; j != 3; j++)
-		    curSourceValue[i] += a[i*3+j]*voltdiff[j];
+		if (isTrapezoidal())
+		    for (j = 0; j != 3; j++)
+			curSourceValue[i] += a[i*3+j]*voltdiff[j];
 	    }
 	}
 	double curSourceValue[], voltdiff[];
