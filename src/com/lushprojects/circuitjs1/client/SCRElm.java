@@ -115,6 +115,8 @@ class SCRElm extends CircuitElm {
 	}
 	interpPoint(lead2, point2, gate[0], gatelen/leadlen, gatelen*dir);
 	interpPoint(lead2, point2, gate[1], gatelen/leadlen, sim.gridSize*2*dir);
+	gate[1].x = sim.snapGrid(gate[1].x);
+	gate[1].y = sim.snapGrid(gate[1].y);
     }
 	
     void draw(Graphics g) {
