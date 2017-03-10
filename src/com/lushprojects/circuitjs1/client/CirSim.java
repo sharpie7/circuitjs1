@@ -248,7 +248,6 @@ MouseOutHandler, MouseWheelHandler {
     static String ohmString = "\u03a9";
     String clipboard;
     Rectangle circuitArea;
-    int circuitBottom;
     Vector<String> undoStack, redoStack;
     double transform[];
 
@@ -1002,7 +1001,6 @@ MouseOutHandler, MouseWheelHandler {
     	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
     			     circuitArea.height/(double)(bounds.height+100));
     	scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
-    	circuitBottom = 0;
 
     	// calculate transform so circuit fills most of screen
     	transform[0] = transform[3] = scale;
@@ -1235,8 +1233,6 @@ MouseOutHandler, MouseWheelHandler {
 	if (stopMessage != null) {
 	    g.drawString(stopMessage, 10, circuitArea.height-10);
 	} else {
-	    if (circuitBottom == 0)
-		calcCircuitBottom();
 	    String info[] = new String[10];
 	    if (mouseElm != null) {
 		if (mousePost == -1) {
@@ -1281,11 +1277,7 @@ MouseOutHandler, MouseWheelHandler {
 		info[i++] = badnodes + ((badnodes == 1) ?
 					LS(" bad connection") : LS(" bad connections"));
 	    
-	    // find where to show data; below circuit, not too high unless we need it
-	   // int ybase = winSize.height-15*i-5;
-	    int ybase = cv.getCoordinateSpaceHeight() -15*i-5;
-	    ybase = min(ybase, circuitArea.height);
-	    ybase = max(ybase, circuitBottom);
+	    int ybase = circuitArea.height;
 	    for (i = 0; info[i] != null; i++)
 		g.drawString(info[i], x,
 			     ybase+15*(i+1));
@@ -1601,7 +1593,6 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void analyzeCircuit() {
-	calcCircuitBottom();
 	if (elmList.isEmpty()) {
 	    postDrawList = new Vector<Point>();
 	    badConnectionList = new Vector<Point>();
@@ -2035,18 +2026,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	postCountMap = null;
     }
-    
-    void calcCircuitBottom() {
-	int i;
-	circuitBottom = 0;
-	for (i = 0; i != elmList.size(); i++) {
-	    Rectangle rect = getElm(i).boundingBox;
-	    int bottom = rect.height + rect.y;
-	    if (bottom > circuitBottom)
-		circuitBottom = bottom;
-	}
-    }
-    
+
     class FindPathInfo {
 	static final int INDUCT  = 1;
 	static final int VOLTAGE = 2;
@@ -2413,7 +2393,7 @@ MouseOutHandler, MouseWheelHandler {
 		    break;
 	    }
 	    if (subiter > 5)
-		System.out.print("converged after " + subiter + " iterations\n");
+		console("converged after " + subiter + " iterations\n");
 	    if (subiter == subiterCount) {
 		stop(LS("Convergence failed!"), null);
 		break;
