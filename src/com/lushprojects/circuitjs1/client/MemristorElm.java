@@ -128,6 +128,9 @@ class MemristorElm extends CircuitElm {
     int getScopeUnits(int x) {
 	return (x == Scope.VAL_R) ? Scope.UNITS_OHMS : super.getScopeUnits(x);
     }
+    boolean canShowValueInScope(int x) {
+	return x == Scope.VAL_R;
+    }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)
 	    return new EditInfo("Max Resistance (ohms)", r_on, 0, 0);

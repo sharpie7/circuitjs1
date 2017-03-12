@@ -633,7 +633,8 @@ public abstract class CircuitElm implements Editable {
     }
 	double va = Math.abs(v);
 	if (va < 1e-14)
-	    return sf ? null : "0 " + u;
+	    // this used to return null, but then wires would display "null" with 0V
+	    return "0" + sp + u;
 	if (va < 1e-9)
 	    return s.format(v*1e12) + sp + "p" + u;
 	if (va < 1e-6)
@@ -730,6 +731,11 @@ public abstract class CircuitElm implements Editable {
 	arr[2] = "Vd = " + getVoltageDText(getVoltageDiff());
 	return 3;
     }
+    String getScopeText(int v) {
+        String info[] = new String[10];
+        getInfo(info);
+        return info[0];
+    }
     
     Color getVoltageColor(Graphics g, double volts) {
     	if (needsHighlight()) {
@@ -821,6 +827,7 @@ public abstract class CircuitElm implements Editable {
     }
     boolean needsHighlight() { return iAmMouseElm || selected || sim.plotYElm == this; }
     boolean isSelected() { return selected; }
+    boolean canShowValueInScope(int v) { return false; }
     void setSelected(boolean x) { selected = x; }
     void selectRect(Rectangle r) {
 	selected = r.intersects(boundingBox);

@@ -144,10 +144,11 @@ class Scope {
     FFT fft;
     int position;
     int speed;
+    int stackCount; // number of scopes in this column
     String text;
     Rectangle rect;
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
-    boolean showFFT, showNegative;
+    boolean showFFT, showNegative, showRMS;
     Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
 //    Image image;
@@ -927,6 +928,66 @@ class Scope {
 	}
     }
 
+    void drawRMS(Graphics g) {
+	ScopePlot plot = visiblePlots.firstElement();
+	int i;
+	double avg = 0;
+    	int ipa = plot.ptr+scopePointCount-rect.width;
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double mid = (maxValue+minValue)/2;
+	int state = -1;
+	
+	// skip zeroes
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    if (maxV[ip] != 0) {
+		if (maxV[ip] > mid)
+		    state = 1;
+		break;
+	    }
+	}
+	int firstState = -state;
+	int start = i;
+	int end = 0;
+	int waveCount = 0;
+	double endAvg = 0;
+	for (; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    boolean sw = false;
+	    
+	    // switching polarity?
+	    if (state == 1) {
+		if (maxV[ip] < mid)
+		    sw = true;
+	    } else if (minV[ip] > mid)
+		sw = true;
+	    
+	    if (sw) {
+		state = -state;
+		
+		// completed a full cycle?
+		if (firstState == state) {
+		    if (waveCount == 0) {
+			start = i;
+			firstState = state;
+			avg = 0;
+		    }
+		    waveCount++;
+		    end = i;
+		    endAvg = avg;
+		}
+	    }
+	    if (waveCount > 0)
+		avg += maxV[ip]*maxV[ip];
+	}
+	double rms;
+	if (waveCount > 1) {
+	    rms = Math.sqrt(endAvg/(end-start));
+	    drawInfoText(g, plot.getUnitText(rms) + "rms");
+	}
+    }
+    
     void drawFrequency(Graphics g) {
 	// try to get frequency
 	// get average
@@ -1010,10 +1071,30 @@ class Scope {
     	    int ym=rect.height-5;
     	    g.drawString(plot.getUnitText(minValue), 0, ym);
     	}
-    	if (text != null)
-    	    drawInfoText(g, text);
+    	if (showRMS)
+    	    drawRMS(g);
+    	String t = text;
+    	if (t == null)
+    	    t = getScopeText();
+    	if (t != null)
+    	    drawInfoText(g, t);
     	if (showFreq)
     	    drawFrequency(g);
+    }
+
+    String getScopeText() {
+	// stacked scopes?  don't show text
+	if (stackCount != 1)
+	    return null;
+	
+	// multiple elms?  don't show text (unless one is selected)
+	if (selectedPlot < 0 && getSingleElm() == null)
+	    return null;
+	
+	ScopePlot plot = visiblePlots.firstElement();
+	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
+	    plot = visiblePlots.get(selectedPlot);
+	return plot.elm.getScopeText(plot.value);
     }
     
     void speedUp() {
@@ -1064,12 +1145,13 @@ class Scope {
     		sim.scopeMinMenuItem  .setState(showMin);
     		sim.scopeFreqMenuItem .setState(showFreq);
     		sim.scopePowerMenuItem.setState(showingValue(VAL_POWER));
+    		sim.scopeRMSMenuItem  .setState(showRMS);
     		sim.scopeVIMenuItem   .setState(plot2d && !plotXY);
     		sim.scopeXYMenuItem   .setState(plotXY);
     		sim.scopeSelectYMenuItem.setEnabled(plotXY);
     		sim.scopeFFTMenuItem.setState(showFFT);
     		sim.scopeResistMenuItem.setState(showingValue(VAL_R));
-    		sim.scopeResistMenuItem.setEnabled(elm != null && elm instanceof MemristorElm);
+    		sim.scopeResistMenuItem.setEnabled(elm != null && elm.canShowValueInScope(VAL_R));
     	    	sim.scopeMaxScaleMenuItem.setState(maxScale && !plot2d);
     		return sim.scopeMenuBar;
     	}
@@ -1090,7 +1172,7 @@ class Scope {
     			(showFreq ? 8 : 0) |
     			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
     			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
-    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0);
+    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0);
     	flags |= FLAG_PLOTS;
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
@@ -1204,6 +1286,7 @@ class Scope {
     	showScale = (flags & 512) !=0;
     	showFFT((flags & 1024) != 0);
     	maxScale = (flags & 8192) != 0;
+    	showRMS = (flags & 16384) != 0;
     }
     
     void allocImage() {
@@ -1231,6 +1314,8 @@ class Scope {
     		showFreq(sim.scopeFreqMenuItem.getState());
     	if (mi == "showfft")
     		showFFT(sim.scopeFFTMenuItem.getState());
+    	if (mi == "showrms")
+    	    	showRMS = sim.scopeRMSMenuItem.getState();
     	if (mi == "showpower")
     		setValue(VAL_POWER);
     	if (mi == "showib")

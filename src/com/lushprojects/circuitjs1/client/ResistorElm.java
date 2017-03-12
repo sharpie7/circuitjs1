@@ -100,6 +100,9 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
 	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	}
+	@Override String getScopeText(int v) {
+	    return sim.LS("resistor") + ", " + getUnitText(resistance, sim.ohmString);
+	}
 	public EditInfo getEditInfo(int n) {
 	    // ohmString doesn't work here on linux
 	    if (n == 0)

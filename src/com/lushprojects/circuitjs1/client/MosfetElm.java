@@ -303,6 +303,7 @@ package com.lushprojects.circuitjs1.client;
 		source == 1 && pnp == -1)
 		ids = -ids;
 	}
+	@SuppressWarnings("static-access")
 	void getFetInfo(String arr[], String n) {
 	    arr[0] = sim.LS(((pnp == -1) ? "p-" : "n-") + n);
 	    arr[0] += " (Vt = " + getVoltageText(pnp*vt) + ")";
@@ -315,6 +316,9 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "MOSFET");
+	}
+	@Override String getScopeText(int v) { 
+	    return sim.LS(((pnp == -1) ? "p-" : "n-") + "MOSFET");
 	}
 	boolean canViewInScope() { return true; }
 	double getVoltageDiff() { return volts[2] - volts[1]; }

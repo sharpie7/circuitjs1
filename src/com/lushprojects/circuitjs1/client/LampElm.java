@@ -55,6 +55,10 @@ package com.lushprojects.circuitjs1.client;
 	void reset() {
 	    super.reset();
 	    temp = roomTemp;
+	    
+	    // make sure resistance is not 0 or NaN or current will be NaN before we have a chance
+	    // to call startIteration()
+	    resistance = 100;
 	}
 	final int filament_len = 24;
 	void setPoints() {
@@ -152,7 +156,6 @@ package com.lushprojects.circuitjs1.client;
 	    temp += getPower()*sim.timeStep/capw;
 	    double cr = 2600/nom_pow;
 	    temp -= sim.timeStep*(temp-roomTemp)/(capc*cr);
-	    //System.out.println(capw + " " + capc + " " + temp + " " +resistance);
 	}
 	void doStep() {
 	    sim.stampResistor(nodes[0], nodes[1], resistance);
@@ -186,4 +189,15 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 3 && ei.value > 0)
 		coolTime = ei.value;
 	}
+	
+	double getScopeValue(int x) {
+	    return (x == Scope.VAL_R) ? resistance : super.getScopeValue(x);
+	}
+	int getScopeUnits(int x) {
+	    return (x == Scope.VAL_R) ? Scope.UNITS_OHMS : super.getScopeUnits(x);
+	}
+	boolean canShowValueInScope(int x) {
+	    return x == Scope.VAL_R;
+	}
+
     }

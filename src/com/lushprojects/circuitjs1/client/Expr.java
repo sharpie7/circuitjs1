@@ -8,7 +8,8 @@ class ExprState {
     double t;
     ExprState(int xx) {
 	n = xx;
-	values = new double[n];
+	values = new double[9];
+	values[4] = Math.E;
     }
 }
 
@@ -66,7 +67,6 @@ class Expr {
 	    return x;
 	}
 	case E_CLAMP:
-	    CirSim.console("clamp " + children.size() + " " + children);
 	    return Math.min(Math.max(left.eval(es), children.get(1).eval(es)), children.get(2).eval(es));
 	case E_STEP: {
 	    double x = left.eval(es); 
@@ -74,9 +74,13 @@ class Expr {
 		return (x < 0) ? 0 : 1;
 	    return (x > right.eval(es)) ? 0 : (x < 0) ? 0 : 1;
 	}
+	case E_SELECT: {
+	    double x = left.eval(es);
+	    return children.get(x > 0 ? 2 : 1).eval(es);
+	}
 	case E_TRIANGLE: {
 	    double x = posmod(left.eval(es), Math.PI*2)/Math.PI;
-	    return (x < 1) ? -1+x*2 : x*2-1;
+	    return (x < 1) ? -1+x*2 : 3-x*2;
 	}
 	case E_SAWTOOTH: {
 	    double x = posmod(left.eval(es), Math.PI*2)/Math.PI;
@@ -84,6 +88,8 @@ class Expr {
 	}
 	case E_MOD:
 	    return left.eval(es) % right.eval(es);
+	case E_PWL:
+	    return pwl(es, children);
 	default:
 	    if (type >= E_A)
 		return es.values[type-E_A];
@@ -92,6 +98,29 @@ class Expr {
 	return 0;
     }
     
+    double pwl(ExprState es, Vector<Expr> args) {
+	double x = args.get(0).eval(es);
+	double x0 = args.get(1).eval(es);
+	double y0 = args.get(2).eval(es);
+	if (x < x0)
+	    return y0;
+	double x1 = args.get(3).eval(es);
+	double y1 = args.get(4).eval(es);
+	int i = 5;
+	while (true) {
+	    if (x < x1)
+		return y0+(x-x0)*(y1-y0)/(x1-x0);
+	    if (i+1 >= args.size())
+		break;
+	    x0 = x1;
+	    y0 = y1;
+	    x1 = args.get(i  ).eval(es);
+	    y1 = args.get(i+1).eval(es);
+	    i += 2;
+	}
+	return y1;
+    }
+
     double posmod(double x, double y) {
 	x %= y;
 	return (x >= 0) ? x : x+y;
@@ -260,15 +289,15 @@ class ExprParser {
 	    return new Expr(Expr.E_T);
 	if (token.length() == 1) {
 	    char c = token.charAt(0);
-	    if (c >= 'a' && c <= 'h') {
+	    if (c >= 'a' && c <= 'i') {
 		getToken();
 		return new Expr(Expr.E_A + (c-'a'));
 	    }
 	}
 	if (skip("pi"))
 	    return new Expr(Expr.E_VAL, 3.14159265358979323846);
-	if (skip("e"))
-	    return new Expr(Expr.E_VAL, 2.7182818284590452354);
+//	if (skip("e"))
+//	    return new Expr(Expr.E_VAL, 2.7182818284590452354);
 	if (skip("sin"))
 	    return parseFunc(Expr.E_SIN);
 	if (skip("cos"))
@@ -298,7 +327,7 @@ class ExprParser {
 	if (skip("step"))
 	    return parseFuncMulti(Expr.E_STEP, 1, 2);
 	if (skip("select"))
-	    return parseFuncMulti(Expr.E_SELECT, 3, 1000);
+	    return parseFuncMulti(Expr.E_SELECT, 3, 3);
 	if (skip("clamp"))
 	    return parseFuncMulti(Expr.E_CLAMP, 3, 3);
 	try {
