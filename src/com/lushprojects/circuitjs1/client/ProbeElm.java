@@ -108,7 +108,7 @@ class ProbeElm extends CircuitElm {
     void draw(Graphics g) {
 	int hs = 8;
 	setBbox(point1, point2, hs);
-	boolean selected = (needsHighlight() || sim.plotYElm == this);
+	boolean selected = needsHighlight();
 	double len = (selected || sim.dragElm == this || mustShowVoltage()) ? 16 : dn-32;
 	calcLeads((int) len);
 	setVoltageColor(g, volts[0]);

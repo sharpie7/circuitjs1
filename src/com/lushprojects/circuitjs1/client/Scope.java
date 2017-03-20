@@ -25,17 +25,109 @@ package com.lushprojects.circuitjs1.client;
 //import java.util.StringTokenizer;
 //import java.lang.reflect.Constructor;
 //import java.lang.reflect.Method;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.i18n.client.NumberFormat;
+
+import java.util.Vector;
+
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
 
+// plot of single value on a scope
+class ScopePlot {
+    double minValues[], maxValues[];
+    int scopePointCount;
+    int ptr, ctr, value, speed, units;
+    double lastValue;
+    String color;
+    CircuitElm elm;
+    
+    ScopePlot(CircuitElm e, int u) {
+	elm = e;
+	units = u;
+    }
+    
+    ScopePlot(CircuitElm e, int u, int v) {
+	elm = e;
+	units = u;
+	value = v;
+    }
+
+    int startIndex(int w) {
+	return ptr + scopePointCount - w; 
+    }
+    
+    void reset(int spc, int sp) {
+	scopePointCount = spc;
+	speed = sp;
+    	minValues = new double[scopePointCount];
+    	maxValues = new double[scopePointCount];
+    	ptr = ctr = 0;
+    }
+
+    void timeStep() {
+	if (elm == null)
+		return;
+	double v = elm.getScopeValue(value);
+	if (v < minValues[ptr])
+		minValues[ptr] = v;
+	if (v > maxValues[ptr])
+		maxValues[ptr] = v;
+	lastValue = v;
+	ctr++;
+	if (ctr >= speed) {
+	    ptr = (ptr+1) & (scopePointCount-1);
+	    minValues[ptr] = maxValues[ptr] = v;
+	    ctr = 0;
+	}
+    }
+    
+    String getUnitText(double v) {
+	switch (units) {
+	case Scope.UNITS_V:
+	    return CircuitElm.getVoltageText(v);
+	case Scope.UNITS_A:
+	    return CircuitElm.getCurrentText(v);
+	case Scope.UNITS_OHMS:
+	    return CircuitElm.getUnitText(v, CirSim.ohmString);
+	case Scope.UNITS_W:
+	    return CircuitElm.getUnitText(v, "W");
+	}
+	return null;
+    }
+
+    static final String colors[] = {
+	    "#FF0000", "#FF8000", "#FF00FF", "#7F00FF",
+	    "#0000FF", "#0080FF", "#FFFF00", "#00FFFF", 
+    };
+    
+    void assignColor(int count) {
+	if (count > 0) {
+	    color = colors[(count-1) % 8];
+	    return;
+	}
+	switch (units) {
+	case Scope.UNITS_V:
+	    color = "#00FF00";
+	    break;
+	case Scope.UNITS_A:
+	    color = "#FFFF00";
+	    break;
+	default:
+	    color = (CirSim.theSim.printableCheckItem.getState()) ? "#000000" : "#FFFFFF";
+	    break;
+	}
+    }
+}
+
 class Scope {
     final int FLAG_YELM = 32;
+    // bunch of other flags go here, see dump()
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
+    final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
+    // other flags go here too, see dump()
     static final int VAL_POWER = 1;
+    static final int VAL_CURRENT = 3;
     static final int VAL_IB = 1;
     static final int VAL_IC = 2;
     static final int VAL_IE = 3;
@@ -43,17 +135,21 @@ class Scope {
     static final int VAL_VBC = 5;
     static final int VAL_VCE = 6;
     static final int VAL_R = 2;
-    double minV[], maxV[], minMaxV;
-    double minI[], maxI[], minMaxI;
+    static final int UNITS_V = 0;
+    static final int UNITS_A = 1;
+    static final int UNITS_W = 2;
+    static final int UNITS_OHMS = 3;
+    static final int UNITS_COUNT = 4;
     int scopePointCount = 128;
     FFT fft;
-    int ptr, ctr, speed, position;
-    int value, ivalue;
+    int position;
+    int speed;
+    int stackCount; // number of scopes in this column
     String text;
     Rectangle rect;
-    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY;
-    boolean showFFT;
-    CircuitElm elm, xElm, yElm;
+    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
+    boolean showFFT, showNegative, showRMS;
+    Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
 //    Image image;
     int pixels[];
@@ -64,27 +160,41 @@ class Scope {
     Context2d imageContext;
     int alphadiv =0;
     double scopeTimeStep;
+    double scale[];
+    boolean expandRange[];
+    double scaleX, scaleY;
     int wheelDeltaY;
+    int selectedPlot;
     
     Scope(CirSim s) {
     	sim = s;
+    	scale = new double[UNITS_COUNT];
+    	expandRange = new boolean[UNITS_COUNT];
+    	
     	rect = new Rectangle(0, 0, 1, 1);
    	 	imageCanvas=Canvas.createIfSupported();
-	    imageContext=imageCanvas.getContext2d();
-	    allocImage();
+   	imageContext=imageCanvas.getContext2d();
+	allocImage();
     	reset();
-
     }
     
-    void showCurrent(boolean b) { showI = b; value = ivalue = 0; }
-    void showVoltage(boolean b) { showV = b; value = ivalue = 0; }
-
+    void showCurrent(boolean b) {
+	showI = b;
+	if (b && !showingValue(0))
+	    setValue(0);
+	calcVisiblePlots();
+    }
+    void showVoltage(boolean b) {
+	showV = b;
+	if (b && !showingValue(0))
+	    setValue(0);
+	calcVisiblePlots();
+    }
 
     void showMax    (boolean b) { showMax = b; }
     void showScale    (boolean b) { showScale = b; }
     void showMin    (boolean b) { showMin = b; }
     void showFreq   (boolean b) { showFreq = b; }
-    void setLockScale  (boolean b) { lockScale = b; }
     void showFFT(boolean b) {
       showFFT = b;
       if (!showFFT)
@@ -95,48 +205,72 @@ class Scope {
     	scopePointCount = 1;
     	while (scopePointCount <= rect.width)
     		scopePointCount *= 2;
-    	minV = new double[scopePointCount];
-    	maxV = new double[scopePointCount];
-    	minI = new double[scopePointCount];
-    	maxI = new double[scopePointCount];
-    	for (int i = 0; i < scopePointCount; i++) {
-    		minV[i] = 0;
-    		maxV[i] = 0;
-    		minI[i] = 0;
-    		maxI[i] = 0;
-    	}
-    	ptr = ctr = 0;
+    	if (plots == null)
+    	    plots = new Vector<ScopePlot>();
+    	showNegative = false;
+    	int i;
+    	for (i = 0; i != plots.size(); i++)
+    	    plots.get(i).reset(scopePointCount, speed);
+	calcVisiblePlots();
     	scopeTimeStep = sim.timeStep;
     	allocImage();
     }
     
     
-    boolean active() { return elm != null; }
+    boolean active() { return plots.size() > 0 && plots.get(0).elm != null; }
     
     void reset() {
     	resetGraph();
-    	minMaxV = 5;
-    	minMaxI = .1;
+    	scale[UNITS_W] = scale[UNITS_OHMS] = scale[UNITS_V] = 5;
+    	scale[UNITS_A] = .1;
+    	scaleX = 5;
+    	scaleY = .1;
     	speed = 64;
-    	showI = showV = showMax = true;
+    	showMax = true;
+    	showV = showI = false;
     	showScale = showFreq = lockScale = showMin = false;
     	showFFT = false;
     	plot2d = false;
-    	// no showI for Output
-    		if (elm != null && (elm instanceof OutputElm ||
-    				    elm instanceof LogicOutputElm ||
-    				    elm instanceof AudioOutputElm ||
-    				    elm instanceof ProbeElm))
-    		    showI = false;
     	
-    	value = ivalue = 0;
-    	if (elm instanceof TransistorElm)
-    		value = VAL_VCE;
+    	// set showV and showI appropriately depending on what plots are present
+    	int i;
+    	for (i = 0; i != plots.size(); i++) {
+    	    ScopePlot plot = plots.get(i);
+    	    if (plot.units == UNITS_V)
+    		showV = true;
+    	    if (plot.units == UNITS_A)
+    		showI = true;
+    	}
+    }
+    
+    void calcVisiblePlots() {
+	visiblePlots = new Vector<ScopePlot>();
+	int i;
+	int vc = 0, ac = 0, oc = 0;
+    	for (i = 0; i != plots.size(); i++) {
+    	    ScopePlot plot = plots.get(i);
+    	    if (plot.units == UNITS_V) {
+    		if (showV) {
+    		    visiblePlots.add(plot);
+    		    plot.assignColor(vc++);
+    		}
+    	    } else if (plot.units == UNITS_A) {
+    		if (showI) {
+    		    visiblePlots.add(plot);
+    		    plot.assignColor(ac++);
+    		}
+    	    } else {
+    		visiblePlots.add(plot);
+    		plot.assignColor(oc++);
+    	    }
+    	}
     }
     
     void setRect(Rectangle r) {
-    	this.rect = r;
-    	resetGraph();
+	int w = this.rect.width;
+	this.rect = r;
+	if (this.rect.width != w)
+	    resetGraph();
     }
     
     int getWidth() { return rect.width; }
@@ -144,56 +278,122 @@ class Scope {
     int rightEdge() { return rect.x+rect.width; }
 	
     void setElm(CircuitElm ce) {
-    	elm = ce;
+	plots = new Vector<ScopePlot>();
+    	if (ce instanceof TransistorElm)
+    	    setValue(VAL_VCE, ce);
+    	else
+    	    setValue(0, ce);
     	reset();
     }
-	
-    void timeStep() {
-    	if (elm == null)
-    		return;
-    	double v = elm.getScopeValue(value);
-    	if (v < minV[ptr])
-    		minV[ptr] = v;
-    	if (v > maxV[ptr])
-    		maxV[ptr] = v;
-    	double i = 0;
-    	if (value == 0 || ivalue != 0) {
-    		i = (ivalue == 0) ? elm.getCurrent() : elm.getScopeValue(ivalue);
-    		if (i < minI[ptr])
-    			minI[ptr] = i;
-    		if (i > maxI[ptr])
-    			maxI[ptr] = i;
-    	}
 
- //   	if (plot2d && dpixels != null) {
+    void setValue(int val) {
+	if (plots.size() > 2 || plots.size() == 0)
+	    return;
+	CircuitElm ce = plots.firstElement().elm;
+	if (plots.size() == 2 && plots.get(1).elm != ce)
+	    return;
+	plot2d = plotXY = false;
+	setValue(val, ce);
+    }
+    
+    void setValue(int val, CircuitElm ce) {
+	plots = new Vector<ScopePlot>();
+	if (val == 0) {
+	    plots.add(new ScopePlot(ce, UNITS_V, 0));
+	    
+	    // create plot for current if applicable
+	    if (ce != null && !(ce instanceof OutputElm ||
+		    ce instanceof LogicOutputElm ||
+		    ce instanceof AudioOutputElm ||
+		    ce instanceof ProbeElm))
+		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT));
+	} else {
+	    int u = ce.getScopeUnits(val);
+	    plots.add(new ScopePlot(ce, u, val));
+	    if (u == UNITS_V)
+		showV = true;
+	    if (u == UNITS_A)
+		showI = true;
+	}
+	calcVisiblePlots();
+	resetGraph();
+//    	reset();
+    }
+
+    void setValues(int val, int ival, CircuitElm ce, CircuitElm yelm) {
+	if (ival > 0) {
+	    plots = new Vector<ScopePlot>();
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival));
+	    return;
+	}
+	if (yelm != null) {
+	    plots = new Vector<ScopePlot>();
+	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0));
+	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0));
+	    return;
+	}
+	setValue(val);
+    }
+    
+    boolean showingValue(int v) {
+	int i;
+	for (i = 0; i != plots.size(); i++) {
+	    ScopePlot sp = plots.get(i);
+	    if (sp.value != v)
+		return false;
+	}
+	return true;
+    }
+    
+    void combine(Scope s) {
+	/*
+	// if voltage and current are shown, remove current
+	if (plots.size() == 2 && plots.get(0).elm == plots.get(1).elm)
+	    plots.remove(1);
+	if (s.plots.size() == 2 && s.plots.get(0).elm == s.plots.get(1).elm)
+	    plots.add(s.plots.get(0));
+	else
+	*/
+	plots = visiblePlots;
+	plots.addAll(s.visiblePlots);
+	s.plots.removeAllElements();
+    }
+    
+    void removePlot(int plot) {
+	if (plot < visiblePlots.size()) {
+	    ScopePlot p = visiblePlots.get(plot);
+	    plots.remove(p);
+	    calcVisiblePlots();
+	}
+    }
+    
+    void timeStep() {
+	int i;
+	for (i = 0; i != plots.size(); i++)
+	    plots.get(i).timeStep();
+
     	if (plot2d && imageContext!=null) {
-    		boolean newscale = false;
-    		while (v > minMaxV || v < -minMaxV) {
-    			minMaxV *= 2;
-    			newscale = true;
-    		}
-    		double yval = i;
-    		if (plotXY)
-    			yval = (yElm == null) ? 0 : yElm.getVoltageDiff();
-    		while (yval > minMaxI || yval < -minMaxI) {
-    			minMaxI *= 2;
-    			newscale = true;
-    		}
-    		if (newscale)
-    			clear2dView();
-    		double xa = v/minMaxV;
-    		double ya = yval/minMaxI;
-    		int x = (int) (rect.width *(1+xa)*.499);
-    		int y = (int) (rect.height*(1-ya)*.499);
-    		drawTo(x, y);
-    	} else {
-    		ctr++;
-    		if (ctr >= speed) {
-    			ptr = (ptr+1) & (scopePointCount-1);
-    			minV[ptr] = maxV[ptr] = v;
-    			minI[ptr] = maxI[ptr] = i;
-    			ctr = 0;
-    		}
+    	    boolean newscale = false;
+    	    if (plots.size() < 2)
+    		return;
+    	    double v = plots.get(0).lastValue;
+    	    while (v > scaleX || v < -scaleX) {
+    		scaleX *= 2;
+    		newscale = true;
+    	    }
+    	    double yval = plots.get(1).lastValue;
+    	    while (yval > scaleY || yval < -scaleY) {
+    		scaleY *= 2;
+    		newscale = true;
+    	    }
+    	    if (newscale)
+    		clear2dView();
+    	    double xa = v   /scaleX;
+    	    double ya = yval/scaleY;
+    	    int x = (int) (rect.width *(1+xa)*.499);
+    	    int y = (int) (rect.height*(1-ya)*.499);
+    	    drawTo(x, y);
     	}
     }
 
@@ -211,28 +411,6 @@ class Scope {
 		imageContext.moveTo(draw_ox, draw_oy);
 		imageContext.lineTo(x2,y2);
 		imageContext.stroke();
-//    	// need to draw a line from x1,y1 to x2,y2
-//    	if (draw_ox == x2 && draw_oy == y2) {
-//    		dpixels[x2+r.width*y2] = 1;
-//    	} else if (CircuitElm.abs(y2-draw_oy) > CircuitElm.abs(x2-draw_ox)) {
-//    		// y difference is greater, so we step along y's
-//    		// from min to max y and calculate x for each step
-//    		double sgn = CircuitElm.sign(y2-draw_oy);
-//    		int x, y;
-//    		for (y = draw_oy; y != y2+sgn; y += sgn) {
-//    			x = draw_ox+(x2-draw_ox)*(y-draw_oy)/(y2-draw_oy);
-//    			dpixels[x+r.width*y] = 1;
-//    		}
-//    	} else {
-//    		// x difference is greater, so we step along x's
-//    		// from min to max x and calculate y for each step
-//    		double sgn = CircuitElm.sign(x2-draw_ox);
-//    		int x, y;
-//    		for (x = draw_ox; x != x2+sgn; x += sgn) {
-//    			y = draw_oy+(y2-draw_oy)*(x-draw_ox)/(x2-draw_ox);
-//    			dpixels[x+r.width*y] = 1;
-//    		}
-//    	}
     	draw_ox = x2;
     	draw_oy = y2;
     }
@@ -249,9 +427,34 @@ class Scope {
     	draw_ox = draw_oy = -1;
     }
 	
+    /*
     void adjustScale(double x) {
-    	minMaxV *= x;
-    	minMaxI *= x;
+	scale[UNITS_V] *= x;
+	scale[UNITS_A] *= x;
+	scale[UNITS_OHMS] *= x;
+	scale[UNITS_W] *= x;
+	scaleX *= x;
+	scaleY *= x;
+    }
+    */
+    void maxScale() {
+	if (plot2d) {
+	    double x = 1e-8;
+	    scale[UNITS_V] *= x;
+	    scale[UNITS_A] *= x;
+	    scale[UNITS_OHMS] *= x;
+	    scale[UNITS_W] *= x;
+	    scaleX *= x;
+	    scaleY *= x;
+	    return;
+	}
+	// toggle max scale.  Why isn't this on by default?  For the examples, we sometimes want two plots
+	// matched to the same scale so we can show one is larger.  Also, for some fast-moving scopes
+	// (like for AM detector), the amplitude varies over time but you can't see that if the scale is
+	// constantly adjusting.  It's also nice to set the default scale to hide noise and to avoid
+	// having the scale moving around a lot when a circuit starts up.
+	maxScale = !maxScale;
+	showNegative = false;
     }
 
     void drawFFTVerticalGridLines(Graphics g) {
@@ -280,9 +483,16 @@ class Scope {
       int y = (rect.height - 1) / 2;
       double[] real = new double[scopePointCount];
       double[] imag = new double[scopePointCount];
+      ScopePlot plot = (visiblePlots.size() == 0) ? plots.firstElement() : visiblePlots.firstElement();
+      double maxV[] = plot.maxValues;
+      double minV[] = plot.minValues;
+      int ptr = plot.ptr;
       for (int i = 0; i < scopePointCount; i++) {
-        real[i] = maxV[(ptr - i + scopePointCount) & (scopePointCount - 1)];
-        imag[i] = 0;
+	  int ii = (ptr - i + scopePointCount) & (scopePointCount - 1);
+	  // need to average max and min or else it could cause average of function to be > 0, which
+	  // produces spike at 0 Hz that hides rest of spectrum
+	  real[i] = .5*(maxV[ii]+minV[ii]);
+	  imag[i] = 0;
       }
       fft.fft(real, imag);
       double maxM = 1e-8;
@@ -313,24 +523,6 @@ class Scope {
     		return;
     	g.context.save();
     	g.context.translate(rect.x, rect.y);
-//   	int i;
-//    	if (pixels == null || dpixels == null)
-//    		return;
-//    	int col = (sim.printableCheckItem.getState()) ? 0xFFFFFFFF : 0;
-//    	for (i = 0; i != pixels.length; i++)
-//    		pixels[i] = col;
-//    	for (i = 0; i != r.width; i++)
-//    		pixels[i+r.width*(r.height/2)] = 0xFF00FF00;
-//    	int ycol = (plotXY) ? 0xFF00FF00 : 0xFFFFFF00;
-//    	for (i = 0; i != r.height; i++)
-//    		pixels[r.width/2+r.width*i] = ycol;
-    	
-//    	for (i = 0; i != pixels.length; i++) {
-//    		int q = (int) (255*dpixels[i]);
-//    		if (q > 0)
-//    			pixels[i] = 0xFF000000 | (0x10101*q);
-//    		dpixels[i] *= .997;
-//    	}
     	
     	alphadiv++;
     	
@@ -348,7 +540,7 @@ class Scope {
     	
     	g.context.drawImage(imageContext.getCanvas(), 0.0, 0.0);
 //    	g.drawImage(image, r.x, r.y, null);
-    	g.setColor(elm.whiteColor);
+    	g.setColor(CircuitElm.whiteColor);
     	g.fillOval(draw_ox-2, draw_oy-2, 5, 5);
     	int yt = 10;
     	int x = 0;
@@ -364,9 +556,12 @@ class Scope {
     	g.context.restore();
     }
 	
+    boolean drawGridLines;
+    boolean somethingSelected;
+    
     void draw(Graphics g) {
-    	if (elm == null)
-    		return;
+	if (plots.size() == 0)
+	    return;
     	
     	// reset if timestep changed
     	if (scopeTimeStep != sim.timeStep) {
@@ -383,6 +578,131 @@ class Scope {
     	g.context.save();
     	g.setColor(Color.red);
     	g.context.translate(rect.x, rect.y);
+
+        if (showFFT) {
+            drawFFTVerticalGridLines(g);
+            drawFFT(g);
+        }
+
+    	int i;
+    	for (i = 0; i != UNITS_COUNT; i++) {
+    	    expandRange[i] = false;
+    	    if (maxScale)
+    		scale[i] = 1e-4;
+    	}
+    	
+    	int si;
+    	somethingSelected = false;  // is one of our plots selected?
+    	
+    	for (si = 0; si != visiblePlots.size(); si++) {
+    	    ScopePlot plot = visiblePlots.get(si);
+    	    calcPlotScale(plot);
+    	    if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+    		somethingSelected = true;
+    	    expandRange[plot.units] = true;
+    	}
+    	
+    	checkForSelection();
+    	if (selectedPlot >= 0)
+    	    somethingSelected = true;
+
+    	drawGridLines = true;
+    	boolean hGridLines = true;
+    	for (i = 1; i < visiblePlots.size(); i++) {
+    	    if (visiblePlots.get(i).units != visiblePlots.get(0).units)
+    		hGridLines = false;
+    	}
+    	
+    	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
+    	    calcMaxAndMin(visiblePlots.firstElement().units);
+    	
+    	// draw volts on top (last), then current underneath, then everything else
+    	for (i = 0; i != visiblePlots.size(); i++) {
+    	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
+    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    	}
+    	for (i = 0; i != visiblePlots.size(); i++) {
+    	    if (visiblePlots.get(i).units == UNITS_A && i != selectedPlot)
+    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    	}
+    	for (i = 0; i != visiblePlots.size(); i++) {
+    	    if (visiblePlots.get(i).units == UNITS_V && i != selectedPlot)
+    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    	}
+    	// draw selection on top.  only works if selection chosen from scope
+    	if (selectedPlot >= 0)
+    	    drawPlot(g, visiblePlots.get(selectedPlot), hGridLines, true);
+    	
+        if (visiblePlots.size() > 0)
+            drawInfoTexts(g);
+    	
+    	g.context.restore();
+    	drawCrosshairs(g);
+    	
+    	// there is no UI for setting lockScale but it's used in some of the example circuits (like crossover)
+    	if (plots.get(0).ptr > 5 && !lockScale) {
+    	    for (i = 0; i != UNITS_COUNT; i++)
+    		if (scale[i] > 1e-4 && expandRange[i])
+    		    scale[i] /= 2;
+	}
+
+    }
+    
+    String curColor, voltColor;
+    double gridStepX, gridStepY;
+    double maxValue, minValue;
+    
+    // calculate maximum and minimum values for all plots of given units
+    void calcMaxAndMin(int units) {
+	maxValue = -1e8;
+	minValue = 1e8;
+    	int i;
+    	int si;
+    	for (si = 0; si != visiblePlots.size(); si++) {
+    	    ScopePlot plot = visiblePlots.get(si);
+    	    if (plot.units != units)
+    		continue;
+    	    int ipa = plot.startIndex(rect.width);
+    	    double maxV[] = plot.maxValues;
+    	    double minV[] = plot.minValues;
+    	    for (i = 0; i != rect.width; i++) {
+    		int ip = (i+ipa) & (scopePointCount-1);
+    		if (maxV[ip] > maxValue)
+    		    maxValue = maxV[ip];
+    		if (minV[ip] < minValue)
+    		    minValue = minV[ip];
+    	    }
+        }
+    }
+    
+    // adjust scale of a plot
+    void calcPlotScale(ScopePlot plot) {
+    	int i;
+    	int ipa = plot.startIndex(rect.width);
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double max = 0;
+    	double gridMax = scale[plot.units];
+    	for (i = 0; i != rect.width; i++) {
+    	    int ip = (i+ipa) & (scopePointCount-1);
+    	    if (maxV[ip] > max)
+    		max = maxV[ip];
+    	    if (minV[ip] < -max)
+    		max = -minV[ip];
+    	}
+    	// scale fixed at maximum?
+    	if (maxScale)
+    	    gridMax = Math.max(max, gridMax);
+    	else
+    	    // adjust in powers of two
+    	    while (max > gridMax)
+    		gridMax *= 2;
+    	scale[plot.units] = gridMax;
+    }
+
+    double mainGridMult, mainGridMid;
+    
+    void drawPlot(Graphics g, ScopePlot plot, boolean drawHGridLines, boolean selected) {
     	int i;
     	String col;
 //    	int col = (sim.printableCheckItem.getState()) ? 0xFFFFFFFF : 0;
@@ -395,352 +715,392 @@ class Scope {
     	int maxy = (rect.height-1)/2;
     	int y = maxy;
 
-    	boolean gotI = false;
-    	boolean gotV = false;
-    	int minRange = 4;
-    	double realMaxV = -1e8;
-    	double realMaxI = -1e8;
-    	double realMinV =  1e8;
-    	double realMinI =  1e8;
-    	String curColor = "#FFFF00";
-    	String voltColor = (value > 0) ? CircuitElm.whiteColor.getHexValue() : "#00FF00";
-    	if (sim.scopeSelected == -1 && elm.isMouseElm())
-    		curColor = voltColor = "#00FFFF";
-    	int ipa = ptr+scopePointCount-rect.width;
-    	for (i = 0; i != rect.width; i++) {
-    		int ip = (i+ipa) & (scopePointCount-1);
-    		while (maxV[ip] > minMaxV)
-    			minMaxV *= 2;
-    		while (minV[ip] < -minMaxV)
-    			minMaxV *= 2;
-    		while (maxI[ip] > minMaxI)
-    			minMaxI *= 2;
-    		while (minI[ip] < -minMaxI)
-    			minMaxI *= 2;
+    	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
+	if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+    	    color = "#00FFFF";
+	else if (selected)
+	    color = plot.color;
+    	int ipa = plot.startIndex(rect.width);
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double gridMax = scale[plot.units];
+    	double gridMid = 0;
+    	if (drawHGridLines) {
+    	    // if we don't have overlapping scopes of different units, we can move zero around.
+    	    // Put it at the bottom if the scope is never negative.
+    	    double mx = gridMax;
+    	    double mn = 0;
+    	    if (maxScale) {
+    		// scale is maxed out, so fix boundaries of scope at maximum and minimum. 
+    		mx = maxValue;
+    		mn = minValue;
+    	    } else if (showNegative || minValue < (mx+mn)*.5 - (mx-mn)*.55) {
+    		mn = -gridMax;
+    		showNegative = true;
+    	    }
+    	    gridMid = (mx+mn)*.5;
+    	    gridMax = (mx-mn)*.55;  // leave space at top and bottom
     	}
+    	double gridMult = maxy/gridMax;
+    	if (selected) {
+    	    mainGridMult = gridMult;
+    	    mainGridMid  = gridMid;
+    	}
+    	int minRangeLo = -10-(int) (gridMid*gridMult);
+    	int minRangeHi =  10-(int) (gridMid*gridMult);
 
-    	double gridStepY = 1e-8;
-    	double gridMax = (showI ? minMaxI : minMaxV);
-//    	while (gridStep*100 < gridMax)
-//    		gridStep *= 10;
-//    	if (maxy*gridStep/gridMax < .3)
-//    		gridStep = 0;
-    	
+    	gridStepY = 1e-8;    	
     	while (gridStepY < 20*gridMax/maxy) {
-    		gridStepY *=multa[(multptr++)%3];
+  		gridStepY *=multa[(multptr++)%3];
     	}
 
     	// Horizontal gridlines
     	int ll;
-    	String minorDiv = "#707070";
+    	String minorDiv = "#303030";
     	String majorDiv = "#A0A0A0";
     	if (sim.printableCheckItem.getState()) {
     	    minorDiv = "#D0D0D0";
     	    majorDiv = "#808080";
     	    curColor = "#A0A000";
     	}
- //   	boolean sublines = (maxy*gridStep/gridMax > 3);
-    	// don't show gridlines if plotting multiple values, or just FFT, or if
-    	// lines are too close together (except for center line)
-    	boolean showGridLines = gridStepY != 0;
-    	if ((showI && showV) || (!showI && !showV))
-    		showGridLines = false;
-    	for (ll = -100; ll <= 100; ll++) {
-    		// don't show gridlines if plotting multiple values,
-    		// or if lines are too close together (except for center line)
-    		if (ll != 0 && !showGridLines)
-    			continue;
-    		int yl = maxy-(int) (maxy*ll*gridStepY/gridMax);
-    		if (yl < 0 || yl >= rect.height-1)
-    			continue;
-    		col = ll == 0 ? majorDiv : minorDiv;
-//    		if (ll % 10 != 0) {
-//    			col = "#101010";
-//    			if (!sublines)
-//    				continue;
-//    		}
-    	g.setColor(col);
-    		g.drawLine(0,yl,rect.width-1,yl);
-//    		for (i = 0; i != r.width; i++)
-//    			pixels[i+yl*r.width] = col;
-    	}
-
-    	// Vertical (T) gridlines
-    	double gridStepX = 1e-15;
-
     	
+    	// Vertical (T) gridlines
+    	gridStepX = 1e-15;
+
     	double ts = sim.timeStep*speed;
-//    	while (gridStep < ts*5)
-//    		gridStep *= 10;
+    	//    	while (gridStep < ts*5)
+    	//    		gridStep *= 10;
     	multptr=0;
     	while (gridStepX < ts*20) {
-    		gridStepX *=multa[(multptr++)%3];
-    	}
-    	double tstart = sim.t-sim.timeStep*speed*rect.width;
-    	double tx = sim.t-(sim.t % gridStepX);
-    	// int first = 1;
-    	
-    	// don't show gridlines if just plotting FFT
-    	if (showV || showI) {
-    		for (ll = 0; ; ll++) {
-    			double tl = tx-gridStepX*ll;
-    			int gx = (int) ((tl-tstart)/ts);
-    			if (gx < 0)
-    				break;
-    			if (gx >= rect.width)
-    				continue;
-    			if (tl < 0)
-    				continue;
-    			col = minorDiv;
-    			// first = 0;
-    			if (((tl+gridStepX/4) % (gridStepX*10)) < gridStepX) {
-    				col = majorDiv;
-//    				if (((tl+gridStepX/4) % (gridStepX*100)) < gridStepX)
-//    					col = "#A0A0A0";
-    			}
-    			g.setColor(col);
-    			g.drawLine(gx,0,gx,rect.height-1);
-    			//    		for (i = 0; i < pixels.length; i += r.width)
-    			//    			pixels[i+gx] = col;
-    		}
+    	    gridStepX *=multa[(multptr++)%3];
     	}
 
+    	if (drawGridLines) {
+    	    // horizontal gridlines
+    	    
+    	    // don't show gridlines if lines are too close together (except for center line)
+    	    boolean showGridLines = (gridStepY != 0) && drawHGridLines;
+    	    for (ll = -100; ll <= 100; ll++) {
+    		if (ll != 0 && !showGridLines)
+    		    continue;
+    		int yl = maxy-(int) ((ll*gridStepY-gridMid)*gridMult);
+    		if (yl < 0 || yl >= rect.height-1)
+    		    continue;
+    		col = ll == 0 ? majorDiv : minorDiv;
+    		g.setColor(col);
+    		g.drawLine(0,yl,rect.width-1,yl);
+    	    }
+    	    
+    	    // vertical gridlines
+    	    double tstart = sim.t-sim.timeStep*speed*rect.width;
+    	    double tx = sim.t-(sim.t % gridStepX);
+
+    	    for (ll = 0; ; ll++) {
+    		double tl = tx-gridStepX*ll;
+    		int gx = (int) ((tl-tstart)/ts);
+    		if (gx < 0)
+    		    break;
+    		if (gx >= rect.width)
+    		    continue;
+    		if (tl < 0)
+    		    continue;
+    		col = minorDiv;
+    		// first = 0;
+    		if (((tl+gridStepX/4) % (gridStepX*10)) < gridStepX) {
+    		    col = majorDiv;
+    		}
+    		g.setColor(col);
+    		g.drawLine(gx,0,gx,rect.height-1);
+    	    }
+    	}
+    	
+    	// only need gridlines drawn once
+    	drawGridLines = false;
+
+        g.setColor(color);
+        
+        int ox = -1, oy = -1;
+        for (i = 0; i != rect.width; i++) {
+            int ip = (i+ipa) & (scopePointCount-1);
+            int minvy = (int) (gridMult*(minV[ip]-gridMid));
+            int maxvy = (int) (gridMult*(maxV[ip]-gridMid));
+            if (minvy <= maxy) {
+        	if (minvy < minRangeLo || maxvy > minRangeHi) {
+        	    // we got a value outside min range, so we don't need to rescale later
+        	    expandRange[plot.units] = false;
+        	    minRangeLo = -1000;
+        	    minRangeHi = 1000; // avoid triggering this test again
+        	}
+        	if (ox != -1) {
+        	    if (minvy == oy && maxvy == oy)
+        		continue;
+        	    g.drawLine(ox, y-oy, x+i-1, y-oy);
+        	    ox = oy = -1;
+        	}
+        	if (minvy == maxvy) {
+        	    ox = x+i;
+        	    oy = minvy;
+        	    continue;
+        	}
+        	g.drawLine(x+i, y-minvy, x+i, y-maxvy-1);
+            }
+        } // for (i=0...)
+        if (ox != -1)
+            g.drawLine(ox, y-oy, x+i-1, y-oy); // Horizontal
+        
+    }
+
+    // find selected plot
+    void checkForSelection() {
+	if (sim.dialogIsShowing())
+	    return;
+	if (!rect.contains(sim.mouseCursorX, sim.mouseCursorY)) {
+	    selectedPlot = -1;
+	    return;
+	}
+	int ipa = plots.get(0).startIndex(rect.width);
+	int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
+    	int maxy = (rect.height-1)/2;
+    	int y = maxy;
+    	int i;
+    	int bestdist = 10000;
+    	int best = -1;
+    	for (i = 0; i != visiblePlots.size(); i++) {
+    	    ScopePlot plot = visiblePlots.get(i);
+    	    int maxvy = (int) ((maxy/scale[plot.units])*plot.maxValues[ip]);
+    	    int dist = Math.abs(sim.mouseCursorY-(rect.y+y-maxvy));
+    	    if (dist < bestdist) {
+    		bestdist = dist;
+    		best = i;
+    	    }
+    	}
+    	selectedPlot = best;
+    }
+    
+    void drawCrosshairs(Graphics g) {
+	if (sim.dialogIsShowing())
+	    return;
+	if (!rect.contains(sim.mouseCursorX, sim.mouseCursorY))
+	    return;
+	if (selectedPlot < 0 && !showFFT)
+	    return;
+	String info[] = new String[4];
+	int ipa = plots.get(0).startIndex(rect.width);
+	int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
+	int ct = 0;
+    	int maxy = (rect.height-1)/2;
+    	int y = maxy;
+    	if (selectedPlot >= 0) {
+    	    ScopePlot plot = visiblePlots.get(selectedPlot);
+    	    info[ct++] = plot.getUnitText(plot.maxValues[ip]);
+    	    int maxvy = (int) (mainGridMult*(plot.maxValues[ip]-mainGridMid));
+    	    g.setColor(plot.color);
+    	    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
+    	}
         if (showFFT) {
-          drawFFTVerticalGridLines(g);
-          drawFFT(g);
+    		double maxFrequency = 1 / (sim.timeStep * speed * 2);
+    		info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
         }
-
-    	// these two loops are pretty much the same, and should be
-    	// combined!
-    g.setColor(curColor);
-    	if (value == 0 && showI) {
-    		int ox = -1, oy = -1;
-    		int j;
-    		for (i = 0; i != rect.width; i++) {
-    			int ip = (i+ipa) & (scopePointCount-1);
-    			int miniy = (int) ((maxy/minMaxI)*minI[ip]);
-    			int maxiy = (int) ((maxy/minMaxI)*maxI[ip]);
-    			if (maxI[ip] > realMaxI)
-    				realMaxI = maxI[ip];
-    			if (minI[ip] < realMinI)
-    				realMinI = minI[ip];
-    			if (miniy <= maxy) {
-    				if (miniy < -minRange || maxiy > minRange)
-    					gotI = true;
-    				if (ox != -1) {
-    					if (miniy == oy && maxiy == oy)
-    						continue;
-    					// Horizontal line from (ox,y-oy) to (x+i-1,y-oy)
-    					g.drawLine(ox, y-oy, x+i-1, y-oy);
-    					ox = oy = -1;
-    				}
-    				if (miniy == maxiy) {
-    					ox = x+i;
-    					oy = miniy;
-    					continue;
-    				}
-    				// Vertical line from (x+i,y-miniy) to (x+i,y-maxiy-1)
-    				g.drawLine(x+i, y-miniy, x+i, y-maxiy-1);
-    			}
-    		}
-    		if (ox != -1)
-    			// Horizontal line from (ox,y-oy) to (x+i-1,y-oy)
-//    			for (j = ox; j != x+i; j++)
-//    				pixels[j+r.width*(y-oy)] = curColor;
-    			g.drawLine(ox, y-oy, x+i-1, y-oy);
-    	}
-    g.setColor(voltColor);
-    	if (value != 0 || showV) {
-    		int ox = -1, oy = -1, j;
-    		for (i = 0; i != rect.width; i++) {
-    			int ip = (i+ipa) & (scopePointCount-1);
-    			int minvy = (int) ((maxy/minMaxV)*minV[ip]);
-    			int maxvy = (int) ((maxy/minMaxV)*maxV[ip]);
-    			if (maxV[ip] > realMaxV)
-    				realMaxV = maxV[ip];
-    			if (minV[ip] < realMinV)
-    				realMinV = minV[ip];
-    			if ((value != 0 || showV) && minvy <= maxy) {
-    				if (minvy < -minRange || maxvy > minRange)
-    					gotV = true;
-    				if (ox != -1) {
-    					if (minvy == oy && maxvy == oy)
-    						continue;
-//    					for (j = ox; j != x+i; j++)
-//    						pixels[j+r.width*(y-oy)] = voltColor;
-    					g.drawLine(ox, y-oy, x+i-1, y-oy);
-    					ox = oy = -1;
-    				}
-    				if (minvy == maxvy) {
-    					ox = x+i;
-    					oy = minvy;
-    					continue;
-    				}
-//    				for (j = minvy; j <= maxvy; j++)
-//    					pixels[x+i+r.width*(y-j)] = voltColor;
-    				g.drawLine(x+i, y-minvy, x+i, y-maxvy-1);
-    			}
-    		} // for (i=0...)
-    		if (ox != -1)
-//    			for (j = ox; j != x+i; j++)
-//    				pixels[j+r.width*(y-oy)] = voltColor;
-    			g.drawLine(ox, y-oy, x+i-1, y-oy); // Horizontal
-    	}
-    	double freq = 0;
-    	if (showFreq) {
-    		// try to get frequency
-    		// get average
-    		double avg = 0;
-    		for (i = 0; i != rect.width; i++) {
-    			int ip = (i+ipa) & (scopePointCount-1);
-    			avg += minV[ip]+maxV[ip];
-    		}
-    		avg /= i*2;
-    		int state = 0;
-    		double thresh = avg*.05;
-    		int oi = 0;
-    		double avperiod = 0;
-    		int periodct = -1;
-    		double avperiod2 = 0;
-    		// count period lengths
-    		for (i = 0; i != rect.width; i++) {
-    			int ip = (i+ipa) & (scopePointCount-1);
-    			double q = maxV[ip]-avg;
-    			int os = state;
-    			if (q < thresh)
-    				state = 1;
-    			else if (q > -thresh)
-    				state = 2;
-    			if (state == 2 && os == 1) {
-    				int pd = i-oi;
-    				oi = i;
-    				// short periods can't be counted properly
-    				if (pd < 12)
-    					continue;
-    				// skip first period, it might be too short
-    				if (periodct >= 0) {
-    					avperiod += pd;
-    					avperiod2 += pd*pd;
-    				}
-    				periodct++;
-    			}
-    		}
-    		avperiod /= periodct;
-    		avperiod2 /= periodct;
-    		double periodstd = Math.sqrt(avperiod2-avperiod*avperiod);
-    		freq = 1/(avperiod*sim.timeStep*speed);
-    		// don't show freq if standard deviation is too great
-    		if (periodct < 1 || periodstd > 2)
-    			freq = 0;
-    		// System.out.println(freq + " " + periodstd + " " + periodct);
-    	}
-//    	g.drawImage(image, r.x, r.y, null);
-    	g.setColor(elm.whiteColor);
-//    	int yt = r.y+10;
-//    	x += r.x;
-    	int yt=10;
-    	if (showScale) {
-    		String unitText="";
-    		String vScaleText="";
-    		if ( gridStepY!=0 && (!(showV && showI))) {
-    			if (value!=0)
-    				unitText=elm.getScopeUnits(value);
-    			else if (showV)
-    				unitText="V";
-    			else if (showI)
-    				unitText="A";
-    			vScaleText=" V="+CircuitElm.getShortUnitText(gridStepY, unitText)+"/div";
-    		}
-    		g.drawString("H="+CircuitElm.getShortUnitText(gridStepX, "s")+"/div" +
-    				vScaleText, x,yt);
-    		yt += 15;
-    	}
-    	if (showMax) {
-    		if (value != 0)
-    			g.drawString(elm.getUnitText(realMaxV, elm.getScopeUnits(value)),
-    					x, yt);
-    		else if (showV)
-    			g.drawString(elm.getVoltageText(realMaxV), x, yt);
-    		else if (showI)
-    			g.drawString(elm.getCurrentText(realMaxI), x, yt);
-    		yt += 15;
-    	}
-    	if (showMin) {
-    	//	int ym = r.y+r.height-5;
-    		int ym=rect.height-5;
-    		if (value != 0)
-    			g.drawString(elm.getUnitText(realMinV,
-    					elm.getScopeUnits(value)),
-    					x, ym);
-    		else if (showV)
-    			g.drawString(elm.getVoltageText(realMinV), x, ym);
-    		else if (showI)
-    			g.drawString(elm.getCurrentText(realMinI), x, ym);
-    	}
-    	if (text != null && rect.y + rect.height > yt+5) {
-    		g.drawString(text, x, yt);
-    		yt += 15;
-    	}
-    	if (showFreq && freq != 0 && rect.y + rect.height > yt+5)
-    		g.drawString(elm.getUnitText(freq, "Hz"), x, yt);
-    	if (ptr > 5 && !lockScale) {
-    		if (!gotI && minMaxI > 1e-4)
-    			minMaxI /= 2;
-    		if (!gotV && minMaxV > 1e-4)
-    			minMaxV /= 2;
-    	}
-    	
-    	g.context.restore();
-	if (rect.contains(sim.mouseCursorX, sim.mouseCursorY)) {
-	    String info[] = new String[3];
-	    int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
-	    int ct = 0;
-	    if (value != 0) {
-		info[ct++] = CircuitElm.getUnitText(maxV[ip], elm.getScopeUnits(value));
-		int maxvy = (int) ((maxy/minMaxV)*maxV[ip]);
-		g.setColor(voltColor);
-		g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
-	    } else {
-		if (showV) {
-		    info[ct++] = CircuitElm.getVoltageText(maxV[ip]);
-		    int maxvy = (int) ((maxy/minMaxV)*maxV[ip]);
-		    g.setColor(voltColor);
-		    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
-		}		    
-		if (showI) {
-		    info[ct++] = CircuitElm.getUnitText(maxI[ip], "A");
-		    int maxvy = (int) ((maxy/minMaxI)*maxI[ip]);
-		    g.setColor(curColor);
-		    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
-		}
-	    }
+	if (visiblePlots.size() > 0) {
 	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
 	    info[ct++] = CircuitElm.getUnitText(t, "s");
-	    int szw = 0, szh = 15*ct;
-	    for (i = 0; i != ct; i++) {
-	        int w=(int)g.context.measureText(info[i]).getWidth();
-	        if (w > szw)
-	            szw = w;
-	    }
-
-	    g.setColor(CircuitElm.whiteColor);
-	    g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
-//	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
-	    g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
-	    g.fillRect(sim.mouseCursorX-szw/2, rect.y-szh, szw, szh);
-	    g.setColor(CircuitElm.whiteColor);
-	    for (i = 0; i != ct; i++) {
-	        int w=(int)g.context.measureText(info[i]).getWidth();
-		g.drawString(info[i], sim.mouseCursorX-w/2, rect.y-2-(ct-1-i)*15);
-	    }
+	}
+	int szw = 0, szh = 15*ct;
+	int i;
+	for (i = 0; i != ct; i++) {
+	    int w=(int)g.context.measureText(info[i]).getWidth();
+	    if (w > szw)
+		szw = w;
 	}
 
+	g.setColor(CircuitElm.whiteColor);
+	g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
+	//	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
+	g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
+	int bx = sim.mouseCursorX;
+	if (bx < szw/2)
+	    bx = szw/2;
+	g.fillRect(bx-szw/2, rect.y-szh, szw, szh);
+	g.setColor(CircuitElm.whiteColor);
+	for (i = 0; i != ct; i++) {
+	    int w=(int)g.context.measureText(info[i]).getWidth();
+	    g.drawString(info[i], bx-w/2, rect.y-2-(ct-1-i)*15);
+	}
     }
+
+    void drawRMS(Graphics g) {
+	ScopePlot plot = visiblePlots.firstElement();
+	int i;
+	double avg = 0;
+    	int ipa = plot.ptr+scopePointCount-rect.width;
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double mid = (maxValue+minValue)/2;
+	int state = -1;
 	
+	// skip zeroes
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    if (maxV[ip] != 0) {
+		if (maxV[ip] > mid)
+		    state = 1;
+		break;
+	    }
+	}
+	int firstState = -state;
+	int start = i;
+	int end = 0;
+	int waveCount = 0;
+	double endAvg = 0;
+	for (; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    boolean sw = false;
+	    
+	    // switching polarity?
+	    if (state == 1) {
+		if (maxV[ip] < mid)
+		    sw = true;
+	    } else if (minV[ip] > mid)
+		sw = true;
+	    
+	    if (sw) {
+		state = -state;
+		
+		// completed a full cycle?
+		if (firstState == state) {
+		    if (waveCount == 0) {
+			start = i;
+			firstState = state;
+			avg = 0;
+		    }
+		    waveCount++;
+		    end = i;
+		    endAvg = avg;
+		}
+	    }
+	    if (waveCount > 0)
+		avg += maxV[ip]*maxV[ip];
+	}
+	double rms;
+	if (waveCount > 1) {
+	    rms = Math.sqrt(endAvg/(end-start));
+	    drawInfoText(g, plot.getUnitText(rms) + "rms");
+	}
+    }
+    
+    void drawFrequency(Graphics g) {
+	// try to get frequency
+	// get average
+	double avg = 0;
+	int i;
+	ScopePlot plot = visiblePlots.firstElement();
+    	int ipa = plot.ptr+scopePointCount-rect.width;
+    	double minV[] = plot.minValues;
+    	double maxV[] = plot.maxValues;
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    avg += minV[ip]+maxV[ip];
+	}
+	avg /= i*2;
+	int state = 0;
+	double thresh = avg*.05;
+	int oi = 0;
+	double avperiod = 0;
+	int periodct = -1;
+	double avperiod2 = 0;
+	// count period lengths
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    double q = maxV[ip]-avg;
+	    int os = state;
+	    if (q < thresh)
+		state = 1;
+	    else if (q > -thresh)
+		state = 2;
+	    if (state == 2 && os == 1) {
+		int pd = i-oi;
+		oi = i;
+		// short periods can't be counted properly
+		if (pd < 12)
+		    continue;
+		// skip first period, it might be too short
+		if (periodct >= 0) {
+		    avperiod += pd;
+		    avperiod2 += pd*pd;
+		}
+		periodct++;
+	    }
+	}
+	avperiod /= periodct;
+	avperiod2 /= periodct;
+	double periodstd = Math.sqrt(avperiod2-avperiod*avperiod);
+	double freq = 1/(avperiod*sim.timeStep*speed);
+	// don't show freq if standard deviation is too great
+	if (periodct < 1 || periodstd > 2)
+	    freq = 0;
+	// System.out.println(freq + " " + periodstd + " " + periodct);
+	if (freq != 0)
+	    drawInfoText(g, CircuitElm.getUnitText(freq, "Hz"));
+    }
+
+    int textY;
+    
+    void drawInfoText(Graphics g, String text) {
+	if (rect.y + rect.height <= textY+5)
+	    return;
+	g.drawString(text, 0, textY);
+	textY += 15;
+    }
+    
+    void drawInfoTexts(Graphics g) {
+    	g.setColor(CircuitElm.whiteColor);
+    	textY = 10;
+    	ScopePlot plot = visiblePlots.firstElement();
+    	if (showScale) {
+    	    String vScaleText="";
+    	    if ( gridStepY!=0 && (!(showV && showI)))
+    		vScaleText=" V=" + plot.getUnitText(gridStepY)+"/div";
+    	    drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" +
+    		    vScaleText);
+    	}
+//    	if (showMax || showMin)
+//    	    calcMaxAndMin(plot.units);
+    	if (showMax)
+    	    drawInfoText(g, plot.getUnitText(maxValue));
+    	if (showMin) {
+    	    int ym=rect.height-5;
+    	    g.drawString(plot.getUnitText(minValue), 0, ym);
+    	}
+    	if (showRMS)
+    	    drawRMS(g);
+    	String t = text;
+    	if (t == null)
+    	    t = getScopeText();
+    	if (t != null)
+    	    drawInfoText(g, t);
+    	if (showFreq)
+    	    drawFrequency(g);
+    }
+
+    String getScopeText() {
+	// stacked scopes?  don't show text
+	if (stackCount != 1)
+	    return null;
+	
+	// multiple elms?  don't show text (unless one is selected)
+	if (selectedPlot < 0 && getSingleElm() == null)
+	    return null;
+	
+	ScopePlot plot = visiblePlots.firstElement();
+	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
+	    plot = visiblePlots.get(selectedPlot);
+	return plot.elm.getScopeText(plot.value);
+    }
+    
     void speedUp() {
     	if (speed > 1) {
-    		speed /= 2;
-    		resetGraph();
+    	    speed /= 2;
+    	    resetGraph();
     	}
     }
     
@@ -750,39 +1110,61 @@ class Scope {
     	resetGraph();
     }
 	
+    // get scope element, returning null if there's more than one
+    CircuitElm getSingleElm() {
+	CircuitElm elm = plots.get(0).elm;
+	int i;
+	for (i = 1; i < plots.size(); i++) {
+	    if (plots.get(i).elm != elm)
+		return null;
+	}
+	return elm;
+    }
+    
     MenuBar getMenu() {
+	CircuitElm elm = plots.get(0).elm;
     	if (elm == null)
-    		return null;
-    	if (elm instanceof TransistorElm) {
-    		sim.scopeIbMenuItem.setState(value == VAL_IB);
-    		sim.scopeIcMenuItem.setState(value == VAL_IC);
-    		sim.scopeIeMenuItem.setState(value == VAL_IE);
-    		sim.scopeVbeMenuItem.setState(value == VAL_VBE);
-    		sim.scopeVbcMenuItem.setState(value == VAL_VBC);
-    		sim.scopeVceMenuItem.setState(value == VAL_VCE && ivalue != VAL_IC);
-    		sim.scopeVceIcMenuItem.setState(value == VAL_VCE && ivalue == VAL_IC);
+    	    return null;
+    	elm = getSingleElm();
+    	if (elm != null && elm instanceof TransistorElm) {
+    		sim.scopeIbMenuItem.setState(showingValue(VAL_IB));
+    		sim.scopeIcMenuItem.setState(showingValue(VAL_IC));
+    		sim.scopeIeMenuItem.setState(showingValue(VAL_IE));
+    		sim.scopeVbeMenuItem.setState(showingValue(VAL_VBE));
+    		sim.scopeVbcMenuItem.setState(showingValue(VAL_VBC));
+    		sim.scopeVceMenuItem.setState(showingValue(VAL_VCE));
+    		sim.scopeVceIcMenuItem.setState(isShowingVceAndIc());
+    	    	sim.scopeMaxScaleTransMenuItem.setState(maxScale && !plot2d);
     		return sim.transScopeMenuBar;
     	} else {
-    		sim.scopeVMenuItem    .setState(showV && value == 0);
-    		sim.scopeIMenuItem    .setState(showI && value == 0);
+    	    	sim.scopeRemovePlotMenuItem.setEnabled(visiblePlots.size() > 1 && !plot2d);
+    		sim.scopeVMenuItem    .setState(showV && !showingValue(VAL_POWER));
+    		sim.scopeIMenuItem    .setState(showI && !showingValue(VAL_POWER));
     		sim.scopeScaleMenuItem.setState(showScale);
     		sim.scopeMaxMenuItem  .setState(showMax);
     		sim.scopeMinMenuItem  .setState(showMin);
     		sim.scopeFreqMenuItem .setState(showFreq);
-    		sim.scopePowerMenuItem.setState(value == VAL_POWER);
+    		sim.scopePowerMenuItem.setState(showingValue(VAL_POWER));
+    		sim.scopeRMSMenuItem  .setState(showRMS);
     		sim.scopeVIMenuItem   .setState(plot2d && !plotXY);
     		sim.scopeXYMenuItem   .setState(plotXY);
     		sim.scopeSelectYMenuItem.setEnabled(plotXY);
     		sim.scopeFFTMenuItem.setState(showFFT);
-    		sim.scopeResistMenuItem.setState(value == VAL_R);
-    		sim.scopeResistMenuItem.setEnabled(elm instanceof MemristorElm);
+    		sim.scopeResistMenuItem.setState(showingValue(VAL_R));
+    		sim.scopeResistMenuItem.setEnabled(elm != null && elm.canShowValueInScope(VAL_R));
+    	    	sim.scopeMaxScaleMenuItem.setState(maxScale && !plot2d);
     		return sim.scopeMenuBar;
     	}
     }
     
-    void setValue(int x) { reset(); value = x; }
+    boolean isShowingVceAndIc() {
+	return plot2d && plots.size() == 2 && plots.get(0).value == VAL_VCE && plots.get(1).value == VAL_IC;
+    }
     
     String dump() {
+	ScopePlot vPlot = plots.get(0);
+	
+	CircuitElm elm = vPlot.elm;
     	if (elm == null)
     		return null;
     	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
@@ -790,16 +1172,24 @@ class Scope {
     			(showFreq ? 8 : 0) |
     			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
     			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
-    			(showFFT ? 1024 : 0);
-    	flags |= FLAG_YELM; // yelm present
-    	flags |= FLAG_IVALUE; // ivalue present
+    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0);
+    	flags |= FLAG_PLOTS;
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
     		return null;
-    	int yno = yElm == null ? -1 : sim.locateElm(yElm);
     	String x = "o " + eno + " " +
-    			speed + " " + value + " " + flags + " " +
-    			minMaxV + " " + minMaxI + " " + position + " " + yno + " " + ivalue;
+    			vPlot.speed + " " + vPlot.value + " " + flags + " " +
+    			scale[UNITS_V] + " " + scale[UNITS_A] + " " + position + " " +
+    			plots.size();
+    	int i;
+    	for (i = 0; i < plots.size(); i++) {
+    	    ScopePlot p = plots.get(i);
+    	    if (i > 0)
+    		x += " " + sim.locateElm(p.elm) + " " + p.value;
+    	    // dump scale if units are not V or A
+    	    if (p.units > UNITS_A)
+    		x += " " + scale[p.units];
+    	}
     	if (text != null)
     		x += " " + text;
     	return x;
@@ -810,58 +1200,103 @@ class Scope {
     	int e = new Integer(st.nextToken()).intValue();
     	if (e == -1)
     		return;
-    	elm = sim.getElm(e);
+    	setElm(sim.getElm(e));
     	speed = new Integer(st.nextToken()).intValue();
-    	value = new Integer(st.nextToken()).intValue();
+    	int value = new Integer(st.nextToken()).intValue();
     	int flags = new Integer(st.nextToken()).intValue();
-    	minMaxV = new Double(st.nextToken()).doubleValue();
-    	minMaxI = new Double(st.nextToken()).doubleValue();
-    	if (minMaxV == 0)
-    		minMaxV = .5;
-    	if (minMaxI == 0)
-    		minMaxI = 1;
+    	scale[UNITS_V] = new Double(st.nextToken()).doubleValue();
+    	scale[UNITS_A] = new Double(st.nextToken()).doubleValue();
+    	if (scale[UNITS_V] == 0)
+    	    scale[UNITS_V] = .5;
+    	if (scale[UNITS_A] == 0)
+    	    scale[UNITS_A] = 1;
+    	scaleX = scale[UNITS_V];
+    	scaleY = scale[UNITS_A];
+    	scale[UNITS_OHMS] = scale[UNITS_W] = scale[UNITS_V];
     	text = null;
-    	yElm = null;
-    	ivalue = 0;
-    	try {
+    	boolean plot2dFlag = (flags & 64) != 0;
+    	if ((flags & FLAG_PLOTS) != 0) {
+    	    // new-style dump
+    	    try {
+    		position = Integer.parseInt(st.nextToken());
+    		int sz = Integer.parseInt(st.nextToken());
+    		int i;
+    		setValue(value);
+    		// setValue(0) creates an extra plot for current, so remove that
+    		while (plots.size() > 1)
+    		    plots.removeElementAt(1);
+    		
+    		int u = plots.get(0).units;
+		if (u > UNITS_A)
+		    scale[u] = Double.parseDouble(st.nextToken());
+    		
+    		for (i = 1; i != sz; i++) {
+    		    int ne = Integer.parseInt(st.nextToken());
+    		    int val = Integer.parseInt(st.nextToken());
+    		    CircuitElm elm = sim.getElm(ne);
+    		    u = elm.getScopeUnits(val);
+    		    if (u > UNITS_A)
+    			scale[u] = Double.parseDouble(st.nextToken());
+    		    plots.add(new ScopePlot(elm, u, val));
+    		}
+    		while (st.hasMoreTokens()) {
+    		    if (text == null)
+    			text = st.nextToken();
+    		    else
+    			text += " " + st.nextToken();
+    		}
+    	    } catch (Exception ee) {
+    	    }
+    	} else {
+    	    // old-style dump
+    	    CircuitElm yElm = null;
+    	    int ivalue = 0;
+    	    try {
     		position = new Integer(st.nextToken()).intValue();
     		int ye = -1;
     		if ((flags & FLAG_YELM) != 0) {
-    			ye = new Integer(st.nextToken()).intValue();
-    			if (ye != -1)
-    				yElm = sim.getElm(ye);
+    		    ye = new Integer(st.nextToken()).intValue();
+    		    if (ye != -1)
+    			yElm = sim.getElm(ye);
+    		    // sinediode.txt has yElm set to something even though there's no xy plot...?
+    		    if (!plot2dFlag)
+    			yElm = null;
     		}
     		if ((flags & FLAG_IVALUE) !=0) {
-    			ivalue = new Integer(st.nextToken()).intValue();
+    		    ivalue = new Integer(st.nextToken()).intValue();
     		}
     		while (st.hasMoreTokens()) {
-    			if (text == null)
-    				text = st.nextToken();
-    			else
-    				text += " " + st.nextToken();
+    		    if (text == null)
+    			text = st.nextToken();
+    		    else
+    			text += " " + st.nextToken();
     		}
-    	} catch (Exception ee) {
+    	    } catch (Exception ee) {
+    	    }
+    	    setValues(value, ivalue, sim.getElm(e), yElm);
     	}
     	showI = (flags & 1) != 0;
     	showV = (flags & 2) != 0;
     	showMax = (flags & 4) == 0;
     	showFreq = (flags & 8) != 0;
     	lockScale = (flags & 16) != 0;
-    	plot2d = (flags & 64) != 0;
+    	plot2d = plot2dFlag;
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
     	showFFT((flags & 1024) != 0);
+    	maxScale = (flags & 8192) != 0;
+    	showRMS = (flags & 16384) != 0;
     }
     
     void allocImage() {
-		if (imageCanvas != null) {
-			imageCanvas.setWidth(rect.width + "PX");
-			imageCanvas.setHeight(rect.height + "PX");
-			imageCanvas.setCoordinateSpaceWidth(rect.width);
-			imageCanvas.setCoordinateSpaceHeight(rect.height);
-			clear2dView();
-		}
+	if (imageCanvas != null) {
+	    imageCanvas.setWidth(rect.width + "PX");
+	    imageCanvas.setHeight(rect.height + "PX");
+	    imageCanvas.setCoordinateSpaceWidth(rect.width);
+	    imageCanvas.setCoordinateSpaceHeight(rect.height);
+	    clear2dView();
+	}
     }
     
     void handleMenu(String mi) {
@@ -879,6 +1314,8 @@ class Scope {
     		showFreq(sim.scopeFreqMenuItem.getState());
     	if (mi == "showfft")
     		showFFT(sim.scopeFFTMenuItem.getState());
+    	if (mi == "showrms")
+    	    	showRMS = sim.scopeRMSMenuItem.getState();
     	if (mi == "showpower")
     		setValue(VAL_POWER);
     	if (mi == "showib")
@@ -896,8 +1333,7 @@ class Scope {
     	if (mi == "showvcevsic") {
     		plot2d = true;
     		plotXY = false;
-    		value = VAL_VCE;
-    		ivalue = VAL_IC;
+    		setValues(VAL_VCE, VAL_IC, getElm(), null);
     		resetGraph();
     	}
 
@@ -908,8 +1344,10 @@ class Scope {
     	}
     	if (mi == "plotxy") {
     		plotXY = plot2d = sim.scopeXYMenuItem.getState();
-    		if (yElm == null)
-    			selectY();
+    		if (plot2d)
+    		    plots = visiblePlots;
+    		if (plot2d && plots.size() == 1)
+    		    selectY();
     		resetGraph();
     	}
     	if (mi == "showresistance")
@@ -925,22 +1363,29 @@ class Scope {
 //    }
 
     void selectY() {
-    	int e = yElm == null ? -1 : sim.locateElm(yElm);
+	CircuitElm yElm = (plots.size() == 2) ? plots.get(1).elm : null;
+    	int e = (yElm == null) ? -1 : sim.locateElm(yElm);
     	int firstE = e;
     	while (true) {
-    		for (e++; e < sim.elmList.size(); e++) {
-    			CircuitElm ce = sim.getElm(e);
-    			if ((ce instanceof OutputElm || ce instanceof ProbeElm) &&
-    					ce != elm) {
-    				yElm = ce;
-    				return;
-    			}
-    			
+    	    for (e++; e < sim.elmList.size(); e++) {
+    		CircuitElm ce = sim.getElm(e);
+    		if ((ce instanceof OutputElm || ce instanceof ProbeElm) &&
+    			ce != plots.get(0).elm) {
+    		    yElm = ce;
+    		    if (plots.size() == 1)
+    			plots.add(new ScopePlot(yElm, UNITS_V));
+    		    else {
+    			plots.get(1).elm = yElm;
+    			plots.get(1).units = UNITS_V;
+    		    }
+    		    return;
     		}
-    		if (firstE == -1)
-    			return;
-    		e = firstE = -1;
+    	    }
+    	    if (firstE == -1)
+    		return;
+    	    e = firstE = -1;
     	}
+    	// not reached
     }
     
     void onMouseWheel(MouseWheelEvent e) {
@@ -952,5 +1397,37 @@ class Scope {
 	if (wheelDeltaY < -5)
 	    speedUp();
 	    wheelDeltaY = 0;
+    }
+    
+    CircuitElm getElm() {
+	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
+	    return visiblePlots.get(selectedPlot).elm;
+	return visiblePlots.size() > 0 ? visiblePlots.get(0).elm : plots.get(0).elm;
+    }
+
+    CircuitElm getXElm() {
+	return getElm();
+    }
+    CircuitElm getYElm() {
+	if (plots.size() == 2)
+	    return plots.get(1).elm;
+	return null;
+    }
+    
+    boolean needToRemove() {
+	boolean ret = true;
+	boolean removed = false;
+	int i;
+	for (i = 0; i != plots.size(); i++) {
+	   ScopePlot plot = plots.get(i);
+	   if (sim.locateElm(plot.elm) < 0) {
+	       plots.remove(i--);
+	       removed = true;
+	   } else
+	       ret = false;
+	}
+	if (removed)
+	    calcVisiblePlots();
+	return ret;
     }
 }

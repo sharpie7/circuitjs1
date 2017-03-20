@@ -86,43 +86,61 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	sim.removeWidgetFromVerticalPanel(label);
 	sim.removeWidgetFromVerticalPanel(slider);
     }
+    
     Point post3, corner2, arrowPoint, midpoint, arrow1, arrow2;
     Point ps3, ps4;
     int bodyLen;
+    
     void setPoints() {
 	super.setPoints();
 	int offset = 0;
+	int myLen =0;
 	if (abs(dx) > abs(dy)) {
-	    dx = sim.snapGrid(dx/2)*2;
-	    point2.x = x2 = point1.x + dx;
+	    myLen =  2 * sim.gridSize * Integer.signum(dx) * ((((Integer)Math.abs(dx))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
+	    point2.x =  point1.x + myLen;
 	    offset = (dx < 0) ? dy : -dy;
 	    point2.y = point1.y;
 	} else {
-	    dy = sim.snapGrid(dy/2)*2;
-	    point2.y = y2 = point1.y + dy;
-	    offset = (dy > 0) ? dx : -dx;
-	    point2.x = point1.x;
+	    myLen =  2 * sim.gridSize * Integer.signum(dy) * ((((Integer)Math.abs(dy))+ 2 * sim.gridSize -1) / (2 * sim.gridSize));
+	    if (dy != 0) {
+		point2.y = point1.y + myLen;
+		offset = (dy > 0) ? dx : -dx;
+		point2.x = point1.x;
+	    }
 	}
+//	if (abs(dx) > abs(dy)) {
+//	    dx = Integer.signum(dx) * sim.snapGrid(Math.abs(dx) / 2) * 2;
+//	    point2.x = x2 = point1.x + dx;
+//	    offset = (dx < 0) ? dy : -dy;
+//	    point2.y = point1.y;
+//	} else {
+//	    dy = Integer.signum(dy) * sim.snapGrid(Math.abs(dy) / 2) * 2;
+//	    if (dy != 0) {
+//		point2.y = y2 = point1.y + dy;
+//		offset = (dy > 0) ? dx : -dx;
+//		point2.x = point1.x;
+//	    }
+//	}
 	if (offset == 0)
 	    offset = sim.gridSize;
 	dn = distance(point1, point2);
 	int bodyLen = 32;
 	calcLeads(bodyLen);
-	position = slider.getValue()*.0099+.005;
-	int soff = (int) ((position-.5)*bodyLen);
-	//int offset2 = offset - sign(offset)*4;
-	post3 =      interpPoint(point1, point2, .5, offset);
-	corner2 =    interpPoint(point1, point2, soff/dn+.5, offset);
-	arrowPoint = interpPoint(point1, point2, soff/dn+.5,
-				 8*sign(offset));
-	midpoint = interpPoint(point1, point2, soff/dn+.5);
+	position = slider.getValue() * .0099 + .005;
+	int soff = (int) ((position - .5) * bodyLen);
+	// int offset2 = offset - sign(offset)*4;
+	post3 = interpPoint(point1, point2, .5, offset);
+	corner2 = interpPoint(point1, point2, soff / dn + .5, offset);
+	arrowPoint = interpPoint(point1, point2, soff / dn + .5, 8 * sign(offset));
+	midpoint = interpPoint(point1, point2, soff / dn + .5);
 	arrow1 = new Point();
 	arrow2 = new Point();
-	double clen = abs(offset)-8;
-	interpPoint2(corner2, arrowPoint, arrow1, arrow2, (clen-8)/clen, 8);
+	double clen = abs(offset) - 8;
+	interpPoint2(corner2, arrowPoint, arrow1, arrow2, (clen - 8) / clen, 8);
 	ps3 = new Point();
 	ps4 = new Point();
     }
+    
 	
     void draw(Graphics g) {
 	int segments = 16;

@@ -74,14 +74,14 @@ package com.lushprojects.circuitjs1.client;
 	    drawThickLine(g, in1p[0], in1p[1]);
 	    setVoltageColor(g, volts[1]);
 	    drawThickLine(g, in2p[0], in2p[1]);
+	    setVoltageColor(g, volts[2]);
+	    drawThickLine(g, lead2, point2);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    setPowerColor(g, true);
 	    drawThickPolygon(g, triangle);
 	    g.setFont(plusFont);
 	    drawCenteredText(g, "-", textp[0].x, textp[0].y-2, true);
 	    drawCenteredText(g, "+", textp[1].x, textp[1].y  , true);
-	    setVoltageColor(g, volts[2]);
-	    drawThickLine(g, lead2, point2);
 	    curcount = updateDotCount(current, curcount);
 	    drawDots(g, point2, lead2, curcount);
 	    drawPosts(g);
@@ -194,6 +194,14 @@ package com.lushprojects.circuitjs1.client;
 		minOut = ei.value;
 	}
 	int getShortcut() { return 'a'; }
+	
+	@Override double getCurrentIntoNode(int n) { 
+	    if (n==2)
+		return -current;
+	   return 0;
+	}
+	
+	
 	@Override double getCurrentIntoPoint(int xa, int ya) { 
 	    if (xa == x2 && ya == y2)
 		return -current;

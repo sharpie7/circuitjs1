@@ -212,6 +212,21 @@ package com.lushprojects.circuitjs1.client;
 	    sim.stampNonLinear(nodes[1]);
 	    sim.stampNonLinear(nodes[2]);
 	}
+	
+	boolean nonConvergence(double last, double now) {
+	    double diff = Math.abs(last-now);
+	    // difference of less than 10mV is fine
+	    if (diff < .01)
+		return false;
+	    // larger differences are fine if value is large
+	    if (sim.subIterations > 10 && diff < Math.abs(now)*.001)
+		return false;
+	    // if we're having trouble converging, get more lenient
+	    if (sim.subIterations > 100 && diff < .01+(sim.subIterations-100)*.0001)
+		return false;
+	    return true;
+	}
+	
 	void doStep() {
 	    double vs[] = new double[3];
 	    vs[0] = volts[0];
@@ -237,8 +252,7 @@ package com.lushprojects.circuitjs1.client;
 	    int gate = 0;
 	    double vgs = vs[gate ]-vs[source];
 	    double vds = vs[drain]-vs[source];
-	    if (Math.abs(lastv1-vs[1]) > .01 ||
-		Math.abs(lastv2-vs[2]) > .01)
+	    if (nonConvergence(lastv1, vs[1]) || nonConvergence(lastv2, vs[2]))
 		sim.converged = false;
 	    lastv1 = vs[1];
 	    lastv2 = vs[2];
@@ -289,18 +303,22 @@ package com.lushprojects.circuitjs1.client;
 		source == 1 && pnp == -1)
 		ids = -ids;
 	}
+	@SuppressWarnings("static-access")
 	void getFetInfo(String arr[], String n) {
-	    arr[0] = ((pnp == -1) ? "p-" : "n-") + n;
+	    arr[0] = sim.LS(((pnp == -1) ? "p-" : "n-") + n);
 	    arr[0] += " (Vt = " + getVoltageText(pnp*vt) + ")";
 	    arr[1] = ((pnp == 1) ? "Ids = " : "Isd = ") + getCurrentText(ids);
 	    arr[2] = "Vgs = " + getVoltageText(volts[0]-volts[pnp == -1 ? 2 : 1]);
 	    arr[3] = ((pnp == 1) ? "Vds = " : "Vsd = ") + getVoltageText(volts[2]-volts[1]);
-	    arr[4] = (mode == 0) ? "off" :
-		(mode == 1) ? "linear" : "saturation";
+	    arr[4] = sim.LS((mode == 0) ? "off" :
+		(mode == 1) ? "linear" : "saturation");
 	    arr[5] = "gm = " + getUnitText(gm, "A/V");
 	}
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "MOSFET");
+	}
+	@Override String getScopeText(int v) { 
+	    return sim.LS(((pnp == -1) ? "p-" : "n-") + "MOSFET");
 	}
 	boolean canViewInScope() { return true; }
 	double getVoltageDiff() { return volts[2] - volts[1]; }

@@ -26,7 +26,7 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 
     class ResistorElm extends CircuitElm {
 	double resistance;
-	public ResistorElm(int xx, int yy) { super(xx, yy); resistance = 100; }
+	public ResistorElm(int xx, int yy) { super(xx, yy); resistance = 1000; }
 	public ResistorElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
@@ -56,59 +56,29 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    setBbox(point1, point2, hs);
 	    draw2Leads(g);
 	    setPowerColor(g, true);
-	 //   double segf = 1./segments;
+	    //   double segf = 1./segments;
 	    double len = distance(lead1, lead2);
-    	g.context.save();
-    	g.context.setLineWidth(3.0);
-    	g.context.setTransform(((double)(lead2.x-lead1.x))/len, ((double)(lead2.y-lead1.y))/len, -((double)(lead2.y-lead1.y))/len,((double)(lead2.x-lead1.x))/len,lead1.x,lead1.y);
-    	CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
-    	grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
-    	grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
-    	g.context.setStrokeStyle(grad);
+	    g.context.save();
+	    g.context.setLineWidth(3.0);
+	    g.context.transform(((double)(lead2.x-lead1.x))/len, ((double)(lead2.y-lead1.y))/len, -((double)(lead2.y-lead1.y))/len,((double)(lead2.x-lead1.x))/len,lead1.x,lead1.y);
+	    CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
+	    grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
+	    grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
+	    g.context.setStrokeStyle(grad);
 	    if (!sim.euroResistorCheckItem.getState()) {
-//		// draw zigzag
-//		for (i = 0; i != segments; i++) {
-//		    int nx = 0;
-//		    switch (i & 3) {
-//		    case 0: nx = 1; break;
-//		    case 2: nx = -1; break;
-//		    default: nx = 0; break;
-//		    }
-//		    double v = v1+(v2-v1)*i/segments;
-//		    setVoltageColor(g, v);
-//		    interpPoint(lead1, lead2, ps1, i*segf, hs*ox);
-//		    interpPoint(lead1, lead2, ps2, (i+1)*segf, hs*nx);
-//		    drawThickLine(g, ps1, ps2);
-//		    ox = nx;
-//		}
-	    	g.context.beginPath();
-	    	g.context.moveTo(0,0);
-	    	for (i=0;i<4;i++){
-	    		g.context.lineTo((1+4*i)*len/16, hs);
-	    		g.context.lineTo((3+4*i)*len/16, -hs);
-	    	}
-	    	g.context.lineTo(len, 0);
-	    	g.context.stroke();
-	    	
-	    } else    {
-		// draw rectangle
-//		setVoltageColor(g, v1);
-//		interpPoint2(lead1, lead2, ps1, ps2, 0, hs);
-//		drawThickLine(g, ps1, ps2);
-//		for (i = 0; i != segments; i++) {
-//		    double v = v1+(v2-v1)*i/segments;
-//		    setVoltageColor(g, v);
-//		    interpPoint2(lead1, lead2, ps1, ps2, i*segf, hs);
-//		    interpPoint2(lead1, lead2, ps3, ps4, (i+1)*segf, hs);
-//		    drawThickLine(g, ps1, ps3);
-//		    drawThickLine(g, ps2, ps4);
-//		}
-//		interpPoint2(lead1, lead2, ps1, ps2, 1, hs);
-//		drawThickLine(g, ps1, ps2);
-	    	
-	    	g.context.strokeRect(0, -hs, len, 2.0*hs);
+		g.context.beginPath();
+		g.context.moveTo(0,0);
+		for (i=0;i<4;i++){
+		    g.context.lineTo((1+4*i)*len/16, hs);
+		    g.context.lineTo((3+4*i)*len/16, -hs);
+		}
+		g.context.lineTo(len, 0);
+		g.context.stroke();
+
+	    } else {
+		g.context.strokeRect(0, -hs, len, 2.0*hs);
 	    }
-    	g.context.restore();
+	    g.context.restore();
 	    if (sim.showValuesCheckItem.getState()) {
 		String s = getShortUnitText(resistance, "");
 		drawValues(g, s, hs);
@@ -116,7 +86,7 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    doDots(g);
 	    drawPosts(g);
 	}
-    
+
 	void calculateCurrent() {
 	    current = (volts[0]-volts[1])/resistance;
 	    //System.out.print(this + " res current set to " + current + "\n");
@@ -129,6 +99,9 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    getBasicInfo(arr);
 	    arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
 	    arr[4] = "P = " + getUnitText(getPower(), "W");
+	}
+	@Override String getScopeText(int v) {
+	    return sim.LS("resistor") + ", " + getUnitText(resistance, sim.ohmString);
 	}
 	public EditInfo getEditInfo(int n) {
 	    // ohmString doesn't work here on linux

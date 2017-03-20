@@ -61,7 +61,7 @@ class EditDialog extends DialogBox  {
 	EditDialog(Editable ce, CirSim f) {
 //		super(f, "Edit Component", false);
 		super(); // Do we need this?
-		setText("Edit Component");
+		setText(CirSim.LS("Edit Component"));
 		cframe = f;
 		elm = ce;
 //		setLayout(new EditDialogLayout());
@@ -77,13 +77,13 @@ class EditDialog extends DialogBox  {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(applyButton = new Button("Apply"));
+		hp.add(applyButton = new Button(CirSim.LS("Apply")));
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
 			}
 		});
-		hp.add(okButton = new Button("OK"));
+		hp.add(okButton = new Button(CirSim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -91,7 +91,7 @@ class EditDialog extends DialogBox  {
 			}
 		});
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button("Cancel"));
+		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -111,10 +111,11 @@ class EditDialog extends DialogBox  {
 				break;
 			EditInfo ei = einfos[i];
 			idx = vp.getWidgetIndex(hp);
+			String name = CirSim.LS(ei.name);
 			if (ei.name.startsWith("<"))
-			    vp.insert(l = new HTML(ei.name),idx);
+			    vp.insert(l = new HTML(name),idx);
 			else
-			    vp.insert(l = new Label(ei.name),idx);
+			    vp.insert(l = new Label(name),idx);
 			if (i!=0 && l != null)
 				l.setStyleName("topSpace");
 			idx = vp.getWidgetIndex(hp);
@@ -155,8 +156,22 @@ class EditDialog extends DialogBox  {
 		einfocount = i;
 	}
 
+	static final double ROOT2 = 1.41421356237309504880;
+	
+	double diffFromInteger(double x) {
+	    return Math.abs(x-Math.round(x));
+	}
+	
 	String unitString(EditInfo ei) {
-		double v = ei.value;
+	    // for voltage elements, express values in rms if that would be shorter
+	    if (elm != null && elm instanceof VoltageElm &&
+		Math.abs(ei.value) > 1e-4 &&
+		diffFromInteger(ei.value*1e4) > diffFromInteger(ei.value*1e4/ROOT2))
+		return unitString(ei, ei.value/ROOT2) + "rms";
+	    return unitString(ei, ei.value);
+	}
+
+	String unitString(EditInfo ei, double v) {
 		double va = Math.abs(v);
 		if (ei.dimensionless)
 			return noCommaFormat.format(v);
@@ -181,6 +196,11 @@ class EditDialog extends DialogBox  {
 	double parseUnits(EditInfo ei) throws java.text.ParseException {
 		String s = ei.textf.getText();
 		s = s.trim();
+		double rmsMult = 1;
+		if (s.endsWith("rms")) {
+		    s = s.substring(0, s.length()-3).trim();
+		    rmsMult = ROOT2;
+		}
 		// rewrite shorthand (eg "2k2") in to normal format (eg 2.2k) using regex
 		s=s.replaceAll("([0-9]+)([pPnNuUmMkKgG])([0-9]+)", "$1.$3$2");
 		int len = s.length();
@@ -200,7 +220,7 @@ class EditDialog extends DialogBox  {
 		}
 		if (mult != 1)
 			s = s.substring(0, len-1).trim();
-		return noCommaFormat.parse(s) * mult;
+		return noCommaFormat.parse(s) * mult * rmsMult;
 	}
 
 	void apply() {

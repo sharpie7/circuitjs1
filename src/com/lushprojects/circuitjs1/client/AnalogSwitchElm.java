@@ -150,12 +150,20 @@ class AnalogSwitchElm extends CircuitElm {
 	    r_off = ei.value;
     }
     
+    double getCurrentIntoNode(int n) {
+	if (n==2)
+	    return 0;
+	if (n==0)
+	    return -current;
+	return current;
+    }  
+    
     double getCurrentIntoPoint(int xa, int ya) {
 	if (xa==point3.x && ya==point3.y)
 	    return 0;
-	else
-	    return super.getCurrentIntoPoint(xa, ya);
-    
+	if (xa == x && ya == y)
+	    return -current;
+	return current;
     }
 }
 

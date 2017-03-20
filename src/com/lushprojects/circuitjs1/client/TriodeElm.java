@@ -115,6 +115,15 @@ class TriodeElm extends CircuitElm {
 	}
 	drawPosts(g);
     }
+    
+    double getCurrentIntoPoint(int xa, int ya) {
+	if (xa == cath[0].x && ya == cath[0].y)
+	    return currentc;
+	if (xa == plate[0].x && ya == plate[0].y)
+	    return -currentp;
+	return -currentg;
+    }
+
     Point getPost(int n) {
 	return (n == 0) ? plate[0] : (n == 1) ? grid[0] : cath[0];
     }

@@ -218,13 +218,14 @@ public class CustomLogicModel implements Editable {
 		escape(arrayToList(outputs)) + " " + escape(infoText) + " " + escape(rules); 
     }
     
-    String escape(String s) {
+    static String escape(String s) {
 	if (s.length() == 0)
 	    return "\\0";
-	return s.replace("\\", "\\\\").replace("\n", "\\n").replace(" ", "\\s").replace("+", "\\p");
+	return s.replace("\\", "\\\\").replace("\n", "\\n").replace(" ", "\\s").replace("+", "\\p").
+		replace("=", "\\q").replace("#", "\\h").replace("&", "\\a");
     }
     
-    String unescape(String s) {
+    static String unescape(String s) {
 	if (s.equals("\\0"))
 	    return "";
 	int i;
@@ -237,6 +238,12 @@ public class CustomLogicModel implements Editable {
 		    s = s.substring(0, i) + " " + s.substring(i+2);
 		else if (c == 'p')
 		    s = s.substring(0, i) + "+" + s.substring(i+2);
+		else if (c == 'q')
+		    s = s.substring(0, i) + "=" + s.substring(i+2);
+		else if (c == 'h')
+		    s = s.substring(0, i) + "#" + s.substring(i+2);
+		else if (c == 'a')
+		    s = s.substring(0, i) + "&" + s.substring(i+2);
 		else
 		    s = s.substring(0, i) + s.substring(i+1);
 	    }

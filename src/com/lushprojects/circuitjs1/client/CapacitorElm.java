@@ -140,6 +140,10 @@ package com.lushprojects.circuitjs1.client;
 	    //double v = getVoltageDiff();
 	    //arr[4] = "U = " + getUnitText(.5*capacitance*v*v, "J");
 	}
+	@Override
+	String getScopeText(int v) {
+	    return sim.LS("capacitor") + ", " + getUnitText(capacitance, "F");
+	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
 		return new EditInfo("Capacitance (F)", capacitance, 0, 0);

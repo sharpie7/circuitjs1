@@ -28,12 +28,18 @@ filt-lopass.txt Low-Pass Filter (RC)
 filt-hipass-l.txt High-Pass Filter (RL)
 filt-lopass-l.txt Low-Pass Filter (RL)
 bandpass.txt Band-pass Filter
+bandnoise.txt Band-pass w/ Noise
 notch.txt Notch Filter
 twint.txt Twin-T Filter
 crossover.txt Crossover
 butter10lo.txt Butterworth Low-Pass (10 pole)
+butter10hi.txt Butterworth High-Pass (10 pole)
+butter10loaud.txt Butterworth Low-Pass w/ Noise
+butter10hiaud.txt Butterworth High-Pass w/ Noise
+butterbandstop.txt Butterworth Band-Stop
 besselbutter.txt Bessel vs Butterworth
 ringing.txt Band-pass with Ringing
+comb.txt Comb Filter
 -
 +Other Passive Circuits
 +Series/Parallel
@@ -176,6 +182,7 @@ colpitts.txt Colpitts Oscillator
 hartley.txt Hartley Oscillator
 eclosc.txt Emitter-Coupled LC Oscillator
 -
+gilbertcell.txt Gilbert Cell Multiplier
 -
 +MOSFETs
 nmosfet.txt n-MOSFET
@@ -216,6 +223,9 @@ filt-vcvs-hipass.txt VCVS High-Pass Filter
 switchedcap.txt Switched-Capacitor Filter
 allpass1.txt Allpass
 allpass2.txt Allpass w/ Square
+actbutterlo.txt Butterworth Low-Pass
+actbutterhi.txt Butterworth High-Pass
+actbutterband.txt Butterworth Band-Pass
 -
 +Logic Families
 +RTL
@@ -367,5 +377,12 @@ spark-sawtooth.txt Sawtooth Generator
 tesla.txt Tesla Coil
 spark-marx.txt Marx Generator
 -
++ Operational Transconductance Amplifier (OTA)
+ota-vca.txt OTA Voltage Controlled Amplifier (VCA)
+ota-vcf-single.txt OTA Single Stage VCF (low pass)
+ota-ringmod.txt OTA Ring Modulator
+ota-gain.txt LM137000 Gain Oddity
+-
+lightbulb.txt Light Bulb
 -
 blank.txt Blank Circuit

@@ -189,9 +189,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    if (sim.subIterations > 100) {
 		// if we have trouble converging, put a conductance in parallel with all P-N junctions.
 		// Gradually increase the conductance value for each iteration.
-		gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/3000.));
+		gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/300.));
 		if (gmin > .1)
 		    gmin = .1;
+//		sim.console("gmin " + gmin + " vbc " + vbc + " vbe " + vbe);
 	    }
 	    //System.out.print("T " + vbc + " " + vbe + "\n");
 	    vbc = pnp*limitStep(pnp*vbc, pnp*lastvbc);
@@ -243,8 +244,22 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    sim.stampRightSide(nodes[1], -ic + gce*vbe + gcc*vbc);
 	    sim.stampRightSide(nodes[2], -ie + gee*vbe + gec*vbc);
 	}
+	
+	@Override String getScopeText(int x) {
+	    String t ="";
+	    switch (x) {
+	    case Scope.VAL_IB: t = "Ib"; break; 
+	    case Scope.VAL_IC: t = "Ic"; break;
+	    case Scope.VAL_IE: t = "Ie"; break;
+	    case Scope.VAL_VBE: t = "Vbe"; break;
+	    case Scope.VAL_VBC: t = "Vbc"; break;
+	    case Scope.VAL_VCE: t = "Vce"; break;
+	    }
+	    return sim.LS("transistor") + ", " + t;
+	}
+	
 	void getInfo(String arr[]) {
-	    arr[0] = "transistor (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
+	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
 	    double vbc = volts[0]-volts[1];
 	    double vbe = volts[0]-volts[2];
 	    double vce = volts[1]-volts[2];
@@ -252,6 +267,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 		arr[1] = vbe*pnp > .2 ? "saturation" : "reverse active";
 	    else
 		arr[1] = vbe*pnp > .2 ? "fwd active" : "cutoff";
+	    arr[1] = sim.LS(arr[1]);
 	    arr[2] = "Ic = " + getCurrentText(ic);
 	    arr[3] = "Ib = " + getCurrentText(ib);
 	    arr[4] = "Vbe = " + getVoltageText(vbe);
@@ -271,11 +287,11 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    return 0;
 	}
 	
-	String getScopeUnits(int x) {
+	int getScopeUnits(int x) {
 	    switch (x) {
 	    case Scope.VAL_IB: case Scope.VAL_IC:
-	    case Scope.VAL_IE: return "A";
-	    default: return "V";
+	    case Scope.VAL_IE: return Scope.UNITS_A;
+	    default: return Scope.UNITS_V;
 	    }
 	}
 	public EditInfo getEditInfo(int n) {
@@ -310,6 +326,15 @@ import com.google.gwt.i18n.client.NumberFormat;
         }
 
 	boolean canViewInScope() { return true; }
+	
+	double getCurrentIntoNode(int n) {
+	    if (n==0)
+		return -ib;
+	    if (n==1)
+		return -ic;
+	    return -ie;
+	}
+	
 	double getCurrentIntoPoint(int xa, int ya) {
 	    if (xa == x && ya == y)
 		return -ib;
