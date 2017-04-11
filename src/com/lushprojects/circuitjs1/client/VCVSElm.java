@@ -33,6 +33,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	public VCVSElm(int xx, int yy) {
 	    super(xx, yy);
+	    exprString = "2*(a-b)";
 //	    inputCount = 2;
 //	    exprString = "a+b";
 //	    parseExpr();
