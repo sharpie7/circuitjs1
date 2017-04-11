@@ -180,13 +180,13 @@ class Scope {
     
     void showCurrent(boolean b) {
 	showI = b;
-	if (b && !showingValue(0))
+	if (b && !showingVoltageAndMaybeCurrent())
 	    setValue(0);
 	calcVisiblePlots();
     }
     void showVoltage(boolean b) {
 	showV = b;
-	if (b && !showingValue(0))
+	if (b && !showingVoltageAndMaybeCurrent())
 	    setValue(0);
 	calcVisiblePlots();
     }
@@ -346,6 +346,20 @@ class Scope {
 	return true;
     }
     
+    boolean showingVoltageAndMaybeCurrent() {
+	int i;
+	boolean gotv = false;
+	for (i = 0; i != plots.size(); i++) {
+	    ScopePlot sp = plots.get(i);
+	    if (sp.value == 0)
+		gotv = true;
+	    else if (sp.value != VAL_CURRENT)
+		return false;
+	}
+	return gotv;
+    }
+    
+
     void combine(Scope s) {
 	/*
 	// if voltage and current are shown, remove current
@@ -1076,6 +1090,7 @@ class Scope {
     	String t = text;
     	if (t == null)
     	    t = getScopeText();
+    	t = CirSim.LS(t);
     	if (t != null)
     	    drawInfoText(g, t);
     	if (showFreq)
