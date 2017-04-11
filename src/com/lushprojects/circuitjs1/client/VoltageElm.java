@@ -35,13 +35,21 @@ class VoltageElm extends CircuitElm {
     static final int WF_PULSE = 5;
     static final int WF_VAR = 6;
     double frequency, maxVoltage, freqTimeZero, bias,
-	phaseShift, dutyCycle;
+	phaseShift;
+    
+    // why two separate variables?  because the defaults are different for pulse vs square.
+    // And old circuit files have a dutyCycle of .5 for pulse waveforms.
+    double dutyCycle, pulseDutyCycle;
+    
+    static final double defaultPulseDuty = 1;
+    
     VoltageElm(int xx, int yy, int wf) {
 	super(xx, yy);
 	waveform = wf;
 	maxVoltage = 5;
 	frequency = 40;
 	dutyCycle = .5;
+	pulseDutyCycle = defaultPulseDuty;
 	reset();
     }
     public VoltageElm(int xa, int ya, int xb, int yb, int f,
@@ -51,6 +59,7 @@ class VoltageElm extends CircuitElm {
 	frequency = 40;
 	waveform = WF_DC;
 	dutyCycle = .5;
+	pulseDutyCycle = defaultPulseDuty;
 	try {
 	    waveform = new Integer(st.nextToken()).intValue();
 	    frequency = new Double(st.nextToken()).doubleValue();
@@ -58,6 +67,7 @@ class VoltageElm extends CircuitElm {
 	    bias = new Double(st.nextToken()).doubleValue();
 	    phaseShift = new Double(st.nextToken()).doubleValue();
 	    dutyCycle = new Double(st.nextToken()).doubleValue();
+	    pulseDutyCycle = new Double(st.nextToken()).doubleValue();
 	} catch (Exception e) {
 	}
 	if ((flags & FLAG_COS) != 0) {
@@ -70,7 +80,7 @@ class VoltageElm extends CircuitElm {
     String dump() {
 	return super.dump() + " " + waveform + " " + frequency + " " +
 	    maxVoltage + " " + bias + " " + phaseShift + " " +
-	    dutyCycle;
+	    dutyCycle + " " + pulseDutyCycle;
     }
     /*void setCurrent(double c) {
       current = c;
@@ -111,7 +121,7 @@ class VoltageElm extends CircuitElm {
 	case WF_SAWTOOTH:
 	    return bias+(w % (2*pi))*(maxVoltage/pi)-maxVoltage;
 	case WF_PULSE:
-	    return ((w % (2*pi)) < 1) ? maxVoltage+bias : bias;
+	    return ((w % (2*pi)) < pulseDutyCycle) ? maxVoltage+bias : bias;
 	default: return 0;
 	}
     }
@@ -291,6 +301,9 @@ class VoltageElm extends CircuitElm {
 	if (n == 5 && waveform == WF_SQUARE)
 	    return new EditInfo("Duty Cycle", dutyCycle*100, 0, 100).
 		setDimensionless();
+	if (n == 5 && waveform == WF_PULSE)
+	    return new EditInfo("Duty Cycle", pulseDutyCycle*100/(Math.PI*2), 0, 100).
+		setDimensionless();
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
@@ -319,17 +332,17 @@ class VoltageElm extends CircuitElm {
 	    if (waveform == WF_DC && ow != WF_DC) {
 		ei.newDialog = true;
 		bias = 0;
-	    } else if (waveform != WF_DC && ow == WF_DC) {
-		ei.newDialog = true;
-	    }
-	    if ((waveform == WF_SQUARE || ow == WF_SQUARE) &&
-		waveform != ow)
+	    } else if (waveform != ow)
 		ei.newDialog = true;
 	    setPoints();
 	}
 	if (n == 4)
 	    phaseShift = ei.value*pi/180;
-	if (n == 5)
-	    dutyCycle = ei.value*.01;
+	if (n == 5) {
+	    if (waveform == WF_PULSE)
+		pulseDutyCycle = ei.value*.01*Math.PI*2;
+	    else
+		dutyCycle = ei.value*.01;
+	}
     }
 }
