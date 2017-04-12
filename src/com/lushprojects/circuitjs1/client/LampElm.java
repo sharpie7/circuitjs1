@@ -38,6 +38,8 @@ package com.lushprojects.circuitjs1.client;
 		    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    temp = new Double(st.nextToken()).doubleValue();
+	    if (Double.isNaN(temp))
+		temp = roomTemp;
 	    nom_pow = new Double(st.nextToken()).doubleValue();
 	    nom_v = new Double(st.nextToken()).doubleValue();
 	    warmTime = new Double(st.nextToken()).doubleValue();
@@ -134,7 +136,9 @@ package com.lushprojects.circuitjs1.client;
 
 	void calculateCurrent() {
 	    current = (volts[0]-volts[1])/resistance;
-	    //System.out.print(this + " res current set to " + current + "\n");
+	    if (resistance == 0)
+		current = 0;
+//	    sim.console("lampcc " + current + " " + resistance);
 	}
 	void stamp() {
 	    sim.stampNonLinear(nodes[0]);
@@ -156,6 +160,7 @@ package com.lushprojects.circuitjs1.client;
 	    temp += getPower()*sim.timeStep/capw;
 	    double cr = 2600/nom_pow;
 	    temp -= sim.timeStep*(temp-roomTemp)/(capc*cr);
+//	    sim.console("lampsi " + temp + " " + capc + " " + nom_pow);
 	}
 	void doStep() {
 	    sim.stampResistor(nodes[0], nodes[1], resistance);
