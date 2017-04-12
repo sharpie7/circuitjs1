@@ -26,6 +26,7 @@ import com.google.gwt.user.client.Window;
 
 class VoltageElm extends CircuitElm {
     static final int FLAG_COS = 2;
+    static final int FLAG_PULSE_DUTY = 4;
     int waveform;
     static final int WF_DC = 0;
     static final int WF_AC = 1;
@@ -35,13 +36,9 @@ class VoltageElm extends CircuitElm {
     static final int WF_PULSE = 5;
     static final int WF_VAR = 6;
     double frequency, maxVoltage, freqTimeZero, bias,
-	phaseShift;
+	phaseShift, dutyCycle;
     
-    // why two separate variables?  because the defaults are different for pulse vs square.
-    // And old circuit files have a dutyCycle of .5 for pulse waveforms.
-    double dutyCycle, pulseDutyCycle;
-    
-    static final double defaultPulseDuty = 1;
+    static final double defaultPulseDuty = 1/(2*Math.PI);
     
     VoltageElm(int xx, int yy, int wf) {
 	super(xx, yy);
@@ -49,7 +46,6 @@ class VoltageElm extends CircuitElm {
 	maxVoltage = 5;
 	frequency = 40;
 	dutyCycle = .5;
-	pulseDutyCycle = defaultPulseDuty;
 	reset();
     }
     public VoltageElm(int xa, int ya, int xb, int yb, int f,
@@ -59,7 +55,6 @@ class VoltageElm extends CircuitElm {
 	frequency = 40;
 	waveform = WF_DC;
 	dutyCycle = .5;
-	pulseDutyCycle = defaultPulseDuty;
 	try {
 	    waveform = new Integer(st.nextToken()).intValue();
 	    frequency = new Double(st.nextToken()).doubleValue();
@@ -67,25 +62,34 @@ class VoltageElm extends CircuitElm {
 	    bias = new Double(st.nextToken()).doubleValue();
 	    phaseShift = new Double(st.nextToken()).doubleValue();
 	    dutyCycle = new Double(st.nextToken()).doubleValue();
-	    pulseDutyCycle = new Double(st.nextToken()).doubleValue();
 	} catch (Exception e) {
 	}
 	if ((flags & FLAG_COS) != 0) {
 	    flags &= ~FLAG_COS;
 	    phaseShift = pi/2;
 	}
+	
+	// old circuit files have the wrong duty cycle for pulse waveforms (wasn't configurable in the past)
+	if ((flags & FLAG_PULSE_DUTY) == 0 && waveform == WF_PULSE) {
+	    dutyCycle = defaultPulseDuty;
+	}
+	
 	reset();
     }
     int getDumpType() { return 'v'; }
+    
     String dump() {
+	// set flag so we know if duty cycle is correct for pulse waveforms
+	if (waveform == WF_PULSE)
+	    flags |= FLAG_PULSE_DUTY;
+	else
+	    flags &= ~FLAG_PULSE_DUTY;
+	
 	return super.dump() + " " + waveform + " " + frequency + " " +
 	    maxVoltage + " " + bias + " " + phaseShift + " " +
-	    dutyCycle + " " + pulseDutyCycle;
+	    dutyCycle;
+	// VarRailElm adds text at the end
     }
-    /*void setCurrent(double c) {
-      current = c;
-      System.out.print("v current set to " + c + "\n");
-      }*/
 
     void reset() {
 	freqTimeZero = 0;
@@ -121,7 +125,7 @@ class VoltageElm extends CircuitElm {
 	case WF_SAWTOOTH:
 	    return bias+(w % (2*pi))*(maxVoltage/pi)-maxVoltage;
 	case WF_PULSE:
-	    return ((w % (2*pi)) < pulseDutyCycle) ? maxVoltage+bias : bias;
+	    return ((w % (2*pi)) < (2*pi*dutyCycle)) ? maxVoltage+bias : bias;
 	default: return 0;
 	}
     }
@@ -298,11 +302,8 @@ class VoltageElm extends CircuitElm {
 	if (n == 4)
 	    return new EditInfo("Phase Offset (degrees)", phaseShift*180/pi,
 				-180, 180).setDimensionless();
-	if (n == 5 && waveform == WF_SQUARE)
+	if (n == 5 && (waveform == WF_PULSE || waveform == WF_SQUARE))
 	    return new EditInfo("Duty Cycle", dutyCycle*100, 0, 100).
-		setDimensionless();
-	if (n == 5 && waveform == WF_PULSE)
-	    return new EditInfo("Duty Cycle", pulseDutyCycle*100/(Math.PI*2), 0, 100).
 		setDimensionless();
 	return null;
     }
@@ -334,15 +335,18 @@ class VoltageElm extends CircuitElm {
 		bias = 0;
 	    } else if (waveform != ow)
 		ei.newDialog = true;
+	    
+	    // change duty cycle if we're changing to or from pulse
+	    if (waveform == WF_PULSE && ow != WF_PULSE)
+		dutyCycle = defaultPulseDuty;
+	    else if (ow == WF_PULSE && waveform != WF_PULSE)
+		dutyCycle = .5;
+	    
 	    setPoints();
 	}
 	if (n == 4)
 	    phaseShift = ei.value*pi/180;
-	if (n == 5) {
-	    if (waveform == WF_PULSE)
-		pulseDutyCycle = ei.value*.01*Math.PI*2;
-	    else
-		dutyCycle = ei.value*.01;
-	}
+	if (n == 5)
+	    dutyCycle = ei.value*.01;
     }
 }
