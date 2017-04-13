@@ -49,8 +49,8 @@ public class ExportAsTextDialog extends DialogBox {
 		SafeHtml html;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText("Export as Text");
-		vp.add(new Label("Text file for this circuit is..."));
+		setText(sim.LS("Export as Text"));
+		vp.add(new Label(sim.LS("Text file for this circuit is...")));
 //		vp.add(tb = new RichTextArea());
 //		html=SafeHtmlUtils.fromString(s);
 //		html=SafeHtmlUtils.fromTrustedString(html.asString().replace("\n", "<BR>"));
@@ -60,16 +60,16 @@ public class ExportAsTextDialog extends DialogBox {
 		ta.setHeight("200px");
 		ta.setText(s);
 		textArea = ta;
-		vp.add(la2 = new Label("To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file.", true));
+		vp.add(la2 = new Label(sim.LS("To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file."), true));
 		la2.setWidth("300px");
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setWidth("100%");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(okButton = new Button("OK"));
+		hp.add(okButton = new Button(sim.LS("OK")));
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(importButton = new Button("Re-Import"));
+		hp.add(importButton = new Button(sim.LS("Re-Import")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();

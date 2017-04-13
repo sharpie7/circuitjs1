@@ -99,29 +99,29 @@ public class ExportAsUrlDialog extends DialogBox {
 		Label la1, la2;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText("Export as URL");
-		vp.add(new Label("URL for this circuit is..."));
+		setText(CirSim.LS("Export as URL"));
+		vp.add(new Label(CirSim.LS("URL for this circuit is...")));
 		if (dump.length()>2000) {
-			vp.add( la1= new Label("Warning: this URL is longer than 2000 characters and may not work in some browsers.", true));
+			vp.add( la1= new Label(CirSim.LS("Warning: this URL is longer than 2000 characters and may not work in some browsers."), true));
 			la1.setWidth("300px");
 		}
 		vp.add(tb = new RichTextArea());
 		tb.setText(dump);
 //		tb.setMaxLength(s.length());
 //		tb.setVisibleLength(s.length());
-		vp.add(la2 = new Label("To save this URL select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to a suitable place.", true));
+		vp.add(la2 = new Label(CirSim.LS("To save this URL select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to a suitable place."), true));
 		la2.setWidth("300px");
 		
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setWidth("100%");
 		hp.setStyleName("topSpace");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		hp.add(okButton = new Button("OK"));
+		hp.add(okButton = new Button(CirSim.LS("OK")));
 		vp.add(hp);
 		if (shortIsSupported()) {
 			hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 	
-			hp.add(shortButton = new Button("Create short URL"));
+			hp.add(shortButton = new Button(CirSim.LS("Create short URL")));
 			shortButton.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					shortButton.setVisible(false);

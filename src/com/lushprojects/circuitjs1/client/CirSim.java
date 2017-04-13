@@ -573,7 +573,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 //	verticalPanel.add(new Label(""));
 //        Font f = new Font("SansSerif", 0, 10);
-        l = new Label("Current Circuit:");
+        l = new Label(LS("Current Circuit:"));
 	l.addStyleName("topSpace");
 //        l.setFont(f);
         titleLabel = new Label("Label");
@@ -1838,6 +1838,11 @@ MouseOutHandler, MouseWheelHandler {
 		    console(ce + " shorted");
 		    ce.reset();
 		} else {
+		    // a capacitor loop used to cause a matrix error. but we changed the capacitor model
+		    // so it works fine now. The only issue is if a capacitor is added in parallel with
+		    // another capacitor with a nonzero voltage; in that case we will get oscillation unless
+		    // we reset both capacitors to have the same voltage. Rather than check for that, we just
+		    // give an error.
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
 			stop(LS("Capacitor loop with no resistance!"), ce);

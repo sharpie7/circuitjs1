@@ -60,8 +60,8 @@ public class ExportAsLocalFileDialog extends DialogBox {
 		String url;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText("Export as Local File");
-		vp.add(new Label("Click on the link below to save your circuit"));
+		setText(CirSim.LS("Export as Local File"));
+		vp.add(new Label(CirSim.LS("Click on the link below to save your circuit")));
 		url=getBlobUrl(data);
 		Date date = new Date();
 		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
@@ -69,7 +69,7 @@ public class ExportAsLocalFileDialog extends DialogBox {
 		a=new Anchor(fname, url);
 		a.getElement().setAttribute("Download", fname);
 		vp.add(a);
-		vp.add(okButton = new Button("OK"));
+		vp.add(okButton = new Button(CirSim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();

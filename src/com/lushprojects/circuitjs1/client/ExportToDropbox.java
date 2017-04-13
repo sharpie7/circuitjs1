@@ -44,7 +44,7 @@ public class ExportToDropbox {
 		    // Dropbox, although they may not have synced to the user's devices yet.
 		    success: function () {
 		        // Indicate to the user that the files have been saved.
-		        alert("Success! Files saved to your Dropbox.");
+		        alert(CirSim.LS("Success! Files saved to your Dropbox."));
 		    },
 		
 		    // Progress is called periodically to update the application on the progress

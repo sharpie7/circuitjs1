@@ -82,10 +82,7 @@ public class circuitjs1 implements EntryPoint {
   public void onModuleLoad() {
       localizationMap = new HashMap<String,String>();
       
-      // localization not ready yet!  if you put this back in, comment out loadSimulator()!
-//      loadLocale();
-      
-      loadSimulator();
+      loadLocale();
   }
 
   native String language()  /*-{
@@ -101,6 +98,8 @@ public class circuitjs1 implements EntryPoint {
   	    loadSimulator();
   	    return;
   	}
+  	if (lang.startsWith("de-"))
+  	    lang = "de";
   	url = GWT.getModuleBaseURL()+"locale_" + lang + ".txt";
 		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 		try {
