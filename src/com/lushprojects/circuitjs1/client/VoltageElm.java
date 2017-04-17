@@ -26,6 +26,7 @@ import com.google.gwt.user.client.Window;
 
 class VoltageElm extends CircuitElm {
     static final int FLAG_COS = 2;
+    static final int FLAG_PULSE_DUTY = 4;
     int waveform;
     static final int WF_DC = 0;
     static final int WF_AC = 1;
@@ -36,6 +37,9 @@ class VoltageElm extends CircuitElm {
     static final int WF_VAR = 6;
     double frequency, maxVoltage, freqTimeZero, bias,
 	phaseShift, dutyCycle;
+    
+    static final double defaultPulseDuty = 1/(2*Math.PI);
+    
     VoltageElm(int xx, int yy, int wf) {
 	super(xx, yy);
 	waveform = wf;
@@ -64,18 +68,28 @@ class VoltageElm extends CircuitElm {
 	    flags &= ~FLAG_COS;
 	    phaseShift = pi/2;
 	}
+	
+	// old circuit files have the wrong duty cycle for pulse waveforms (wasn't configurable in the past)
+	if ((flags & FLAG_PULSE_DUTY) == 0 && waveform == WF_PULSE) {
+	    dutyCycle = defaultPulseDuty;
+	}
+	
 	reset();
     }
     int getDumpType() { return 'v'; }
+    
     String dump() {
+	// set flag so we know if duty cycle is correct for pulse waveforms
+	if (waveform == WF_PULSE)
+	    flags |= FLAG_PULSE_DUTY;
+	else
+	    flags &= ~FLAG_PULSE_DUTY;
+	
 	return super.dump() + " " + waveform + " " + frequency + " " +
 	    maxVoltage + " " + bias + " " + phaseShift + " " +
 	    dutyCycle;
+	// VarRailElm adds text at the end
     }
-    /*void setCurrent(double c) {
-      current = c;
-      System.out.print("v current set to " + c + "\n");
-      }*/
 
     void reset() {
 	freqTimeZero = 0;
@@ -111,7 +125,7 @@ class VoltageElm extends CircuitElm {
 	case WF_SAWTOOTH:
 	    return bias+(w % (2*pi))*(maxVoltage/pi)-maxVoltage;
 	case WF_PULSE:
-	    return ((w % (2*pi)) < 1) ? maxVoltage+bias : bias;
+	    return ((w % (2*pi)) < (2*pi*dutyCycle)) ? maxVoltage+bias : bias;
 	default: return 0;
 	}
     }
@@ -288,7 +302,7 @@ class VoltageElm extends CircuitElm {
 	if (n == 4)
 	    return new EditInfo("Phase Offset (degrees)", phaseShift*180/pi,
 				-180, 180).setDimensionless();
-	if (n == 5 && waveform == WF_SQUARE)
+	if (n == 5 && (waveform == WF_PULSE || waveform == WF_SQUARE))
 	    return new EditInfo("Duty Cycle", dutyCycle*100, 0, 100).
 		setDimensionless();
 	return null;
@@ -319,12 +333,15 @@ class VoltageElm extends CircuitElm {
 	    if (waveform == WF_DC && ow != WF_DC) {
 		ei.newDialog = true;
 		bias = 0;
-	    } else if (waveform != WF_DC && ow == WF_DC) {
+	    } else if (waveform != ow)
 		ei.newDialog = true;
-	    }
-	    if ((waveform == WF_SQUARE || ow == WF_SQUARE) &&
-		waveform != ow)
-		ei.newDialog = true;
+	    
+	    // change duty cycle if we're changing to or from pulse
+	    if (waveform == WF_PULSE && ow != WF_PULSE)
+		dutyCycle = defaultPulseDuty;
+	    else if (ow == WF_PULSE && waveform != WF_PULSE)
+		dutyCycle = .5;
+	    
 	    setPoints();
 	}
 	if (n == 4)

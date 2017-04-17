@@ -33,7 +33,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	public CCVSElm(int xx, int yy) {
 	    super(xx, yy);
-	    exprString = "i";
+	    exprString = "2*i";
 	    parseExpr();
 //	    setupPins();
 	}

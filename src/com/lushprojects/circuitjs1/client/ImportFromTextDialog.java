@@ -47,15 +47,15 @@ TextArea textArea;
 		Button okButton, cancelButton;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText("Import from Text");
-		vp.add(new Label("Paste the text file for your circuit here..."));
+		setText(sim.LS("Import from Text"));
+		vp.add(new Label(sim.LS("Paste the text file for your circuit here...")));
 //		vp.add(textBox = new RichTextArea());
 		vp.add(textArea = new TextArea());
 		textArea.setWidth("300px");
 		textArea.setHeight("200px");
 		hp = new HorizontalPanel();
 		vp.add(hp);
-		hp.add(okButton = new Button("OK"));
+		hp.add(okButton = new Button(sim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				String s;
@@ -68,7 +68,7 @@ TextArea textArea;
 					sim.readSetup(s, true);
 			}
 		});
-		hp.add(cancelButton = new Button("Cancel"));
+		hp.add(cancelButton = new Button(sim.LS("Cancel")));
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();

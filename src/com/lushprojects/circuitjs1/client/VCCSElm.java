@@ -40,7 +40,7 @@ package com.lushprojects.circuitjs1.client;
 	public VCCSElm(int xx, int yy) {
 	    super(xx, yy);
 	    inputCount = 2;
-	    exprString = "a+b";
+	    exprString = ".1*(a-b)";
 	    parseExpr();
 	    setupPins();
 	}
