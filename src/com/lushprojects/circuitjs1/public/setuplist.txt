@@ -205,6 +205,7 @@ switchfilter.txt Switchable Filter
 voltinvert.txt Voltage Inverter
 invertamp.txt Inverter Amplifier
 inv-osc.txt Inverter Oscillator
+mosfet-drivers.txt MOSFET Drivers
 -
 +555 Timer Chip
 555square.txt Square Wave Generator
