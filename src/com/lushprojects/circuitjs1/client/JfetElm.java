@@ -90,6 +90,12 @@ package com.lushprojects.circuitjs1.client;
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "JFET");
 	}
+        public EditInfo getEditInfo(int n) {
+            if (n < 2)
+        	return super.getEditInfo(n);
+            return null;
+        }
+	
 	@Override String getScopeText(int v) { 
 	    return sim.LS(((pnp == -1) ? "p-" : "n-") + "JFET");
 	}
