@@ -3293,7 +3293,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void doFlip() {
-	mouseElm.flipPosts();
+	menuElm.flipPosts();
     	needAnalyze();
     }
     
