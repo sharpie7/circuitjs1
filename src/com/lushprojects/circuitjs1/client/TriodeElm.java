@@ -164,7 +164,8 @@ class TriodeElm extends CircuitElm {
 	if (vgk > .01) {
 	    sim.stampResistor(nodes[grid], nodes[cath], gridCurrentR);
 	    currentg = vgk/gridCurrentR;
-	}
+	} else
+	    sim.stampResistor(nodes[grid], nodes[cath], 1e8); // avoid singular matrix 
 	if (ival < 0) {
 	    // should be all zero, but that causes a singular matrix,
 	    // so instead we treat it as a large resistor
