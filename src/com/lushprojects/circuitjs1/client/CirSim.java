@@ -2463,8 +2463,10 @@ MouseOutHandler, MouseWheelHandler {
     		scopes[i].resetGraph();
     	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
-    	t=0;
-    	setSimRunning(true);
+    	if (t == 0)
+    	    setSimRunning(true);
+    	else
+    	    t=0;
     }
     
     
