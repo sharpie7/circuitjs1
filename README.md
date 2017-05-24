@@ -1,6 +1,6 @@
-#CircuitJS1
+# CircuitJS1
 
-##Introduction
+## Introduction
 
 CircuitJS1 is an electronic circuit simulator that runs in the browser. It was originally written by Paul Falstad as a Java Applet. It was adapted by Iain Sharp to run in the browser using GWT.
 
@@ -11,7 +11,7 @@ For a hosted version of the application see:
 
 Thanks to Edward Calver for 15 new components and other improvements. Thanks to Rodrigo Hausen for file import/export and many other UI improvements. Thanks to J. Mike Rollins for the Zener diode code. Thanks to Julius Schmidt for the spark gap code and some examples. Thanks to Dustin Soodak for help with the user interface improvements. Thanks to Jacob Calvert for the T Flip Flop. 
 
-##Building the application
+## Building the application
 
 The tools you will need to build the project are:
 
@@ -22,7 +22,7 @@ This archive is a project folder for your Eclipse project space. Once you have a
 
 GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
 
-##Deployment
+## Deployment
 
 * "GWT Compile Project..." as explained above. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
 * Customize the header of the file "circuitjs1.html" to include your tracking, favicon etc.
