@@ -2279,7 +2279,7 @@ MouseOutHandler, MouseWheelHandler {
     boolean canDelayWireProcessing() {
 	int i;
 	for (i = 0; i != scopeCount; i++)
-	    if (scopes[i].getElm() instanceof WireElm)
+	    if (scopes[i].viewingWire())
 		return false;
 	return true;
     }
