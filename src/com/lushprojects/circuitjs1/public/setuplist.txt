@@ -300,7 +300,6 @@ clockedsrff.txt Clocked SR Flip-Flop
 masterslaveff.txt Master-Slave Flip-Flop
 edgedff.txt Edge-Triggered D Flip-Flop
 jkff.txt JK Flip-Flop
-unishiftreg.txt Universal Shift Register
 -
 +Counters
 counter.txt 4-Bit Ripple Counter
@@ -315,6 +314,7 @@ divideby3.txt Divide-by-3
 ledflasher.txt LED Flasher
 traffic.txt Traffic Light
 dram.txt Dynamic RAM
+unishiftreg.txt Universal Shift Register
 -
 +Analog/Digital
 flashadc.txt Flash ADC
