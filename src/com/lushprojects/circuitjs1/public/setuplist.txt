@@ -63,6 +63,7 @@ relayxor.txt Relay XOR
 relaymux.txt Relay Mux
 relayff.txt Relay Flip-Flop
 relaytff.txt Relay Toggle Flip-Flop
+relayosc.txt Relay Oscillator
 relayctr.txt Relay Counter
 -
 3way.txt 3-Way Light Switches
@@ -132,7 +133,7 @@ triangle.txt Triangle Wave Generator
 sine.txt Sine Wave Generator
 sawtooth.txt Sawtooth Wave Generator
 vco.txt Voltage-Controlled Oscillator
-rossler.txt Rossler Circuit
+trianglevco.txt Triangle VCO
 -
 amp-rect.txt Half-Wave Rectifier (inverting)
 amp-fullrect.txt Full-Wave Rectifier
@@ -145,11 +146,20 @@ gyrator.txt Gyrator
 capmult.txt Capacitance Multiplier
 howland.txt Howland Current Source
 itov.txt I-to-V Converter
+delta-pwm.txt Delta PWM Encoder
 opamp-regulator.txt Voltage Regulator
 opint.txt 741 Internals
 opint-invert-amp.txt 741 (inverting amplifier)
 opint-slew.txt 741 Slew Rate
 opint-current.txt 741 Current Limits
++Chaotic Circuits
+rossler.txt Rossler
+vilnius.txt Vilnius
+chua.txt Chua
+chaos1.txt Chaos 1
+chaos2.txt Chaos 2
+jerk.txt Jerk
+-
 -
 +Transistors
 npn.txt NPN Transistor
@@ -181,8 +191,11 @@ pushpull.txt Improved
 colpitts.txt Colpitts Oscillator
 hartley.txt Hartley Oscillator
 eclosc.txt Emitter-Coupled LC Oscillator
+crystalosc2.txt Crystal Oscillator
 -
 gilbertcell.txt Gilbert Cell Multiplier
+rmsconverter.txt True RMS Converter
+joule-thief.txt Joule Thief
 -
 +MOSFETs
 nmosfet.txt n-MOSFET
@@ -205,6 +218,8 @@ switchfilter.txt Switchable Filter
 voltinvert.txt Voltage Inverter
 invertamp.txt Inverter Amplifier
 inv-osc.txt Inverter Oscillator
+analogrecip.txt Analog Reciprocal
+crystalosc.txt CMOS Crystal Oscillator
 mosfet-drivers.txt MOSFET Drivers
 -
 +555 Timer Chip
@@ -300,6 +315,7 @@ divideby3.txt Divide-by-3
 ledflasher.txt LED Flasher
 traffic.txt Traffic Light
 dram.txt Dynamic RAM
+unishiftreg.txt Universal Shift Register
 -
 +Analog/Digital
 flashadc.txt Flash ADC
@@ -338,6 +354,8 @@ jfetfollower.txt JFET Follower
 jfetfollower-nooff.txt JFET Follower w/zero offset
 jfetamp.txt Common-Source Amplifier
 volume.txt Volume Control
+lambda-diode.txt Lambda Diode
+lambda-diode-osc.txt Lambda Diode Oscillator
 -
 +Tunnel Diodes
 tdiode.txt I/V Curve
@@ -384,6 +402,9 @@ ota-vcf-single.txt OTA Single Stage VCF (low pass)
 ota-ringmod.txt OTA Ring Modulator
 ota-gain.txt LM137000 Gain Oddity
 -
++ Light Bulb
 lightbulb.txt Light Bulb
+wienbridge.txt Wien Bridge Oscillator
+-
 -
 blank.txt Blank Circuit

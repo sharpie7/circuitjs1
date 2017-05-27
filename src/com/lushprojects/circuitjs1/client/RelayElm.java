@@ -102,6 +102,7 @@ class RelayElm extends CircuitElm {
 	    drawThickLine(g, coilLeads[i], coilPosts[i]);
 	}
 	int x = ((flags & FLAG_SWAP_COIL) != 0) ? 1 : 0;
+	setPowerColor(g, coilCurrent * (volts[nCoil1]-volts[nCoil2]));
 	drawCoil(g, dsign*6, coilLeads[x], coilLeads[1-x],
 		 volts[nCoil1+x], volts[nCoil2-x]);
 

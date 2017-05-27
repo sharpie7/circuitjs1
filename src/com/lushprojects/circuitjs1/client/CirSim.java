@@ -2279,7 +2279,7 @@ MouseOutHandler, MouseWheelHandler {
     boolean canDelayWireProcessing() {
 	int i;
 	for (i = 0; i != scopeCount; i++)
-	    if (scopes[i].getElm() instanceof WireElm)
+	    if (scopes[i].viewingWire())
 		return false;
 	return true;
     }
@@ -2463,8 +2463,10 @@ MouseOutHandler, MouseWheelHandler {
     		scopes[i].resetGraph();
     	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
-    	t=0;
-    	setSimRunning(true);
+    	if (t == 0)
+    	    setSimRunning(true);
+    	else
+    	    t=0;
     }
     
     
@@ -3293,7 +3295,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void doFlip() {
-	mouseElm.flipPosts();
+	menuElm.flipPosts();
     	needAnalyze();
     }
     
