@@ -764,12 +764,14 @@ public abstract class CircuitElm implements Editable {
 	  setConductanceColor(g, current/getVoltageDiff());
 	  return;
 	  }*/
-	if (!sim.powerCheckItem.getState())
+	if (!sim.powerCheckItem.getState() || needsHighlight())
 	    return;
 	setPowerColor(g, getPower());
     }
     
     void setPowerColor(Graphics g, double w0) {
+	if (!sim.powerCheckItem.getState() || needsHighlight())
+	    return;
 	w0 *= powerMult;
 	//System.out.println(w);
 	double w = (w0 < 0) ? -w0 : w0;

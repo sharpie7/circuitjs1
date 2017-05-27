@@ -51,11 +51,11 @@ public class AboutBox extends PopupPanel {
 		vp.add(new HTML("<p>Circuit Simulator version "+version+".</p>"+
 		"<p>Original by Paul Falstad.<br><a href=\"http://www.falstad.com/\" target=\"_blank\">http://www.falstad.com/</a></p>"+
 		"<p>JavaScript conversion by Iain Sharp.<br><a href=\"http://lushprojects.com/\" target=\"_blank\">http://lushprojects.com/</a></p>"+
-		"<p>Thanks to Edward Calver for 15 new components and other improvements.  Thanks to Rodrigo Hausen for file import/export and many other UI improvements. "+  
-		"Thanks to J. Mike Rollins for the Zener diode code.  Thanks to Julius Schmidt for the spark gap code and some examples.  Thanks to Dustin Soodak for help with the user interface improvements. "+
-		"Thanks to Jacob Calvert for the T Flip Flop. Thanks to Ben Hayden for scope spectrum. " +
-		"Thanks to Thomas Reitinger for the German translation.  " +
-		"Thanks to Andre Adrian for improved emitter coupled oscillator.</p>"+
+		"<p>Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo Hausen for file import/export and many other UI improvements; "+  
+		"J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; "+
+		"Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; " +
+		"Thomas Reitinger for the German translation; " +
+		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
 		"under the terms of the GNU General Public License as published by "+
 		"the Free Software Foundation, either version 2 of the License, or "+

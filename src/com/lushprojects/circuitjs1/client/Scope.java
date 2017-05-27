@@ -1420,6 +1420,14 @@ class Scope {
 	return visiblePlots.size() > 0 ? visiblePlots.get(0).elm : plots.get(0).elm;
     }
 
+    boolean viewingWire() {
+	int i;
+	for (i = 0; i != plots.size(); i++)
+	    if (plots.get(i).elm instanceof WireElm)
+		return true;
+	return false;
+    }
+    
     CircuitElm getXElm() {
 	return getElm();
     }

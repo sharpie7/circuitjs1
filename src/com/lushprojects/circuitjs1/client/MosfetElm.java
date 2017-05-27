@@ -263,10 +263,6 @@ package com.lushprojects.circuitjs1.client;
 	    ids = 0;
 	    gm = 0;
 	    double Gds = 0;
-	    if (vgs > .5 && this instanceof JfetElm) {
-		sim.stop("JFET is reverse biased!", this);
-		return;
-	    }
 	    if (vgs < vt) {
 		// should be all zero, but that causes a singular matrix,
 		// so instead we treat it as a large resistor
