@@ -18,6 +18,8 @@ The tools you will need to build the project are:
 * Eclipse - I am using the Kepler version.
 * Google plugin for Eclipse to provide GWT.
 
+Install "Eclipse for Java developers" from [here](https://www.eclipse.org/downloads/packages/). To add the Google plugin for Eclipse follow the instructions [here](https://developers.google.com/eclipse/docs/download).
+
 This archive is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in development mode is done using the normal Eclipse run button or "Run As..." and choosing "Web Application (Super Dev Mode)" and then picking "Circuitjs1.html" as the initial page. Building for deployment is done by selecting the project root node and using the Google button on the Eclipse taskbar and choosing "GWT Compile Project...".
 
 GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
