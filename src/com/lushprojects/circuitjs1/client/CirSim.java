@@ -95,9 +95,6 @@ MouseOutHandler, MouseWheelHandler {
     
     Random random;
     
-    public static final int sourceRadius = 7;
-    public static final double freqMult = 3.14159265*2*4;
-
     // IES - remove interaction
     Button resetButton;
     Button runStopButton;
@@ -187,7 +184,6 @@ MouseOutHandler, MouseWheelHandler {
     long zoomTime;
     int mouseCursorX = -1;
     int mouseCursorY = -1;
-    int selectedSource;
     Rectangle selectedArea;
     int gridSize, gridMask, gridRound;
     boolean dragging;
@@ -1032,7 +1028,6 @@ MouseOutHandler, MouseWheelHandler {
     	return new Rectangle(minx, miny, maxx-minx, maxy-miny);
     }
 
-    static final int resct = 6;
     long lastTime = 0, lastFrameTime, lastIterTime, secTime = 0;
     int frames = 0;
     int steps = 0;
