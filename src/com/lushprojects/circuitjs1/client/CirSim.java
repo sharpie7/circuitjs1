@@ -116,6 +116,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem conductanceCheckItem;
     CheckboxMenuItem euroResistorCheckItem;
     CheckboxMenuItem printableCheckItem;
+    CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
     private Label powerLabel;
     private Label titleLabel;
@@ -493,6 +494,15 @@ MouseOutHandler, MouseWheelHandler {
 			}
 	}));
 	printableCheckItem.setState(printable);
+	m.addItem(alternativeColorCheckItem = new CheckboxMenuItem(LS("Alt Color for Volts & Pwr"),
+		new Command() { public void execute(){
+
+			setOptionInStorage("alternativeColor", alternativeColorCheckItem.getState());
+			CircuitElm.setColorScale();
+		}
+	}));
+	alternativeColorCheckItem.setState(getOptionFromStorage("alternativeColor", false));
+	
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
 		    setOptionInStorage("conventionalCurrent", conventionCheckItem.getState());
@@ -609,6 +619,7 @@ MouseOutHandler, MouseWheelHandler {
 	scopeMenuBar = buildScopeMenu(false);
 	transScopeMenuBar = buildScopeMenu(true);
 
+	CircuitElm.setColorScale();
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
@@ -3050,7 +3061,6 @@ MouseOutHandler, MouseWheelHandler {
 
     void readOptions(StringTokenizer st) {
 	int flags = new Integer(st.nextToken()).intValue();
-	// IES - remove inteaction
 	dotsCheckItem.setState((flags & 1) != 0);
 	smallGridCheckItem.setState((flags & 2) != 0);
 	voltsCheckItem.setState((flags & 4) == 0);

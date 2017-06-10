@@ -76,32 +76,35 @@ public abstract class CircuitElm implements Editable {
 	sim = s;
 	
 	colorScale = new Color[colorScaleCount];
-	int i;
-	for (i = 0; i != colorScaleCount; i++) {
-	    double v = i*2./colorScaleCount - 1;
-	    if (v < 0) {
-		int n1 = (int) (128*-v)+127;
-		int n2 = (int) (127*(1+v));
-		colorScale[i] = new Color(n1, n2, n2);
-	    } else {
-		int n1 = (int) (128*v)+127;
-		int n2 = (int) (127*(1-v));
-		colorScale[i] = new Color(n2, n1, n2);
-	    }
-	}
+	
 	
 	ps1 = new Point();
 	ps2 = new Point();
 
-//	showFormat = DecimalFormat.getInstance();
-//	showFormat.setMaximumFractionDigits(2);
 	showFormat=NumberFormat.getFormat("####.##");
-//	shortFormat = DecimalFormat.getInstance();
-//	shortFormat.setMaximumFractionDigits(1);
+
 	shortFormat=NumberFormat.getFormat("####.#");
-//	noCommaFormat = DecimalFormat.getInstance();
-//	noCommaFormat.setMaximumFractionDigits(10);
-//	noCommaFormat.setGroupingUsed(false);
+    }
+    
+    static void setColorScale() {
+
+	int i;
+	for (i = 0; i != colorScaleCount; i++) {
+	    double v = i * 2. / colorScaleCount - 1;
+	    if (v < 0) {
+		int n1 = (int) (128 * -v) + 127;
+		int n2 = (int) (127 * (1 + v));
+		colorScale[i] = new Color(n1, n2, n2);
+	    } else {
+		int n1 = (int) (128 * v) + 127;
+		int n2 = (int) (127 * (1 - v));
+		if (sim.alternativeColorCheckItem.getState())
+		    colorScale[i] = new Color(n2, n2, n1);
+		else
+		    colorScale[i] = new Color(n2, n1, n2);
+	    }
+	}
+
     }
     
     CircuitElm(int xx, int yy) {
@@ -774,18 +777,12 @@ public abstract class CircuitElm implements Editable {
 	    return;
 	w0 *= powerMult;
 	//System.out.println(w);
-	double w = (w0 < 0) ? -w0 : w0;
-	if (w > 1)
-	    w = 1;
-	int rg = 128+(int) (w*127);
-	int b  = (int) (128*(1-w));
-	/*if (yellow)
-	  g.setColor(new Color(rg, rg, b));
-	  else */
-	if (w0 > 0)
-	    g.setColor(new Color(rg, b, b));
-	else
-	    g.setColor(new Color(b, rg, b));
+	int i = (int) ((colorScaleCount/2)+(colorScaleCount/2)*-w0);
+	if (i<0)
+	    i=0;
+	if (i>=colorScaleCount)
+	    i=colorScaleCount-1;
+	 g.setColor(colorScale[i]);
     }
     void setConductanceColor(Graphics g, double w0) {
 	w0 *= powerMult;
