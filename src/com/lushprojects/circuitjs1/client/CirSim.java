@@ -2546,7 +2546,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
-    		if (menu=="elm")
+    		if (menu!="elm")
     			menuElm = null;
     		doDelete();
     	}
