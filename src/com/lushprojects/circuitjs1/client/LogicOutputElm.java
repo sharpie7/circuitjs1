@@ -97,6 +97,11 @@ package com.lushprojects.circuitjs1.client;
 		ei.checkbox = new Checkbox("Current Required", needsPullDown());
 		return ei;
 	    }
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("", 0, 0, 0);
+		ei.checkbox = new Checkbox("Numeric", isNumeric());
+		return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -107,6 +112,12 @@ package com.lushprojects.circuitjs1.client;
 		    flags = FLAG_PULLDOWN;
 		else
 		    flags &= ~FLAG_PULLDOWN;
+	    }
+	    if (n == 2) {
+		if (ei.checkbox.getState())
+		    flags |= FLAG_NUMERIC;
+		else
+		    flags &= ~FLAG_NUMERIC;
 	    }
 	}
 	int getShortcut() { return 'o'; }
