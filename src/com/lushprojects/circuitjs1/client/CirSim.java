@@ -4133,24 +4133,21 @@ MouseOutHandler, MouseWheelHandler {
     // matrix to be factored.  ipvt[] returns an integer vector of pivot
     // indices, used in the lu_solve() routine.
     boolean lu_factor(double a[][], int n, int ipvt[]) {
-	double scaleFactors[];
 	int i,j,k;
-
-	scaleFactors = new double[n];
 	
-        // divide each row by its largest element, keeping track of the
-	// scaling factors
+	// check for a possible singular matrix by scanning for rows that
+	// are all zeroes
 	for (i = 0; i != n; i++) { 
-	    double largest = 0;
+	    boolean row_all_zeros = true;
 	    for (j = 0; j != n; j++) {
-		double x = Math.abs(a[i][j]);
-		if (x > largest)
-		    largest = x;
+		if (a[i][j] != 0) {
+		    row_all_zeros = false;
+		    break;
+		}
 	    }
 	    // if all zeros, it's a singular matrix
-	    if (largest == 0)
+	    if (row_all_zeros)
 		return false;
-	    scaleFactors[i] = 1.0/largest;
 	}
 	
         // use Crout's method; loop through the columns
@@ -4187,7 +4184,6 @@ MouseOutHandler, MouseWheelHandler {
 		    a[largestRow][k] = a[j][k];
 		    a[j][k] = x;
 		}
-		scaleFactors[largestRow] = scaleFactors[j];
 	    }
 
 	    // keep track of row interchanges
