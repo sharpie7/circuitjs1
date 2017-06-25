@@ -2420,7 +2420,9 @@ MouseOutHandler, MouseWheelHandler {
 	    	scopes[i].timeStep();
 	    tm = System.currentTimeMillis();
 	    lit = tm;
-	    if (iter*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+	    // Check whether enough time has elapsed to perform an *additional* iteration after
+	    // those we have already completed.
+	    if ((iter+1)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
 		break;
 	} // for (iter = 1; ; iter++)
 	lastIterTime = lit;
