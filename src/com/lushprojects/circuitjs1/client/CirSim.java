@@ -95,9 +95,6 @@ MouseOutHandler, MouseWheelHandler {
     
     Random random;
     
-    public static final int sourceRadius = 7;
-    public static final double freqMult = 3.14159265*2*4;
-
     // IES - remove interaction
     Button resetButton;
     Button runStopButton;
@@ -119,6 +116,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem conductanceCheckItem;
     CheckboxMenuItem euroResistorCheckItem;
     CheckboxMenuItem printableCheckItem;
+    CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
     private Label powerLabel;
     private Label titleLabel;
@@ -187,7 +185,6 @@ MouseOutHandler, MouseWheelHandler {
     long zoomTime;
     int mouseCursorX = -1;
     int mouseCursorY = -1;
-    int selectedSource;
     Rectangle selectedArea;
     int gridSize, gridMask, gridRound;
     boolean dragging;
@@ -497,6 +494,15 @@ MouseOutHandler, MouseWheelHandler {
 			}
 	}));
 	printableCheckItem.setState(printable);
+	m.addItem(alternativeColorCheckItem = new CheckboxMenuItem(LS("Alt Color for Volts & Pwr"),
+		new Command() { public void execute(){
+
+			setOptionInStorage("alternativeColor", alternativeColorCheckItem.getState());
+			CircuitElm.setColorScale();
+		}
+	}));
+	alternativeColorCheckItem.setState(getOptionFromStorage("alternativeColor", false));
+	
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
 		    setOptionInStorage("conventionalCurrent", conventionCheckItem.getState());
@@ -613,6 +619,7 @@ MouseOutHandler, MouseWheelHandler {
 	scopeMenuBar = buildScopeMenu(false);
 	transScopeMenuBar = buildScopeMenu(true);
 
+	CircuitElm.setColorScale();
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
@@ -1032,7 +1039,6 @@ MouseOutHandler, MouseWheelHandler {
     	return new Rectangle(minx, miny, maxx-minx, maxy-miny);
     }
 
-    static final int resct = 6;
     long lastTime = 0, lastFrameTime, lastIterTime, secTime = 0;
     int frames = 0;
     int steps = 0;
@@ -2414,7 +2420,9 @@ MouseOutHandler, MouseWheelHandler {
 	    	scopes[i].timeStep();
 	    tm = System.currentTimeMillis();
 	    lit = tm;
-	    if (iter*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+	    // Check whether enough time has elapsed to perform an *additional* iteration after
+	    // those we have already completed.
+	    if ((iter+1)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
 		break;
 	} // for (iter = 1; ; iter++)
 	lastIterTime = lit;
@@ -3055,7 +3063,6 @@ MouseOutHandler, MouseWheelHandler {
 
     void readOptions(StringTokenizer st) {
 	int flags = new Integer(st.nextToken()).intValue();
-	// IES - remove inteaction
 	dotsCheckItem.setState((flags & 1) != 0);
 	smallGridCheckItem.setState((flags & 2) != 0);
 	voltsCheckItem.setState((flags & 4) == 0);
@@ -4137,24 +4144,21 @@ MouseOutHandler, MouseWheelHandler {
     // matrix to be factored.  ipvt[] returns an integer vector of pivot
     // indices, used in the lu_solve() routine.
     boolean lu_factor(double a[][], int n, int ipvt[]) {
-	double scaleFactors[];
 	int i,j,k;
-
-	scaleFactors = new double[n];
 	
-        // divide each row by its largest element, keeping track of the
-	// scaling factors
+	// check for a possible singular matrix by scanning for rows that
+	// are all zeroes
 	for (i = 0; i != n; i++) { 
-	    double largest = 0;
+	    boolean row_all_zeros = true;
 	    for (j = 0; j != n; j++) {
-		double x = Math.abs(a[i][j]);
-		if (x > largest)
-		    largest = x;
+		if (a[i][j] != 0) {
+		    row_all_zeros = false;
+		    break;
+		}
 	    }
 	    // if all zeros, it's a singular matrix
-	    if (largest == 0)
+	    if (row_all_zeros)
 		return false;
-	    scaleFactors[i] = 1.0/largest;
 	}
 	
         // use Crout's method; loop through the columns
@@ -4191,7 +4195,6 @@ MouseOutHandler, MouseWheelHandler {
 		    a[largestRow][k] = a[j][k];
 		    a[j][k] = x;
 		}
-		scaleFactors[largestRow] = scaleFactors[j];
 	    }
 
 	    // keep track of row interchanges
