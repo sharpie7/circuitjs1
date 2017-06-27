@@ -3896,12 +3896,20 @@ MouseOutHandler, MouseWheelHandler {
     void doCopy() {
     	int i;
     	clipboard = "";
+    	
+    	// clear selection when we're done if we're copying a single element using the context menu
+    	boolean clearSel = (menuElm != null && !menuElm.selected);
+    	
     	setMenuSelection();
     	for (i = elmList.size()-1; i >= 0; i--) {
     		CircuitElm ce = getElm(i);
     		if (ce.isSelected())
     			clipboard += ce.dump() + "\n";
     	}
+    	
+    	if (clearSel)
+    	    clearSelection();
+    	
     	writeClipboardToStorage();
     	enablePaste();
     }
@@ -4050,6 +4058,7 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if ((t & Event.ONKEYDOWN)!=0) {
     		if (code==KEY_BACKSPACE || code==KEY_DELETE) {
+    		    	menuElm = null;
     			doDelete();
     			e.cancel();
     		}
