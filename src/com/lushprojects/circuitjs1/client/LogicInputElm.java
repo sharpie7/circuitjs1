@@ -108,7 +108,6 @@ package com.lushprojects.circuitjs1.client;
 		return new EditInfo("High Voltage", hiV, 10, -10);
 	    if (n == 2)
 		return new EditInfo("Low Voltage", loV, 10, -10);
-	    sim.console("got n " + n);
 	    if (n == 3) {
 		EditInfo ei = new EditInfo("", 0, 0, 0);
 		ei.checkbox = new Checkbox("Numeric", isNumeric());
