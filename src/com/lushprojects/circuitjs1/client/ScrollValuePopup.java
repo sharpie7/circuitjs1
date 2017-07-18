@@ -170,6 +170,7 @@ public class ScrollValuePopup extends PopupPanel implements MouseOutHandler, Mou
 	}
 	
     public void onMouseWheel(MouseWheelEvent e) {
+	e.preventDefault();
     	doDeltaY( e.getDeltaY());
     }
     
