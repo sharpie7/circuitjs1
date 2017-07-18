@@ -77,9 +77,9 @@ public class AudioOutputElm extends CircuitElm {
 	void draw(Graphics g) {
 	    boolean selected = (needsHighlight());
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
-	    String s = "audio out";
+	    String s = "Audio Out";
 	    if (labelNum > 1)
-		s = "audio " + labelNum;
+		s = "Audio " + labelNum;
 	    g.setFont(f);
 	    int textWidth = (int)g.context.measureText(s).getWidth();
 	    g.setColor(Color.darkGray);
@@ -197,15 +197,17 @@ public class AudioOutputElm extends CircuitElm {
 	}
 	
         void createButton() {
-            String label = "Play";
+            String label = "&#9654; Play Audio";
             if (labelNum > 1)
         	label += " " + labelNum;
             sim.addWidgetToVerticalPanel(button = new Button(label));
+            button.setStylePrimaryName("topButton");
             button.addClickHandler(new ClickHandler() {
         	public void onClick(ClickEvent event) {
         	    play();
         	}
             });
+            
         }
         void delete() {
             sim.removeWidgetFromVerticalPanel(button);
