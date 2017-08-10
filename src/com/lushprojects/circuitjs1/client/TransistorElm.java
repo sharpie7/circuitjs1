@@ -24,7 +24,7 @@ import com.google.gwt.i18n.client.NumberFormat;
     class TransistorElm extends CircuitElm {
 	int pnp;
 	double beta;
-	double fgain;
+	double fgain, inv_fgain;
 	double gmin;
 	final int FLAG_FLIP = 1;
 	TransistorElm(int xx, int yy, boolean pnpflag) {
@@ -51,6 +51,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 	void setup() {
 	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*leakage));
 	    fgain = beta/(beta+1);
+	    inv_fgain = 1 / fgain;
 	    noDiagonal = true;
 	}
 	boolean nonLinear() { return true; }
@@ -149,9 +150,11 @@ import com.google.gwt.i18n.client.NumberFormat;
 	}
 	
 	static final double leakage = 1e-13; // 1e-6;
-	static final double vt = .025;
+	// Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
+	static final double vt = 0.025865;
 	static final double vdcoef = 1/vt;
 	static final double rgain = .5;
+	static final double inv_rgain = 1 / rgain;
 	double vcrit;
 	double lastvbc, lastvbe;
 	double limitStep(double vnew, double vold) {
@@ -185,7 +188,9 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    if (Math.abs(vbc-lastvbc) > .01 || // .01
 		Math.abs(vbe-lastvbe) > .01)
 		sim.converged = false;
-	    gmin = 0;
+	    // To prevent a possible singular matrix, put a tiny conductance in parallel
+	    // with each P-N junction.
+	    gmin = leakage * 0.01;
 	    if (sim.subIterations > 100) {
 		// if we have trouble converging, put a conductance in parallel with all P-N junctions.
 		// Gradually increase the conductance value for each iteration.
@@ -204,19 +209,17 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    /*if (expbc > 1e13 || Double.isInfinite(expbc))
 	      expbc = 1e13;*/
 	    double expbe = Math.exp(vbe*pcoef);
-	    if (expbe < 1)
-		expbe = 1;
 	    /*if (expbe > 1e13 || Double.isInfinite(expbe))
 	      expbe = 1e13;*/
-	    ie = pnp*leakage*(-(expbe-1)+rgain*(expbc-1));
-	    ic = pnp*leakage*(fgain*(expbe-1)-(expbc-1));
+	    ie = pnp*leakage*(-inv_fgain*(expbe-1)+(expbc-1));
+	    ic = pnp*leakage*((expbe-1)-inv_rgain*(expbc-1));
 	    ib = -(ie+ic);
 	    //System.out.println("gain " + ic/ib);
 	    //System.out.print("T " + vbc + " " + vbe + " " + ie + " " + ic + "\n");
-	    double gee = -leakage*vdcoef*expbe;
-	    double gec = rgain*leakage*vdcoef*expbc;
+	    double gee = -leakage*vdcoef*expbe*inv_fgain;
+	    double gec = leakage*vdcoef*expbc;
 	    double gce = -gee*fgain;
-	    double gcc = -gec*(1/rgain);
+	    double gcc = -gec*inv_rgain;
 
 	    /*System.out.print("gee = " + gee + "\n");
 	    System.out.print("gec = " + gec + "\n");
