@@ -21,8 +21,8 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.HashMap;
 
-//CirSim.java (c) 2010 by Paul Falstad
-//GWT conversion (c) 2015, 2016 by Iain Sharp
+//CirSim.java (c) 2010 - 2017 by Paul Falstad
+//GWT conversion (c) 2015 - 2017 by Iain Sharp
 
 //Version History
 //v1.9.1js 16-11-06 Iain Sharp
@@ -71,7 +71,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="2.1.6js (pfalstad)";
+	public static final String versionString="2.1.7js (isharp)";
 	
 	// Set to true if the server runs the shortrelay.php file in the same directory as the circuit simulator
 	public static final boolean shortRelaySupported = true;
