@@ -36,10 +36,6 @@ class ZenerElm extends DiodeElm {
 	zvoltage = new Double(st.nextToken()).doubleValue();
 	setup();
     }
-    void setup() {
-	diode.leakage = 5e-6; // 1N4004 is 5.0 uAmp
-	super.setup();
-    }
     int getDumpType() { return 'z'; }
     String dump() {
 	return super.dump() + " " + zvoltage;
