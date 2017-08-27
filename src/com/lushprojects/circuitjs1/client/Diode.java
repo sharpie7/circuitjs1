@@ -31,17 +31,19 @@ class Diode {
     void setup(double fw, double zv) {
 	fwdrop = fw;
 	zvoltage = zv;
-	vdcoef = Math.log(1/leakage + 1)/fwdrop;
-	vt = 1/vdcoef;
-	// critical voltage for limiting; current is vt/sqrt(2) at
+	leakage = 1 / (Math.exp(fwdrop * vdcoef) - 1);
+	// critical voltage for limiting; current is vscale/sqrt(2) at
 	// this voltage
-	vcrit = vt * Math.log(vt/(Math.sqrt(2)*leakage));
+	vcrit = vscale * Math.log(vscale/(Math.sqrt(2)*leakage));
+	// translated, *positive* critical voltage for limiting in Zener breakdown region;
+	// limitstep() uses this with translated voltages in an analogous fashion to vcrit.
+	vzcrit = vt * Math.log(vt/(Math.sqrt(2)*leakage));
 	if (zvoltage == 0)
 	    zoffset = 0;
 	else {
 	    // calculate offset which will give us 5mA at zvoltage
 	    double i = -.005;
-	    zoffset = zvoltage-Math.log(-(1+i/leakage))/vdcoef;
+	    zoffset = zvoltage-Math.log(-(1+i/leakage))/vzcoef;
 	}
     }
 	
@@ -49,53 +51,70 @@ class Diode {
 	lastvoltdiff = 0;
     }
 	
-    public double leakage = 1e-14; // was 1e-9;
-    double vt, vdcoef, fwdrop, zvoltage, zoffset;
+    // The diode emission coefficient. Although this is 1 for the ideal Shockley diode, real discrete
+    // diodes have a value around 2, so their exponential is around half as steep as that of an ideal
+    // Shockley diode.
+    static final double emcoef = 2;
+    // Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
+    static final double vt = 0.025865;
+    // The diode's "scale voltage", the voltage increase which will raise current by a factor of e.
+    static final double vscale = emcoef * vt;
+    // The multiplicative equivalent of dividing by vscale (for speed).
+    static final double vdcoef = 1 / vscale;
+    // The Zener breakdown curve is represented by a steeper exponential, one like the ideal
+    // Shockley curve, but flipped and translated. This curve removes the moderating influence
+    // of emcoef, replacing vscale and vdcoef with vt and vzcoef.
+    // vzcoef is the multiplicative equivalent of dividing by vt (for speed).
+    static final double vzcoef = 1 / vt;
+    // User-specified diode parameters for forward voltage drop and Zener voltage.
+    double fwdrop, zvoltage;
+    // The diode current's scale factor, calculated from the user-specified forward voltage drop.
+    double leakage;
+    // Voltage offset for Zener breakdown exponential, calculated from user-specified Zener voltage.
+    double zoffset;
+    // Critical voltages for limiting the normal diode and Zener breakdown exponentials.
+    double vcrit, vzcrit;
     double lastvoltdiff;
-    double vcrit;
     
     double limitStep(double vnew, double vold) {
 	double arg;
 	double oo = vnew;
 
 	// check new voltage; has current changed by factor of e^2?
-	if (vnew > vcrit && Math.abs(vnew - vold) > (vt + vt)) {
+	if (vnew > vcrit && Math.abs(vnew - vold) > (vscale + vscale)) {
 	    if(vold > 0) {
-		arg = 1 + (vnew - vold) / vt;
+		arg = 1 + (vnew - vold) / vscale;
 		if(arg > 0) {
 		    // adjust vnew so that the current is the same
 		    // as in linearized model from previous iteration.
 		    // current at vnew = old current * arg
-		    vnew = vold + vt * Math.log(arg);
-		    // current at v0 = 1uA
-		    double v0 = Math.log(1e-6/leakage)*vt;
-		    vnew = Math.max(v0, vnew);
+		    vnew = vold + vscale * Math.log(arg);
 		} else {
 		    vnew = vcrit;
 		}
 	    } else {
 		// adjust vnew so that the current is the same
 		// as in linearized model from previous iteration.
-		// (1/vt = slope of load line)
-		vnew = vt *Math.log(vnew/vt);
+		// (1/vscale = slope of load line)
+		vnew = vscale *Math.log(vnew/vscale);
 	    }
 	    sim.converged = false;
 	    //System.out.println(vnew + " " + oo + " " + vold);
 	} else if (vnew < 0 && zoffset != 0) {
-	    // for Zener breakdown, use the same logic but translate the values
+	    // for Zener breakdown, use the same logic but translate the values,
+	    // and replace the normal values with the Zener-specific ones to
+	    // account for the steeper exponential of our Zener breakdown curve.
 	    vnew = -vnew - zoffset;
 	    vold = -vold - zoffset;
 	    
-	    if (vnew > vcrit && Math.abs(vnew - vold) > (vt + vt)) {
+	    if (vnew > vzcrit && Math.abs(vnew - vold) > (vt + vt)) {
 		if(vold > 0) {
 		    arg = 1 + (vnew - vold) / vt;
 		    if(arg > 0) {
 			vnew = vold + vt * Math.log(arg);
-			double v0 = Math.log(1e-6/leakage)*vt;
-			vnew = Math.max(v0, vnew);
 			//System.out.println(oo + " " + vnew);
 		    } else {
-			vnew = vcrit;
+			vnew = vzcrit;
 		    }
 		} else {
 		    vnew = vt *Math.log(vnew/vt);
@@ -121,7 +140,9 @@ class Diode {
 	voltdiff = limitStep(voltdiff, lastvoltdiff);
 	lastvoltdiff = voltdiff;
 
-	double gmin = 0;
+	// To prevent a possible singular matrix or other numeric issues, put a tiny conductance
+	// in parallel with each P-N junction.
+	double gmin = leakage * 0.01;
 	if (sim.subIterations > 100) {
 	    // if we have trouble converging, put a conductance in parallel with the diode.
 	    // Gradually increase the conductance value for each iteration.
@@ -133,9 +154,6 @@ class Diode {
 	if (voltdiff >= 0 || zvoltage == 0) {
 	    // regular diode or forward-biased zener
 	    double eval = Math.exp(voltdiff*vdcoef);
-	    // make diode linear with negative voltages; aids convergence
-	    if (voltdiff < 0)
-		eval = 1;
 	    double geq = vdcoef*leakage*eval + gmin;
 	    double nc = (eval-1)*leakage - geq*voltdiff;
 	    sim.stampConductance(nodes[0], nodes[1], geq);
@@ -143,20 +161,24 @@ class Diode {
 	} else {
 	    // Zener diode
 	    
+	    // For reverse-biased Zener diodes, mimic the Zener breakdown curve with an
+	    // exponential similar to the ideal Shockley curve. (The real breakdown curve
+	    // isn't a simple exponential, but this approximation should be OK.)
+
 	    /* 
-	     * I(Vd) = Is * (exp[Vd*C] - exp[(-Vd-Vz)*C] - 1 )
+	     * I(Vd) = Is * (exp[Vd*C] - exp[(-Vd-Vz)*Cz] - 1 )
 	     *
 	     * geq is I'(Vd)
 	     * nc is I(Vd) + I'(Vd)*(-Vd)
 	     */
 
-	    double geq = leakage*vdcoef* ( 
-		Math.exp(voltdiff*vdcoef) + Math.exp((-voltdiff-zoffset)*vdcoef)
+	    double geq = leakage* ( 
+		vdcoef*Math.exp(voltdiff*vdcoef) + vzcoef*Math.exp((-voltdiff-zoffset)*vzcoef)
 		) + gmin;
 
 	    double nc = leakage* (
 		Math.exp(voltdiff*vdcoef) 
-		- Math.exp((-voltdiff-zoffset)*vdcoef) 
+		- Math.exp((-voltdiff-zoffset)*vzcoef) 
 		- 1
 		) + geq*(-voltdiff);
 
@@ -170,7 +192,7 @@ class Diode {
 	    return leakage*(Math.exp(voltdiff*vdcoef)-1);
 	return leakage* (
 	    Math.exp(voltdiff*vdcoef)  
-	    - Math.exp((-voltdiff-zoffset)*vdcoef)  
+	    - Math.exp((-voltdiff-zoffset)*vzcoef)  
 	    - 1
 	    );
     }
