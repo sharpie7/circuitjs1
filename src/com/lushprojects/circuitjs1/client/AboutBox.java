@@ -55,7 +55,8 @@ public class AboutBox extends PopupPanel {
 		"J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; "+
 		"Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; " +
 		"Thomas Reitinger for the German translation; " +
-		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples.</p>"+
+		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; " +
+		"Colin Howell for code improvements.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
 		"under the terms of the GNU General Public License as published by "+
 		"the Free Software Foundation, either version 2 of the License, or "+
