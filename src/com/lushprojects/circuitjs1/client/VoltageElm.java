@@ -151,7 +151,7 @@ class VoltageElm extends CircuitElm {
 	    setBbox(point1, point2, circleSize);
 	    interpPoint(lead1, lead2, ps1, .5);
 	    drawWaveform(g, ps1);
-	    if (bias!=0) {
+	    if (bias!=0 || waveform == WF_PULSE) {
 		g.setColor(Color.white);
 	        g.setFont(unitsFont);
 	        Point plusPoint = interpPoint(point1, point2, (dn/2+circleSize+4)/dn, 10*dsign );
