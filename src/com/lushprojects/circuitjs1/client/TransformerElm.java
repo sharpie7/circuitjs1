@@ -132,8 +132,11 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getPostCount() { return 4; }
 	void reset() {
+	    // need to set current-source values here in case one of the nodes is node 0.  In that case
+	    // calculateCurrent() may get called (from setNodeVoltage()) when analyzing circuit, before
+	    // startIteration() gets called
 	    current[0] = current[1] = volts[0] = volts[1] = volts[2] =
-		volts[3] = curcount[0] = curcount[1] = 0;
+		volts[3] = curcount[0] = curcount[1] = curSourceValue1 = curSourceValue2 = 0;
 	}
 	double a1, a2, a3, a4;
 	void stamp() {

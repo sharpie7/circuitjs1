@@ -76,8 +76,6 @@ package com.lushprojects.circuitjs1.client;
 	    for (i = 0; i != 4; i += 2) {
 		drawThickLine(g, ptCore[i], ptCore[i+1]);
 	    }
-	    // calc current of tap wire
-	    current[3] = current[1]-current[2];
 	    for (i = 0; i != 4; i++)
 		curcount[i] = updateDotCount(current[i], curcount[i]);
 
@@ -127,8 +125,12 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getPostCount() { return 5; }
 	void reset() {
-	    current[0] = current[1] = current[2] = volts[0] = volts[1] = volts[2] =
+	    current[0] = current[1] = current[2] = current[3] = volts[0] = volts[1] = volts[2] =
 		volts[3] = volts[4] = curcount[0] = curcount[1] = curcount[2] = 0;
+	    // need to set current-source values here in case one of the nodes is node 0.  In that case
+	    // calculateCurrent() may get called (from setNodeVoltage()) when analyzing circuit, before
+	    // startIteration() gets called
+	    curSourceValue[0] = curSourceValue[1] = curSourceValue[2] = 0;
 	}
 	double a[];
 	void stamp() {
@@ -216,6 +218,8 @@ package com.lushprojects.circuitjs1.client;
 		for (j = 0; j != 3; j++)
 		    current[i] += a[i*3+j]*voltdiff[j];
 	    }
+	    // calc current of tap wire
+	    current[3] = current[1]-current[2];
 	}
 	void getInfo(String arr[]) {
 	    arr[0] = "transformer";
