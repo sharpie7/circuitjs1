@@ -276,6 +276,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 	    arr[4] = "Vbe = " + getVoltageText(vbe);
 	    arr[5] = "Vbc = " + getVoltageText(vbc);
 	    arr[6] = "Vce = " + getVoltageText(vce);
+	    arr[7] = "P = " + getUnitText(getPower(), "W");
 	}
 	
 	double getScopeValue(int x) {
