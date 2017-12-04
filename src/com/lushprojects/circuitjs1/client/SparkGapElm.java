@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class SparkGapElm extends CircuitElm {
     double resistance, onresistance, offresistance, breakdown, holdcurrent;
     boolean state;

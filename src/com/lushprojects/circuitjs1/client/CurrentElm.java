@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class CurrentElm extends CircuitElm {
 	double currentValue;
 	public CurrentElm(int xx, int yy) {

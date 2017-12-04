@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class VCCSElm extends ChipElm {
 	double gain;
 	int inputCount;

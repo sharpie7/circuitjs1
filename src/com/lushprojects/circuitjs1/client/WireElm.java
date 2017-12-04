@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class WireElm extends CircuitElm {
 	boolean hasWireInfo; // used in CirSim to calculate wire currents
 	

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // Silicon-Controlled Rectifier
 // 3 nodes, 1 internal node
 // 0 = anode, 1 = cathode, 2 = gate

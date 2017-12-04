@@ -21,9 +21,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // contributed by Edward Calver
 
 class TriStateElm extends CircuitElm {

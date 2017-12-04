@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class DecadeElm extends ChipElm {
 	public DecadeElm(int xx, int yy) { super(xx, yy); }
 	public DecadeElm(int xa, int ya, int xb, int yb, int f,

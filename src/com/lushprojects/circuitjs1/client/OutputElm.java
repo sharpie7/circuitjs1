@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class OutputElm extends CircuitElm {
 	final int FLAG_VALUE = 1;
 	public OutputElm(int xx, int yy) { super(xx, yy); }

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class DiodeElm extends CircuitElm {
     Diode diode;
     static final int FLAG_FWDROP = 1;

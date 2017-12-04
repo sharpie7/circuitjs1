@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class TransformerElm extends CircuitElm {
 	double inductance, ratio, couplingCoef;
 	Point ptEnds[], ptCoil[], ptCore[];

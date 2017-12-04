@@ -21,9 +21,6 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class ResistorElm extends CircuitElm {
 	double resistance;
 	public ResistorElm(int xx, int yy) { super(xx, yy); resistance = 1000; }

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class AnalogSwitchElm extends CircuitElm {
     final int FLAG_INVERT = 1;
     double resistance, r_on, r_off;

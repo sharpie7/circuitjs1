@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class JKFlipFlopElm extends ChipElm {
     	final int FLAG_RESET = 2;
     	boolean hasReset(){return (flags & FLAG_RESET)!= 0;}
