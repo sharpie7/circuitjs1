@@ -18,7 +18,6 @@
 */
 
 package com.lushprojects.circuitjs1.client;
-import com.google.gwt.i18n.client.NumberFormat;
 
 class RailElm extends VoltageElm {
 	public RailElm(int xx, int yy) { 

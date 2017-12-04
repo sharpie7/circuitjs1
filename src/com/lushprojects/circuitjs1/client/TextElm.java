@@ -20,7 +20,6 @@
 package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
-import com.google.gwt.canvas.dom.client.TextMetrics;
 
 class TextElm extends GraphicElm {
     String text;

@@ -1,7 +1,6 @@
 package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 

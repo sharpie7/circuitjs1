@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.i18n.client.NumberFormat;
-
     class TransistorElm extends CircuitElm {
 	int pnp;
 	double beta;

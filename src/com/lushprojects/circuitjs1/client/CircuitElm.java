@@ -19,14 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
-import com.google.gwt.canvas.dom.client.TextMetrics;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 
 // circuit element class
