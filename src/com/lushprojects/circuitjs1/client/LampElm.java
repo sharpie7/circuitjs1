@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class LampElm extends CircuitElm {
 	double resistance;
 	final double roomTemp = 300;

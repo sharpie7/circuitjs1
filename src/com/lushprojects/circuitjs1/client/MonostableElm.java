@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class MonostableElm extends ChipElm {
 
 	//Used to detect rising edge

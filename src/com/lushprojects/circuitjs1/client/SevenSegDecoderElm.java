@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class SevenSegDecoderElm extends ChipElm {
 
 	private static final boolean[][] symbols={

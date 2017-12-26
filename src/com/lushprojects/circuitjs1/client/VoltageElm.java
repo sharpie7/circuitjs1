@@ -21,9 +21,6 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.Window;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class VoltageElm extends CircuitElm {
     static final int FLAG_COS = 2;
     static final int FLAG_PULSE_DUTY = 4;

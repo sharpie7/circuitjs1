@@ -23,8 +23,6 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
 
-//import java.awt.*;
-
 class EditInfo {
 	EditInfo(String n, double val, double mn, double mx) {
 		name = n;

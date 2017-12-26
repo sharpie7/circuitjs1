@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class NandGateElm extends AndGateElm {
 	public NandGateElm(int xx, int yy) { super(xx, yy); }
 	public NandGateElm(int xa, int ya, int xb, int yb, int f,

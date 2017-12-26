@@ -23,9 +23,6 @@ package com.lushprojects.circuitjs1.client;
 // FIXME need to add TriacElm to srclist
 // FIXME need to uncomment TriacElm line from CirSim.java
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // Silicon-Controlled Rectifier
 // 3 nodes, 1 internal node
 // 0 = anode, 1 = cathode, 2 = gate

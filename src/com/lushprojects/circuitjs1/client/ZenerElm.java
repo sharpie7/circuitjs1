@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // Zener code contributed by J. Mike Rollins
 // http://www.camotruck.net/rollins/simulator.html
 class ZenerElm extends DiodeElm {

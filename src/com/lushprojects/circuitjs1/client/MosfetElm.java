@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class MosfetElm extends CircuitElm {
 	int pnp;
 	int FLAG_PNP = 1;

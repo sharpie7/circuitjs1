@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class LEDElm extends DiodeElm {
 	double colorR, colorG, colorB, maxBrightnessCurrent;
 	public LEDElm(int xx, int yy) {

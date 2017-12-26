@@ -19,10 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class SevenSegElm extends ChipElm {
 	public SevenSegElm(int xx, int yy) { super(xx, yy); }
 	public SevenSegElm(int xa, int ya, int xb, int yb, int f,

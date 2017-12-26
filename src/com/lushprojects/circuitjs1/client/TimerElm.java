@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class TimerElm extends ChipElm {
     final int FLAG_RESET = 2;
     final int N_DIS  = 0;

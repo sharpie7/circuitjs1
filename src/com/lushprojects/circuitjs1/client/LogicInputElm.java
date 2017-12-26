@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class LogicInputElm extends SwitchElm {
 	final int FLAG_TERNARY = 1;
 	final int FLAG_NUMERIC = 2;

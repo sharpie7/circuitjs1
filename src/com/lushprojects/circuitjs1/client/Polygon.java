@@ -18,8 +18,6 @@ package com.lushprojects.circuitjs1.client;
 
 // via http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/awt/Polygon.java
 
-//import java.util.ArrayList;
-
 class Polygon {
 //	ArrayList<Point> poly;
 	

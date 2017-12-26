@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class MemristorElm extends CircuitElm {
     double r_on, r_off, dopeWidth, totalWidth, mobility, resistance;
     public MemristorElm(int xx, int yy) {
