@@ -992,8 +992,10 @@ class Scope {
 		    endAvg = avg;
 		}
 	    }
-	    if (waveCount > 0)
-		avg += maxV[ip]*maxV[ip];
+	    if (waveCount > 0) {
+		double m = (maxV[ip]+minV[ip])*.5;
+		avg += m*m;
+	    }
 	}
 	double rms;
 	if (waveCount > 1) {
