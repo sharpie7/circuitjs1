@@ -92,7 +92,7 @@ class SchmittElm extends InvertingSchmittElm{
 	    gatePoly = createPolygon(triPoints);
 	}
         void getInfo(String arr[]) {
-            arr[0] = "Schmitt Trigger";
+            arr[0] = "Schmitt Trigger~"; // ~ is for localization
         }
 
 	@Override double getCurrentIntoPoint(int xa, int ya) {

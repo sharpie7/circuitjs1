@@ -71,7 +71,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 	
-	public static final String versionString="2.1.11js (isharp)";
+	public static final String versionString="2.1.11js (pfalstad)";
 	
 	// Set to true if the server runs the shortrelay.php file in the same directory as the circuit simulator
 	public static final boolean shortRelaySupported = true;
@@ -93,13 +93,13 @@ public class circuitjs1 implements EntryPoint {
   	String url;
   	String lang = language();
   	GWT.log("got language " + lang);
+//  	lang = "pl";
+  	lang = lang.replaceFirst("-.*", "");
   	if (lang.startsWith("en")) {
   	    // no need to load locale file for English
   	    loadSimulator();
   	    return;
   	}
-  	if (lang.startsWith("de-"))
-  	    lang = "de";
   	url = GWT.getModuleBaseURL()+"locale_" + lang + ".txt";
 		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 		try {

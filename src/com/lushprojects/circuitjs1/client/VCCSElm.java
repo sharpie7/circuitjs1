@@ -62,7 +62,7 @@ package com.lushprojects.circuitjs1.client;
 	    lastVolts = new double[inputCount];
 	    exprState = new ExprState(inputCount);
 	}
-	String getChipName() { return "VCCS"; } 
+	String getChipName() { return "VCCS~"; } // ~ is for localization 
 	boolean nonLinear() { return true; }
 	void stamp() {
             sim.stampNonLinear(nodes[inputCount]);
