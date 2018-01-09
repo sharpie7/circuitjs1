@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // 0 = switch
 // 1 = switch end 1
 // 2 = switch end 2

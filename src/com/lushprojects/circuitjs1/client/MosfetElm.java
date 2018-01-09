@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class MosfetElm extends CircuitElm {
 	int pnp;
 	int FLAG_PNP = 1;
@@ -309,6 +306,7 @@ package com.lushprojects.circuitjs1.client;
 	    arr[4] = sim.LS((mode == 0) ? "off" :
 		(mode == 1) ? "linear" : "saturation");
 	    arr[5] = "gm = " + getUnitText(gm, "A/V");
+	    arr[6] = "P = " + getUnitText(getPower(), "W");
 	}
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "MOSFET");

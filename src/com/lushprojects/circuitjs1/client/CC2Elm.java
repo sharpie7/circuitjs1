@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class CC2Elm extends ChipElm {
 	double gain;
 	public CC2Elm(int xx, int yy) { super(xx, yy); gain = 1; }

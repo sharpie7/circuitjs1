@@ -24,9 +24,6 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.i18n.client.NumberFormat;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class AmmeterElm extends CircuitElm {
         
         int meter;

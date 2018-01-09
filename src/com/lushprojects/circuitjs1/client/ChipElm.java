@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 import com.google.gwt.canvas.dom.client.TextMetrics;
 
     abstract class ChipElm extends CircuitElm {

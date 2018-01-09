@@ -19,10 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // contributed by Edward Calver
 
     class DeMultiplexerElm extends ChipElm {
@@ -32,7 +28,7 @@ package com.lushprojects.circuitjs1.client;
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	}
-	String getChipName() { return "Multiplexer"; }
+	String getChipName() { return "Demultiplexer"; }
 
 	void setupPins() {
 	    sizeX = 3;

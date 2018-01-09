@@ -21,9 +21,6 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.Window;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class VoltageElm extends CircuitElm {
     static final int FLAG_COS = 2;
     static final int FLAG_PULSE_DUTY = 4;
@@ -278,6 +275,7 @@ class VoltageElm extends CircuitElm {
 	}
 	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources) {
 	    arr[3] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
+	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	}
     }
     public EditInfo getEditInfo(int n) {

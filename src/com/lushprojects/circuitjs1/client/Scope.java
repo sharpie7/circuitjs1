@@ -19,12 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.awt.image.*;
-//import java.awt.event.*;
-//import java.util.StringTokenizer;
-//import java.lang.reflect.Constructor;
-//import java.lang.reflect.Method;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.MenuBar;
 

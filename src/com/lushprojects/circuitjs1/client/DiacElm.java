@@ -23,9 +23,6 @@ package com.lushprojects.circuitjs1.client;
 // FIXME need to add DiacElm.java to srclist
 // FIXME need to uncomment DiacElm line from CirSim.java
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class DiacElm extends CircuitElm {
     double onresistance, offresistance, breakdown, holdcurrent;
     boolean state;

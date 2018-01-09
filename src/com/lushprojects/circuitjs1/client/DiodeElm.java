@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class DiodeElm extends CircuitElm {
     Diode diode;
     static final int FLAG_FWDROP = 1;
@@ -118,6 +115,7 @@ class DiodeElm extends CircuitElm {
 	arr[2] = "Vd = " + getVoltageText(getVoltageDiff());
 	arr[3] = "P = " + getUnitText(getPower(), "W");
 	arr[4] = "Vf = " + getVoltageText(fwdrop);
+	arr[5] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)

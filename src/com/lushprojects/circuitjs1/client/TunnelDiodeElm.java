@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class TunnelDiodeElm extends CircuitElm {
     public TunnelDiodeElm(int xx, int yy) {
 	super(xx, yy);

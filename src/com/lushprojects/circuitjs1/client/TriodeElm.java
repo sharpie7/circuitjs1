@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class TriodeElm extends CircuitElm {
     double mu, kg1;
     double curcountp, curcountc, curcountg, currentp, currentg, currentc;

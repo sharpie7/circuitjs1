@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class FullAdderElm extends ChipElm {
 	boolean hasReset() {return false;}
 	public FullAdderElm(int xx, int yy) { super(xx, yy); }

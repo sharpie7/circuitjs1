@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class OrGateElm extends GateElm {
 	public OrGateElm(int xx, int yy) { super(xx, yy); }
 	public OrGateElm(int xa, int ya, int xb, int yb, int f,
