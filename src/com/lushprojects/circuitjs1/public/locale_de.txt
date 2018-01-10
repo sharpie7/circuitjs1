@@ -773,3 +773,4 @@
 "To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file."="Um eine Datei abzuspeichern, gesamten Text auswählen (Strg-A) und für weitere Verwendung (z.B. Notepad/Editor) in die Zwischenablage kopieren (Strg+C)."
 "Re-Import"="Re-Importieren"
 "Show RMS Average"="Effektivwert (RMS) anzeigen"
+"Alt Color for Volts & Pwr"="Andere Farben Spannung & Leistung"
