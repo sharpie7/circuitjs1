@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // much of this was adapted from Bill Collis's code in TestPointElm.java
 
 class ProbeElm extends CircuitElm {

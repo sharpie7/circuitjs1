@@ -395,13 +395,13 @@ spark-sawtooth.txt Sawtooth Generator
 tesla.txt Tesla Coil
 spark-marx.txt Marx Generator
 -
-+ Operational Transconductance Amplifier (OTA)
++Operational Transconductance Amplifier (OTA)
 ota-vca.txt OTA Voltage Controlled Amplifier (VCA)
 ota-vcf-single.txt OTA Single Stage VCF (low pass)
 ota-ringmod.txt OTA Ring Modulator
 ota-gain.txt LM137000 Gain Oddity
 -
-+ Light Bulb
++Light Bulb
 lightbulb.txt Light Bulb
 wienbridge.txt Wien Bridge Oscillator
 -

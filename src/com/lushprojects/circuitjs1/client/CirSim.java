@@ -4694,8 +4694,22 @@ MouseOutHandler, MouseWheelHandler {
     }-*/;
     
     static String LS(String s) {
+	if (s == null)
+	    return null;
 	String sm = localizationMap.get(s);
-	return sm != null ? sm : s;
+	if (sm != null)
+	    return sm;
+	
+	// use trailing ~ to differentiate strings that are the same in English but need different translations.
+	// remove these if there's no translation.
+	int ix = s.indexOf('~');
+	if (ix < 0)
+	    return s;
+	s = s.substring(0, ix);
+	sm = localizationMap.get(s);
+	if (sm != null)
+	    return sm;
+	return s;
     }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
     

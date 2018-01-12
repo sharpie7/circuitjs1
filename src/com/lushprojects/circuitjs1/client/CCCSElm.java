@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class CCCSElm extends VCCSElm {
 	public CCCSElm(int xa, int ya, int xb, int yb, int f,
 		      StringTokenizer st) {

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class CounterElm extends ChipElm {
 	final int FLAG_ENABLE = 2;
 	boolean invertreset=false;

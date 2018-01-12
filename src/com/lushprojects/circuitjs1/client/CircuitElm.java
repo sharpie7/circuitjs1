@@ -19,10 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-// import java.awt.*;
-//import java.text.DecimalFormat;
-//import java.text.NumberFormat;
-
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.user.client.ui.Label;

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     abstract class GateElm extends CircuitElm {
 	final int FLAG_SMALL = 1;
 	final int FLAG_SCHMITT = 2;

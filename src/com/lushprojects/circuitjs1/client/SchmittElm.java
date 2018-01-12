@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 // contributed by Edward Calver
 
 class SchmittElm extends InvertingSchmittElm{
@@ -92,7 +89,7 @@ class SchmittElm extends InvertingSchmittElm{
 	    gatePoly = createPolygon(triPoints);
 	}
         void getInfo(String arr[]) {
-            arr[0] = "Schmitt Trigger";
+            arr[0] = "Schmitt Trigger~"; // ~ is for localization
         }
 
 	@Override double getCurrentIntoPoint(int xa, int ya) {

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class MemristorElm extends CircuitElm {
     double r_on, r_off, dopeWidth, totalWidth, mobility, resistance;
     public MemristorElm(int xx, int yy) {
@@ -133,9 +130,9 @@ class MemristorElm extends CircuitElm {
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)
-	    return new EditInfo("Max Resistance (ohms)", r_on, 0, 0);
+	    return new EditInfo("Min Resistance (ohms)", r_on, 0, 0);
 	if (n == 1)
-	    return new EditInfo("Min Resistance (ohms)", r_off, 0, 0);
+	    return new EditInfo("Max Resistance (ohms)", r_off, 0, 0);
 	if (n == 2)
 	    return new EditInfo("Width of Doped Region (nm)", dopeWidth*1e9, 0, 0);
 	if (n == 3)

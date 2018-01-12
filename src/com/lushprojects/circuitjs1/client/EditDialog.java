@@ -36,10 +36,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-//import java.awt.*;
-//import java.awt.event.*;
-//import java.text.NumberFormat;
-//import java.text.DecimalFormat;
 
 interface Editable {
     EditInfo getEditInfo(int n);

@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class JfetElm extends MosfetElm {
 	Diode diode;
 	double gateCurrent;

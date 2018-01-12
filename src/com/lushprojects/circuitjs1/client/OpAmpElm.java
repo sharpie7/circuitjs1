@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class OpAmpElm extends CircuitElm {
 	int opsize, opheight, opwidth, opaddtext;
 	double maxOut, minOut, gain, gbw;

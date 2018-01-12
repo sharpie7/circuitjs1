@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
     class CC2Elm extends ChipElm {
 	double gain;
 	public CC2Elm(int xx, int yy) { super(xx, yy); gain = 1; }
@@ -45,7 +42,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[2] = new Pin(1, SIDE_E, "Z");
 	}
 	void getInfo(String arr[]) {
-	    arr[0] = (gain == 1) ? "CCII+" : "CCII-";
+	    arr[0] = (gain == 1) ? "CCII+~" : "CCII-~"; // ~ is for localization
 	    arr[1] = "X,Y = " + getVoltageText(volts[0]);
 	    arr[2] = "Z = " + getVoltageText(volts[2]);
 	    arr[3] = "I = " + getCurrentText(pins[0].current);

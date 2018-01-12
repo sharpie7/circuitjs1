@@ -19,9 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-//import java.awt.*;
-//import java.util.StringTokenizer;
-
 class TransLineElm extends CircuitElm {
     double delay, imped;
     double voltageL[], voltageR[];

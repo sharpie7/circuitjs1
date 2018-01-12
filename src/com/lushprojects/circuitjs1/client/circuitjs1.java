@@ -93,13 +93,13 @@ public class circuitjs1 implements EntryPoint {
   	String url;
   	String lang = language();
   	GWT.log("got language " + lang);
+//  	lang = "pl";
+  	lang = lang.replaceFirst("-.*", "");
   	if (lang.startsWith("en")) {
   	    // no need to load locale file for English
   	    loadSimulator();
   	    return;
   	}
-  	if (lang.startsWith("de-"))
-  	    lang = "de";
   	url = GWT.getModuleBaseURL()+"locale_" + lang + ".txt";
 		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 		try {
