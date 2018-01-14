@@ -1,0 +1,20 @@
+{
+  "name": "Circuit JS1",
+  "version": "0.0.1",
+  "description": "Interactive Circuit Simulator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/sharpie7/circuitjs1",
+  "keywords": [
+    "eda",
+    "electronics",
+    "circuits",
+    "education"
+  ],
+  "author": "Iain Sharp, Paul Falstad",
+  "devDependencies": {
+    "electron": "~1.7.8"
+  }
+}
