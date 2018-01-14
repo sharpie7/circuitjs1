@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import java.util.Vector;
-
 class BoxElm extends GraphicElm {
 
     public BoxElm(int xx, int yy) {
