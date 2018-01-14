@@ -104,6 +104,7 @@ class TextElm extends GraphicElm {
 	setBbox(x, y, x, y);
 	for (i = 0; i != lines.size(); i++) {
 	    String s = (String) (lines.elementAt(i));
+	    s = CirSim.LS(s);
 	    int sw=(int)g.context.measureText(s).getWidth();
 	    if ((flags & FLAG_CENTER) != 0)
 		x = (g.context.getCanvas().getWidth()-sw)/2;

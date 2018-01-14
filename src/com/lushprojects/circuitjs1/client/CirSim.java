@@ -103,7 +103,6 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem importFromLocalFileItem, importFromTextItem,
     	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem;
     MenuItem importFromDropboxItem;
-    MenuItem exportToDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
     MenuBar optionsMenuBar;
@@ -235,7 +234,6 @@ MouseOutHandler, MouseWheelHandler {
     static ExportAsLocalFileDialog exportAsLocalFileDialog;
     static ImportFromTextDialog importFromTextDialog;
     static ImportFromDropbox importFromDropbox;
-    static ExportToDropbox exportToDropbox;
     static ScrollValuePopup scrollValuePopup;
     static AboutBox aboutBox;
     static ImportFromDropboxDialog importFromDropboxDialog;
@@ -393,9 +391,6 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsLocalFileItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
-	  exportToDropboxItem = new MenuItem(LS("Export To Dropbox"), new MyCommand("file", "exporttodropbox"));
-	  exportToDropboxItem.setEnabled(ExportToDropbox.isSupported());
-	  fileMenuBar.addItem(exportToDropboxItem);
 	  fileMenuBar.addSeparator();
 	  aboutItem=new MenuItem(LS("About"),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
@@ -2498,8 +2493,6 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
-    	if (item=="exporttodropbox")
-    		doExportToDropbox();
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
@@ -2759,10 +2752,7 @@ MouseOutHandler, MouseWheelHandler {
     	exportAsLocalFileDialog.show();
     }
     
-    void doExportToDropbox() {
-    	String dump = dumpCircuit();
-    	exportToDropbox = new ExportToDropbox(dump);
-    }
+
     
 
     
@@ -4694,8 +4684,22 @@ MouseOutHandler, MouseWheelHandler {
     }-*/;
     
     static String LS(String s) {
+	if (s == null)
+	    return null;
 	String sm = localizationMap.get(s);
-	return sm != null ? sm : s;
+	if (sm != null)
+	    return sm;
+	
+	// use trailing ~ to differentiate strings that are the same in English but need different translations.
+	// remove these if there's no translation.
+	int ix = s.indexOf('~');
+	if (ix < 0)
+	    return s;
+	s = s.substring(0, ix);
+	sm = localizationMap.get(s);
+	if (sm != null)
+	    return sm;
+	return s;
     }
     static SafeHtml LSHTML(String s) { return SafeHtmlUtils.fromTrustedString(LS(s)); }
     

@@ -130,9 +130,9 @@ class MemristorElm extends CircuitElm {
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)
-	    return new EditInfo("Max Resistance (ohms)", r_on, 0, 0);
+	    return new EditInfo("Min Resistance (ohms)", r_on, 0, 0);
 	if (n == 1)
-	    return new EditInfo("Min Resistance (ohms)", r_off, 0, 0);
+	    return new EditInfo("Max Resistance (ohms)", r_off, 0, 0);
 	if (n == 2)
 	    return new EditInfo("Width of Doped Region (nm)", dopeWidth*1e9, 0, 0);
 	if (n == 3)

@@ -11,20 +11,20 @@ For a hosted version of the application see:
 
 Thanks to Edward Calver for 15 new components and other improvements. Thanks to Rodrigo Hausen for file import/export and many other UI improvements. Thanks to J. Mike Rollins for the Zener diode code. Thanks to Julius Schmidt for the spark gap code and some examples. Thanks to Dustin Soodak for help with the user interface improvements. Thanks to Jacob Calvert for the T Flip Flop. 
 
-## Building the application
+## Building the web application
 
 The tools you will need to build the project are:
 
-* Eclipse - I am using the Kepler version.
-* Google plugin for Eclipse to provide GWT.
+* Eclipse, Oxygen version.
+* GWT plugin for Eclipse.
 
-Install "Eclipse for Java developers" from [here](https://www.eclipse.org/downloads/packages/). To add the Google plugin for Eclipse follow the instructions [here](https://developers.google.com/eclipse/docs/download).
+Install "Eclipse for Java developers" from [here](https://www.eclipse.org/downloads/packages/). To add the GWT plugin for Eclipse follow the instructions [here](https://gwt-plugins.github.io/documentation/gwt-eclipse-plugin/Download.html).
 
-This archive is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in development mode is done using the normal Eclipse run button or "Run As..." and choosing "Web Application (Super Dev Mode)" and then picking "Circuitjs1.html" as the initial page. Building for deployment is done by selecting the project root node and using the Google button on the Eclipse taskbar and choosing "GWT Compile Project...".
+This repository is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in super development mode is done by clicking on the "run" icon on the toolbar and choosing http://127.0.0.1:8888/circuitjs.html from the "Development Mode" tab which appears. Building for deployment is done by selecting the project root node and using the GWT button on the Eclipse taskbar and choosing "GWT Compile Project...".
 
 GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
 
-## Deployment
+## Deployment of the web application
 
 * "GWT Compile Project..." as explained above. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
 * Customize the header of the file "circuitjs1.html" to include your tracking, favicon etc.
@@ -66,6 +66,24 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?whiteBackground=<true|false>
 .../circuitjs1.html?conventionalCurrent=<true|false>
 ```
+## Building an Electron application (experimental)
+
+The [Electron](https://electronjs.org/) project allows web applications to be distributed as local executables for a variety of platforms. This repository contains the additional files needed to build circuitJS1 as an Electron application. Use of electron is experimental at this stage.
+
+The general approach to building an Electron application for a particular platform is documented [here](https://electronjs.org/docs/tutorial/application-distribution). The following instructions apply this approach to circuit JS.
+
+To build the Electron application:
+* Compile the application using GWT, as above.
+* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) for the target platform.
+* Copy the "app" directory from this repository to the location specified [here](https://electronjs.org/docs/tutorial/application-distribution) in the Electron binary directory structure.
+* Copy the "war" directory, containing the compiled CircuitJS1 application, in to the "app" directory the Electron binary directory structure.
+* Run the "Electron" executable file. It should automatically load CircuitJS1.
+
+Known limitations of the Electron application:
+* The languge is hard-coded to en-US due to [this Electron issue](https://github.com/electron/electron/issues/11053).
+* "Create short URL" on "Export as URL" doesn't work as it relies on server support.
+
+Thanks to @Immortalin for the initial work in applying Electron to CircuitJS1.
 
 ## License
 
