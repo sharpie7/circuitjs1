@@ -85,8 +85,15 @@ public class circuitjs1 implements EntryPoint {
       loadLocale();
   }
 
-  native String language()  /*-{
-	return navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;  
+  native String language()  /*-{ // Modified to support Electron which return empty array for navigator.languages
+      if (navigator.languages) {
+        if (navigator.languages.length>0)
+          return navigator.languages[0];
+        else
+          return "en-US";
+      } else {
+      	return  (navigator.language || navigator.userLanguage) ;  
+      }
   }-*/;
 
   void loadLocale() {
