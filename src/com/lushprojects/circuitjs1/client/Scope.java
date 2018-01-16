@@ -52,11 +52,27 @@ class ScopePlot {
     }
     
     void reset(int spc, int sp) {
+	int oldSpc = scopePointCount;
 	scopePointCount = spc;
+	if (speed != sp)
+	    oldSpc = 0; // throw away old data
 	speed = sp;
+	double oldMin[] = minValues;
+	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
     	maxValues = new double[scopePointCount];
-    	ptr = ctr = 0;
+    	if (minValues != null) {
+    	    // preserve old data if possible
+    	    int i;
+    	    for (i = 0; i != scopePointCount && i != oldSpc; i++) {
+    		int i1 = (-i) & (scopePointCount-1);
+    		int i2 = (ptr-i) & (oldSpc-1);
+    		minValues[i1] = oldMin[i2];
+    		maxValues[i1] = oldMax[i2];
+    	    }
+    	} else
+    	    ctr = 0;
+    	ptr = 0;
     }
 
     void timeStep() {
