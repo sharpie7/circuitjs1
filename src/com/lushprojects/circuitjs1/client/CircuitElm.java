@@ -323,6 +323,11 @@ public abstract class CircuitElm implements Editable {
 	setPoints();
     }
 
+    // called when an element is done being dragged out; returns true if it's zero size and should be deleted
+    boolean creationFailed() {
+	return (x == x2 && y == y2);
+    }
+    
     // determine if moving this element by (dx,dy) will put it on top of another element
     boolean allowMove(int dx, int dy) {
 	int nx = x+dx;
@@ -450,8 +455,8 @@ public abstract class CircuitElm implements Editable {
 	if (y1 > y2) { int q = y1; y1 = y2; y2 = q; }
 	x1 = min(boundingBox.x, x1);
 	y1 = min(boundingBox.y, y1);
-	x2 = max(boundingBox.x+boundingBox.width-1,  x2);
-	y2 = max(boundingBox.y+boundingBox.height-1, y2);
+	x2 = max(boundingBox.x+boundingBox.width,  x2);
+	y2 = max(boundingBox.y+boundingBox.height, y2);
 	boundingBox.setBounds(x1, y1, x2-x1, y2-y1);
     }
     void adjustBbox(Point p1, Point p2) {

@@ -115,6 +115,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem showValuesCheckItem;
     CheckboxMenuItem conductanceCheckItem;
     CheckboxMenuItem euroResistorCheckItem;
+    CheckboxMenuItem euroGatesCheckItem;
     CheckboxMenuItem printableCheckItem;
     CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
@@ -368,6 +369,7 @@ MouseOutHandler, MouseWheelHandler {
 	    euroSetting = false;
 	else
 	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
+	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 	
 	transform = new double[6];
 	String os = Navigator.getPlatform();
@@ -485,6 +487,15 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	}));
 	euroResistorCheckItem.setState(euroSetting);
+	m.addItem(euroGatesCheckItem = new CheckboxMenuItem(LS("IEC Gates"),
+		new Command() { public void execute(){
+		    setOptionInStorage("euroGates", euroGatesCheckItem.getState());
+		    int i;
+		    for (i = 0; i != elmList.size(); i++)
+			getElm(i).setPoints();
+		}
+	}));
+	euroGatesCheckItem.setState(euroGates);
 	m.addItem(printableCheckItem = new CheckboxMenuItem(LS("White Background"),
 			new Command() { public void execute(){
 				int i;
@@ -797,6 +808,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Text"), "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Box"), "BoxElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Voltmeter/Scobe Probe"), "ProbeElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Ohmmeter"), "OhmMeterElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Labeled Node"), "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Test Point"), "TestPointElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ammeter"), "AmmeterElm"));
@@ -1812,7 +1824,9 @@ MouseOutHandler, MouseWheelHandler {
 		CurrentElm cur = (CurrentElm) ce;
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
-		if (!fpi.findPath(ce.getNode(0))) {
+		// first try findPath with maximum depth of 5, to avoid slowdowns
+		if (!fpi.findPath(ce.getNode(0), 5) &&
+		    !fpi.findPath(ce.getNode(0))) {
 		    cur.stampCurrentSource(true);
 		} else
 		    cur.stampCurrentSource(false);
@@ -3443,8 +3457,12 @@ MouseOutHandler, MouseWheelHandler {
     						newMouseElm = ce;
     					}
     				}
-    				if (ce.getPostCount() == 0)
-    					newMouseElm = ce;
+    				// prefer selecting elements that have small bounding box area (for
+    				// elements with no posts)
+    				if (ce.getPostCount() == 0 && area <= bestArea) {
+    				    newMouseElm = ce;
+    				    bestArea = area;
+    				}
     			}
     		} // for
     	}
@@ -3688,7 +3706,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (dragElm != null) {
     		// if the element is zero size then don't create it
     		// IES - and disable any previous selection
-    		if (dragElm.x == dragElm.x2 && dragElm.y == dragElm.y2) {
+    	    	if (dragElm.creationFailed()) {
     			dragElm.delete();
     			if (mouseMode == MODE_SELECT || mouseMode == MODE_DRAG_SELECTED)
     				clearSelection();
@@ -4452,6 +4470,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return (CircuitElm) new CCVSElm(x1, y1, x2, y2, f, st);
     	if (tint==215)
     	    return (CircuitElm) new CCCSElm(x1, y1, x2, y2, f, st);
+    	if (tint==216)
+    	    return (CircuitElm) new OhmMeterElm(x1, y1, x2, y2, f, st);
     	if (tint==368)
     	    return new TestPointElm(x1, y1, x2, y2, f, st);
     	if (tint==370)
@@ -4667,6 +4687,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CCVSElm(x1, y1);
     	if (n=="CCCSElm")
 		return (CircuitElm) new CCCSElm(x1, y1);
+    	if (n=="OhmMeterElm")
+		return (CircuitElm) new OhmMeterElm(x1, y1);
     	return null;
     }
     
@@ -4689,6 +4711,14 @@ MouseOutHandler, MouseWheelHandler {
     		return 0;
     	}
 
+    } catch (e) { return 0;
+    }
+    }-*/;
+
+    native boolean weAreInGermany() /*-{
+    try {
+	l = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;
+	return (l.toUpperCase().startsWith("DE"));
     } catch (e) { return 0;
     }
     }-*/;

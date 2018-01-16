@@ -99,6 +99,16 @@ package com.lushprojects.circuitjs1.client;
 		schmittPoly = getSchmittPolygon(gsize, .47f);
 	}
 	
+	void createEuroGatePolygon() {
+	    Point pts[] = newPointArray(4);
+	    interpPoint2(lead1, lead2, pts[0], pts[1], 0, hs2);
+	    interpPoint2(lead1, lead2, pts[3], pts[2], 1, hs2);
+	    gatePoly = createPolygon(pts);
+	}
+
+	String getGateText() { return null; }
+	static boolean useEuroGates() { return sim.euroGatesCheckItem.getState(); }
+	
 	void draw(Graphics g) {
 	    int i;
 	    for (i = 0; i != inputCount; i++) {
@@ -109,6 +119,10 @@ package com.lushprojects.circuitjs1.client;
 	    drawThickLine(g, lead2, point2);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, gatePoly);
+	    if (useEuroGates()) {
+		    Point center = interpPoint(point1, point2, .5);
+		    drawCenteredText(g, getGateText(), center.x, center.y-6*gsize, true);
+	    }
 	    g.setLineWidth(2);
 	    if (hasSchmittInputs())
 		drawPolygon(g, schmittPoly);

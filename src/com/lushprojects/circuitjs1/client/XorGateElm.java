@@ -26,6 +26,7 @@ package com.lushprojects.circuitjs1.client;
 	    super(xa, ya, xb, yb, f, st);
 	}
 	String getGateName() { return "XOR gate"; }
+	String getGateText() { return "=1"; }
 	boolean calcFunction() {
 	    int i;
 	    boolean f = false;

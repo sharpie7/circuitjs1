@@ -141,4 +141,14 @@ public class Graphics {
 	    	return x2*x2+y2*y2;
 	        }
 	  
+	   void setLineDash(int a, int b) {
+	       setLineDash(context, a, b);
+	   }
+	   
+	   native static void setLineDash(Context2d context, int a, int b) /*-{
+	       if (a == 0)
+	           context.setLineDash([]);
+	       else
+	       	   context.setLineDash([a, b]);
+	   }-*/;
 }
