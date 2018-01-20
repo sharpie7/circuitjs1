@@ -253,9 +253,9 @@ package com.lushprojects.circuitjs1.client;
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0)
+	    if (n == 0 && ei.value > 0)
 		inductance = ei.value;
-	    if (n == 1)
+	    if (n == 1 && ei.value > 0)
 		ratio = ei.value;
 	    if (n == 2 && ei.value > 0 && ei.value < 1)
 		couplingCoef = ei.value;
