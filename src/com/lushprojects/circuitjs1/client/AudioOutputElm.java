@@ -189,7 +189,7 @@ public class AudioOutputElm extends CircuitElm {
 //	    int frac = (int)Math.round(Math.max(sampleStep*33000, 1));
 	    double target = sampleStep/8;
 	    if (sim.timeStep != target) {
-                if (okToChangeTimeStep || Window.confirm("Adjust timestep for best audio quality and performance?")) {
+                if (okToChangeTimeStep || Window.confirm(sim.LS("Adjust timestep for best audio quality and performance?"))) {
                     sim.timeStep = target;
                     okToChangeTimeStep = true;
                 }
@@ -338,7 +338,7 @@ public class AudioOutputElm extends CircuitElm {
         	base = dataPtr;
             }
             if (ct * sampleStep < .05) {
-        	Window.alert("Audio data is not ready yet.  Increase simulation speed to make data ready sooner.");
+        	Window.alert(sim.LS("Audio data is not ready yet.  Increase simulation speed to make data ready sooner."));
         	return;
             }
             

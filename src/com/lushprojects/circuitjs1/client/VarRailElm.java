@@ -82,7 +82,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 		maxVoltage = ei.value;
 	    if (n == 2) {
 		sliderText = ei.textf.getText();
-		label.setText(sliderText);
+		label.setText(sim.LS(sliderText));
 		sim.setiFrameHeight();
 	    }
 	}
