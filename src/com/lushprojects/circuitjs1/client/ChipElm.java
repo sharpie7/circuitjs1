@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.canvas.dom.client.TextMetrics;
-
     abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;

@@ -67,7 +67,6 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -82,8 +81,6 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
-import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.Navigator;
@@ -103,7 +100,6 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem importFromLocalFileItem, importFromTextItem,
     	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem;
     MenuItem importFromDropboxItem;
-    MenuItem exportToDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
     MenuBar optionsMenuBar;
@@ -236,7 +232,6 @@ MouseOutHandler, MouseWheelHandler {
     static ExportAsLocalFileDialog exportAsLocalFileDialog;
     static ImportFromTextDialog importFromTextDialog;
     static ImportFromDropbox importFromDropbox;
-    static ExportToDropbox exportToDropbox;
     static ScrollValuePopup scrollValuePopup;
     static AboutBox aboutBox;
     static ImportFromDropboxDialog importFromDropboxDialog;
@@ -395,9 +390,6 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsLocalFileItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
-	  exportToDropboxItem = new MenuItem(LS("Export To Dropbox"), new MyCommand("file", "exporttodropbox"));
-	  exportToDropboxItem.setEnabled(ExportToDropbox.isSupported());
-	  fileMenuBar.addItem(exportToDropboxItem);
 	  fileMenuBar.addSeparator();
 	  aboutItem=new MenuItem(LS("About"),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
@@ -2512,8 +2504,6 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
-    	if (item=="exporttodropbox")
-    		doExportToDropbox();
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
@@ -2773,10 +2763,7 @@ MouseOutHandler, MouseWheelHandler {
     	exportAsLocalFileDialog.show();
     }
     
-    void doExportToDropbox() {
-    	String dump = dumpCircuit();
-    	exportToDropbox = new ExportToDropbox(dump);
-    }
+
     
 
     
