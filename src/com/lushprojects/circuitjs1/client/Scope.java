@@ -52,11 +52,27 @@ class ScopePlot {
     }
     
     void reset(int spc, int sp) {
+	int oldSpc = scopePointCount;
 	scopePointCount = spc;
+	if (speed != sp)
+	    oldSpc = 0; // throw away old data
 	speed = sp;
+	double oldMin[] = minValues;
+	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
     	maxValues = new double[scopePointCount];
-    	ptr = ctr = 0;
+    	if (minValues != null) {
+    	    // preserve old data if possible
+    	    int i;
+    	    for (i = 0; i != scopePointCount && i != oldSpc; i++) {
+    		int i1 = (-i) & (scopePointCount-1);
+    		int i2 = (ptr-i) & (oldSpc-1);
+    		minValues[i1] = oldMin[i2];
+    		maxValues[i1] = oldMax[i2];
+    	    }
+    	} else
+    	    ctr = 0;
+    	ptr = 0;
     }
 
     void timeStep() {
@@ -936,7 +952,16 @@ class Scope {
 	}
     }
 
+    boolean canShowRMS() {
+	ScopePlot plot = visiblePlots.firstElement();
+	return (plot.units == Scope.UNITS_V || plot.units == Scope.UNITS_A);
+    }
+    
     void drawRMS(Graphics g) {
+	if (!canShowRMS()) {
+	    drawAverage(g);
+	    return;
+	}
 	ScopePlot plot = visiblePlots.firstElement();
 	int i;
 	double avg = 0;
@@ -998,6 +1023,67 @@ class Scope {
 	}
     }
     
+    void drawAverage(Graphics g) {
+	ScopePlot plot = visiblePlots.firstElement();
+	int i;
+	double avg = 0;
+    	int ipa = plot.ptr+scopePointCount-rect.width;
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double mid = (maxValue+minValue)/2;
+	int state = -1;
+	
+	// skip zeroes
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    if (maxV[ip] != 0) {
+		if (maxV[ip] > mid)
+		    state = 1;
+		break;
+	    }
+	}
+	int firstState = -state;
+	int start = i;
+	int end = 0;
+	int waveCount = 0;
+	double endAvg = 0;
+	for (; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    boolean sw = false;
+	    
+	    // switching polarity?
+	    if (state == 1) {
+		if (maxV[ip] < mid)
+		    sw = true;
+	    } else if (minV[ip] > mid)
+		sw = true;
+	    
+	    if (sw) {
+		state = -state;
+		
+		// completed a full cycle?
+		if (firstState == state) {
+		    if (waveCount == 0) {
+			start = i;
+			firstState = state;
+			avg = 0;
+		    }
+		    waveCount++;
+		    end = i;
+		    endAvg = avg;
+		}
+	    }
+	    if (waveCount > 0) {
+		double m = (maxV[ip]+minV[ip])*.5;
+		avg += m;
+	    }
+	}
+	if (waveCount > 1) {
+	    avg = (endAvg/(end-start));
+	    drawInfoText(g, plot.getUnitText(avg) + sim.LS(" average"));
+	}
+    }
+
     void drawFrequency(Graphics g) {
 	// try to get frequency
 	// get average
@@ -1156,6 +1242,8 @@ class Scope {
     		sim.scopeMinMenuItem  .setState(showMin);
     		sim.scopeFreqMenuItem .setState(showFreq);
     		sim.scopePowerMenuItem.setState(showingValue(VAL_POWER));
+    		sim.scopeRMSMenuItem  .setTitle(canShowRMS() ? sim.LS("Show RMS Average") :
+    		                                               sim.LS("Show Average"));
     		sim.scopeRMSMenuItem  .setState(showRMS);
     		sim.scopeVIMenuItem   .setState(plot2d && !plotXY);
     		sim.scopeXYMenuItem   .setState(plotXY);

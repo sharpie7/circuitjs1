@@ -67,6 +67,10 @@ public class CheckboxMenuItem extends MenuItem implements Command {
         	
       }
 
+	public void setTitle(String s) {
+	    	name = s;
+	}
+	
 	public void setState(boolean newstate) {
 		on = newstate;
 		String s;

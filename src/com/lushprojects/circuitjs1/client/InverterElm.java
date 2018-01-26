@@ -47,11 +47,16 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	int getDumpType() { return 'I'; }
+	
+	Point center;
+	
 	void draw(Graphics g) {
 	    drawPosts(g);
 	    draw2Leads(g);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, gatePoly);
+	    if (GateElm.useEuroGates())
+		drawCenteredText(g, "1", center.x, center.y-6, true);
 	    drawThickCircle(g, pcircle.x, pcircle.y, 3);
 	    curcount = updateDotCount(current, curcount);
 	    drawDots(g, lead2, point2, curcount);
@@ -67,10 +72,20 @@ package com.lushprojects.circuitjs1.client;
 	    lead1 = interpPoint(point1, point2, .5-ww/dn);
 	    lead2 = interpPoint(point1, point2, .5+(ww+2)/dn);
 	    pcircle = interpPoint(point1, point2, .5+(ww-2)/dn);
-	    Point triPoints[] = newPointArray(3);
-	    interpPoint2(lead1, lead2, triPoints[0], triPoints[1], 0, hs);
-	    triPoints[2] = interpPoint(point1, point2, .5+(ww-5)/dn);
-	    gatePoly = createPolygon(triPoints);
+	    
+	    if (GateElm.useEuroGates()) {
+		Point pts[] = newPointArray(4);
+		Point l2 = interpPoint(point1, point2, .5+(ww-5)/dn);   // make room for circle
+		interpPoint2(lead1, l2, pts[0], pts[1], 0, hs);
+		interpPoint2(lead1, l2, pts[3], pts[2], 1, hs);
+		gatePoly = createPolygon(pts);
+		center = interpPoint(lead1, l2, .5);
+	    } else {
+		Point triPoints[] = newPointArray(3);
+		interpPoint2(lead1, lead2, triPoints[0], triPoints[1], 0, hs);
+		triPoints[2] = interpPoint(point1, point2, .5+(ww-5)/dn);
+		gatePoly = createPolygon(triPoints);
+	    }
 	    setBbox(point1, point2, hs);
 	}
 	int getVoltageSourceCount() { return 1; }
