@@ -82,6 +82,7 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.Navigator;
 
@@ -98,7 +99,7 @@ MouseOutHandler, MouseWheelHandler {
     Button dumpMatrixButton;
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
-    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem;
+    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem, printItem;
     MenuItem importFromDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
@@ -390,6 +391,8 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsLocalFileItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
+	  printItem = new MenuItem(LS("Print"), new MyCommand("file","print"));
+	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
 	  aboutItem=new MenuItem(LS("About"),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
@@ -1005,10 +1008,10 @@ MouseOutHandler, MouseWheelHandler {
     void centreCircuit() {
 	Rectangle bounds = getCircuitBounds();
 	
-	// add some space on edges because bounds calculation is not perfect
     	double scale = 1;
     	
     	if (bounds != null)
+    	    // add some space on edges because bounds calculation is not perfect
     	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
     			     circuitArea.height/(double)(bounds.height+100));
     	scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
@@ -2504,6 +2507,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
+    	if (item=="print")
+    	    	doPrint();
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
@@ -2764,9 +2769,6 @@ MouseOutHandler, MouseWheelHandler {
     }
     
 
-    
-
-    
     String dumpCircuit() {
 	int i;
 	CustomLogicModel.clearDumpedFlags();
@@ -4772,4 +4774,56 @@ MouseOutHandler, MouseWheelHandler {
 	}
     }
     
+	native void printCanvas(CanvasElement cv) /*-{
+	    var img    = cv.toDataURL("image/png");
+	    var win = window.open("", "print", "height=500,width=500,status=yes,location=no");
+	    win.document.title = "Print Circuit";
+	    win.document.open();
+	    win.document.write('<img src="'+img+'"/>');
+	    win.document.close();
+	    win.print();
+	}-*/;
+
+	void doPrint() {
+	    	// create canvas to draw circuit into
+	    	Canvas cv = Canvas.createIfSupported();
+	    	Rectangle bounds = getCircuitBounds();
+	    	int w = bounds.width * 2;
+	    	int h = bounds.height * 2;
+	    	cv.setCoordinateSpaceWidth(w);
+	    	cv.setCoordinateSpaceHeight(h);
+	    
+		Context2d context = cv.getContext2d();
+		Graphics g = new Graphics(context);
+		context.setTransform(1, 0, 0, 1, 0, 0);
+	        
+	        double scale = 1;
+	        
+	        if (bounds != null)
+		    // add some space on edges because bounds calculation is not perfect
+	            scale = Math.min(w /(double)(bounds.width+140),
+	                             h/(double)(bounds.height+100));
+	        scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
+//	        console("scaling to " + scale + " " + cv.getOffsetWidth() + " " + bounds + " " + w + " " + h);
+		context.scale(scale, scale);
+		context.translate(-(bounds.x-70), -(bounds.y-50));
+		
+		// turn on white background, turn off current display
+		boolean p = printableCheckItem.getState();
+		boolean c = dotsCheckItem.getState();
+		printableCheckItem.setState(true);
+		dotsCheckItem.setState(false);
+	  	CircuitElm.whiteColor = Color.black;
+	  	CircuitElm.lightGrayColor = Color.black;
+	  	g.setColor(Color.white);
+		
+		int i;
+		for (i = 0; i != elmList.size(); i++) {
+		    getElm(i).draw(g);
+		}
+		printableCheckItem.setState(p);
+		dotsCheckItem.setState(c);
+		
+		printCanvas(cv.getCanvasElement());
+	}
 }
