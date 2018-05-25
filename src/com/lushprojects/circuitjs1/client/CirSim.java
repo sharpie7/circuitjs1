@@ -99,7 +99,7 @@ MouseOutHandler, MouseWheelHandler {
     Button dumpMatrixButton;
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
-    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem, printItem;
+    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem, printItem, recoverItem;
     MenuItem importFromDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
@@ -241,6 +241,7 @@ MouseOutHandler, MouseWheelHandler {
     static String muString = "\u03bc";
     static String ohmString = "\u03a9";
     String clipboard;
+    String recovery;
     Rectangle circuitArea;
     Vector<String> undoStack, redoStack;
     double transform[];
@@ -338,6 +339,7 @@ MouseOutHandler, MouseWheelHandler {
 	MenuBar m;
 
 	CircuitElm.initClass(this);
+	readRecovery();
 
 	QueryParameters qp = new QueryParameters();
 			
@@ -391,6 +393,9 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsLocalFileItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
+	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
+	  recoverItem.setEnabled(recovery != null);
+	  fileMenuBar.addItem(recoverItem);
 	  printItem = new MenuItem(LS("Print"), new MyCommand("file","print"));
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
@@ -2509,6 +2514,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsText();
     	if (item=="print")
     	    	doPrint();
+    	if (item=="recover")
+    	    	doRecover();
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
@@ -3129,8 +3136,11 @@ MouseOutHandler, MouseWheelHandler {
     	int gy = inverseTransformY(e.getY());
     	if (!circuitArea.contains(e.getX(), e.getY()))
     	    return;
-    	if (dragElm != null)
+    	boolean changed = false;
+    	if (dragElm != null) {
     	    dragElm.drag(gx, gy);
+    	    changed = true;
+    	}
     	boolean success = true;
     	switch (tempMouseMode) {
     	case MODE_DRAG_ALL:
@@ -3138,13 +3148,17 @@ MouseOutHandler, MouseWheelHandler {
     		break;
     	case MODE_DRAG_ROW:
     		dragRow(snapGrid(gx), snapGrid(gy));
+    		changed = true;
     		break;
     	case MODE_DRAG_COLUMN:
 		dragColumn(snapGrid(gx), snapGrid(gy));
+    		changed = true;
     		break;
     	case MODE_DRAG_POST:
-    		if (mouseElm != null)
+    		if (mouseElm != null) {
     		    dragPost(snapGrid(gx), snapGrid(gy));
+    		    changed = true;
+    		}
     		break;
     	case MODE_SELECT:
     		if (mouseElm == null)
@@ -3156,11 +3170,11 @@ MouseOutHandler, MouseWheelHandler {
     			return;
     		
     		    tempMouseMode = MODE_DRAG_SELECTED;
-    		    success = dragSelected(gx, gy);
+    		    changed = success = dragSelected(gx, gy);
     		}
     		break;
     	case MODE_DRAG_SELECTED:
-    		success = dragSelected(gx, gy);
+    		changed = success = dragSelected(gx, gy);
     		break;
 
     	}
@@ -3175,7 +3189,9 @@ MouseOutHandler, MouseWheelHandler {
     		dragGridX = snapGrid(dragGridX);
     		dragGridY = snapGrid(dragGridY);
     	    }
-    	}
+   	}
+    	if (changed)
+    	    writeRecoveryToStorage();
     }
     
     void dragSplitter(int x, int y) {
@@ -3809,6 +3825,12 @@ MouseOutHandler, MouseWheelHandler {
     	enableUndoRedo();
     }
 
+    void doRecover() {
+	pushUndo();
+	readSetup(recovery, false);
+	recoverItem.setEnabled(false);
+    }
+    
     void enableUndoRedo() {
     	redoItem.setEnabled(redoStack.size() > 0);
     	undoItem.setEnabled(undoStack.size() > 0);
@@ -3856,6 +3878,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
     	writeClipboardToStorage();
+    	writeRecoveryToStorage();
     	enablePaste();
     	needAnalyze();
     }
@@ -3873,7 +3896,24 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	clipboard = stor.getItem("circuitClipboard");
     }
-    
+
+    void writeRecoveryToStorage() {
+	console("write recovery");
+    	Storage stor = Storage.getLocalStorageIfSupported();
+    	if (stor == null)
+    		return;
+    	String s = dumpCircuit();
+    	stor.setItem("circuitRecovery", s);
+    }
+
+    void readRecovery() {
+	Storage stor = Storage.getLocalStorageIfSupported();
+	if (stor == null)
+		return;
+	recovery = stor.getItem("circuitRecovery");
+    }
+
+
     void doDelete() {
     	int i;
     	pushUndo();
@@ -3903,8 +3943,10 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
 
-    	if ( hasDeleted )
-    		needAnalyze();
+    	if ( hasDeleted ) {
+    	    needAnalyze();
+    	    writeRecoveryToStorage();
+    	}    
     }
 
     void doCopy() {
@@ -3995,6 +4037,7 @@ MouseOutHandler, MouseWheelHandler {
     	//	handleResize();
     	}
     	needAnalyze();
+    	writeRecoveryToStorage();
     }
 
     void clearSelection() {
