@@ -1593,7 +1593,7 @@ MouseOutHandler, MouseWheelHandler {
 		moved++; 
 //		console("moved to end " + moved);
 		if (moved > wireInfoList.size() * 2) {
-		    stop(LS("wire loop detected"), wire);
+		    stop("wire loop detected", wire);
 		    return false;
 		}
 	    }
@@ -1838,7 +1838,7 @@ MouseOutHandler, MouseWheelHandler {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
-		    stop(LS("Voltage source/wire loop with no resistance!"), ce);
+		    stop("Voltage source/wire loop with no resistance!", ce);
 		    return;
 		}
 	    }
@@ -1857,7 +1857,7 @@ MouseOutHandler, MouseWheelHandler {
 		    // give an error.
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
-			stop(LS("Capacitor loop with no resistance!"), ce);
+			stop("Capacitor loop with no resistance!", ce);
 			return;
 		    }
 		}
@@ -1879,7 +1879,7 @@ MouseOutHandler, MouseWheelHandler {
 	// needing to do it every frame
 	if (!circuitNonLinear) {
 	    if (!lu_factor(circuitMatrix, circuitMatrixSize, circuitPermute)) {
-		stop(LS("Singular matrix!"), null);
+		stop("Singular matrix!", null);
 		return;
 	    }
 	}
@@ -1936,7 +1936,7 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    if (j == matrixSize) {
 		if (qp == -1) {
-		    stop(LS("Matrix error"), null);
+		    stop("Matrix error", null);
 		    return;
 		}
 		RowInfo elt = circuitRowInfo[qp];
@@ -2147,7 +2147,7 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void stop(String s, CircuitElm ce) {
-	stopMessage = s;
+	stopMessage = LS(s);
 	circuitMatrix = null;  // causes an exception
 	stopElm = ce;
 	setSimRunning(false);
@@ -2352,7 +2352,7 @@ MouseOutHandler, MouseWheelHandler {
 		    for (i = 0; i != circuitMatrixSize; i++) {
 			double x = circuitMatrix[i][j];
 			if (Double.isNaN(x) || Double.isInfinite(x)) {
-			    stop(LS("nan/infinite matrix!"), null);
+			    stop("nan/infinite matrix!", null);
 			    return;
 			}
 		    }
@@ -2372,7 +2372,7 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		    if (!lu_factor(circuitMatrix, circuitMatrixSize,
 				  circuitPermute)) {
-			stop(LS("Singular matrix!"), null);
+			stop("Singular matrix!", null);
 			return;
 		    }
 		}
@@ -2412,7 +2412,7 @@ MouseOutHandler, MouseWheelHandler {
 	    if (subiter > 5)
 		console("converged after " + subiter + " iterations\n");
 	    if (subiter == subiterCount) {
-		stop(LS("Convergence failed!"), null);
+		stop("Convergence failed!", null);
 		break;
 	    }
 	    t += timeStep;
