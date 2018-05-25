@@ -98,7 +98,10 @@ public class circuitjs1 implements EntryPoint {
 
   void loadLocale() {
   	String url;
-  	String lang = language();
+	QueryParameters qp = new QueryParameters();
+	String lang = qp.getValue("lang");
+	if (lang == null)
+	    lang = language();
   	GWT.log("got language " + lang);
 //  	lang = "pl";
   	lang = lang.replaceFirst("-.*", "");
