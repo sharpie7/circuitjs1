@@ -274,4 +274,5 @@ package com.lushprojects.circuitjs1.client;
 		setPoints();
 	    }
 	}
+	int getShortcut() { return 'T'; }
     }
