@@ -42,6 +42,11 @@ class EditInfo {
 	}
 	
 	EditInfo setDimensionless() { dimensionless = true; return this; }
+	int changeFlag(int flags, int bit) {
+	    if (checkbox.getState())
+		return flags | bit;
+	    return flags & ~bit;
+	}
 	
 	String name, text;
 	double value, minval, maxval;
