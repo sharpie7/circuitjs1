@@ -3615,8 +3615,7 @@ MouseOutHandler, MouseWheelHandler {
     	// window receives focus
     	enablePaste();
     	
-    	// IES - hack to only handle left button events in the web version.
-    	if (e.getNativeButton() != NativeEvent.BUTTON_LEFT)
+    	if (e.getNativeButton() != NativeEvent.BUTTON_LEFT && e.getNativeButton() != NativeEvent.BUTTON_MIDDLE)
     		return;
     	
     	// set mouseElm in case we are on mobile
@@ -3642,7 +3641,8 @@ MouseOutHandler, MouseWheelHandler {
 		tempMouseMode = MODE_DRAG_ALL;
 	    else if (e.isControlKeyDown() || e.isMetaKeyDown())
 		tempMouseMode = MODE_DRAG_POST;
-	}
+	} else
+	    tempMouseMode = MODE_DRAG_ALL;
 
 	int gx = inverseTransformX(e.getX());
 	int gy = inverseTransformY(e.getY());
