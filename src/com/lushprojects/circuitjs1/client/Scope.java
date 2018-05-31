@@ -51,7 +51,7 @@ class ScopePlot {
 	return ptr + scopePointCount - w; 
     }
     
-    void reset(int spc, int sp) {
+    void reset(int spc, int sp, boolean full) {
 	int oldSpc = scopePointCount;
 	scopePointCount = spc;
 	if (speed != sp)
@@ -61,7 +61,7 @@ class ScopePlot {
 	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
     	maxValues = new double[scopePointCount];
-    	if (minValues != null) {
+    	if (oldMin != null && !full) {
     	    // preserve old data if possible
     	    int i;
     	    for (i = 0; i != scopePointCount && i != oldSpc; i++) {
@@ -211,7 +211,9 @@ class Scope {
     	  fft = null;
     }
     
-    void resetGraph() {
+    void resetGraph() { resetGraph(false); }
+    
+    void resetGraph(boolean full) {
     	scopePointCount = 1;
     	while (scopePointCount <= rect.width)
     		scopePointCount *= 2;
@@ -220,7 +222,7 @@ class Scope {
     	showNegative = false;
     	int i;
     	for (i = 0; i != plots.size(); i++)
-    	    plots.get(i).reset(scopePointCount, speed);
+    	    plots.get(i).reset(scopePointCount, speed, full);
 	calcVisiblePlots();
     	scopeTimeStep = sim.timeStep;
     	allocImage();

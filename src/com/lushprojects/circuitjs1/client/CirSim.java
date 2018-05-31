@@ -2482,7 +2482,7 @@ MouseOutHandler, MouseWheelHandler {
     	for (i = 0; i != elmList.size(); i++)
     		getElm(i).reset();
     	for (i = 0; i != scopeCount; i++)
-    		scopes[i].resetGraph();
+    		scopes[i].resetGraph(true);
     	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
     	if (t == 0)
@@ -2615,7 +2615,7 @@ MouseOutHandler, MouseWheelHandler {
     		if (item=="selecty")
     			scopes[menuScope].selectY();
     		if (item=="reset")
-    			scopes[menuScope].resetGraph();
+    			scopes[menuScope].resetGraph(true);
     		if (item.indexOf("show")==0 || item=="plotxy" || item=="showfft") {
     			scopes[menuScope].handleMenu(item);
     		}
