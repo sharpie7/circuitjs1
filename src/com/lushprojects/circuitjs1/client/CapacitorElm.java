@@ -102,6 +102,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void stamp() {
 	    if (sim.dcAnalysisFlag) {
+		// when finding DC operating point, replace cap with a 100M resistor
 		sim.stampResistor(nodes[0], nodes[1], 1e8);
 		curSourceValue = 0;
 		return;
