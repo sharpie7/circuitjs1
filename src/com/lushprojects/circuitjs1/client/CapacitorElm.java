@@ -101,6 +101,12 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	void stamp() {
+	    if (sim.dcAnalysisFlag) {
+		sim.stampResistor(nodes[0], nodes[1], 1e8);
+		curSourceValue = 0;
+		return;
+	    }
+	    
 	    // capacitor companion model using trapezoidal approximation
 	    // (Norton equivalent) consists of a current source in
 	    // parallel with a resistor.  Trapezoidal is more accurate
@@ -122,6 +128,10 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void calculateCurrent() {
 	    double voltdiff = volts[0] - volts[1];
+	    if (sim.dcAnalysisFlag) {
+		current = voltdiff/1e8;
+		return;
+	    }
 	    // we check compResistance because this might get called
 	    // before stamp(), which sets compResistance, causing
 	    // infinite current
@@ -130,6 +140,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	double curSourceValue;
 	void doStep() {
+	    if (sim.dcAnalysisFlag)
+		return;
 	    sim.stampCurrentSource(nodes[0], nodes[1], curSourceValue);
  	}
 	void getInfo(String arr[]) {

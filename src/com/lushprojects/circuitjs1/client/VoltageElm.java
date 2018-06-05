@@ -110,6 +110,9 @@ class VoltageElm extends CircuitElm {
 				getVoltage());
     }
     double getVoltage() {
+	if (waveform != WF_DC && sim.dcAnalysisFlag)
+	    return bias;
+	
 	double w = 2*pi*(sim.t-freqTimeZero)*frequency + phaseShift;
 	switch (waveform) {
 	case WF_DC: return maxVoltage+bias;

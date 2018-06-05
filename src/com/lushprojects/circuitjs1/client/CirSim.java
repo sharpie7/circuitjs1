@@ -188,6 +188,7 @@ MouseOutHandler, MouseWheelHandler {
     boolean dragging;
     boolean analyzeFlag;
     boolean dumpMatrix;
+    boolean dcAnalysisFlag;
  //   boolean useBufferedImage;
     boolean isMac;
     String ctrlMetaKey;
@@ -393,6 +394,7 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsLocalFileItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
+	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
 	  fileMenuBar.addItem(recoverItem);
@@ -1086,7 +1088,7 @@ MouseOutHandler, MouseWheelHandler {
 //	    return;
 	mystarttime=System.currentTimeMillis();
 	boolean didAnalyze = analyzeFlag;
-	if (analyzeFlag) {
+	if (analyzeFlag || dcAnalysisFlag) {
 	    analyzeCircuit();
 	    analyzeFlag = false;
 	}
@@ -1315,6 +1317,12 @@ MouseOutHandler, MouseWheelHandler {
 //	g.drawString("ms per frame (draw): "+ CircuitElm.showFormat.format((mydrawtime)/myframes),10,150);
 	
 	cvcontext.drawImage(backcontext.getCanvas(), 0.0, 0.0);
+	
+	// if we did DC analysis, we need to re-analyze the circuit with that flag cleared. 
+	if (dcAnalysisFlag) {
+	    dcAnalysisFlag = false;
+	    analyzeFlag = true;
+	}
 
 	lastFrameTime = lastTime;
 	mytime=mytime+System.currentTimeMillis()-mystarttime;
@@ -2512,6 +2520,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
+    	if (item=="dcanalysis")
+    	    	doDCAnalysis();
     	if (item=="print")
     	    	doPrint();
     	if (item=="recover")
@@ -4827,6 +4837,11 @@ MouseOutHandler, MouseWheelHandler {
 	    win.print();
 	}-*/;
 
+	void doDCAnalysis() {
+	    dcAnalysisFlag = true;
+	    resetAction();
+	}
+	
 	void doPrint() {
 	    	// create canvas to draw circuit into
 	    	Canvas cv = Canvas.createIfSupported();
