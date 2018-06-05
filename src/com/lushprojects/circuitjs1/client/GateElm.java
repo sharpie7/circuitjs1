@@ -163,11 +163,25 @@ package com.lushprojects.circuitjs1.client;
 	    return res;
 	}
 	abstract boolean calcFunction();
+	
+	int oscillationCount;
+	
 	void doStep() {
-	    int i;
 	    boolean f = calcFunction();
 	    if (isInverting())
 		f = !f;
+	    
+	    // detect oscillation (using same strategy as Atanua)
+	    if (lastOutput == !f) {
+		if (oscillationCount++ > 50) {
+		    // output is oscillating too much, randomly leave output the same
+		    oscillationCount = 0;
+		    if (sim.getrand(10) > 5)
+			f = lastOutput;
+		}
+	    } else
+		oscillationCount = 0;
+	    
 	    lastOutput = f;
 	    double res = f ? highVoltage : 0;
 	    sim.updateVoltageSource(0, nodes[inputCount], voltSource, res);
