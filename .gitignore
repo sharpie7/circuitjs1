@@ -47,3 +47,8 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+_site/
+.settings/
+.sass-cache/62cd2b36d03db6018ecc9342744cc15ee878861f/jekyll-theme-architect.scssc
+.sass-cache/62cd2b36d03db6018ecc9342744cc15ee878861f/normalize.scssc
+.sass-cache/62cd2b36d03db6018ecc9342744cc15ee878861f/rouge-github.scssc
