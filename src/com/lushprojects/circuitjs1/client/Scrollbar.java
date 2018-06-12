@@ -109,10 +109,10 @@ public class Scrollbar extends  Composite implements
 		attachedElm=e;
 	}
 	
-//	public Scrollbar(int orientation, int value, int visible, int minimum, int maximum, Command cmd) {
-//		this(orientation, value, visible, minimum, maximum);
-//		this.command=cmd;
-//	}
+	public Scrollbar(int orientation, int value, int visible, int minimum, int maximum, Command cmd) {
+		this(orientation, value, visible, minimum, maximum);
+		this.command=cmd;
+	}
 	
 	void draw() {
 		if (enabled)

@@ -129,29 +129,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmScopeMenuItem;
     MenuItem elmFlipMenuItem;
     MenuBar scopeMenuBar;
-    MenuBar transScopeMenuBar;
     MenuBar mainMenuBar;
-    CheckboxMenuItem scopeVMenuItem;
-    CheckboxMenuItem scopeIMenuItem;
-    CheckboxMenuItem scopeScaleMenuItem;
-    CheckboxMenuItem scopeMaxMenuItem;
-    CheckboxMenuItem scopeMinMenuItem;
-    CheckboxMenuItem scopeFreqMenuItem;
-    CheckboxMenuItem scopeFFTMenuItem;
-    CheckboxMenuItem scopeRMSMenuItem;
-    CheckboxMenuItem scopePowerMenuItem;
-    CheckboxMenuItem scopeIbMenuItem;
-    CheckboxMenuItem scopeIcMenuItem;
-    CheckboxMenuItem scopeIeMenuItem;
-    CheckboxMenuItem scopeVbeMenuItem;
-    CheckboxMenuItem scopeVbcMenuItem;
-    CheckboxMenuItem scopeVceMenuItem;
-    CheckboxMenuItem scopeVIMenuItem;
-    CheckboxMenuItem scopeXYMenuItem;
-    CheckboxMenuItem scopeResistMenuItem;
-    CheckboxMenuItem scopeVceIcMenuItem;
-    CheckboxMenuItem scopeMaxScaleMenuItem;
-    CheckboxMenuItem scopeMaxScaleTransMenuItem;
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     static HashMap<String,String> localizationMap;
@@ -629,8 +607,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
 	
-	scopeMenuBar = buildScopeMenu(false);
-	transScopeMenuBar = buildScopeMenu(true);
+	scopeMenuBar = buildScopeMenu();
 
 	CircuitElm.setColorScale();
 	
@@ -934,47 +911,17 @@ MouseOutHandler, MouseWheelHandler {
     }
     
 
-    MenuBar buildScopeMenu(boolean t) {
+    MenuBar buildScopeMenu() {
     	MenuBar m = new MenuBar(true);
     	m.addItem(new CheckboxAlignedMenuItem(LS("Remove Scope"),new MyCommand("scopepop", "remove")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 2x"), new MyCommand("scopepop", "speed2")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Speed 1/2x"), new MyCommand("scopepop", "speed1/2")));
-//    	m.addItem(new CheckboxAlignedMenuItem(LS("Scale 2x"), new MyCommand("scopepop", "scale")));
     	CheckboxMenuItem mi;
     	m.addItem(mi = new CheckboxMenuItem(LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
-    	if (t)
-    	    scopeMaxScaleTransMenuItem = mi;
-    	else
-    	    scopeMaxScaleMenuItem = mi;
     	m.addItem(new CheckboxAlignedMenuItem(LS("Stack"), new MyCommand("scopepop", "stack")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Unstack"), new MyCommand("scopepop", "unstack")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
-    	if (!t)
-    	    m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
+    	m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Reset"), new MyCommand("scopepop", "reset")));
-    	if (t) {
-    		m.addItem(scopeIbMenuItem = new CheckboxMenuItem(LS("Show Ib"), new MyCommand("scopepop", "showib")));
-    		m.addItem(scopeIcMenuItem = new CheckboxMenuItem(LS("Show Ic"), new MyCommand("scopepop", "showic")));
-    		m.addItem(scopeIeMenuItem = new CheckboxMenuItem(LS("Show Ie"), new MyCommand("scopepop", "showie")));
-    		m.addItem(scopeVbeMenuItem = new CheckboxMenuItem(LS("Show Vbe"), new MyCommand("scopepop", "showvbe")));
-    		m.addItem(scopeVbcMenuItem = new CheckboxMenuItem(LS("Show Vbc"), new MyCommand("scopepop", "showvbc")));
-    		m.addItem(scopeVceMenuItem = new CheckboxMenuItem(LS("Show Vce"), new MyCommand("scopepop", "showvce")));
-    		m.addItem(scopeVceIcMenuItem = new CheckboxMenuItem(LS("Show Vce vs Ic"), new MyCommand("scopepop", "showvcevsic")));
-    	} else {
-    		m.addItem(scopeVMenuItem = new CheckboxMenuItem(LS("Show Voltage"), new MyCommand("scopepop", "showvoltage")));
-    		m.addItem(scopeIMenuItem = new CheckboxMenuItem(LS("Show Current"), new MyCommand("scopepop", "showcurrent")));
-    		m.addItem(scopePowerMenuItem = new CheckboxMenuItem(LS("Show Power Consumed"), new MyCommand("scopepop", "showpower")));
-    		m.addItem(scopeScaleMenuItem = new CheckboxMenuItem(LS("Show Scale"), new MyCommand("scopepop", "showscale")));
-    		m.addItem(scopeMaxMenuItem = new CheckboxMenuItem(LS("Show Peak Value"), new MyCommand("scopepop", "showpeak")));
-    		m.addItem(scopeMinMenuItem = new CheckboxMenuItem(LS("Show Negative Peak Value"), new MyCommand("scopepop", "shownegpeak")));
-    		m.addItem(scopeFreqMenuItem = new CheckboxMenuItem(LS("Show Frequency"), new MyCommand("scopepop", "showfreq")));
-    		m.addItem(scopeFFTMenuItem = new CheckboxMenuItem(LS("Show Spectrum"), new MyCommand("scopepop", "showfft")));
-    		m.addItem(scopeRMSMenuItem = new CheckboxMenuItem(LS("Show RMS Average"), new MyCommand("scopepop", "showrms")));
-    		m.addItem(scopeVIMenuItem = new CheckboxMenuItem(LS("Show V vs I"), new MyCommand("scopepop", "showvvsi")));
-    		m.addItem(scopeXYMenuItem = new CheckboxMenuItem(LS("Plot X/Y"), new MyCommand("scopepop", "plotxy")));
-    		m.addItem(scopeSelectYMenuItem = new CheckboxAlignedMenuItem(LS("Select Y"), new MyCommand("scopepop", "selecty")));
-    		m.addItem(scopeResistMenuItem = new CheckboxMenuItem(LS("Show Resistance"), new MyCommand("scopepop", "showresistance")));
-    	}
+    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties"), new MyCommand("scopepop", "properties")));
     	return m;
     }
     
@@ -2626,9 +2573,8 @@ MouseOutHandler, MouseWheelHandler {
     			scopes[menuScope].selectY();
     		if (item=="reset")
     			scopes[menuScope].resetGraph(true);
-    		if (item.indexOf("show")==0 || item=="plotxy" || item=="showfft") {
-    			scopes[menuScope].handleMenu(item);
-    		}
+    		if (item=="properties")
+			scopes[menuScope].properties();
     		//cv.repaint();
     	}
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
