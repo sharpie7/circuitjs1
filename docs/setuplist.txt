@@ -47,7 +47,6 @@ indseries.txt Inductors in Series
 indpar.txt Inductors in Parallel
 capseries.txt Caps in Series
 cappar.txt Caps in Parallel
-+Oscillators
 >zvs-inductor.txt Oscilador Zero Voltage Switch - Derivado no Indutor
 zvs-capacitor.txt Oscilador Zero Voltage Switch - Derivado no Capacitor
 -
