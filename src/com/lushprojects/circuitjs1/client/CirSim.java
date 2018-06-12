@@ -3093,10 +3093,8 @@ MouseOutHandler, MouseWheelHandler {
     	if (!circuitArea.contains(e.getX(), e.getY()))
     	    return;
     	boolean changed = false;
-    	if (dragElm != null) {
+    	if (dragElm != null)
     	    dragElm.drag(gx, gy);
-    	    changed = true;
-    	}
     	boolean success = true;
     	switch (tempMouseMode) {
     	case MODE_DRAG_ALL:
@@ -3676,6 +3674,7 @@ MouseOutHandler, MouseWheelHandler {
     			elmList.addElement(dragElm);
     			dragElm.draggingDone();
     			circuitChanged = true;
+    			writeRecoveryToStorage();
     		}
     		dragElm = null;
     	}
