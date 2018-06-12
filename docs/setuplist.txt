@@ -4,7 +4,7 @@ ohms.txt Ohm's Law
 resistors.txt Resistors
 cap.txt Capacitor
 induct.txt Inductor
->lrc.txt LRC Circuit
+lrc.txt LRC Circuit
 voltdivide.txt Voltage Divider
 pot.txt Potentiometer
 potdivide.txt Potentiometer Divider
@@ -127,6 +127,8 @@ logconvert.txt Log Amplifier
 classd.txt Class-D Amplifier
 -
 +Oscillators
+>zvs-inductor.txt Oscilador Zero Voltage Switch - Derivado no Indutor
+zvs-capacitor.txt Oscilador Zero Voltage Switch - Derivado no Capacitor
 relaxosc.txt Relaxation Oscillator
 phaseshiftosc.txt Phase-Shift Oscillator
 triangle.txt Triangle Wave Generator
