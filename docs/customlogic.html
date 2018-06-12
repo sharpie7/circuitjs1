@@ -1,0 +1,108 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><style>#header + #content > #left > #rlblock_left,
+#content > #right > .dose > .dosesingle,
+#content > #center > .dose > .dosesingle
+{display:none !important;}</style><style>img[src="http://s05.flagcounter.com/count/pTvk/bg=FFFFFF/txt=000000/border=CCCCCC/columns=6/maxflags=36/viewers=0/labels=0/"]
+{display:none !important;}</style></head><body><h1>Custom Logic</h1>
+You can implement your own simple logic devices with custom logic chips.  (located under "Digital Chips")
+<p>
+Every custom logic device has a model name, which points to a model that describes how it works.  You can have any number of
+devices with the same model.  Editing the model changes the behavior of all devices that use that model.
+</p><p>
+When editing the model, you specify the inputs, the outputs, some info text (which is shown in the lower right
+corner when hovering the mouse over a device), and the definition.
+</p><p>
+The inputs (and outputs) is a comma separated list of <b>short</b> pin labels (one or two characters max).  You can also
+specify inverted labels, like <tt>/Q</tt> for <span style="text-decoration: overline">Q</span>.  Example: <tt>A,B,/C,/D</tt>
+</p><p>
+The definition is multiple lines of the form <i>input</i><tt>=</tt><i>output</i>.  The first <i>input</i> pattern that matches the
+input pins is chosen, and the output pins are set to match the <i>output</i> pattern.  The pattern can contain bit values
+(<tt>0</tt>, <tt>1</tt>), transitions (<tt>+</tt>, <tt>-</tt>), wildcards/don't cares (<tt>?</tt>), and pattern letters
+(<tt>A</tt>, <tt>B</tt>, etc.).  The <i>input</i> has to be at least as long as the number of input pins.  If it's longer,
+than the additional pattern characters will be matched against the output pins; this allows you to create devices with state.
+</p><p>
+Examples: 
+</p><p>
+</p><h3> 3 input NAND: </h3>
+<p>
+Inputs: <tt>A,B,C</tt><br>
+Outputs: <tt>X</tt><br>
+Definition:</p><pre>111=0
+???=1
+</pre>
+<p>
+If all three inputs are 1, the output is 0.  Otherwise, it's 1.
+</p><p>
+</p><h3>Full adder:</h3>
+<p>
+Inputs: <tt>A,B,C</tt><br>
+Outputs: <tt>S,C</tt><br>
+Definition:</p><pre>111=11
+110=10
+011=10
+101=10
+100=01
+010=01
+001=01
+000=00
+</pre>
+<h3>SR Latch:</h3>
+<p>
+Inputs: <tt>S,R</tt><br>
+Outputs: <tt>Q,/Q</tt><br>
+Definition:</p><pre>?? 00=10
+10 ??=10
+01 ??=01
+?? AB=AB
+</pre>
+The input pattern (the left side of the equals sign) matches S, R, Q, and
+<span style="text-decoration: overline">Q</span>, in that order.  The right side of
+the equals sign specifies the resulting Q and
+<span style="text-decoration: overline">Q</span>.
+<p>
+The first line sets the Q output if both outputs are low (this is needed
+ when resetting the circuit).
+The next line sets the outputs to 1,0 if set is high.  The second line 
+sets the outputs to 0,1 if reset is high.  The next
+line keeps the outputs the same otherwise.  (The first two letters match
+ the input pins and the second two letters match the output
+pins.  Spaces are ignored, but are added here for clarity.)
+</p><h3>D Flip Flop:</h3>
+<p>
+Inputs: <tt>D,Clk</tt><br>
+Outputs: <tt>Q,/Q</tt><br>
+Definition:</p><pre>?? 00=10
+0+ ??=01
+1+ ??=10
+?? AB=AB
+</pre>
+The first line sets the Q output if both outputs are low (this is needed when resetting the circuit).
+The next two lines set the Q output to match the D input on a rising transition of the clock.  The last 
+line keeps the outputs the same otherwise.
+<h3>JK Flip Flop:</h3>
+<p>
+Inputs: <tt>J,K,Clk</tt><br>
+Outputs: <tt>Q,/Q</tt><br>
+Definition:</p><pre>??? 00=10
+00- AB=AB
+10- ??=10
+01- ??=01
+11- AB=BA
+??? AB=AB
+</pre>
+The first line sets the Q output if both outputs are low (this is needed when resetting the circuit).
+The next four
+lines implement the JK flip flop logic
+on a negative transition of the clock.  The last line keeps the outputs the same otherwise.
+<h3>Digital Comparator:</h3>
+<p>
+Inputs: <tt>A2,A1,A0,B2,B1,B0</tt><br>
+Outputs: <tt>Eq,A&gt;,A&lt;</tt><br>
+Definition:</p><pre>ABC ABC=100
+1?? 0??=010
+A1? A0?=010
+AB1 AB0=010
+??? ???=001
+</pre>
+The first lines checks if the two inputs are equal.  The next three lines test if A is larger.  Otherwise, B must be larger.
+</body></html>

@@ -1,0 +1,51 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><style>#header + #content > #left > #rlblock_left,
+#content > #right > .dose > .dosesingle,
+#content > #center > .dose > .dosesingle
+{display:none !important;}</style><style>img[src="http://s05.flagcounter.com/count/pTvk/bg=FFFFFF/txt=000000/border=CCCCCC/columns=6/maxflags=36/viewers=0/labels=0/"]
+{display:none !important;}</style></head><body><h1>Controlled Source Output Function</h1>
+The controlled source elements take an output function parameter.  The output function takes the inputs, if any,
+as parameters (which will be <tt>a</tt>, <tt>b</tt>, etc. for a voltage-controlled sourse, or <tt>i</tt> for a current-controlled source).  You
+can also specify <tt>t</tt> for
+the current time, <tt>pi</tt> for &pi;, and <tt>e</tt> for <i>e</i> (unless there is an input <tt>e</tt>).
+<p>
+The function can use arithmetic like <tt>a+b</tt>, <tt>a*b</tt>, <tt>a^2/(b-1)</tt>, etc.  It can also use functions like
+<tt>sin(x)</tt>,
+<tt>cos(x)</tt>,
+<tt>abs(x)</tt>,
+<tt>exp(x)</tt>,
+<tt>log(x)</tt>,
+<tt>sqrt(x)</tt>,
+<tt>tan(x)</tt>,
+<tt>mod(x,y)</tt>,
+<tt>max(x,y,...)</tt>,
+and
+<tt>min(x,y,...)</tt>.
+</p><p>
+The <tt>tri(x)</tt> function is like <tt>sin(x)</tt>, but generates a triangle waveform.
+</p><p>
+The <tt>saw(x)</tt> function is like <tt>sin(x)</tt>, but generates a sawtooth waveform.
+</p><p>
+The <tt>step(x)</tt> function is 0 if <tt>x</tt> < 0, and 1 otherwise.
+The <tt>step(x,y)</tt> function is 1 if 0 < <tt>x</tt> < <tt>y</tt>, and 0 otherwise.
+</p><p>
+The <tt>clamp(x,lo,hi)</tt> function is equal to <tt>min(max(x, lo), hi)</tt>.
+</p><p>
+The <tt>pwl(x,x0,y0,x1,y1,x2,y2,...,xn,yn)</tt> function is short for piece-wise linear, and works as follows.  If <tt>x < x0</tt>, then
+the result is <tt>y0</tt>.  If <tt>x0 < x < x1</tt>, then the result is a linear interpolation between <tt>y0</tt> and <tt>y1</tt>.
+If <tt>x1 < x < x2</tt>, the result is a linear interpolation between <tt>y1</tt> and <tt>y2</tt>, etc.  If <tt>x > xn</tt>, then the
+result is <tt>yn</tt>.  For example, in the simplest case, <tt>pwl(t,0,0,.1,5)</tt> is a waveform that starts at 0 at time 0 and then
+ramps to 5 over 100ms, then stays at 5.
+</p><p>
+Examples:
+<ul>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+58+5+50%0A213+464+288+528+288+0+2+-(a-b)/1000%0Aw+464+288+464+240+0%0Aw+464+240+560+240+0%0Aw+560+240+560+288+0%0Aw+464+320+464+368+0%0Aw+464+368+560+368+0%0Aw+560+368+560+320+1%0Ag+464+368+464+400+0%0AR+464+240+464+176+0+0+40+5+0+0+0.5%0A">Resistor</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+58+5+50%0A213+464+288+528+288+0+3+-(a-c)/(1000*(1%5Cpb))%0Aw+464+288+464+240+0%0Aw+464+240+560+240+0%0Aw+560+240+560+288+0%0Aw+464+384+560+384+0%0Aw+560+384+560+320+1%0Ag+464+384+464+416+0%0AR+464+240+464+176+0+0+40+5+0+0+0.5%0Aw+464+352+464+384+0%0AR+464+320+400+320+0+2+40+2+3+0+0.5%0A">Varying Resistor</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+57+5+50%0Av+96+256+96+112+0+1+40+5+0+0+0.5%0Ag+96+256+96+304+0%0Aw+192+208+192+256+0%0Aw+336+176+336+256+0%0Ar+192+256+336+256+0+2000%0Ar+96+256+192+256+0+1000%0Aw+96+112+192+112+0%0Aw+192+112+192+176+0%0AO+336+176+400+176+0%0A212+192+176+288+176+0+2+(a-b)*1000%0Ag+288+208+288+224+0%0Aw+288+176+336+176+0%0Ao+0+64+0+4098+10+0.00009765625+0+2+0+3%0Ao+8+64+0+4098+20+0.00009765625+1+1%0A">Op-Amp</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+57+5+50%0Av+96+336+96+176+0+1+40+5+0+0+0.5%0Ag+96+336+96+384+0%0Aw+160+208+160+336+0%0Aw+352+176+352+336+0%0Ar+160+336+352+336+0+2000%0Ar+96+336+160+336+0+1000%0AO+352+176+464+176+0%0A212+224+176+320+176+0+4+clamp((a-b)*1000,d,c)%0Aw+320+176+352+176+0%0Aw+160+208+224+208+0%0Aw+96+176+224+176+0%0Ag+320+208+320+224+0%0AR+224+240+192+240+0+0+40+10+0+0+0.5%0AR+224+272+192+272+0+0+40+-10+0+0+0.5%0Ao+0+64+0+4098+10+0.00009765625+0+2+0+3%0Ao+6+64+0+4098+20+0.00009765625+1+1%0A">Op-Amp With Rails</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A212+496+272+544+272+0+2+a*b%0AR+496+272+448+272+0+1+40+5+0+0+0.5%0Aw+496+304+496+336+0%0AR+496+336+448+336+0+1+88+5+0+0+0.5%0Ag+592+304+592+320+0%0AO+592+272+672+272+0%0Ao+1+64+0+12291+24.99332860963738+0.0001+0+5+1+3+3+0+3+3+5+0%0A">Multiplier</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+16.817414165184545+50+5+50%0A212+496+272+544+272+0+1+abs(a)%0AR+496+272+448+272+0+1+40+5+0+0+0.5%0Ag+592+304+592+320+0%0AO+592+272+672+272+0%0Ao+1+64+0+12291+5.000000000000001+0.0001+0+3+1+3+3+0%0A">Full Rectifier</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A212+448+224+480+224+0+0+pwl(t,0,0,.1,5)%0Ag+544+256+544+288+0%0Ar+544+224+624+224+0+1000%0Ag+624+224+624+256+0%0Ao+2+64+0+4098+5+0.003125+0+2+2+3%0A">Voltage Ramp</a>
+<li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A214+304+192+336+192+0+2+i%0A214+304+288+352+288+0+2+i%0A213+464+240+480+240+0+2+a%5Cpb%0Aw+400+192+464+192+0%0Aw+464+192+464+240+0%0Aw+400+288+464+288+0%0Aw+464+288+464+272+0%0Ag+400+224+400+256+0%0Ag+400+320+400+352+0%0Aw+560+240+560+208+0%0Aw+560+208+624+208+1%0Ar+624+208+624+304+0+1000%0Aw+560+272+560+304+0%0Aw+560+304+624+304+0%0Ag+624+304+624+320+0%0Ai+224+192+304+192+0+0.015%0Aw+224+192+224+224+0%0Aw+224+224+304+224+0%0Aw+224+288+224+320+0%0Aw+224+320+304+320+0%0Ai+224+288+304+288+0+0.005%0A">Current Adder</a>
+</ul>
+</body></html>
