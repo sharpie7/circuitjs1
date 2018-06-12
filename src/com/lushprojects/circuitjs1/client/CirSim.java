@@ -3496,7 +3496,7 @@ MouseOutHandler, MouseWheelHandler {
     		if (m!=null) {
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(m);
-    			y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-430));
+    			y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-160));
     			contextPanel.setPopupPosition(menuX, y);
     			contextPanel.show();
     		}
