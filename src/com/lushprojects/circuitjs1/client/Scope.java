@@ -1142,7 +1142,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    int duty = 100*dutyLen/(end-start);
-	    drawInfoText(g, "Duty cycle " + duty + "%");
+	    drawInfoText(g, sim.LS("Duty cycle ") + duty + "%");
 	}
     }
 
