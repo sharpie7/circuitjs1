@@ -358,28 +358,28 @@ MouseOutHandler, MouseWheelHandler {
 	layoutPanel = new DockLayoutPanel(Unit.PX);
 	
 	  fileMenuBar = new MenuBar(true);
-	  importFromLocalFileItem = new MenuItem(LS("Import From Local File"), new MyCommand("file","importfromlocalfile"));
+	  importFromLocalFileItem = new MenuItem(LS("Open File..."), new MyCommand("file","importfromlocalfile"));
 	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	  fileMenuBar.addItem(importFromLocalFileItem);
-	  importFromTextItem = new MenuItem(LS("Import From Text"), new MyCommand("file","importfromtext"));
+	  importFromTextItem = new MenuItem(LS("Import From Text..."), new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
-	  importFromDropboxItem = new MenuItem(LS("Import From Dropbox"), new MyCommand("file", "importfromdropbox"));
+	  importFromDropboxItem = new MenuItem(LS("Import From Dropbox..."), new MyCommand("file", "importfromdropbox"));
 	  fileMenuBar.addItem(importFromDropboxItem); 
-	  exportAsUrlItem = new MenuItem(LS("Export As Link"), new MyCommand("file","exportasurl"));
-	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsLocalFileItem = new MenuItem(LS("Export As Local File"), new MyCommand("file","exportaslocalfile"));
+	  exportAsLocalFileItem = new MenuItem(LS("Save As..."), new MyCommand("file","exportaslocalfile"));
 	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	  fileMenuBar.addItem(exportAsLocalFileItem);
-	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
+	  exportAsUrlItem = new MenuItem(LS("Export As Link..."), new MyCommand("file","exportasurl"));
+	  fileMenuBar.addItem(exportAsUrlItem);
+	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
 	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
 	  fileMenuBar.addItem(recoverItem);
-	  printItem = new MenuItem(LS("Print"), new MyCommand("file","print"));
+	  printItem = new MenuItem(LS("Print..."), new MyCommand("file","print"));
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
-	  aboutItem=new MenuItem(LS("About"),(Command)null);
+	  aboutItem=new MenuItem(LS("About..."),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
@@ -599,7 +599,7 @@ MouseOutHandler, MouseWheelHandler {
 //	cv.setForeground(Color.lightGray);
 	
 	elmMenuBar = new MenuBar(true);
-	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit"),new MyCommand("elm","edit")));
+	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit..."),new MyCommand("elm","edit")));
 	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in Scope"), new MyCommand("elm","viewInScope")));
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem(LS("Cut"),new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
@@ -921,7 +921,7 @@ MouseOutHandler, MouseWheelHandler {
     	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
     	m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Reset"), new MyCommand("scopepop", "reset")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties"), new MyCommand("scopepop", "properties")));
+    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties..."), new MyCommand("scopepop", "properties")));
     	return m;
     }
     
