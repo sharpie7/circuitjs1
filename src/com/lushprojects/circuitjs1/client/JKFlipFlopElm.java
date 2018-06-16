@@ -21,7 +21,9 @@ package com.lushprojects.circuitjs1.client;
 
     class JKFlipFlopElm extends ChipElm {
     	final int FLAG_RESET = 2;
+    	final int FLAG_POSITIVE_EDGE = 4;
     	boolean hasReset(){return (flags & FLAG_RESET)!= 0;}
+    	boolean positiveEdgeTriggered() { return (flags & FLAG_POSITIVE_EDGE) != 0; }
 	public JKFlipFlopElm(int xx, int yy) { super(xx, yy); }
 	public JKFlipFlopElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
@@ -36,7 +38,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[0] = new Pin(0, SIDE_W, "J");
 	    pins[1] = new Pin(1, SIDE_W, "");
 	    pins[1].clock = true;
-	    pins[1].bubble = true;
+	    pins[1].bubble = !positiveEdgeTriggered();
 	    pins[2] = new Pin(2, SIDE_W, "K");
 	    pins[3] = new Pin(0, SIDE_E, "Q");
 	    pins[3].output = pins[3].state = true;
@@ -51,7 +53,12 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() { return 5 + (hasReset() ? 1:0); }
 	int getVoltageSourceCount() { return 2; }
 	void execute() {
-	    if (!pins[1].value && lastClock) {
+	    boolean transition;
+	    if (positiveEdgeTriggered())
+		transition = pins[1].value && !lastClock;
+	    else
+		transition = !pins[1].value && lastClock;
+	    if (transition) {
 		boolean q = pins[3].value;
 		if (pins[0].value) {
 		    if (pins[2].value)
@@ -81,6 +88,13 @@ package com.lushprojects.circuitjs1.client;
 			return ei;
 		}
 		
+		if (n == 3){
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Positive Edge Triggered", positiveEdgeTriggered());
+			return ei;
+		}
+		
+		
 		return super.getEditInfo(n);
 	}
 	
@@ -95,6 +109,10 @@ package com.lushprojects.circuitjs1.client;
 			setupPins();
 			allocNodes();
 			setPoints();
+		}
+		if (n == 3) {
+		    flags = ei.changeFlag(flags, FLAG_POSITIVE_EDGE);
+		    pins[1].bubble = !positiveEdgeTriggered();
 		}
 		
 		super.setEditValue(n, ei);

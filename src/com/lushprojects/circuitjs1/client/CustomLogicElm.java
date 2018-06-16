@@ -181,7 +181,7 @@ public class CustomLogicElm extends ChipElm {
 	}
 	if (n == 3) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button("Edit Model");
+            ei.button = new Button(sim.LS("Edit Model"));
             return ei;
 	}
 	return super.getEditInfo(n);

@@ -51,7 +51,7 @@ class ScopePlot {
 	return ptr + scopePointCount - w; 
     }
     
-    void reset(int spc, int sp) {
+    void reset(int spc, int sp, boolean full) {
 	int oldSpc = scopePointCount;
 	scopePointCount = spc;
 	if (speed != sp)
@@ -61,7 +61,7 @@ class ScopePlot {
 	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
     	maxValues = new double[scopePointCount];
-    	if (minValues != null) {
+    	if (oldMin != null && !full) {
     	    // preserve old data if possible
     	    int i;
     	    for (i = 0; i != scopePointCount && i != oldSpc; i++) {
@@ -158,7 +158,7 @@ class Scope {
     String text;
     Rectangle rect;
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
-    boolean showFFT, showNegative, showRMS;
+    boolean showFFT, showNegative, showRMS, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
 //    Image image;
@@ -175,6 +175,7 @@ class Scope {
     double scaleX, scaleY;
     int wheelDeltaY;
     int selectedPlot;
+    ScopePropertiesDialog properties;
     
     Scope(CirSim s) {
     	sim = s;
@@ -211,7 +212,9 @@ class Scope {
     	  fft = null;
     }
     
-    void resetGraph() {
+    void resetGraph() { resetGraph(false); }
+    
+    void resetGraph(boolean full) {
     	scopePointCount = 1;
     	while (scopePointCount <= rect.width)
     		scopePointCount *= 2;
@@ -220,7 +223,7 @@ class Scope {
     	showNegative = false;
     	int i;
     	for (i = 0; i != plots.size(); i++)
-    	    plots.get(i).reset(scopePointCount, speed);
+    	    plots.get(i).reset(scopePointCount, speed, full);
 	calcVisiblePlots();
     	scopeTimeStep = sim.timeStep;
     	allocImage();
@@ -1084,6 +1087,65 @@ class Scope {
 	}
     }
 
+    void drawDutyCycle(Graphics g) {
+	ScopePlot plot = visiblePlots.firstElement();
+	int i;
+	double avg = 0;
+    	int ipa = plot.ptr+scopePointCount-rect.width;
+    	double maxV[] = plot.maxValues;
+    	double minV[] = plot.minValues;
+    	double mid = (maxValue+minValue)/2;
+	int state = -1;
+	
+	// skip zeroes
+	for (i = 0; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    if (maxV[ip] != 0) {
+		if (maxV[ip] > mid)
+		    state = 1;
+		break;
+	    }
+	}
+	int firstState = 1;
+	int start = i;
+	int end = 0;
+	int waveCount = 0;
+	int dutyLen = 0;
+	int middle = 0;
+	for (; i != rect.width; i++) {
+	    int ip = (i+ipa) & (scopePointCount-1);
+	    boolean sw = false;
+	    
+	    // switching polarity?
+	    if (state == 1) {
+		if (maxV[ip] < mid)
+		    sw = true;
+	    } else if (minV[ip] > mid)
+		sw = true;
+	    
+	    if (sw) {
+		state = -state;
+		
+		// completed a full cycle?
+		if (firstState == state) {
+		    if (waveCount == 0) {
+			start = end = i;
+		    } else {
+			end = start;
+			start = i;
+			dutyLen = end-middle;
+		    }
+		    waveCount++;
+		} else
+		    middle = i;
+	    }
+	}
+	if (waveCount > 1) {
+	    int duty = 100*dutyLen/(end-start);
+	    drawInfoText(g, "Duty cycle " + duty + "%");
+	}
+    }
+
     void drawFrequency(Graphics g) {
 	// try to get frequency
 	// get average
@@ -1169,6 +1231,8 @@ class Scope {
     	}
     	if (showRMS)
     	    drawRMS(g);
+    	if (showDutyCycle)
+    	    drawDutyCycle(g);
     	String t = text;
     	if (t == null)
     	    t = getScopeText();
@@ -1194,8 +1258,21 @@ class Scope {
 	return plot.elm.getScopeText(plot.value);
     }
     
+    void setSpeed(int sp) {
+	if (sp < 1)
+	    sp = 1;
+	if (sp > 1024)
+	    sp = 1024;
+	speed = sp;
+	resetGraph();
+    }
+    
+    void properties() {
+	properties = new ScopePropertiesDialog(sim, this);
+    }
+    
     void speedUp() {
-    	if (speed > 1) {
+	    	if (speed > 1) {
     	    speed /= 2;
     	    resetGraph();
     	}
@@ -1222,38 +1299,13 @@ class Scope {
 	CircuitElm elm = plots.get(0).elm;
     	if (elm == null)
     	    return null;
-    	elm = getSingleElm();
-    	if (elm != null && elm instanceof TransistorElm) {
-    		sim.scopeIbMenuItem.setState(showingValue(VAL_IB));
-    		sim.scopeIcMenuItem.setState(showingValue(VAL_IC));
-    		sim.scopeIeMenuItem.setState(showingValue(VAL_IE));
-    		sim.scopeVbeMenuItem.setState(showingValue(VAL_VBE));
-    		sim.scopeVbcMenuItem.setState(showingValue(VAL_VBC));
-    		sim.scopeVceMenuItem.setState(showingValue(VAL_VCE));
-    		sim.scopeVceIcMenuItem.setState(isShowingVceAndIc());
-    	    	sim.scopeMaxScaleTransMenuItem.setState(maxScale && !plot2d);
-    		return sim.transScopeMenuBar;
-    	} else {
-    	    	sim.scopeRemovePlotMenuItem.setEnabled(visiblePlots.size() > 1 && !plot2d);
-    		sim.scopeVMenuItem    .setState(showV && !showingValue(VAL_POWER));
-    		sim.scopeIMenuItem    .setState(showI && !showingValue(VAL_POWER));
-    		sim.scopeScaleMenuItem.setState(showScale);
-    		sim.scopeMaxMenuItem  .setState(showMax);
-    		sim.scopeMinMenuItem  .setState(showMin);
-    		sim.scopeFreqMenuItem .setState(showFreq);
-    		sim.scopePowerMenuItem.setState(showingValue(VAL_POWER));
-    		sim.scopeRMSMenuItem  .setTitle(canShowRMS() ? sim.LS("Show RMS Average") :
-    		                                               sim.LS("Show Average"));
-    		sim.scopeRMSMenuItem  .setState(showRMS);
-    		sim.scopeVIMenuItem   .setState(plot2d && !plotXY);
-    		sim.scopeXYMenuItem   .setState(plotXY);
-    		sim.scopeSelectYMenuItem.setEnabled(plotXY);
-    		sim.scopeFFTMenuItem.setState(showFFT);
-    		sim.scopeResistMenuItem.setState(showingValue(VAL_R));
-    		sim.scopeResistMenuItem.setEnabled(elm != null && elm.canShowValueInScope(VAL_R));
-    	    	sim.scopeMaxScaleMenuItem.setState(maxScale && !plot2d);
-    		return sim.scopeMenuBar;
-    	}
+    	
+    	return sim.scopeMenuBar;
+    }
+    
+    boolean canShowResistance() {
+    	CircuitElm elm = getSingleElm();
+    	return elm != null && elm.canShowValueInScope(VAL_R);
     }
     
     boolean isShowingVceAndIc() {
@@ -1271,7 +1323,8 @@ class Scope {
     			(showFreq ? 8 : 0) |
     			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
     			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
-    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0);
+    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
+    			(showDutyCycle ? 32768 : 0);
     	flags |= FLAG_PLOTS;
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
@@ -1386,6 +1439,7 @@ class Scope {
     	showFFT((flags & 1024) != 0);
     	maxScale = (flags & 8192) != 0;
     	showRMS = (flags & 16384) != 0;
+    	showDutyCycle = (flags & 32768) != 0;
     }
     
     void allocImage() {
@@ -1398,23 +1452,27 @@ class Scope {
 	}
     }
     
-    void handleMenu(String mi) {
+    void handleMenu(String mi, boolean state) {
+	if (mi == "maxscale")
+	    	maxScale();
     	if (mi == "showvoltage")
-    		showVoltage(sim.scopeVMenuItem.getState());
+    		showVoltage(state);
     	if (mi == "showcurrent")
-    		showCurrent(sim.scopeIMenuItem.getState());
+    		showCurrent(state);
     	if (mi=="showscale")
-    		showScale(sim.scopeScaleMenuItem.getState());
+    		showScale(state);
     	if (mi == "showpeak")
-    		showMax(sim.scopeMaxMenuItem.getState());
+    		showMax(state);
     	if (mi == "shownegpeak")
-    		showMin(sim.scopeMinMenuItem.getState());
+    		showMin(state);
     	if (mi == "showfreq")
-    		showFreq(sim.scopeFreqMenuItem.getState());
+    		showFreq(state);
     	if (mi == "showfft")
-    		showFFT(sim.scopeFFTMenuItem.getState());
+    		showFFT(state);
     	if (mi == "showrms")
-    	    	showRMS = sim.scopeRMSMenuItem.getState();
+    	    	showRMS = state;
+    	if (mi == "showduty")
+    	    	showDutyCycle = state;
     	if (mi == "showpower")
     		setValue(VAL_POWER);
     	if (mi == "showib")
@@ -1437,12 +1495,12 @@ class Scope {
     	}
 
     	if (mi == "showvvsi") {
-    		plot2d = sim.scopeVIMenuItem.getState();
+    		plot2d = state;
     		plotXY = false;
     		resetGraph();
     	}
     	if (mi == "plotxy") {
-    		plotXY = plot2d = sim.scopeXYMenuItem.getState();
+    		plotXY = plot2d = state;
     		if (plot2d)
     		    plots = visiblePlots;
     		if (plot2d && plots.size() == 1)
@@ -1488,14 +1546,15 @@ class Scope {
     }
     
     void onMouseWheel(MouseWheelEvent e) {
-	wheelDeltaY += e.getDeltaY();
-	if (wheelDeltaY > 5) {
-	    slowDown();
-	    wheelDeltaY = 0;
-	}
-	if (wheelDeltaY < -5)
-	    speedUp();
-	    wheelDeltaY = 0;
+        wheelDeltaY += e.getDeltaY();
+        if (wheelDeltaY > 5) {
+            slowDown();
+            wheelDeltaY = 0;
+        }
+        if (wheelDeltaY < -5) {
+            speedUp();
+        	    wheelDeltaY = 0;
+    	}
     }
     
     CircuitElm getElm() {
