@@ -2482,6 +2482,13 @@ MouseOutHandler, MouseWheelHandler {
     		doUndo();
     	if (item=="redo")
     		doRedo();
+    	
+    	// if the mouse is hovering over an element, and a shortcut key is pressed, operate on that element (treat it like a context menu item selection)
+    	if (menu == "key" && mouseElm != null) {
+    	    menuElm = mouseElm;
+    	    menu = "elm";
+    	}
+    	
     	if (item == "cut") {
     		if (menu!="elm")
     			menuElm = null;
