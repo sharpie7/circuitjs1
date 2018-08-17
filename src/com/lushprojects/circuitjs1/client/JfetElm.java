@@ -122,12 +122,14 @@ package com.lushprojects.circuitjs1.client;
 	void calculateCurrent() {
 	    gateCurrent = pnp*diode.calculateCurrent(pnp*(volts[0]-volts[1]));
 	}
-	
+
+	boolean showBulk() { return false; }
 
 	int getDumpType() { return 'j'; }
 	// these values are taken from Hayes+Horowitz p155
 	double getDefaultThreshold() { return -4; }
 	double getDefaultBeta() { return .00125; }
+	double getBackwardCompatibilityBeta() { return getDefaultBeta(); }
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "JFET");
 	}
