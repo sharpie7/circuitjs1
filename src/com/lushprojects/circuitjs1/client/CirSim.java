@@ -3955,6 +3955,8 @@ MouseOutHandler, MouseWheelHandler {
     	clearSelection();
     	int i;
     	Rectangle oldbb = null;
+    	
+    	// get old bounding box
     	for (i = 0; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
     		Rectangle bb = ce.getBoundingBox();
@@ -3963,6 +3965,8 @@ MouseOutHandler, MouseWheelHandler {
     		else
     			oldbb = bb;
     	}
+    	
+    	// add new items
     	int oldsz = elmList.size();
     	if (dump != null)
     	    readSetup(dump, true, false);
@@ -3971,7 +3975,7 @@ MouseOutHandler, MouseWheelHandler {
     	    readSetup(clipboard, true, false);
     	}
 
-    	// select new items
+    	// select new items and get their bounding box
     	Rectangle newbb = null;
     	for (i = oldsz; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
@@ -3982,8 +3986,9 @@ MouseOutHandler, MouseWheelHandler {
     		else
     			newbb = bb;
     	}
+    	
     	if (oldbb != null && newbb != null && oldbb.intersects(newbb)) {
-    		// find a place for new items
+    		// find a place on the edge for new items
     		int dx = 0, dy = 0;
     		int spacew = circuitArea.width - oldbb.width - newbb.width;
     		int spaceh = circuitArea.height - oldbb.height - newbb.height;
@@ -3991,10 +3996,29 @@ MouseOutHandler, MouseWheelHandler {
     			dx = snapGrid(oldbb.x + oldbb.width  - newbb.x + gridSize);
     		else
     			dy = snapGrid(oldbb.y + oldbb.height - newbb.y + gridSize);
+    		
+    		// move new items near the mouse if possible
+    		if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY)) {
+    	    	    int gx = inverseTransformX(mouseCursorX);
+    	    	    int gy = inverseTransformY(mouseCursorY);
+    	    	    int mdx = snapGrid(gx-(newbb.x+newbb.width/2));
+    	    	    int mdy = snapGrid(gy-(newbb.y+newbb.height/2));
+    	    	    for (i = oldsz; i != elmList.size(); i++) {
+    	    		if (!getElm(i).allowMove(mdx, mdy))
+    	    		    break;
+    	    	    }
+    	    	    if (i == elmList.size()) {
+    	    		dx = mdx;
+    	    		dy = mdy;
+    	    	    }
+    		}
+    		
+    		// move the new items
     		for (i = oldsz; i != elmList.size(); i++) {
     			CircuitElm ce = getElm(i);
     			ce.move(dx, dy);
     		}
+    		
     		// center circuit
     	//	handleResize();
     	}
