@@ -200,7 +200,7 @@ package com.lushprojects.circuitjs1.client;
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0) {
+	    if (n == 0 && ei.value >= 1) {
 		inputCount = (int) ei.value;
 		setPoints();
 	    }
