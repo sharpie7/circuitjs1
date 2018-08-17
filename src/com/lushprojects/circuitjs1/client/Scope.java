@@ -956,6 +956,8 @@ class Scope {
     }
 
     boolean canShowRMS() {
+	if (visiblePlots.size() == 0)
+	    return false;
 	ScopePlot plot = visiblePlots.firstElement();
 	return (plot.units == Scope.UNITS_V || plot.units == Scope.UNITS_A);
     }
