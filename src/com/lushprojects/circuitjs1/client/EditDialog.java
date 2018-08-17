@@ -255,6 +255,9 @@ class EditDialog extends DialogBox  {
 		}
 	    }
 	    if (changed) {
+		// apply changes before we reset everything
+		apply();
+		
 		clearDialog();
 		buildDialog();
 	    }
