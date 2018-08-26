@@ -956,6 +956,8 @@ class Scope {
     }
 
     boolean canShowRMS() {
+	if (visiblePlots.size() == 0)
+	    return false;
 	ScopePlot plot = visiblePlots.firstElement();
 	return (plot.units == Scope.UNITS_V || plot.units == Scope.UNITS_A);
     }
@@ -1142,7 +1144,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    int duty = 100*dutyLen/(end-start);
-	    drawInfoText(g, "Duty cycle " + duty + "%");
+	    drawInfoText(g, sim.LS("Duty cycle ") + duty + "%");
 	}
     }
 

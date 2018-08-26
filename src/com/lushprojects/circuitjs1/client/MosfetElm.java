@@ -26,39 +26,75 @@ package com.lushprojects.circuitjs1.client;
 	int FLAG_DIGITAL = 4;
 	int FLAG_FLIP = 8;
 	int FLAG_HIDE_BULK = 16;
+	int FLAG_BODY_DIODE = 32;
+	int FLAG_BODY_TERMINAL = 64;
 	int FLAGS_GLOBAL = (FLAG_HIDE_BULK|FLAG_DIGITAL);
+	int bodyTerminal;
+	
 	double vt;
 	// beta = 1/(RdsON*(Vgs-Vt))
 	double beta;
 	static int globalFlags;
+	Diode diodeB1, diodeB2;
+	double diodeCurrent1, diodeCurrent2, bodyCurrent;
+	double curcount_body1, curcount_body2;
+	static double lastBeta;
+	
 	MosfetElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
 	    pnp = (pnpflag) ? -1 : 1;
 	    flags = (pnpflag) ? FLAG_PNP : 0;
+	    flags |= FLAG_BODY_DIODE;
 	    noDiagonal = true;
+	    setupDiodes();
 	    beta = getDefaultBeta();
 	    vt = getDefaultThreshold();
 	}
+	
 	public MosfetElm(int xa, int ya, int xb, int yb, int f,
 			 StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    pnp = ((f & FLAG_PNP) != 0) ? -1 : 1;
 	    noDiagonal = true;
+	    setupDiodes();
 	    vt = getDefaultThreshold();
-	    beta = getDefaultBeta();
+	    beta = getBackwardCompatibilityBeta();
 	    try {
 		vt = new Double(st.nextToken()).doubleValue();
 		beta = new Double(st.nextToken()).doubleValue();
 	    } catch (Exception e) {}
 	    globalFlags = flags & (FLAGS_GLOBAL);
+	    allocNodes(); // make sure volts[] has the right number of elements when hasBodyTerminal() is true 
 	}
+
+	// set up body diodes
+	void setupDiodes() {
+	    // diode from node 1 to body terminal 
+	    diodeB1 = new Diode(sim);
+	    diodeB1.setup(.8,  0);
+	    // diode from node 2 to body terminal
+	    diodeB2 = new Diode(sim);
+	    diodeB2.setup(.8,  0);
+	}
+	
 	double getDefaultThreshold() { return 1.5; }
-	double getDefaultBeta() { return .02; }
+	
+	// default beta for new elements
+	double getDefaultBeta() { return lastBeta == 0 ? getBackwardCompatibilityBeta() : lastBeta; }
+	
+	// default for elements in old files with no configurable beta.  JfetElm overrides this.
+	// Not sure where this value came from, but the ZVP3306A has a beta of about .027.  Power MOSFETs have much higher betas (like 80 or more)
+	double getBackwardCompatibilityBeta() { return .02; }
+	
 	boolean nonLinear() { return true; }
 	boolean drawDigital() { return (flags & FLAG_DIGITAL) != 0; }
 	boolean showBulk() { return (flags & (FLAG_DIGITAL|FLAG_HIDE_BULK)) == 0; }
+	boolean hasBodyTerminal() { return (flags & FLAG_BODY_TERMINAL) != 0; }
+	boolean doBodyDiode() { return (flags & FLAG_BODY_DIODE) != 0 && showBulk(); }
 	void reset() {
 	    lastv1 = lastv2 = volts[0] = volts[1] = volts[2] = curcount = 0;
+	    diodeB1.reset();
+	    diodeB2.reset();
 	}
 	String dump() {
 	    return super.dump() + " " + vt + " " + beta;
@@ -100,16 +136,18 @@ package com.lushprojects.circuitjs1.client;
 		setVoltageColor(g, volts[2]);
 		drawThickLine(g, drn[1], drn[2]);
 		
+		// draw bulk connection
 		if (showBulk()) {
-		    setVoltageColor(g, pnp == -1 ? volts[2] : volts[1]);
-		    drawThickLine(g, pnp == -1 ? drn[0] : src[0], body[0]);
+		    setVoltageColor(g, volts[bodyTerminal]);
+		    if (!hasBodyTerminal())
+			drawThickLine(g, pnp == -1 ? drn[0] : src[0], body[0]);
 		    drawThickLine(g, body[0], body[1]);
 		}
 		
 		// draw arrow
 		if (!drawDigital()) {
-		    setVoltageColor(g, pnp == -1 ? volts[2] : volts[1]);
-			g.fillPolygon(arrowPoly);
+		    setVoltageColor(g, volts[bodyTerminal]);
+		    g.fillPolygon(arrowPoly);
 		}
 		if (sim.powerCheckItem.getState())
 			g.setColor(Color.gray);
@@ -127,6 +165,18 @@ package com.lushprojects.circuitjs1.client;
 			g.setFont(unitsFont);
 			drawCenteredText(g, s, x2+2, y2, false);
 		}
+		curcount = updateDotCount(-ids, curcount);
+		drawDots(g, src[0], src[1], curcount);
+		drawDots(g, src[1], drn[1], curcount);
+		drawDots(g, drn[1], drn[0], curcount);
+		
+		if (showBulk()) {
+		    curcount_body1 = updateDotCount(diodeCurrent1, curcount_body1);
+		    curcount_body2 = updateDotCount(diodeCurrent2, curcount_body2);
+		    drawDots(g, src [0], body[0], -curcount_body1);
+		    drawDots(g, body[0], drn [0],  curcount_body2);
+		}
+		
 		if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
 			g.setColor(Color.white);
 			g.setFont(unitsFont);
@@ -134,22 +184,31 @@ package com.lushprojects.circuitjs1.client;
 			g.drawString("G", gate[1].x-10*ds, gate[1].y-5);
 			g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*ds, src[0].y+4); // x+6 if ds=1, -12 if -1
 			g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*ds, drn[0].y+4);
+			if (hasBodyTerminal())
+			    g.drawString("B",  body[0].x-3+9*ds,  body[0].y+4);
 		}	    
-		curcount = updateDotCount(-ids, curcount);
-		drawDots(g, src[0], src[1], curcount);
-		drawDots(g, src[1], drn[1], curcount);
-		drawDots(g, drn[1], drn[0], curcount);
+		
 		drawPosts(g);
 	}
+	
+	// post 0 = gate, 1 = source for NPN, 2 = drain for NPN, 3 = body (if present)
+	// for PNP, 1 is drain, 2 is source
 	Point getPost(int n) {
-	    return (n == 0) ? point1 : (n == 1) ? src[0] : drn[0];
+	    return (n == 0) ? point1 : (n == 1) ? src[0] :
+		(n == 2) ? drn[0] : body[0];
 	}
+	
 	double getCurrent() { return ids; }
 	double getPower() { return ids*(volts[2]-volts[1]); }
-	int getPostCount() { return 3; }
+	int getPostCount() { return hasBodyTerminal() ? 4 : 3; }
 
 	int pcircler;
-	Point src[], drn[], gate[], body[], pcircle;
+	
+	// points for source and drain (these are swapped on PNP mosfets)
+	Point src[], drn[];
+	
+	// points for gate, body, and the little circle on PNP mosfets
+	Point gate[], body[], pcircle;
 	Polygon arrowPoly;
 	
 	void setPoints() {
@@ -198,6 +257,11 @@ package com.lushprojects.circuitjs1.client;
 		pcircle = interpPoint(point1, point2, 1-dist/dn);
 		pcircler = 3;
 	    }
+	    
+	    if (hasBodyTerminal())
+		bodyTerminal = 3;
+	    else
+		bodyTerminal = (pnp == -1) ? 2 : 1;
 	}
 
 	double lastv1, lastv2;
@@ -208,10 +272,27 @@ package com.lushprojects.circuitjs1.client;
 	void stamp() {
 	    sim.stampNonLinear(nodes[1]);
 	    sim.stampNonLinear(nodes[2]);
+	    
+	    if (doBodyDiode()) {
+		if (pnp == -1) {
+		    // pnp: diodes conduct when S or D are higher than body
+		    diodeB1.stamp(nodes[1], nodes[bodyTerminal]);
+		    diodeB2.stamp(nodes[2], nodes[bodyTerminal]);
+		} else {
+		    // npn: diodes conduct when body is higher than S or D
+		    diodeB1.stamp(nodes[bodyTerminal], nodes[1]);
+		    diodeB2.stamp(nodes[bodyTerminal], nodes[2]);
+		}
+	    }
 	}
 	
 	boolean nonConvergence(double last, double now) {
 	    double diff = Math.abs(last-now);
+	    
+	    // high beta MOSFETs are more sensitive to small differences, so we are more strict about convergence testing
+	    if (beta > 1)
+		diff *= 100;
+	    
 	    // difference of less than 10mV is fine
 	    if (diff < .01)
 		return false;
@@ -224,19 +305,43 @@ package com.lushprojects.circuitjs1.client;
 	    return true;
 	}
 	
+	void stepFinished() {
+	    calculate(true);
+	    
+	    // fix current if body is connected to source or drain
+	    if (bodyTerminal == 1)
+		diodeCurrent1 = -diodeCurrent2;
+	    if (bodyTerminal == 2)
+		diodeCurrent2 = -diodeCurrent1;
+	}
+
 	void doStep() {
-	    double vs[] = new double[3];
-	    vs[0] = volts[0];
-	    vs[1] = volts[1];
-	    vs[2] = volts[2];
-	    if (vs[1] > lastv1 + .5)
-		vs[1] = lastv1 + .5;
-	    if (vs[1] < lastv1 - .5)
-		vs[1] = lastv1 - .5;
-	    if (vs[2] > lastv2 + .5)
-		vs[2] = lastv2 + .5;
-	    if (vs[2] < lastv2 - .5)
-		vs[2] = lastv2 - .5;
+	    calculate(false);
+	}
+	
+	double lastv0;
+	
+	// this is called in doStep to stamp the matrix, and also called in stepFinished() to calculate the current
+	void calculate(boolean finished) {
+	    double vs[];
+	    if (finished)
+		vs = volts;
+	    else {
+		// limit voltage changes to .5V
+		vs = new double[3];
+		vs[0] = volts[0];
+		vs[1] = volts[1];
+		vs[2] = volts[2];
+		if (vs[1] > lastv1 + .5)
+		    vs[1] = lastv1 + .5;
+		if (vs[1] < lastv1 - .5)
+		    vs[1] = lastv1 - .5;
+		if (vs[2] > lastv2 + .5)
+		    vs[2] = lastv2 + .5;
+		if (vs[2] < lastv2 - .5)
+		    vs[2] = lastv2 - .5;
+	    }
+	    
 	    int source = 1;
 	    int drain = 2;
 	    
@@ -249,8 +354,9 @@ package com.lushprojects.circuitjs1.client;
 	    int gate = 0;
 	    double vgs = vs[gate ]-vs[source];
 	    double vds = vs[drain]-vs[source];
-	    if (nonConvergence(lastv1, vs[1]) || nonConvergence(lastv2, vs[2]))
+	    if (!finished && (nonConvergence(lastv1, vs[1]) || nonConvergence(lastv2, vs[2]) || nonConvergence(lastv0, vs[0])))
 		sim.converged = false;
+	    lastv0 = vs[0];
 	    lastv1 = vs[1];
 	    lastv2 = vs[2];
 	    double realvgs = vgs;
@@ -280,7 +386,26 @@ package com.lushprojects.circuitjs1.client;
 		ids = .5*beta*(vgs-vt)*(vgs-vt) + (vds-(vgs-vt))*Gds;
 		mode = 2;
 	    }
-	    double rs = -pnp*ids + Gds*realvds + gm*realvgs;
+	    
+	    if (doBodyDiode()) {
+		diodeB1.doStep(pnp*(volts[bodyTerminal]-volts[1]));
+		diodeCurrent1 = diodeB1.calculateCurrent(pnp*(volts[bodyTerminal]-volts[1]))*pnp;
+		diodeB2.doStep(pnp*(volts[bodyTerminal]-volts[2]));
+		diodeCurrent2 = diodeB2.calculateCurrent(pnp*(volts[bodyTerminal]-volts[2]))*pnp;
+	    } else
+		diodeCurrent1 = diodeCurrent2 = 0;
+
+	    double ids0 = ids;
+	    
+	    // flip ids if we swapped source and drain above
+	    if (source == 2 && pnp == 1 ||
+		source == 1 && pnp == -1)
+		ids = -ids;
+
+	    if (finished)
+		return;
+	    
+	    double rs = -pnp*ids0 + Gds*realvds + gm*realvgs;
 	    //System.out.println("M " + vds + " " + vgs + " " + ids + " " + gm + " "+ Gds + " " + volts[0] + " " + volts[1] + " " + volts[2] + " " + source + " " + rs + " " + this);
 	    sim.stampMatrix(nodes[drain],  nodes[drain],  Gds);
 	    sim.stampMatrix(nodes[drain],  nodes[source], -Gds-gm); 
@@ -292,10 +417,8 @@ package com.lushprojects.circuitjs1.client;
 	    
 	    sim.stampRightSide(nodes[drain],  rs);
 	    sim.stampRightSide(nodes[source], -rs);
-	    if (source == 2 && pnp == 1 ||
-		source == 1 && pnp == -1)
-		ids = -ids;
 	}
+	
 	@SuppressWarnings("static-access")
 	void getFetInfo(String arr[], String n) {
 	    arr[0] = sim.LS(((pnp == -1) ? "p-" : "n-") + n);
@@ -307,6 +430,8 @@ package com.lushprojects.circuitjs1.client;
 		(mode == 1) ? "linear" : "saturation");
 	    arr[5] = "gm = " + getUnitText(gm, "A/V");
 	    arr[6] = "P = " + getUnitText(getPower(), "W");
+	    if (showBulk())
+		arr[7] = "Ib = " + getUnitText(bodyTerminal == 1 ? -diodeCurrent1 : bodyTerminal == 2 ? diodeCurrent2 : -pnp*(diodeCurrent1+diodeCurrent2), "A");
 	}
 	void getInfo(String arr[]) {
 	    getFetInfo(arr, "MOSFET");
@@ -326,17 +451,27 @@ package com.lushprojects.circuitjs1.client;
 			return new EditInfo("Beta", beta, .01, 5);
 		if (n == 2) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
-			ei.checkbox = new Checkbox("Digital Symbol", drawDigital());
+			ei.checkbox = new Checkbox("Show Bulk", showBulk());
 			return ei;
 		}
 		if (n == 3) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
-			ei.checkbox = new Checkbox("Show Bulk", showBulk());
+			ei.checkbox = new Checkbox("Swap D/S", (flags & FLAG_FLIP) != 0);
 			return ei;
 		}
-		if (n == 4) {
+		if (n == 4 && !showBulk()) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
-			ei.checkbox = new Checkbox("Swap D/S", (flags & FLAG_FLIP) != 0);
+			ei.checkbox = new Checkbox("Digital Symbol", drawDigital());
+			return ei;
+		}
+		if (n == 4 && showBulk()) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Simulate Body Diode", (flags & FLAG_BODY_DIODE) != 0);
+			return ei;
+		}
+		if (n == 5 && doBodyDiode()) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Body Terminal", (flags & FLAG_BODY_TERMINAL) != 0);
 			return ei;
 		}
 
@@ -346,28 +481,40 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 0)
 			vt = pnp*ei.value;
 		if (n == 1)
-			beta = ei.value;	
+			beta = lastBeta = ei.value;	
 		if (n == 2) {
+		    globalFlags = (!ei.checkbox.getState()) ? (globalFlags|FLAG_HIDE_BULK) :
+				(globalFlags & ~(FLAG_HIDE_BULK|FLAG_DIGITAL));
+		    setPoints();
+		    ei.newDialog = true;
+		}
+		if (n == 3) {
+			flags = (ei.checkbox.getState()) ? (flags | FLAG_FLIP) :
+				(flags & ~FLAG_FLIP);
+			setPoints();
+		}
+		if (n == 4 && !showBulk()) {
 		    globalFlags = (ei.checkbox.getState()) ? (globalFlags|FLAG_DIGITAL) :
 				(globalFlags & ~FLAG_DIGITAL);
 		    setPoints();
 		}
-		if (n == 3) {
-		    globalFlags = (!ei.checkbox.getState()) ? (globalFlags|FLAG_HIDE_BULK) :
-				(globalFlags & ~FLAG_HIDE_BULK);
-		    setPoints();
+		if (n == 4 && showBulk()) {
+		    flags = ei.changeFlag(flags, FLAG_BODY_DIODE);
+		    ei.newDialog = true;
 		}
-		if (n == 4) {
-			flags = (ei.checkbox.getState()) ? (flags | FLAG_FLIP) :
-				(flags & ~FLAG_FLIP);
-			setPoints();
+		if (n == 5) {
+		    flags = ei.changeFlag(flags, FLAG_BODY_TERMINAL);
+		    allocNodes();
+		    setPoints();
 		}
 	}
 	double getCurrentIntoPoint(int xa, int ya) {
 	    if (xa == x && ya == y)
 		return 0;
+	    if (hasBodyTerminal() && xa == body[0].x && ya == body[0].y)
+		return -diodeCurrent1 - diodeCurrent2;
 	    if (xa == src[0].x && ya == src[0].y)
-		return ids;
-	    return -ids;
+		return ids + diodeCurrent1;
+	    return -ids + diodeCurrent2;
 	}
     }

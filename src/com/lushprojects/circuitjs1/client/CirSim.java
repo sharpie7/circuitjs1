@@ -358,28 +358,28 @@ MouseOutHandler, MouseWheelHandler {
 	layoutPanel = new DockLayoutPanel(Unit.PX);
 	
 	  fileMenuBar = new MenuBar(true);
-	  importFromLocalFileItem = new MenuItem(LS("Import From Local File"), new MyCommand("file","importfromlocalfile"));
+	  importFromLocalFileItem = new MenuItem(LS("Open File..."), new MyCommand("file","importfromlocalfile"));
 	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	  fileMenuBar.addItem(importFromLocalFileItem);
-	  importFromTextItem = new MenuItem(LS("Import From Text"), new MyCommand("file","importfromtext"));
+	  importFromTextItem = new MenuItem(LS("Import From Text..."), new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
-	  importFromDropboxItem = new MenuItem(LS("Import From Dropbox"), new MyCommand("file", "importfromdropbox"));
+	  importFromDropboxItem = new MenuItem(LS("Import From Dropbox..."), new MyCommand("file", "importfromdropbox"));
 	  fileMenuBar.addItem(importFromDropboxItem); 
-	  exportAsUrlItem = new MenuItem(LS("Export As Link"), new MyCommand("file","exportasurl"));
-	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsLocalFileItem = new MenuItem(LS("Export As Local File"), new MyCommand("file","exportaslocalfile"));
+	  exportAsLocalFileItem = new MenuItem(LS("Save As..."), new MyCommand("file","exportaslocalfile"));
 	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	  fileMenuBar.addItem(exportAsLocalFileItem);
-	  exportAsTextItem = new MenuItem(LS("Export As Text"), new MyCommand("file","exportastext"));
+	  exportAsUrlItem = new MenuItem(LS("Export As Link..."), new MyCommand("file","exportasurl"));
+	  fileMenuBar.addItem(exportAsUrlItem);
+	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
 	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
 	  fileMenuBar.addItem(recoverItem);
-	  printItem = new MenuItem(LS("Print"), new MyCommand("file","print"));
+	  printItem = new MenuItem(LS("Print..."), new MyCommand("file","print"));
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
-	  aboutItem=new MenuItem(LS("About"),(Command)null);
+	  aboutItem=new MenuItem(LS("About..."),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
@@ -599,7 +599,7 @@ MouseOutHandler, MouseWheelHandler {
 //	cv.setForeground(Color.lightGray);
 	
 	elmMenuBar = new MenuBar(true);
-	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit"),new MyCommand("elm","edit")));
+	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit..."),new MyCommand("elm","edit")));
 	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in Scope"), new MyCommand("elm","viewInScope")));
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem(LS("Cut"),new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
@@ -921,7 +921,7 @@ MouseOutHandler, MouseWheelHandler {
     	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
     	m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
     	m.addItem(new CheckboxAlignedMenuItem(LS("Reset"), new MyCommand("scopepop", "reset")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties"), new MyCommand("scopepop", "properties")));
+    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties..."), new MyCommand("scopepop", "properties")));
     	return m;
     }
     
@@ -2482,6 +2482,13 @@ MouseOutHandler, MouseWheelHandler {
     		doUndo();
     	if (item=="redo")
     		doRedo();
+    	
+    	// if the mouse is hovering over an element, and a shortcut key is pressed, operate on that element (treat it like a context menu item selection)
+    	if (menu == "key" && mouseElm != null) {
+    	    menuElm = mouseElm;
+    	    menu = "elm";
+    	}
+    	
     	if (item == "cut") {
     		if (menu!="elm")
     			menuElm = null;
@@ -3948,6 +3955,8 @@ MouseOutHandler, MouseWheelHandler {
     	clearSelection();
     	int i;
     	Rectangle oldbb = null;
+    	
+    	// get old bounding box
     	for (i = 0; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
     		Rectangle bb = ce.getBoundingBox();
@@ -3956,6 +3965,8 @@ MouseOutHandler, MouseWheelHandler {
     		else
     			oldbb = bb;
     	}
+    	
+    	// add new items
     	int oldsz = elmList.size();
     	if (dump != null)
     	    readSetup(dump, true, false);
@@ -3964,7 +3975,7 @@ MouseOutHandler, MouseWheelHandler {
     	    readSetup(clipboard, true, false);
     	}
 
-    	// select new items
+    	// select new items and get their bounding box
     	Rectangle newbb = null;
     	for (i = oldsz; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
@@ -3975,8 +3986,9 @@ MouseOutHandler, MouseWheelHandler {
     		else
     			newbb = bb;
     	}
+    	
     	if (oldbb != null && newbb != null && oldbb.intersects(newbb)) {
-    		// find a place for new items
+    		// find a place on the edge for new items
     		int dx = 0, dy = 0;
     		int spacew = circuitArea.width - oldbb.width - newbb.width;
     		int spaceh = circuitArea.height - oldbb.height - newbb.height;
@@ -3984,10 +3996,29 @@ MouseOutHandler, MouseWheelHandler {
     			dx = snapGrid(oldbb.x + oldbb.width  - newbb.x + gridSize);
     		else
     			dy = snapGrid(oldbb.y + oldbb.height - newbb.y + gridSize);
+    		
+    		// move new items near the mouse if possible
+    		if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY)) {
+    	    	    int gx = inverseTransformX(mouseCursorX);
+    	    	    int gy = inverseTransformY(mouseCursorY);
+    	    	    int mdx = snapGrid(gx-(newbb.x+newbb.width/2));
+    	    	    int mdy = snapGrid(gy-(newbb.y+newbb.height/2));
+    	    	    for (i = oldsz; i != elmList.size(); i++) {
+    	    		if (!getElm(i).allowMove(mdx, mdy))
+    	    		    break;
+    	    	    }
+    	    	    if (i == elmList.size()) {
+    	    		dx = mdx;
+    	    		dy = mdy;
+    	    	    }
+    		}
+    		
+    		// move the new items
     		for (i = oldsz; i != elmList.size(); i++) {
     			CircuitElm ce = getElm(i);
     			ce.move(dx, dy);
     		}
+    		
     		// center circuit
     	//	handleResize();
     	}
