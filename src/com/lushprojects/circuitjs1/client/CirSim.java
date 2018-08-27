@@ -807,7 +807,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add SCR"), "SCRElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (NPN)"), "NDarlingtonElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (PNP)"), "PDarlingtonElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Varactor/Varicap", "VaractorElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Diac", "DiacElm"));
@@ -1210,12 +1210,12 @@ MouseOutHandler, MouseWheelHandler {
 		} else
 		    info[0] = "V = " +
 			CircuitElm.getUnitText(mouseElm.getPostVoltage(mousePost), "V");
-		/* //shownodes
-		for (i = 0; i != mouseElm.getPostCount(); i++)
-		    info[0] += " " + mouseElm.nodes[i];
-		if (mouseElm.getVoltageSourceCount() > 0)
-		    info[0] += ";" + (mouseElm.getVoltageSource()+nodeList.size());
-		*/
+//		/* //shownodes
+//		for (i = 0; i != mouseElm.getPostCount(); i++)
+//		    info[0] += " " + mouseElm.nodes[i];
+//		if (mouseElm.getVoltageSourceCount() > 0)
+//		    info[0] += ";" + (mouseElm.getVoltageSource()+nodeList.size());
+//		*/
 		
 	    } else {
 	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
@@ -4412,6 +4412,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new TriodeElm(x1, y1, x2, y2, f, st);
     	if (tint==175)
     		return (CircuitElm) new TunnelDiodeElm(x1, y1, x2, y2, f, st);
+    	if (tint==176)
+		return (CircuitElm) new VaractorElm(x1, y1, x2, y2, f, st);
     	if (tint==179)
     		return (CircuitElm) new CC2Elm(x1, y1, x2, y2, f, st);
     	if (tint=='I')
@@ -4611,6 +4613,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new TriacElm(x1, y1);
     	if (n=="TriodeElm")
     		return (CircuitElm) new TriodeElm(x1, y1);
+    	if (n=="VaractorElm")
+    	    	return (CircuitElm) new VaractorElm(x1, y1);
     	if (n=="TunnelDiodeElm")
     		return (CircuitElm) new TunnelDiodeElm(x1, y1);
     	if (n=="CC2Elm")

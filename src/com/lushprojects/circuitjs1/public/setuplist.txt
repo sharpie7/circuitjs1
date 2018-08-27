@@ -405,5 +405,9 @@ ota-gain.txt LM137000 Gain Oddity
 lightbulb.txt Light Bulb
 wienbridge.txt Wien Bridge Oscillator
 -
++Varactor
+varactor.txt Varactor
+varactorvco.txt VCO
+-
 -
 blank.txt Blank Circuit
