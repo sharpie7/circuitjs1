@@ -116,7 +116,6 @@ class DiodeElm extends CircuitElm {
 	arr[2] = "Vd = " + getVoltageText(getVoltageDiff());
 	arr[3] = "P = " + getUnitText(getPower(), "W");
 	arr[4] = "Vf = " + getVoltageText(fwdrop);
-	arr[5] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)
