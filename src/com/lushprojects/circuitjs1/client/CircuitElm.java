@@ -142,7 +142,9 @@ public abstract class CircuitElm implements Editable {
     void setCurrent(int x, double c) { current = c; }
     double getCurrent() { return current; }
     void doStep() {}
-    void delete() {}
+    void delete() {
+	sim.deleteSliders(this);
+    }
     void startIteration() {}
     double getPostVoltage(int x) { return volts[x]; }
     void setNodeVoltage(int n, double c) {

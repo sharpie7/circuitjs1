@@ -52,7 +52,7 @@ class EditDialog extends DialogBox  {
 	final int barmax = 1000;
 	VerticalPanel vp;
 	HorizontalPanel hp;
-	NumberFormat noCommaFormat;
+	static NumberFormat noCommaFormat = NumberFormat.getFormat("####.##########");
 
 	EditDialog(Editable ce, CirSim f) {
 //		super(f, "Edit Component", false);
@@ -64,7 +64,6 @@ class EditDialog extends DialogBox  {
 		vp=new VerticalPanel();
 		setWidget(vp);
 		einfos = new EditInfo[10];
-		noCommaFormat=NumberFormat.getFormat("####.##########");
 //		noCommaFormat = DecimalFormat.getInstance();
 //		noCommaFormat.setMaximumFractionDigits(10);
 //		noCommaFormat.setGroupingUsed(false);
@@ -167,7 +166,7 @@ class EditDialog extends DialogBox  {
 	    return unitString(ei, ei.value);
 	}
 
-	String unitString(EditInfo ei, double v) {
+	static String unitString(EditInfo ei, double v) {
 		double va = Math.abs(v);
 		if (ei.dimensionless)
 			return noCommaFormat.format(v);
@@ -191,6 +190,10 @@ class EditDialog extends DialogBox  {
 
 	double parseUnits(EditInfo ei) throws java.text.ParseException {
 		String s = ei.textf.getText();
+		return parseUnits(ei, s);
+	}
+	
+	static double parseUnits(EditInfo ei, String s) throws java.text.ParseException {
 		s = s.trim();
 		double rmsMult = 1;
 		if (s.endsWith("rms")) {
@@ -232,6 +235,13 @@ class EditDialog extends DialogBox  {
 			if (ei.button != null)
 			    continue;
 			elm.setEditValue(i, ei);
+			
+			// update slider if any
+			if (elm instanceof CircuitElm) {
+			    Adjustable adj = cframe.findAdjustable((CircuitElm)elm, i);
+			    if (adj != null)
+				adj.setSliderValue(ei.value);
+			}
 		}
 		cframe.needAnalyze();
 	}
