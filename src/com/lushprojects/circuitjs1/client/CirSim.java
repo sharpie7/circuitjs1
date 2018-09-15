@@ -1175,6 +1175,7 @@ MouseOutHandler, MouseWheelHandler {
 	    g.drawLine(inverseTransformX(0), y, inverseTransformX(circuitArea.width), y);
 	}
 
+	
 	backcontext.setTransform(1, 0, 0, 1, 0, 0);
 
 	if (printableCheckItem.getState())
@@ -1334,6 +1335,14 @@ MouseOutHandler, MouseWheelHandler {
     		Rectangle r = new Rectangle(pos*w, cv.getCoordinateSpaceHeight()-h+colh*row,
     				w-marg, colh);
     		row++;
+    		// Scopes edit
+    		if (i==0) {
+    		    	int x1 = transformX(-74);
+    		    	int x2 = transformX(-74+200);
+    		    	int y1 = transformY(116);
+    		    	int y2 = transformY(116+200);
+    		    	r = new Rectangle(x1,y1,x2-x1,y2-y1);
+    		}
     		if (!r.equals(s.rect))
     			s.setRect(r);
     	}
@@ -3365,6 +3374,17 @@ MouseOutHandler, MouseWheelHandler {
     int inverseTransformY(double y) {
 	return (int) ((y-transform[5])/transform[3]);
     }
+    
+    // convert grid coordinates to screen coordinates
+    int transformX(double x) {
+	return (int) ((x*transform[0]) + transform[4]);
+    }
+    
+    int transformY(double y) {
+	return (int) ((y*transform[3]) + transform[5]);
+    }
+    
+    
 
     // need to break this out into a separate routine to handle selection,
     // since we don't get mouse move events on mobile
