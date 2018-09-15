@@ -127,6 +127,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmCopyMenuItem;
     MenuItem elmDeleteMenuItem;
     MenuItem elmScopeMenuItem;
+    MenuItem elmFloatScopeMenuItem;
     MenuItem elmFlipMenuItem;
     MenuBar scopeMenuBar;
     MenuBar mainMenuBar;
@@ -601,6 +602,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar = new MenuBar(true);
 	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit..."),new MyCommand("elm","edit")));
 	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in Scope"), new MyCommand("elm","viewInScope")));
+	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(LS("View in Floating Scope"), new MyCommand("elm","viewInFloatScope")));
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem(LS("Cut"),new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
@@ -2565,6 +2567,28 @@ MouseOutHandler, MouseWheelHandler {
     		if (i > 0)
     		    scopes[i].speed = scopes[i-1].speed;
     	}
+    	
+    	if (item=="viewInFloatScope" && menuElm != null) {
+    	    elmList.addElement(constructElement("ScopeElm", menuElm.x+50, menuElm.y+50));
+    	    /*
+		int i;
+		for (i = 0; i != scopeCount; i++)
+			if (scopes[i].getElm() == null)
+				break;
+		if (i == scopeCount) {
+			if (scopeCount == scopes.length)
+				return;
+			scopeCount++;
+			scopes[i] = new Scope(this);
+			scopes[i].position = i;
+			//handleResize();
+		}
+		scopes[i].setElm(menuElm);
+		if (i > 0)
+		    scopes[i].speed = scopes[i-1].speed;
+		    */
+	}
+    	
     	if (menu=="scopepop") {
     		pushUndo();
     		if (item=="remove")
@@ -3529,6 +3553,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	} else if (mouseElm != null) {
     		elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
+    		elmFloatScopeMenuItem.setEnabled(mouseElm.canViewInScope());
     		elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     		elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
     		contextPanel=new PopupPanel(true);
@@ -4727,6 +4752,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CCCSElm(x1, y1);
     	if (n=="OhmMeterElm")
 		return (CircuitElm) new OhmMeterElm(x1, y1);
+    	if (n=="ScopeElm")
+    	    	return (CircuitElm) new ScopeElm(x1,y1);
     	return null;
     }
     
