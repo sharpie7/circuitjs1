@@ -211,6 +211,7 @@ public class AudioOutputElm extends CircuitElm {
         }
         void delete() {
             sim.removeWidgetFromVerticalPanel(button);
+            super.delete();
         }
         
         public static native void playJS(JsArrayInteger samples, int sampleRate)
