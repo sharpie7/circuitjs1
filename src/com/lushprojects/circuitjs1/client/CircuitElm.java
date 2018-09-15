@@ -58,7 +58,9 @@ public abstract class CircuitElm implements Editable {
 	// an exception
  }
     
+    // leftover from java, doesn't do anything anymore. 
     Class getDumpClass() { return getClass(); }
+    
     int getDefaultFlags() { return 0; }
 
     static void initClass(CirSim s) {
