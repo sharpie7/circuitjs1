@@ -62,6 +62,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 	void delete() {
 	    sim.removeWidgetFromVerticalPanel(label);
 	    sim.removeWidgetFromVerticalPanel(slider);
+            super.delete();
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
