@@ -60,5 +60,12 @@ class EditInfo {
 	boolean newDialog;
 	boolean forceLargeM;
 	boolean dimensionless;
+	
+	// for slider dialog
+	TextBox minBox, maxBox, labelBox;
+	
+	boolean canCreateAdjustable() {
+	    return choice == null && checkbox == null && button == null && textArea == null && anchor == null;
+	}
 }
     
