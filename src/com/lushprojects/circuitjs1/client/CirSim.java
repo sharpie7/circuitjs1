@@ -1337,14 +1337,6 @@ MouseOutHandler, MouseWheelHandler {
     		Rectangle r = new Rectangle(pos*w, cv.getCoordinateSpaceHeight()-h+colh*row,
     				w-marg, colh);
     		row++;
-    		// Scopes edit
-    		if (i==0) {
-    		    	int x1 = transformX(-74);
-    		    	int x2 = transformX(-74+200);
-    		    	int y1 = transformY(116);
-    		    	int y2 = transformY(116+200);
-    		    	r = new Rectangle(x1,y1,x2-x1,y2-y1);
-    		}
     		if (!r.equals(s.rect))
     			s.setRect(r);
     	}
@@ -2569,7 +2561,9 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	
     	if (item=="viewInFloatScope" && menuElm != null) {
-    	    elmList.addElement(constructElement("ScopeElm", menuElm.x+50, menuElm.y+50));
+    	    ScopeElm newScope = new ScopeElm(snapGrid(menuElm.x+50), snapGrid(menuElm.y+50));
+    	    elmList.addElement(newScope);
+    	    newScope.setScopeElm(menuElm);
     	    /*
 		int i;
 		for (i = 0; i != scopeCount; i++)
@@ -4545,8 +4539,9 @@ MouseOutHandler, MouseWheelHandler {
     	    return new ComparatorElm(x1, y1, x2, y2, f, st);
     	if (tint==402)
     	    return new OTAElm(x1, y1, x2, y2, f, st);
-    	return
-    			null;
+    	if (tint==403)
+    	    return new ScopeElm(x1, y1, x2, y2, f, st);
+    	return null;
     }
 
     public static CircuitElm constructElement(String n, int x1, int y1){

@@ -183,7 +183,7 @@ class Scope {
     	expandRange = new boolean[UNITS_COUNT];
     	
     	rect = new Rectangle(0, 0, 1, 1);
-   	 	imageCanvas=Canvas.createIfSupported();
+   	imageCanvas=Canvas.createIfSupported();
    	imageContext=imageCanvas.getContext2d();
 	allocImage();
     	reset();
@@ -671,7 +671,7 @@ class Scope {
     	    for (i = 0; i != UNITS_COUNT; i++)
     		if (scale[i] > 1e-4 && expandRange[i])
     		    scale[i] /= 2;
-	}
+    	}
 
     }
     
