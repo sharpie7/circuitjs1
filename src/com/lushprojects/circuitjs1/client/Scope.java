@@ -1297,12 +1297,8 @@ class Scope {
 	return elm;
     }
     
-    MenuBar getMenu() {
-	CircuitElm elm = plots.get(0).elm;
-    	if (elm == null)
-    	    return null;
-    	
-    	return sim.scopeMenuBar;
+    boolean canMenu() {
+    	return (plots.get(0).elm != null);
     }
     
     boolean canShowResistance() {

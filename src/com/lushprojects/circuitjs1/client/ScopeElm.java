@@ -67,8 +67,13 @@ class ScopeElm extends GraphicElm {
     }
     
     
-    public void stepFinished() {
+    public void stepScope() {
 	elmScope.timeStep();
+    }
+    
+    public void reset() {
+	super.reset();
+	elmScope.resetGraph(true);
     }
     
     boolean canViewInScope() { return false; }

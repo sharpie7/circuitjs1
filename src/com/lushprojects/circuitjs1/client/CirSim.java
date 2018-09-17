@@ -2274,6 +2274,9 @@ MouseOutHandler, MouseWheelHandler {
 	for (i = 0; i != scopeCount; i++)
 	    if (scopes[i].viewingWire())
 		return false;
+	for (i=0; i != elmList.size(); i++)
+	    if (getElm(i) instanceof ScopeElm && ((ScopeElm)getElm(i)).elmScope.viewingWire())
+		return false;
 	return true;
     }
     
@@ -2397,14 +2400,16 @@ MouseOutHandler, MouseWheelHandler {
 		break;
 	    }
 	    t += timeStep;
-	    for (i = 0; i != elmList.size(); i++) {
-		CircuitElm ce = getElm(i);
-		ce.stepFinished();
-	    }
+	    for (i = 0; i != elmList.size(); i++)
+		getElm(i).stepFinished();
 	    if (!delayWireProcessing)
 		calcWireCurrents();
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
+	    for (i=0; i != elmList.size(); i++)
+		if (getElm(i) instanceof ScopeElm )
+		    ((ScopeElm)getElm(i)).stepScope();
+		
 	    tm = System.currentTimeMillis();
 	    lit = tm;
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
@@ -2581,39 +2586,27 @@ MouseOutHandler, MouseWheelHandler {
     	    ScopeElm newScope = new ScopeElm(snapGrid(menuElm.x+50), snapGrid(menuElm.y+50));
     	    elmList.addElement(newScope);
     	    newScope.setScopeElm(menuElm);
-    	    /*
-		int i;
-		for (i = 0; i != scopeCount; i++)
-			if (scopes[i].getElm() == null)
-				break;
-		if (i == scopeCount) {
-			if (scopeCount == scopes.length)
-				return;
-			scopeCount++;
-			scopes[i] = new Scope(this);
-			scopes[i].position = i;
-			//handleResize();
-		}
-		scopes[i].setElm(menuElm);
-		if (i > 0)
-		    scopes[i].speed = scopes[i-1].speed;
-		    */
 	}
     	
     	if (menu=="scopepop") {
     		pushUndo();
+    		Scope s;
+    		if (menuScope != -1 )
+    		    	s=scopes[menuScope];
+    		else
+    		    	s=((ScopeElm)mouseElm).elmScope;
     		if (item=="remove")
-    			scopes[menuScope].setElm(null);
+    		    	s.setElm(null);
     		if (item=="removeplot")
-			scopes[menuScope].removePlot(menuPlot);
+			s.removePlot(menuPlot);
     		if (item=="speed2")
-    			scopes[menuScope].speedUp();
+    			s.speedUp();
     		if (item=="speed1/2")
-    			scopes[menuScope].slowDown();
+    			s.slowDown();
 //    		if (item=="scale")
 //    			scopes[menuScope].adjustScale(.5);
     		if (item=="maxscale")
-    			scopes[menuScope].maxScale();
+    			s.maxScale();
     		if (item=="stack")
     			stackScope(menuScope);
     		if (item=="unstack")
@@ -2621,11 +2614,11 @@ MouseOutHandler, MouseWheelHandler {
     		if (item=="combine")
 			combineScope(menuScope);
     		if (item=="selecty")
-    			scopes[menuScope].selectY();
+    			s.selectY();
     		if (item=="reset")
-    			scopes[menuScope].resetGraph(true);
+    			s.resetGraph(true);
     		if (item=="properties")
-			scopes[menuScope].properties();
+			s.properties();
     		//cv.repaint();
     	}
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
@@ -3587,26 +3580,36 @@ MouseOutHandler, MouseWheelHandler {
     	menuPlot=-1;
     	int x, y;
     	if (scopeSelected!=-1) {
-    		MenuBar m=scopes[scopeSelected].getMenu();
-    		menuScope=scopeSelected;
-    		menuPlot=scopes[scopeSelected].selectedPlot;
-    		if (m!=null) {
-    			contextPanel=new PopupPanel(true);
-    			contextPanel.add(m);
-    			y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-160));
-    			contextPanel.setPopupPosition(menuX, y);
-    			contextPanel.show();
+    	    	if (scopes[scopeSelected].canMenu()) {
+    	    	    menuScope=scopeSelected;
+    	    	    menuPlot=scopes[scopeSelected].selectedPlot;
+    	    	    contextPanel=new PopupPanel(true);
+    	    	    contextPanel.add(scopeMenuBar);
+    	    	    y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-160));
+    	    	    contextPanel.setPopupPosition(menuX, y);
+    	    	    contextPanel.show();
     		}
     	} else if (mouseElm != null) {
-    		elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
-    		elmFloatScopeMenuItem.setEnabled(mouseElm.canViewInScope());
-    		elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
-    		elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
-    		elmSliderMenuItem.setEnabled(sliderItemEnabled(mouseElm));
-    		contextPanel=new PopupPanel(true);
-    		contextPanel.add(elmMenuBar);
-    		contextPanel.setPopupPosition(menuX, menuY);
-    		contextPanel.show();
+    	    	if (! (mouseElm instanceof ScopeElm)) {
+    	    	    elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
+    	    	    elmFloatScopeMenuItem.setEnabled(mouseElm.canViewInScope());
+    	    	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
+    	    	    elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
+    	    	    elmSliderMenuItem.setEnabled(sliderItemEnabled(mouseElm));
+    	    	    contextPanel=new PopupPanel(true);
+    	    	    contextPanel.add(elmMenuBar);
+    	    	    contextPanel.setPopupPosition(menuX, menuY);
+    	    	    contextPanel.show();
+    	    	} else {
+    	    	    ScopeElm s = (ScopeElm) mouseElm;
+    	    	    if (s.elmScope.canMenu()) {
+    	    		menuPlot = s.elmScope.selectedPlot;
+    			contextPanel=new PopupPanel(true);
+    			contextPanel.add(scopeMenuBar);
+    			contextPanel.setPopupPosition(menuX, menuY);
+    			contextPanel.show();
+    	    	    }
+    	    	}
     	} else {
     		doMainMenuChecks();
     		contextPanel=new PopupPanel(true);
