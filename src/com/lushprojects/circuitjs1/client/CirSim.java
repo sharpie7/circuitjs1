@@ -119,7 +119,7 @@ MouseOutHandler, MouseWheelHandler {
     private Label powerLabel;
     private Label titleLabel;
     private Scrollbar speedBar;
-   private Scrollbar currentBar;
+    private Scrollbar currentBar;
     private Scrollbar powerBar;
     MenuBar elmMenuBar;
     MenuItem elmEditMenuItem;
@@ -130,10 +130,10 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmFloatScopeMenuItem;
     MenuItem elmFlipMenuItem;
     MenuItem elmSliderMenuItem;
-    MenuBar scopeMenuBar;
     MenuBar mainMenuBar;
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
+    ScopePopupMenu scopePopupMenu;
     static HashMap<String,String> localizationMap;
    
     String lastCursorStyle;
@@ -614,7 +614,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
 	
-	scopeMenuBar = buildScopeMenu();
+	scopePopupMenu = new ScopePopupMenu();
 
 	CircuitElm.setColorScale();
 	
@@ -918,19 +918,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
 
-    MenuBar buildScopeMenu() {
-    	MenuBar m = new MenuBar(true);
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Remove Scope"),new MyCommand("scopepop", "remove")));
-    	CheckboxMenuItem mi;
-    	m.addItem(mi = new CheckboxMenuItem(LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Stack"), new MyCommand("scopepop", "stack")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Unstack"), new MyCommand("scopepop", "unstack")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Combine"), new MyCommand("scopepop", "combine")));
-    	m.addItem(scopeRemovePlotMenuItem = new CheckboxAlignedMenuItem(LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Reset"), new MyCommand("scopepop", "reset")));
-    	m.addItem(new CheckboxAlignedMenuItem(LS("Properties..."), new MyCommand("scopepop", "properties")));
-    	return m;
-    }
+
     
 
 
@@ -3584,8 +3572,9 @@ MouseOutHandler, MouseWheelHandler {
     	    	if (scopes[scopeSelected].canMenu()) {
     	    	    menuScope=scopeSelected;
     	    	    menuPlot=scopes[scopeSelected].selectedPlot;
+    	    	    scopePopupMenu.doScopePopupChecks(false, scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
-    	    	    contextPanel.add(scopeMenuBar);
+    	    	    contextPanel.add(scopePopupMenu.getMenuBar());
     	    	    y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-160));
     	    	    contextPanel.setPopupPosition(menuX, y);
     	    	    contextPanel.show();
@@ -3605,8 +3594,9 @@ MouseOutHandler, MouseWheelHandler {
     	    	    ScopeElm s = (ScopeElm) mouseElm;
     	    	    if (s.elmScope.canMenu()) {
     	    		menuPlot = s.elmScope.selectedPlot;
+    	    		scopePopupMenu.doScopePopupChecks(true, s.elmScope);
     			contextPanel=new PopupPanel(true);
-    			contextPanel.add(scopeMenuBar);
+    			contextPanel.add(scopePopupMenu.getMenuBar());
     			contextPanel.setPopupPosition(menuX, menuY);
     			contextPanel.show();
     	    	    }
