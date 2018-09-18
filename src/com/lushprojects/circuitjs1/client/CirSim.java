@@ -2796,7 +2796,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	for (i = 0; i != adjustables.size(); i++) {
 	    Adjustable adj = adjustables.get(i);
-	    dump += "& " + adj.dump() + "\n";
+	    dump += "38 " + adj.dump() + "\n";
 	}
 	if (hintType != -1)
 	    dump += "h " + hintType + " " + hintItem1 + " " +
@@ -2997,13 +2997,14 @@ MouseOutHandler, MouseWheelHandler {
 			// ignore afilter-specific stuff
 			break;
 		    }
-		    if (tint == '&') {
+		    // do not add new symbols here without testing export as link
+		    if (tint >= '0' && tint <= '9')
+			tint = new Integer(type).intValue();
+		    if (tint == 38) {
 			Adjustable adj = new Adjustable(st, this);
 			adjustables.add(adj);
 			break;
 		    }
-		    if (tint >= '0' && tint <= '9')
-			tint = new Integer(type).intValue();
 		    int x1 = new Integer(st.nextToken()).intValue();
 		    int y1 = new Integer(st.nextToken()).intValue();
 		    int x2 = new Integer(st.nextToken()).intValue();
