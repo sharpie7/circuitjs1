@@ -99,4 +99,9 @@ class ScopeElm extends GraphicElm {
 
     }
     
+    void drag(int xx, int yy) {
+	xx = sim.snapGrid(xx);
+	yy = sim.snapGrid(yy);
+    }    
+    
 }

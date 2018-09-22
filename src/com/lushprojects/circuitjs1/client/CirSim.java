@@ -4009,6 +4009,14 @@ MouseOutHandler, MouseWheelHandler {
     	}
 
     	if ( hasDeleted ) {
+    	    // Remove any scopeElms for elements that no longer exist
+    		for (i = elmList.size()-1; i >= 0; i--) {
+        		CircuitElm ce = getElm(i);
+        		if (ce instanceof ScopeElm && (((ScopeElm) ce).elmScope.needToRemove() )) {
+        			ce.delete();
+        			elmList.removeElementAt(i);
+        		}
+        	}
     	    needAnalyze();
     	    writeRecoveryToStorage();
     	}    
@@ -4206,9 +4214,15 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if ((t & Event.ONKEYDOWN)!=0) {
     		if (code==KEY_BACKSPACE || code==KEY_DELETE) {
+    		    if (scopeSelected != -1) {
+    			// Treat DELETE key with scope selected as "remove scope", not delete
+    			scopes[scopeSelected].setElm(null);
+    			scopeSelected = -1;
+    		    } else {
     		    	menuElm = null;
     			doDelete();
     			e.cancel();
+    		    }
     		}
     		if (code==KEY_ESCAPE){
     			setMouseMode(MODE_SELECT);
