@@ -2547,6 +2547,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="delete") {
     		if (menu!="elm")
     			menuElm = null;
+    		pushUndo();
     		doDelete();
     	}
     	if (item=="sliders")
@@ -3936,16 +3937,16 @@ MouseOutHandler, MouseWheelHandler {
     	clipboard = "";
     	for (i = elmList.size()-1; i >= 0; i--) {
     		CircuitElm ce = getElm(i);
-    		if (ce.isSelected()) {
+    		// ScopeElms don't cut-paste well because their reference to a parent
+    		// elm by number get's messed up in the dump. For now we will just ignore them
+    		// until I can be bothered to come up with something better
+    		if (willDelete(ce) && !(ce instanceof ScopeElm) ) {
     			clipboard += ce.dump() + "\n";
-    			ce.delete();
-    			elmList.removeElementAt(i);
     		}
     	}
     	writeClipboardToStorage();
-    	writeRecoveryToStorage();
+    	doDelete();
     	enablePaste();
-    	needAnalyze();
     }
 
     void writeClipboardToStorage() {
@@ -3982,32 +3983,18 @@ MouseOutHandler, MouseWheelHandler {
     void doDelete() {
     	int i;
     	pushUndo();
-    	setMenuSelection();
     	boolean hasDeleted = false;
 
     	for (i = elmList.size()-1; i >= 0; i--) {
     		CircuitElm ce = getElm(i);
-    		if (ce.isSelected()) {
+    		if (willDelete(ce)) {
+    		    	if (ce.isMouseElm())
+    		    	    setMouseElm(null);
     			ce.delete();
     			elmList.removeElementAt(i);
     			hasDeleted = true;
     		}
     	}
-
-    	if ( !hasDeleted )
-    	{
-    		for (i = elmList.size()-1; i >= 0; i--) {
-    			CircuitElm ce = getElm(i);
-    			if (ce == mouseElm) {
-    				ce.delete();
-    				elmList.removeElementAt(i);
-    				hasDeleted = true;
-    				setMouseElm(null);
-    				break;
-    			}
-    		}
-    	}
-
     	if ( hasDeleted ) {
     	    // Remove any scopeElms for elements that no longer exist
     		for (i = elmList.size()-1; i >= 0; i--) {
@@ -4021,20 +4008,35 @@ MouseOutHandler, MouseWheelHandler {
     	    writeRecoveryToStorage();
     	}    
     }
+    
+    boolean willDelete( CircuitElm ce ) {
+	// Is this element in the list to be deleted.
+	// This changes the logic from the previous version which would initially only
+	// delete selected elements (which could include the mouseElm) and then delete the 
+	// mouseElm if there were no selected elements. Not really sure this added anything useful
+	// to the user experience.
+	//
+	// BTW, the old logic could also leave mouseElm pointing to a deleted element.
+	return ce.isSelected() || ce.isMouseElm();
+    }
+    
+    String copyOfSelectedElms() {
+	String r="";
+    	for (int i = elmList.size()-1; i >= 0; i--) {
+		CircuitElm ce = getElm(i);
+		// See notes on do cut why we don't copy ScopeElms.
+		if (ce.isSelected() && !(ce instanceof ScopeElm))
+			r += ce.dump() + "\n";
+	}
+	return r;
+    }
 
     void doCopy() {
-    	int i;
-    	clipboard = "";
-    	
     	// clear selection when we're done if we're copying a single element using the context menu
     	boolean clearSel = (menuElm != null && !menuElm.selected);
     	
     	setMenuSelection();
-    	for (i = elmList.size()-1; i >= 0; i--) {
-    		CircuitElm ce = getElm(i);
-    		if (ce.isSelected())
-    			clipboard += ce.dump() + "\n";
-    	}
+    	clipboard=copyOfSelectedElms();
     	
     	if (clearSel)
     	    clearSelection();
@@ -4050,14 +4052,9 @@ MouseOutHandler, MouseWheelHandler {
     }
 
     void doDuplicate() {
-    	int i;
-    	String s = "";
+    	String s;
     	setMenuSelection();
-    	for (i = elmList.size()-1; i >= 0; i--) {
-    		CircuitElm ce = getElm(i);
-    		if (ce.isSelected())
-    			s += ce.dump() + "\n";
-    	}
+    	s=copyOfSelectedElms();
     	doPaste(s);
     }
     
@@ -4220,6 +4217,7 @@ MouseOutHandler, MouseWheelHandler {
     			scopeSelected = -1;
     		    } else {
     		    	menuElm = null;
+    		    	pushUndo();
     			doDelete();
     			e.cancel();
     		    }

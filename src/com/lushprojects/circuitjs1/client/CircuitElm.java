@@ -741,12 +741,10 @@ public abstract class CircuitElm implements Editable {
     
     Color getVoltageColor(Graphics g, double volts) {
     	if (needsHighlight()) {
-    	    return (selectColor);
+    	    	return (selectColor);
     	}
     	if (!sim.voltsCheckItem.getState()) {
-    	    if (!sim.powerCheckItem.getState()) // && !conductanceCheckItem.getState())
     	    	return(whiteColor);
-    	    return (g.lastColor);
     	}
     	int c = (int) ((volts+voltageRange)*(colorScaleCount-1)/
     		       (voltageRange*2));
