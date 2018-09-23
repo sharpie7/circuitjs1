@@ -21,7 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
 
-class ScopeElm extends GraphicElm {
+class ScopeElm extends CircuitElm {
     
     Scope elmScope;
 
@@ -99,9 +99,7 @@ class ScopeElm extends GraphicElm {
 
     }
     
-    void drag(int xx, int yy) {
-	xx = sim.snapGrid(xx);
-	yy = sim.snapGrid(yy);
-    }    
+    int getPostCount() { return 0; }
+    
     
 }

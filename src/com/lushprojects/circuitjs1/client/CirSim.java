@@ -92,8 +92,6 @@ ClickHandler, DoubleClickHandler, ContextMenuHandler, NativePreviewHandler,
 MouseOutHandler, MouseWheelHandler {
     
     Random random;
-    
-    // IES - remove interaction
     Button resetButton;
     Button runStopButton;
     Button dumpMatrixButton;
@@ -2585,7 +2583,7 @@ MouseOutHandler, MouseWheelHandler {
     		else
     		    	s=((ScopeElm)mouseElm).elmScope;
     		if (item=="remove")
-    		    	s.setElm(null);
+    		    	    s.setElm(null);
     		if (item=="removeplot")
 			s.removePlot(menuPlot);
     		if (item=="speed2")
@@ -2608,7 +2606,7 @@ MouseOutHandler, MouseWheelHandler {
     			s.resetGraph(true);
     		if (item=="properties")
 			s.properties();
-    		//cv.repaint();
+    		deleteUnusedScopeElms();
     	}
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
     		pushUndo();
@@ -3664,7 +3662,8 @@ MouseOutHandler, MouseWheelHandler {
 
     void clearMouseElm() {
     	scopeSelected = -1;
-    	mouseElm = plotXElm = plotYElm = null;
+    	setMouseElm(null);
+    	plotXElm = plotYElm = null;
     }
     
     int menuX, menuY;
@@ -3980,6 +3979,18 @@ MouseOutHandler, MouseWheelHandler {
     }
 
 
+    void deleteUnusedScopeElms() {
+	// Remove any scopeElms for elements that no longer exist
+	for (int i = elmList.size()-1; i >= 0; i--) {
+    		CircuitElm ce = getElm(i);
+    		if (ce instanceof ScopeElm && (((ScopeElm) ce).elmScope.needToRemove() )) {
+    			ce.delete();
+    			elmList.removeElementAt(i);
+    		}
+    	}
+	
+    }
+    
     void doDelete() {
     	int i;
     	pushUndo();
@@ -3996,14 +4007,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
     	if ( hasDeleted ) {
-    	    // Remove any scopeElms for elements that no longer exist
-    		for (i = elmList.size()-1; i >= 0; i--) {
-        		CircuitElm ce = getElm(i);
-        		if (ce instanceof ScopeElm && (((ScopeElm) ce).elmScope.needToRemove() )) {
-        			ce.delete();
-        			elmList.removeElementAt(i);
-        		}
-        	}
+    	    deleteUnusedScopeElms();
     	    needAnalyze();
     	    writeRecoveryToStorage();
     	}    

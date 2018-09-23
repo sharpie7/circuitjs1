@@ -624,7 +624,7 @@ class Scope {
     	for (si = 0; si != visiblePlots.size(); si++) {
     	    ScopePlot plot = visiblePlots.get(si);
     	    calcPlotScale(plot);
-    	    if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+    	    if (sim.scopeSelected == -1 && plot.elm !=null && plot.elm.isMouseElm())
     		somethingSelected = true;
     	    expandRange[plot.units] = true;
     	}
@@ -730,6 +730,8 @@ class Scope {
     double mainGridMult, mainGridMid;
     
     void drawPlot(Graphics g, ScopePlot plot, boolean drawHGridLines, boolean selected) {
+	if (plot.elm == null)
+	    return;
     	int i;
     	String col;
 //    	int col = (sim.printableCheckItem.getState()) ? 0xFFFFFFFF : 0;
@@ -743,7 +745,7 @@ class Scope {
     	int y = maxy;
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
-	if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
     	    color = "#00FFFF";
 	else if (selected)
 	    color = plot.color;
@@ -1257,7 +1259,10 @@ class Scope {
 	ScopePlot plot = visiblePlots.firstElement();
 	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
 	    plot = visiblePlots.get(selectedPlot);
-	return plot.elm.getScopeText(plot.value);
+	if (plot.elm == null)
+		return "";
+	else
+	    	return plot.elm.getScopeText(plot.value);
     }
     
     void setSpeed(int sp) {
