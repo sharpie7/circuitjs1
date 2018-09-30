@@ -592,7 +592,8 @@ class Scope {
     }
     
     boolean cursorInSettingsWheel() {
-	return 	sim.mouseCursorX >= rect.x &&
+	return showSettingsWheel() &&
+		sim.mouseCursorX >= rect.x &&
 		sim.mouseCursorX <= rect.x + 36 &&
 		sim.mouseCursorY >= rect.y + rect.height - 36 && 
 		sim.mouseCursorY <= rect.y + rect.height;
