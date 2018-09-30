@@ -1,5 +1,6 @@
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -13,7 +14,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.CheckBox;
 
 class ScopeCheckBox extends CheckBox {
@@ -34,7 +34,7 @@ class ScopeCheckBox extends CheckBox {
 public class ScopePropertiesDialog extends DialogBox implements ValueChangeHandler<Boolean> {
 
 	
-Panel vp;
+Panel fp;
 HorizontalPanel hp;
 CirSim sim;
 //RichTextArea textBox;
@@ -44,81 +44,88 @@ CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeB
 Scrollbar speedBar;
 Scope scope;
 Grid grid;
+int nx, ny;
 	
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
 		sim=asim;
 		scope = s;
-		Button okButton, cancelButton;
-//		vp=new VerticalPanel();
-		vp=new FlowPanel();
-		setWidget(vp);
-		setText(sim.LS("Scope Properties"));
-//		vp.add(new Label(sim.LS("Paste the text file for your circuit here...")));
-//		vp.add(textBox = new RichTextArea());
-		vp.add(new Label(sim.LS("Scroll Speed")));
+		Button okButton;
+		fp=new FlowPanel();
+		setWidget(fp);
+		setText(CirSim.LS("Scope Properties"));
+		Label l = new Label(CirSim.LS("Scroll Speed"));
+		l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+		fp.add(l);
 		Command cmd = new Command() {
 		    public void execute() {
 			scrollbarChanged();
 		    }
 		};
-		vp.add(speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd));
-		CheckBox cb;
-//		vp.add(maxScaleBox = new ScopeCheckBox(sim.LS("Max Scale"), "maxscale"));  // maxscale is a command in 2d
-//		maxScaleBox.addValueChangeHandler(this);
+		fp.add(speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd));
+
 				
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
 		if (!transistor) {
-		    grid = new Grid(5, 3);
-		    addItem(voltageBox = new ScopeCheckBox(sim.LS("Show Voltage"), "showvoltage"));
+		    grid = new Grid(8, 3);
+		    addLabelToGrid(grid,"Plots");
+		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
-		    addItem(currentBox = new ScopeCheckBox(sim.LS("Show Current"), "showcurrent"));
+		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
-		    addItem(powerBox = new ScopeCheckBox(sim.LS("Show Power Consumed"), "showpower"));
+		    addItemToGrid(grid, powerBox = new ScopeCheckBox(CirSim.LS("Show Power Consumed"), "showpower"));
 		    powerBox.addValueChangeHandler(this); 
 		} else {
-		    grid = new Grid(6, 3);
-		    addItem(ibBox = new ScopeCheckBox(sim.LS("Show Ib"), "showib"));
+		    grid = new Grid(9, 3);
+		    addLabelToGrid(grid,"Plots");
+		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
-		    addItem(icBox = new ScopeCheckBox(sim.LS("Show Ic"), "showic"));
+		    addItemToGrid(grid, icBox = new ScopeCheckBox(CirSim.LS("Show Ic"), "showic"));
 		    icBox.addValueChangeHandler(this);
-		    addItem(ieBox = new ScopeCheckBox(sim.LS("Show Ie"), "showie"));
+		    addItemToGrid(grid, ieBox = new ScopeCheckBox(CirSim.LS("Show Ie"), "showie"));
 		    ieBox.addValueChangeHandler(this);
-		    addItem(vbeBox = new ScopeCheckBox(sim.LS("Show Vbe"), "showvbe"));
+		    addItemToGrid(grid, vbeBox = new ScopeCheckBox(CirSim.LS("Show Vbe"), "showvbe"));
 		    vbeBox.addValueChangeHandler(this);
-		    addItem(vbcBox = new ScopeCheckBox(sim.LS("Show Vbc"), "showvbc"));
+		    addItemToGrid(grid, vbcBox = new ScopeCheckBox(CirSim.LS("Show Vbc"), "showvbc"));
 		    vbcBox.addValueChangeHandler(this);
-		    addItem(vceBox = new ScopeCheckBox(sim.LS("Show Vce"), "showvce"));
+		    addItemToGrid(grid, vceBox = new ScopeCheckBox(CirSim.LS("Show Vce"), "showvce"));
 		    vceBox.addValueChangeHandler(this);
-		    addItem(vceIcBox = new ScopeCheckBox(sim.LS("Show Vce vs Ic"), "showvcevsic"));
+		}
+		addItemToGrid(grid, resistanceBox = new ScopeCheckBox(CirSim.LS("Show Resistance"), "showresistance"));
+		resistanceBox.addValueChangeHandler(this); 
+		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(CirSim.LS("Show Spectrum"), "showfft"));
+		spectrumBox.addValueChangeHandler(this);
+
+		addLabelToGrid(grid,"X-Y Plots");
+		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
+		viBox.addValueChangeHandler(this); 
+		addItemToGrid(grid, xyBox = new ScopeCheckBox(CirSim.LS("Plot X/Y"), "plotxy"));
+		xyBox.addValueChangeHandler(this);
+		if (transistor) {
+		    addItemToGrid(grid, vceIcBox = new ScopeCheckBox(CirSim.LS("Show Vce vs Ic"), "showvcevsic"));
 		    vceIcBox.addValueChangeHandler(this);
 		}
-		addItem(scaleBox = new ScopeCheckBox(sim.LS("Show Scale"), "showscale"));
+		addLabelToGrid(grid, "Show Info");
+		addItemToGrid(grid, scaleBox = new ScopeCheckBox(CirSim.LS("Show Scale"), "showscale"));
 		scaleBox.addValueChangeHandler(this); 
-		addItem(peakBox = new ScopeCheckBox(sim.LS("Show Peak Value"), "showpeak"));
+		addItemToGrid(grid, peakBox = new ScopeCheckBox(CirSim.LS("Show Peak Value"), "showpeak"));
 		peakBox.addValueChangeHandler(this); 
-		addItem(negPeakBox = new ScopeCheckBox(sim.LS("Show Negative Peak Value"), "shownegpeak"));
+		addItemToGrid(grid, negPeakBox = new ScopeCheckBox(CirSim.LS("Show Negative Peak Value"), "shownegpeak"));
 		negPeakBox.addValueChangeHandler(this); 
-		addItem(freqBox = new ScopeCheckBox(sim.LS("Show Frequency"), "showfreq"));
+		addItemToGrid(grid, freqBox = new ScopeCheckBox(CirSim.LS("Show Frequency"), "showfreq"));
 		freqBox.addValueChangeHandler(this); 
-		addItem(spectrumBox = new ScopeCheckBox(sim.LS("Show Spectrum"), "showfft"));
-		spectrumBox.addValueChangeHandler(this); 
-		addItem(rmsBox = new ScopeCheckBox(sim.LS("Show RMS Average"), "showrms"));
+		addItemToGrid(grid, rmsBox = new ScopeCheckBox(CirSim.LS("Show RMS Average"), "showrms"));
 		rmsBox.addValueChangeHandler(this); 
-		addItem(dutyBox = new ScopeCheckBox(sim.LS("Show Duty Cycle"), "showduty"));
+		addItemToGrid(grid, dutyBox = new ScopeCheckBox(CirSim.LS("Show Duty Cycle"), "showduty"));
 		dutyBox.addValueChangeHandler(this); 
-		addItem(viBox = new ScopeCheckBox(sim.LS("Show V vs I"), "showvvsi"));
-		viBox.addValueChangeHandler(this); 
-		addItem(xyBox = new ScopeCheckBox(sim.LS("Plot X/Y"), "plotxy"));
-		xyBox.addValueChangeHandler(this);
-		addItem(resistanceBox = new ScopeCheckBox(sim.LS("Show Resistance"), "showresistance"));
-		resistanceBox.addValueChangeHandler(this); 
-		vp.add(grid);
+		fp.add(grid);
+
+		
 		updateUI();
 		hp = new HorizontalPanel();
-		vp.add(hp);
-		hp.add(okButton = new Button(sim.LS("OK")));
+		fp.add(hp);
+		hp.add(okButton = new Button(CirSim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -128,10 +135,21 @@ Grid grid;
 		show();
 	}
 
-	int nx, ny;
 	
-	void addItem(CheckBox scb) {
-	    grid.setWidget(ny, nx, scb);
+	
+	void addLabelToGrid(Grid g, String s) {
+	    if (nx !=0)
+		ny++;
+	    nx=0;
+	    Label l = new Label(CirSim.LS(s));
+	    l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	    g.setWidget(ny, nx, l);
+	    ny++;
+	    
+	}
+	
+	void addItemToGrid(Grid g, CheckBox scb) {
+	    g.setWidget(ny, nx, scb);
 	    if (++nx >= grid.getColumnCount()) {
 		nx = 0;
 		ny++;
@@ -140,7 +158,7 @@ Grid grid;
 	
 	void scrollbarChanged() {
 	    int newsp = (int)Math.pow(2,  10-speedBar.getValue());
-	    sim.console("changed " + scope.speed + " " + newsp + " " + speedBar.getValue());
+	    CirSim.console("changed " + scope.speed + " " + newsp + " " + speedBar.getValue());
 	    if (scope.speed != newsp)
 		scope.setSpeed(newsp);
 	}
@@ -148,8 +166,8 @@ Grid grid;
 	void updateUI() {
 	    speedBar.setValue(10-(int)Math.round(Math.log(scope.speed)/Math.log(2)));
 	    if (voltageBox != null) {
-		voltageBox.setValue(scope.showV && !scope.showingValue(scope.VAL_POWER));
-		currentBox.setValue(scope.showI && !scope.showingValue(scope.VAL_POWER));
+		voltageBox.setValue(scope.showV && !scope.showingValue(Scope.VAL_POWER));
+		currentBox.setValue(scope.showI && !scope.showingValue(Scope.VAL_POWER));
 		powerBox.setValue(scope.showingValue(Scope.VAL_POWER));
 	    }
 	    scaleBox.setValue(scope.showScale);
@@ -158,11 +176,11 @@ Grid grid;
 	    freqBox.setValue(scope.showFreq);
 	    spectrumBox.setValue(scope.showFFT);
 	    rmsBox.setValue(scope.showRMS);
-	    rmsBox.setText(scope.canShowRMS() ? sim.LS("Show RMS Average") :
-                					sim.LS("Show Average"));
+	    rmsBox.setText(scope.canShowRMS() ? CirSim.LS("Show RMS Average") :
+                					CirSim.LS("Show Average"));
 	    viBox.setValue(scope.plot2d && !scope.plotXY);
 	    xyBox.setValue(scope.plotXY);
-	    resistanceBox.setValue(scope.showingValue(scope.VAL_R));
+	    resistanceBox.setValue(scope.showingValue(Scope.VAL_R));
 	    resistanceBox.setEnabled(scope.canShowResistance());
 	    if (vbeBox != null) {
                 ibBox.setValue(scope.showingValue(Scope.VAL_IB));
