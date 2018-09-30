@@ -525,10 +525,12 @@ public abstract class CircuitElm implements Editable {
 	g.context.setLineWidth(3.0);
 	g.context.transform(((double)(p2.x-p1.x))/len, ((double)(p2.y-p1.y))/len,
 		-((double)(p2.y-p1.y))/len,((double)(p2.x-p1.x))/len,p1.x,p1.y);
-	CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
-	grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
-	grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
-	g.context.setStrokeStyle(grad);
+	if (sim.voltsCheckItem.getState() ) {
+	    CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
+	    grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
+	    grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
+	    g.context.setStrokeStyle(grad);
+	}
 	g.context.setLineCap(LineCap.ROUND);
 	if (len > 24)
 	    g.context.scale(1, hs/(len/6));
@@ -762,18 +764,23 @@ public abstract class CircuitElm implements Editable {
     }
     
     void setPowerColor(Graphics g, boolean yellow) {
+
 	/*if (conductanceCheckItem.getState()) {
 	  setConductanceColor(g, current/getVoltageDiff());
 	  return;
 	  }*/
-	if (!sim.powerCheckItem.getState() || needsHighlight())
+	if (!sim.powerCheckItem.getState() )
 	    return;
 	setPowerColor(g, getPower());
     }
     
     void setPowerColor(Graphics g, double w0) {
-	if (!sim.powerCheckItem.getState() || needsHighlight())
+	if (!sim.powerCheckItem.getState() )
 	    return;
+    	if (needsHighlight()) {
+	    	g.setColor(selectColor);
+	    	return;
+    	}
 	w0 *= powerMult;
 	//System.out.println(w);
 	int i = (int) ((colorScaleCount/2)+(colorScaleCount/2)*-w0);

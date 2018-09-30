@@ -52,16 +52,19 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    double v2 = volts[1];
 	    setBbox(point1, point2, hs);
 	    draw2Leads(g);
-	    setPowerColor(g, true);
+	    
 	    //   double segf = 1./segments;
 	    double len = distance(lead1, lead2);
 	    g.context.save();
 	    g.context.setLineWidth(3.0);
 	    g.context.transform(((double)(lead2.x-lead1.x))/len, ((double)(lead2.y-lead1.y))/len, -((double)(lead2.y-lead1.y))/len,((double)(lead2.x-lead1.x))/len,lead1.x,lead1.y);
-	    CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
-	    grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
-	    grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
-	    g.context.setStrokeStyle(grad);
+	    if (sim.voltsCheckItem.getState() ) {
+		CanvasGradient grad = g.context.createLinearGradient(0,0,len,0);
+		grad.addColorStop(0, getVoltageColor(g,v1).getHexValue());
+		grad.addColorStop(1.0, getVoltageColor(g,v2).getHexValue());
+		g.context.setStrokeStyle(grad);
+	    } else
+		setPowerColor(g, true);
 	    if (!sim.euroResistorCheckItem.getState()) {
 		g.context.beginPath();
 		g.context.moveTo(0,0);
