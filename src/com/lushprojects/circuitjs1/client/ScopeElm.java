@@ -66,6 +66,10 @@ class ScopeElm extends CircuitElm {
 	setScopeRect();
     }
     
+    public void setElmScope( Scope s) {
+	elmScope=s;
+    }
+    
     
     public void stepScope() {
 	elmScope.timeStep();
@@ -74,6 +78,10 @@ class ScopeElm extends CircuitElm {
     public void reset() {
 	super.reset();
 	elmScope.resetGraph(true);
+    }
+    
+    public void clearElmScope() {
+	elmScope = null;
     }
     
     boolean canViewInScope() { return false; }

@@ -603,8 +603,8 @@ MouseOutHandler, MouseWheelHandler {
 	
 	elmMenuBar = new MenuBar(true);
 	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit..."),new MyCommand("elm","edit")));
-	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in Scope"), new MyCommand("elm","viewInScope")));
-	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(LS("View in Floating Scope"), new MyCommand("elm","viewInFloatScope")));
+	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in scope"), new MyCommand("elm","viewInScope")));
+	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(LS("View in undocked scope"), new MyCommand("elm","viewInFloatScope")));
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem(LS("Cut"),new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
@@ -2546,7 +2546,7 @@ MouseOutHandler, MouseWheelHandler {
     		if (menu!="elm")
     			menuElm = null;
     		pushUndo();
-    		doDelete();
+    		doDelete(true);
     	}
     	if (item=="sliders")
     	    doSliders(menuElm);
@@ -2582,6 +2582,34 @@ MouseOutHandler, MouseWheelHandler {
     		    	s=scopes[menuScope];
     		else
     		    	s=((ScopeElm)mouseElm).elmScope;
+    		if (item=="dock") {
+            		if (scopeCount == scopes.length)
+            			return;
+            		scopes[scopeCount] = ((ScopeElm)mouseElm).elmScope;
+            		((ScopeElm)mouseElm).clearElmScope();
+            		scopes[scopeCount].position = scopeCount;
+            		scopeCount++;
+            		doDelete(false);
+    		}
+    		if (item=="undock") {
+    	    	    ScopeElm newScope = new ScopeElm(snapGrid(menuElm.x+50), snapGrid(menuElm.y+50));
+    	    	    elmList.addElement(newScope);
+    	    	    newScope.setElmScope(scopes[menuScope]);
+    	    	    int pos = -1;
+    	    	    for (int i = 0; i < scopeCount; i++) {
+    	    	    	if (i== menuScope) {
+    	    			int j;
+    	    			for (j = i; j != scopeCount; j++)
+    	    				scopes[j] = scopes[j+1];
+    	    			scopeCount--;
+    	    			i--;
+    	    			continue;
+    	    		}
+    	    		if (scopes[i].position > pos+1)
+    	    			scopes[i].position = pos+1;
+    	    		pos = scopes[i].position;
+    	    	    }
+    		}
     		if (item=="remove")
     		    	    s.setElm(null);
     		if (item=="removeplot")
@@ -3944,7 +3972,7 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
     	writeClipboardToStorage();
-    	doDelete();
+    	doDelete(true);
     	enablePaste();
     }
 
@@ -3991,9 +4019,10 @@ MouseOutHandler, MouseWheelHandler {
 	
     }
     
-    void doDelete() {
+    void doDelete(boolean pushUndoFlag) {
     	int i;
-    	pushUndo();
+    	if (pushUndoFlag)
+    	    pushUndo();
     	boolean hasDeleted = false;
 
     	for (i = elmList.size()-1; i >= 0; i--) {
@@ -4222,7 +4251,7 @@ MouseOutHandler, MouseWheelHandler {
     		    } else {
     		    	menuElm = null;
     		    	pushUndo();
-    			doDelete();
+    			doDelete(true);
     			e.cancel();
     		    }
     		}
