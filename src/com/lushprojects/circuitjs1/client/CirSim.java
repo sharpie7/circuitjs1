@@ -2456,6 +2456,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     
+    
     public void menuPerformed(String menu, String item) {
     	if (item=="about")
     		aboutBox = new AboutBox(circuitjs1.versionString);
@@ -2578,10 +2579,11 @@ MouseOutHandler, MouseWheelHandler {
     	if (menu=="scopepop") {
     		pushUndo();
     		Scope s;
-    		if (menuScope != -1 )
-    		    	s=scopes[menuScope];
-    		else
-    		    	s=((ScopeElm)mouseElm).elmScope;
+		if (menuScope != -1 )
+		    	s= scopes[menuScope];
+		else
+		    	s= ((ScopeElm)mouseElm).elmScope;
+
     		if (item=="dock") {
             		if (scopeCount == scopes.length)
             			return;
@@ -3735,6 +3737,20 @@ MouseOutHandler, MouseWheelHandler {
 		tempMouseMode = MODE_DRAG_POST;
 	} else
 	    tempMouseMode = MODE_DRAG_ALL;
+	
+	if ((scopeSelected != -1 && scopes[scopeSelected].cursorInSettingsWheel()) ||
+		( scopeSelected == -1 && mouseElm instanceof ScopeElm && ((ScopeElm)mouseElm).elmScope.cursorInSettingsWheel())){
+	    console("Doing something");
+	    Scope s;
+	    if (scopeSelected != -1)
+		s=scopes[scopeSelected];
+	    else 
+		s=((ScopeElm)mouseElm).elmScope;
+	    s.properties();
+	    clearSelection();
+	    mouseDragging=false;
+	    return;
+	}
 
 	int gx = inverseTransformX(e.getX());
 	int gy = inverseTransformY(e.getY());

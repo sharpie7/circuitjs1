@@ -587,6 +587,42 @@ class Scope {
     boolean drawGridLines;
     boolean somethingSelected;
     
+    boolean showSettingsWheel() {
+	return rect.height > 100 && rect.width > 100;
+    }
+    
+    boolean cursorInSettingsWheel() {
+	return 	sim.mouseCursorX >= rect.x &&
+		sim.mouseCursorX <= rect.x + 36 &&
+		sim.mouseCursorY >= rect.y + rect.height - 36 && 
+		sim.mouseCursorY <= rect.y + rect.height;
+    }
+    
+    void drawSettingsWheel(Graphics g) {
+	final int outR = 8;
+	final int inR= 5;
+	final int inR45 = 4;
+	final int outR45 = 6;
+	if (showSettingsWheel()) {
+	    g.context.save();
+	    if (cursorInSettingsWheel())
+		g.setColor(Color.cyan);
+	    else
+		g.setColor(Color.dark_gray);
+	    g.context.translate(rect.x+18, rect.y+rect.height-18);
+	    CircuitElm.drawThickCircle(g,0, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR, 0, -inR, 0);
+	    CircuitElm.drawThickLine(g, outR, 0, inR, 0);
+	    CircuitElm.drawThickLine(g, 0, -outR, 0, -inR);
+	    CircuitElm.drawThickLine(g, 0, outR, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR45, -outR45,-inR45,-inR45);
+	    CircuitElm.drawThickLine(g, outR45, -outR45,inR45,-inR45);
+	    CircuitElm.drawThickLine(g, -outR45, outR45,-inR45,inR45);
+	    CircuitElm.drawThickLine(g, outR45, outR45,inR45,inR45);
+	g.context.restore();
+	}
+    }
+    
     void draw(Graphics g) {
 	if (plots.size() == 0)
 	    return;
@@ -596,6 +632,7 @@ class Scope {
     	    scopeTimeStep = sim.timeStep;
     	    resetGraph();
     	}
+    	drawSettingsWheel( g);
     	
     	if (plot2d) {
     		draw2d(g);
@@ -665,6 +702,7 @@ class Scope {
             drawInfoTexts(g);
     	
     	g.context.restore();
+    	
     	drawCrosshairs(g);
     	
     	// there is no UI for setting lockScale but it's used in some of the example circuits (like crossover)
