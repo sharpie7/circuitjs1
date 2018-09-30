@@ -22,43 +22,81 @@ package com.lushprojects.circuitjs1.client;
 // contributed by Edward Calver
 
     class MultiplexerElm extends ChipElm {
+	int selectBitCount;
+	int outputCount;
+	
 	boolean hasReset() {return false;}
-	public MultiplexerElm(int xx, int yy) { super(xx, yy); }
+	public MultiplexerElm(int xx, int yy) {
+	    super(xx, yy);
+	    selectBitCount = 2;
+	    setupPins();
+	}
 	public MultiplexerElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
+	    selectBitCount = 2;
+	    try {
+		selectBitCount = Integer.parseInt(st.nextToken());
+	    } catch (Exception e) {}
+	    setupPins();
 	}
 	String getChipName() { return "Multiplexer"; }
-
+	String dump() { return super.dump() + " " + selectBitCount; }
+	
 	void setupPins() {
-	    sizeX = 3;
-	    sizeY = 5;
+	    sizeX = selectBitCount+1;
+	    outputCount = 1;
+	    int i;
+	    for (i = 0; i != selectBitCount; i++)
+		outputCount <<= 1;
+	    sizeY = outputCount+1;
+
 	    pins = new Pin[getPostCount()];
 
-	    pins[0] = new Pin(0, SIDE_W, "I0");
-	    pins[1] = new Pin(1, SIDE_W, "I1");
-	    pins[2] = new Pin(2, SIDE_W, "I2");
-	    pins[3] = new Pin(3, SIDE_W, "I3");
-		
-	    pins[4] = new Pin(1, SIDE_S, "S0");
-	    pins[5] = new Pin(2, SIDE_S, "S1");
+	    for (i = 0; i != outputCount; i++)
+		pins[i] = new Pin(i, SIDE_W, "I" + i);
+	    
+	    int n = outputCount;
+	    for (i = 0; i != selectBitCount; i++, n++)
+		pins[n] = new Pin(i+1, SIDE_S, "S" + i);
 
-	    pins[6] = new Pin(0, SIDE_E, "Q");
-	    pins[6].output=true;
+	    pins[n] = new Pin(0, SIDE_E, "Q");
+	    pins[n].output=true;
+	    
+	    allocNodes();
 
 	}
 	int getPostCount() {
-	    return 7;
+	    return outputCount + selectBitCount + 1;
 	}
 	int getVoltageSourceCount() {return 1;}
 
 	void execute() {
-	 int selectedvalue=0;
-	 if(pins[4].value)selectedvalue++;
-	 if(pins[5].value)selectedvalue+=2;
-	 pins[6].value=pins[selectedvalue].value;
-
+	    int selectedValue=0;
+	    int i;
+	    for (i = 0; i != selectBitCount; i++)
+		if (pins[outputCount+i].value)
+		    selectedValue |= 1<<i;
+	    pins[outputCount+selectBitCount].value=pins[selectedValue].value;
 	}
+	
 	int getDumpType() { return 184; }
 
+        public EditInfo getEditInfo(int n) {
+            if (n == 2)
+                return new EditInfo("# of Select Bits", selectBitCount, 1, 8).
+                    setDimensionless();
+            return super.getEditInfo(n);
+        }
+        
+        public void setEditValue(int n, EditInfo ei) {
+            if (n == 2 && ei.value >= 1 && ei.value <= 6) {
+                selectBitCount = (int) ei.value;
+                setupPins();
+                setPoints();
+                return;
+            }
+            super.setEditValue(n, ei);
+        }
+        
     }

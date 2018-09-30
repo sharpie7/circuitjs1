@@ -31,9 +31,10 @@ class VoltageElm extends CircuitElm {
     static final int WF_TRIANGLE = 3;
     static final int WF_SAWTOOTH = 4;
     static final int WF_PULSE = 5;
-    static final int WF_VAR = 6;
+    static final int WF_NOISE = 6;
+    static final int WF_VAR = 7;
     double frequency, maxVoltage, freqTimeZero, bias,
-	phaseShift, dutyCycle;
+	phaseShift, dutyCycle, noiseValue;
     
     static final double defaultPulseDuty = 1/(2*Math.PI);
     
@@ -109,6 +110,10 @@ class VoltageElm extends CircuitElm {
 	    sim.updateVoltageSource(nodes[0], nodes[1], voltSource,
 				getVoltage());
     }
+    void stepFinished() {
+	if (waveform == WF_NOISE)
+	    noiseValue = (sim.random.nextDouble()*2-1) * maxVoltage + bias;
+    }
     double getVoltage() {
 	if (waveform != WF_DC && sim.dcAnalysisFlag)
 	    return bias;
@@ -126,6 +131,8 @@ class VoltageElm extends CircuitElm {
 	    return bias+(w % (2*pi))*(maxVoltage/pi)-maxVoltage;
 	case WF_PULSE:
 	    return ((w % (2*pi)) < (2*pi*dutyCycle)) ? maxVoltage+bias : bias;
+	case WF_NOISE:
+	    return noiseValue;
 	default: return 0;
 	}
     }
@@ -179,7 +186,8 @@ class VoltageElm extends CircuitElm {
 	g.setColor(needsHighlight() ? selectColor : Color.gray);
 	setPowerColor(g, false);
 	int xc = center.x; int yc = center.y;
-	drawThickCircle(g, xc, yc, circleSize);
+	if (waveform != WF_NOISE)
+	    drawThickCircle(g, xc, yc, circleSize);
 	int wl = 8;
 	adjustBbox(xc-circleSize, yc-circleSize,
 		   xc+circleSize, yc+circleSize);
@@ -219,6 +227,12 @@ class VoltageElm extends CircuitElm {
 	    drawThickLine(g, xc+xl, yc+wl, xc+xl*2, yc);
 	    break;
 	}
+	case WF_NOISE:
+	{
+	    g.setColor(needsHighlight() ? selectColor : whiteColor);
+	    drawCenteredText(g, sim.LS("Noise"), xc, yc, true);
+	    break;
+	}
 	case WF_AC:
 	{
 	    int i;
@@ -238,7 +252,7 @@ class VoltageElm extends CircuitElm {
 	    break;
 	}
 	}
-	if (sim.showValuesCheckItem.getState()) {
+	if (sim.showValuesCheckItem.getState() && waveform != WF_NOISE) {
 	    String s = getShortUnitText(frequency, "Hz");
 	    if (dx == 0 || dy == 0)
 		drawValues(g, s, circleSize);
@@ -259,11 +273,12 @@ class VoltageElm extends CircuitElm {
 	case WF_PULSE:    arr[0] = "pulse gen"; break;
 	case WF_SAWTOOTH: arr[0] = "sawtooth gen"; break;
 	case WF_TRIANGLE: arr[0] = "triangle gen"; break;
+	case WF_NOISE:    arr[0] = "noise gen"; break;
 	}
 	arr[1] = "I = " + getCurrentText(getCurrent());
 	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
 	    getVoltageText(getVoltageDiff());
-	if (waveform != WF_DC && waveform != WF_VAR) {
+	if (waveform != WF_DC && waveform != WF_VAR && waveform != WF_NOISE) {
 	    arr[3] = "f = " + getUnitText(frequency, "Hz");
 	    arr[4] = "Vmax = " + getVoltageText(maxVoltage);
 	    int i = 5;
@@ -294,15 +309,16 @@ class VoltageElm extends CircuitElm {
 	    ei.choice.add("Triangle");
 	    ei.choice.add("Sawtooth");
 	    ei.choice.add("Pulse");
+	    ei.choice.add("Noise");
 	    ei.choice.select(waveform);
 	    return ei;
 	}
-	if (waveform == WF_DC)
-	    return null;
 	if (n == 2)
-	    return new EditInfo("Frequency (Hz)", frequency, 4, 500);
-	if (n == 3)
 	    return new EditInfo("DC Offset (V)", bias, -20, 20);
+	if (waveform == WF_DC || waveform == WF_NOISE)
+	    return null;
+	if (n == 3)
+	    return new EditInfo("Frequency (Hz)", frequency, 4, 500);
 	if (n == 4)
 	    return new EditInfo("Phase Offset (degrees)", phaseShift*180/pi,
 				-180, 180).setDimensionless();
@@ -314,9 +330,9 @@ class VoltageElm extends CircuitElm {
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0)
 	    maxVoltage = ei.value;
-	if (n == 3)
+	if (n == 2)
 	    bias = ei.value;
-	if (n == 2) {
+	if (n == 3) {
 	    // adjust time zero to maintain continuity ind the waveform
 	    // even though the frequency has changed.
 	    double oldfreq = frequency;

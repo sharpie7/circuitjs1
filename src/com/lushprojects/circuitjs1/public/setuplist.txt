@@ -257,6 +257,7 @@ dtlnor.txt DTL NOR
 ttlinverter.txt TTL Inverter
 ttlnand.txt TTL NAND
 ttlnor.txt TTL NOR
+fanout.txt Fan-Out
 -
 +NMOS
 nmosinverter.txt NMOS Inverter
@@ -288,6 +289,7 @@ xor.txt Exclusive OR
 halfadd.txt Half Adder
 fulladd.txt Full Adder
 decoder.txt 1-of-4 Decoder
+priencoder.txt Priority Encoder
 mux3state.txt 2-to-1 Mux
 majority.txt Majority Logic
 digcompare.txt 2-Bit Comparator
@@ -305,16 +307,22 @@ jkff.txt JK Flip-Flop
 counter.txt 4-Bit Ripple Counter
 counter8.txt 8-Bit Ripple Counter
 synccounter.txt Synchronous Counter
+updownctr.txt Up/Down Counter
 deccounter.txt Decimal Counter
 graycode.txt Gray Code Counter
 johnsonctr.txt Johnson Counter
+-
++Shift Registers
+sipo-sr.txt Serial-In Parallel-Out
+piso-sr.txt Parallel-In Serial-Out
+unishiftreg.txt Universal
 -
 divideby2.txt Divide-by-2
 divideby3.txt Divide-by-3
 ledflasher.txt LED Flasher
 traffic.txt Traffic Light
+sram.txt Static RAM
 dram.txt Dynamic RAM
-unishiftreg.txt Universal Shift Register
 -
 +Analog/Digital
 flashadc.txt Flash ADC
@@ -404,6 +412,10 @@ ota-gain.txt LM137000 Gain Oddity
 +Light Bulb
 lightbulb.txt Light Bulb
 wienbridge.txt Wien Bridge Oscillator
+-
++Varactor
+varactor.txt Varactor
+varactorvco.txt VCO
 -
 -
 blank.txt Blank Circuit

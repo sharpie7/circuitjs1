@@ -36,6 +36,7 @@ public abstract class CircuitElm implements Editable {
 
     static NumberFormat showFormat, shortFormat;//, noCommaFormat;
     static final double pi = 3.14159265358979323846;
+    static CircuitElm mouseElmRef = null;
 
     int x, y, x2, y2, flags, nodes[], voltSource;
     int dx, dy, dsign;
@@ -48,7 +49,6 @@ public abstract class CircuitElm implements Editable {
     Rectangle boundingBox;
     boolean noDiagonal;
     public boolean selected;
-    private boolean iAmMouseElm=false;
     
 //    abstract int getDumpType();
     
@@ -58,7 +58,9 @@ public abstract class CircuitElm implements Editable {
 	// an exception
  }
     
+    // leftover from java, doesn't do anything anymore. 
     Class getDumpClass() { return getClass(); }
+    
     int getDefaultFlags() { return 0; }
 
     static void initClass(CirSim s) {
@@ -142,7 +144,11 @@ public abstract class CircuitElm implements Editable {
     void setCurrent(int x, double c) { current = c; }
     double getCurrent() { return current; }
     void doStep() {}
-    void delete() {}
+    void delete() {
+	if (mouseElmRef==this)
+	    mouseElmRef=null;
+	sim.deleteSliders(this);
+    }
     void startIteration() {}
     double getPostVoltage(int x) { return volts[x]; }
     void setNodeVoltage(int n, double c) {
@@ -737,12 +743,10 @@ public abstract class CircuitElm implements Editable {
     
     Color getVoltageColor(Graphics g, double volts) {
     	if (needsHighlight()) {
-    	    return (selectColor);
+    	    	return (selectColor);
     	}
     	if (!sim.voltsCheckItem.getState()) {
-    	    if (!sim.powerCheckItem.getState()) // && !conductanceCheckItem.getState())
     	    	return(whiteColor);
-    	    return (g.lastColor);
     	}
     	int c = (int) ((volts+voltageRange)*(colorScaleCount-1)/
     		       (voltageRange*2));
@@ -819,7 +823,11 @@ public abstract class CircuitElm implements Editable {
     boolean comparePair(int x1, int x2, int y1, int y2) {
 	return ((x1 == y1 && x2 == y2) || (x1 == y2 && x2 == y1));
     }
-    boolean needsHighlight() { return iAmMouseElm || selected || sim.plotYElm == this; }
+    boolean needsHighlight() { 
+	return mouseElmRef==this || selected || sim.plotYElm == this ||
+		// Test if the current mouseElm is a ScopeElm and, if so, does it belong to this elm
+		(mouseElmRef instanceof ScopeElm && ((ScopeElm) mouseElmRef).elmScope.getElm()==this); 
+    }
     boolean isSelected() { return selected; }
     boolean canShowValueInScope(int v) { return false; }
     void setSelected(boolean x) { selected = x; }
@@ -841,10 +849,18 @@ public abstract class CircuitElm implements Editable {
 
     boolean isGraphicElmt() { return false; }
     
-    void setMouseElm(boolean v) {iAmMouseElm=v;}
+    void setMouseElm(boolean v) {
+	if (v)
+	    mouseElmRef=this;
+	else if (mouseElmRef==this)
+	    mouseElmRef=null;
+    }
     void draggingDone() {}
     
-    boolean isMouseElm() {return iAmMouseElm; }
+    boolean isMouseElm() {
+	return mouseElmRef==this; 
+    }
+    
     void updateModels() {}
     void stepFinished() {}
     

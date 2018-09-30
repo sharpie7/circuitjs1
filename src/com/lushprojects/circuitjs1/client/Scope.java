@@ -150,6 +150,7 @@ class Scope {
     static final int UNITS_W = 2;
     static final int UNITS_OHMS = 3;
     static final int UNITS_COUNT = 4;
+    static final double multa[] = {2.0, 2.5, 2.0};
     int scopePointCount = 128;
     FFT fft;
     int position;
@@ -183,7 +184,7 @@ class Scope {
     	expandRange = new boolean[UNITS_COUNT];
     	
     	rect = new Rectangle(0, 0, 1, 1);
-   	 	imageCanvas=Canvas.createIfSupported();
+   	imageCanvas=Canvas.createIfSupported();
    	imageContext=imageCanvas.getContext2d();
 	allocImage();
     	reset();
@@ -586,6 +587,42 @@ class Scope {
     boolean drawGridLines;
     boolean somethingSelected;
     
+    boolean showSettingsWheel() {
+	return rect.height > 100 && rect.width > 100;
+    }
+    
+    boolean cursorInSettingsWheel() {
+	return 	sim.mouseCursorX >= rect.x &&
+		sim.mouseCursorX <= rect.x + 36 &&
+		sim.mouseCursorY >= rect.y + rect.height - 36 && 
+		sim.mouseCursorY <= rect.y + rect.height;
+    }
+    
+    void drawSettingsWheel(Graphics g) {
+	final int outR = 8;
+	final int inR= 5;
+	final int inR45 = 4;
+	final int outR45 = 6;
+	if (showSettingsWheel()) {
+	    g.context.save();
+	    if (cursorInSettingsWheel())
+		g.setColor(Color.cyan);
+	    else
+		g.setColor(Color.dark_gray);
+	    g.context.translate(rect.x+18, rect.y+rect.height-18);
+	    CircuitElm.drawThickCircle(g,0, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR, 0, -inR, 0);
+	    CircuitElm.drawThickLine(g, outR, 0, inR, 0);
+	    CircuitElm.drawThickLine(g, 0, -outR, 0, -inR);
+	    CircuitElm.drawThickLine(g, 0, outR, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR45, -outR45,-inR45,-inR45);
+	    CircuitElm.drawThickLine(g, outR45, -outR45,inR45,-inR45);
+	    CircuitElm.drawThickLine(g, -outR45, outR45,-inR45,inR45);
+	    CircuitElm.drawThickLine(g, outR45, outR45,inR45,inR45);
+	g.context.restore();
+	}
+    }
+    
     void draw(Graphics g) {
 	if (plots.size() == 0)
 	    return;
@@ -595,6 +632,7 @@ class Scope {
     	    scopeTimeStep = sim.timeStep;
     	    resetGraph();
     	}
+    	drawSettingsWheel( g);
     	
     	if (plot2d) {
     		draw2d(g);
@@ -624,7 +662,7 @@ class Scope {
     	for (si = 0; si != visiblePlots.size(); si++) {
     	    ScopePlot plot = visiblePlots.get(si);
     	    calcPlotScale(plot);
-    	    if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+    	    if (sim.scopeSelected == -1 && plot.elm !=null && plot.elm.isMouseElm())
     		somethingSelected = true;
     	    expandRange[plot.units] = true;
     	}
@@ -664,6 +702,7 @@ class Scope {
             drawInfoTexts(g);
     	
     	g.context.restore();
+    	
     	drawCrosshairs(g);
     	
     	// there is no UI for setting lockScale but it's used in some of the example circuits (like crossover)
@@ -671,7 +710,7 @@ class Scope {
     	    for (i = 0; i != UNITS_COUNT; i++)
     		if (scale[i] > 1e-4 && expandRange[i])
     		    scale[i] /= 2;
-	}
+    	}
 
     }
     
@@ -726,24 +765,37 @@ class Scope {
     		gridMax *= 2;
     	scale[plot.units] = gridMax;
     }
+    
+    double calcGridStepX() {
+	int multptr=0;
+    	double gsx = 1e-15;
+
+    	double ts = sim.timeStep*speed;
+    	while (gsx < ts*20) {
+    	    gsx *=multa[(multptr++)%3];
+    	}
+    	return gsx;
+    }
 
     double mainGridMult, mainGridMid;
     
     void drawPlot(Graphics g, ScopePlot plot, boolean drawHGridLines, boolean selected) {
+	if (plot.elm == null)
+	    return;
     	int i;
     	String col;
 //    	int col = (sim.printableCheckItem.getState()) ? 0xFFFFFFFF : 0;
 //    	for (i = 0; i != pixels.length; i++)
 //    		pixels[i] = col;
     	
-    	double multa[] = {2.0, 2.5, 2.0};
+
     	int multptr=0;
     	int x = 0;
     	int maxy = (rect.height-1)/2;
     	int y = maxy;
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
-	if (sim.scopeSelected == -1 && plot.elm.isMouseElm())
+	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
     	    color = "#00FFFF";
 	else if (selected)
 	    color = plot.color;
@@ -792,15 +844,8 @@ class Scope {
     	}
     	
     	// Vertical (T) gridlines
-    	gridStepX = 1e-15;
-
     	double ts = sim.timeStep*speed;
-    	//    	while (gridStep < ts*5)
-    	//    		gridStep *= 10;
-    	multptr=0;
-    	while (gridStepX < ts*20) {
-    	    gridStepX *=multa[(multptr++)%3];
-    	}
+    	gridStepX = calcGridStepX();
 
     	if (drawGridLines) {
     	    // horizontal gridlines
@@ -1257,7 +1302,10 @@ class Scope {
 	ScopePlot plot = visiblePlots.firstElement();
 	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
 	    plot = visiblePlots.get(selectedPlot);
-	return plot.elm.getScopeText(plot.value);
+	if (plot.elm == null)
+		return "";
+	else
+	    	return plot.elm.getScopeText(plot.value);
     }
     
     void setSpeed(int sp) {
@@ -1297,12 +1345,8 @@ class Scope {
 	return elm;
     }
     
-    MenuBar getMenu() {
-	CircuitElm elm = plots.get(0).elm;
-    	if (elm == null)
-    	    return null;
-    	
-    	return sim.scopeMenuBar;
+    boolean canMenu() {
+    	return (plots.get(0).elm != null);
     }
     
     boolean canShowResistance() {
