@@ -43,8 +43,9 @@ CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPe
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox;
 Scrollbar speedBar;
 Scope scope;
-Grid grid;
+Grid grid, speedGrid;
 int nx, ny;
+Label scopeSpeedLabel;
 	
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
@@ -62,7 +63,12 @@ int nx, ny;
 			scrollbarChanged();
 		    }
 		};
-		fp.add(speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd));
+		speedGrid = new Grid(1,2);
+		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd);
+		speedGrid.setWidget(0,0, speedBar);
+		scopeSpeedLabel = new Label("");
+		speedGrid.setWidget(0, 1, scopeSpeedLabel);
+		fp.add(speedGrid);
 
 				
 		CircuitElm elm = scope.getSingleElm();
@@ -148,6 +154,10 @@ int nx, ny;
 	    
 	}
 	
+	void setScopeSpeedLabel() {
+	    scopeSpeedLabel.setText(CircuitElm.getUnitText(scope.calcGridStepX(), "s")+"/div");
+	}
+	
 	void addItemToGrid(Grid g, CheckBox scb) {
 	    g.setWidget(ny, nx, scb);
 	    if (++nx >= grid.getColumnCount()) {
@@ -156,11 +166,13 @@ int nx, ny;
 	    }
 	}
 	
+	
 	void scrollbarChanged() {
 	    int newsp = (int)Math.pow(2,  10-speedBar.getValue());
 	    CirSim.console("changed " + scope.speed + " " + newsp + " " + speedBar.getValue());
 	    if (scope.speed != newsp)
 		scope.setSpeed(newsp);
+	    setScopeSpeedLabel();
 	}
 	
 	void updateUI() {
@@ -191,6 +203,7 @@ int nx, ny;
                 vceBox.setValue(scope.showingValue(Scope.VAL_VCE));
                 vceIcBox.setValue(scope.isShowingVceAndIc());
 	    }
+	    setScopeSpeedLabel();
 	}
 	
 	protected void closeDialog()

@@ -150,6 +150,7 @@ class Scope {
     static final int UNITS_W = 2;
     static final int UNITS_OHMS = 3;
     static final int UNITS_COUNT = 4;
+    static final double multa[] = {2.0, 2.5, 2.0};
     int scopePointCount = 128;
     FFT fft;
     int position;
@@ -726,6 +727,17 @@ class Scope {
     		gridMax *= 2;
     	scale[plot.units] = gridMax;
     }
+    
+    double calcGridStepX() {
+	int multptr=0;
+    	double gsx = 1e-15;
+
+    	double ts = sim.timeStep*speed;
+    	while (gsx < ts*20) {
+    	    gsx *=multa[(multptr++)%3];
+    	}
+    	return gsx;
+    }
 
     double mainGridMult, mainGridMid;
     
@@ -738,7 +750,7 @@ class Scope {
 //    	for (i = 0; i != pixels.length; i++)
 //    		pixels[i] = col;
     	
-    	double multa[] = {2.0, 2.5, 2.0};
+
     	int multptr=0;
     	int x = 0;
     	int maxy = (rect.height-1)/2;
@@ -794,15 +806,8 @@ class Scope {
     	}
     	
     	// Vertical (T) gridlines
-    	gridStepX = 1e-15;
-
     	double ts = sim.timeStep*speed;
-    	//    	while (gridStep < ts*5)
-    	//    		gridStep *= 10;
-    	multptr=0;
-    	while (gridStepX < ts*20) {
-    	    gridStepX *=multa[(multptr++)%3];
-    	}
+    	gridStepX = calcGridStepX();
 
     	if (drawGridLines) {
     	    // horizontal gridlines
