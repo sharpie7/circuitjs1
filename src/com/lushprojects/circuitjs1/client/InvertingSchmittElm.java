@@ -155,9 +155,9 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 2)
 		return new EditInfo("Slew Rate (V/ns)", slewRate, 0, 0);
 	    if (n == 3)
-		return new EditInfo("Logic ON Voltage (V)", logicOnLevel, 0, 0);
+		return new EditInfo("High Voltage (V)", logicOnLevel, 0, 0);
 	    if (n == 4)
-		return new EditInfo("Logic OFF Voltage (V)", logicOffLevel, 0, 0);
+		return new EditInfo("Low Voltage (V)", logicOffLevel, 0, 0);
 	    
 	    return null;
 	}
