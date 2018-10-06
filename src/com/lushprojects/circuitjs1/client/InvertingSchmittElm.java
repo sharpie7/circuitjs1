@@ -44,19 +44,18 @@ package com.lushprojects.circuitjs1.client;
 			      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    noDiagonal = true;
+	    slewRate = .5;
+	    lowerTrigger=1.66;
+	    upperTrigger=3.33;
+	    logicOnLevel = 5;
+	    logicOffLevel = 0;
 	    try {
 		slewRate = new Double (st.nextToken()).doubleValue();
 		lowerTrigger = new Double (st.nextToken()).doubleValue();
 		upperTrigger = new Double (st.nextToken()).doubleValue();
 		logicOnLevel = new Double (st.nextToken()).doubleValue();
 		logicOffLevel = new Double (st.nextToken()).doubleValue();
-
 	    } catch (Exception e) {
-		slewRate = .5;
-	    	lowerTrigger=1.66;
-	   	upperTrigger=3.33;
-		logicOnLevel = 5;
-		logicOffLevel = 0;
 	    }
 	}
 
