@@ -3095,8 +3095,11 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	setPowerBarEnable();
 	enableItems();
-	for (i = 0; i != adjustables.size(); i++)
-	    adjustables.get(i).createSlider(this);
+	if (!retain) {
+	    // create sliders as needed
+	    for (i = 0; i != adjustables.size(); i++)
+		adjustables.get(i).createSlider(this);
+	}
 //	if (!retain)
 	//    handleResize(); // for scopes
 	needAnalyze();
