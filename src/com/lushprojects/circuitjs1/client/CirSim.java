@@ -2597,23 +2597,15 @@ MouseOutHandler, MouseWheelHandler {
     	    	    ScopeElm newScope = new ScopeElm(snapGrid(menuElm.x+50), snapGrid(menuElm.y+50));
     	    	    elmList.addElement(newScope);
     	    	    newScope.setElmScope(scopes[menuScope]);
-    	    	    int pos = -1;
-    	    	    for (int i = 0; i < scopeCount; i++) {
-    	    	    	if (i== menuScope) {
-    	    			int j;
-    	    			for (j = i; j != scopeCount; j++)
-    	    				scopes[j] = scopes[j+1];
-    	    			scopeCount--;
-    	    			i--;
-    	    			continue;
-    	    		}
-    	    		if (scopes[i].position > pos+1)
-    	    			scopes[i].position = pos+1;
-    	    		pos = scopes[i].position;
-    	    	    }
+    	    	    
+    	    	    int i;
+    	    	    // remove scope from list.  setupScopes() will fix the positions
+    	    	    for (i = menuScope; i < scopeCount; i++)
+    	    		scopes[i] = scopes[i+1];
+    	    	    scopeCount--;
     		}
     		if (item=="remove")
-    		    	    s.setElm(null);
+    		    	s.setElm(null);  // setupScopes() will clean this up
     		if (item=="removeplot")
 			s.removePlot(menuPlot);
     		if (item=="speed2")
