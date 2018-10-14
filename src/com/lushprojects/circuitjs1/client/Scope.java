@@ -545,6 +545,31 @@ class Scope {
         prevX = x;
       }
     }
+    
+    void drawSettingsWheel(Graphics g) {
+	final int outR = 8;
+	final int inR= 5;
+	final int inR45 = 4;
+	final int outR45 = 6;
+	if (showSettingsWheel()) {
+	    g.context.save();
+	    if (cursorInSettingsWheel())
+		g.setColor(Color.cyan);
+	    else
+		g.setColor(Color.dark_gray);
+	    g.context.translate(rect.x+18, rect.y+rect.height-18);
+	    CircuitElm.drawThickCircle(g,0, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR, 0, -inR, 0);
+	    CircuitElm.drawThickLine(g, outR, 0, inR, 0);
+	    CircuitElm.drawThickLine(g, 0, -outR, 0, -inR);
+	    CircuitElm.drawThickLine(g, 0, outR, 0, inR);
+	    CircuitElm.drawThickLine(g, -outR45, -outR45,-inR45,-inR45);
+	    CircuitElm.drawThickLine(g, outR45, -outR45,inR45,-inR45);
+	    CircuitElm.drawThickLine(g, -outR45, outR45,-inR45,inR45);
+	    CircuitElm.drawThickLine(g, outR45, outR45,inR45,inR45);
+	g.context.restore();
+	}
+    }
 
     void draw2d(Graphics g) {
     	if (imageContext==null)
@@ -582,6 +607,7 @@ class Scope {
     		g.setColor(Color.yellow);
     	g.drawLine(rect.width/2, 0, rect.width/2, rect.height-1);
     	g.context.restore();
+    	drawSettingsWheel(g);
     }
 	
     boolean drawGridLines;
@@ -599,30 +625,7 @@ class Scope {
 		sim.mouseCursorY <= rect.y + rect.height;
     }
     
-    void drawSettingsWheel(Graphics g) {
-	final int outR = 8;
-	final int inR= 5;
-	final int inR45 = 4;
-	final int outR45 = 6;
-	if (showSettingsWheel()) {
-	    g.context.save();
-	    if (cursorInSettingsWheel())
-		g.setColor(Color.cyan);
-	    else
-		g.setColor(Color.dark_gray);
-	    g.context.translate(rect.x+18, rect.y+rect.height-18);
-	    CircuitElm.drawThickCircle(g,0, 0, inR);
-	    CircuitElm.drawThickLine(g, -outR, 0, -inR, 0);
-	    CircuitElm.drawThickLine(g, outR, 0, inR, 0);
-	    CircuitElm.drawThickLine(g, 0, -outR, 0, -inR);
-	    CircuitElm.drawThickLine(g, 0, outR, 0, inR);
-	    CircuitElm.drawThickLine(g, -outR45, -outR45,-inR45,-inR45);
-	    CircuitElm.drawThickLine(g, outR45, -outR45,inR45,-inR45);
-	    CircuitElm.drawThickLine(g, -outR45, outR45,-inR45,inR45);
-	    CircuitElm.drawThickLine(g, outR45, outR45,inR45,inR45);
-	g.context.restore();
-	}
-    }
+
     
     void draw(Graphics g) {
 	if (plots.size() == 0)
@@ -633,14 +636,14 @@ class Scope {
     	    scopeTimeStep = sim.timeStep;
     	    resetGraph();
     	}
-    	drawSettingsWheel( g);
+    	
     	
     	if (plot2d) {
     		draw2d(g);
     		return;
     	}
-//    	if (pixels == null)
-//    		return;
+
+    	drawSettingsWheel(g);
     	g.context.save();
     	g.setColor(Color.red);
     	g.context.translate(rect.x, rect.y);
