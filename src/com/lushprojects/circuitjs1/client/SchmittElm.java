@@ -39,11 +39,11 @@ class SchmittElm extends InvertingSchmittElm{
 			if(volts[0]>upperTrigger)//Input voltage high enough to set output high
 			{
 			state=false;
-			out=5;
+			out=logicOnLevel;
 			}
 			else
 			{
-			out=0;
+			out=logicOffLevel;
 			}
 		}
 		else
@@ -51,11 +51,11 @@ class SchmittElm extends InvertingSchmittElm{
 			if(volts[0]<lowerTrigger)//Input voltage low enough to set output low
 			{
 			state=true;
-			out=0;
+			out=logicOffLevel;
 			}
 			else
 			{
-			out=5;
+			out=logicOnLevel;
 			}
 		}
 	    

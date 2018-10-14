@@ -320,6 +320,8 @@
 "Hartley Oscillator"="Hartley-Oszillator"
 "High Voltage"="High-Pegel"
 "High Voltage (V)"="High-Pegel (V)"
+"Low Voltage"="Low-Pegel"
+"Low Voltage (V)"="Low-Pegel (V)"
 "High-Pass Filter (RC)"="Hochpassfilter (RC)"
 "High-Pass Filter (RL)"="Hochpassfilter (RL)"
 "Hold current (amps)"="Haltestrom (A)"

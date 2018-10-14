@@ -26,6 +26,9 @@ package com.lushprojects.circuitjs1.client;
 	double lowerTrigger;
 	double upperTrigger;
 	boolean state;
+	double logicOnLevel;
+	double logicOffLevel;
+	
 	public InvertingSchmittElm(int xx, int yy) {
 	    super(xx, yy);
 	    noDiagonal = true;
@@ -33,26 +36,31 @@ package com.lushprojects.circuitjs1.client;
 	    state=false;
 	    lowerTrigger=1.66;
 	    upperTrigger=3.33;
+	    logicOnLevel = 5;
+	    logicOffLevel = 0;
 	}
 
 	public InvertingSchmittElm(int xa, int ya, int xb, int yb, int f,
 			      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    noDiagonal = true;
+	    slewRate = .5;
+	    lowerTrigger=1.66;
+	    upperTrigger=3.33;
+	    logicOnLevel = 5;
+	    logicOffLevel = 0;
 	    try {
 		slewRate = new Double (st.nextToken()).doubleValue();
 		lowerTrigger = new Double (st.nextToken()).doubleValue();
 		upperTrigger = new Double (st.nextToken()).doubleValue();
-
+		logicOnLevel = new Double (st.nextToken()).doubleValue();
+		logicOffLevel = new Double (st.nextToken()).doubleValue();
 	    } catch (Exception e) {
-		slewRate = .5;
-	    	lowerTrigger=1.66;
-	   	upperTrigger=3.33;
 	    }
 	}
 
 	String dump() {
-	    return super.dump() + " " + slewRate+" "+lowerTrigger+" "+upperTrigger;
+	    return super.dump() + " " + slewRate+" "+lowerTrigger+" "+upperTrigger+" "+logicOnLevel+" "+logicOffLevel;
 	}
 	
 	int getDumpType() { return 183; }//Trying to find unused type
@@ -101,11 +109,11 @@ package com.lushprojects.circuitjs1.client;
 			if(volts[0]>upperTrigger)//Input voltage high enough to set output low
 			{
 			state=false;
-			out=0;
+			out=logicOffLevel;
 			}
 			else
 			{
-			out=5;
+			out=logicOnLevel;
 			}
 		}
 		else
@@ -113,11 +121,11 @@ package com.lushprojects.circuitjs1.client;
 			if(volts[0]<lowerTrigger)//Input voltage low enough to set output high
 			{
 			state=true;
-			out=5;
+			out=logicOnLevel;
 			}
 			else
 			{
-			out=0;
+			out=logicOffLevel;
 			}
 		}
 	    
@@ -145,6 +153,11 @@ package com.lushprojects.circuitjs1.client;
 	    	}
 	    if (n == 2)
 		return new EditInfo("Slew Rate (V/ns)", slewRate, 0, 0);
+	    if (n == 3)
+		return new EditInfo("High Voltage (V)", logicOnLevel, 0, 0);
+	    if (n == 4)
+		return new EditInfo("Low Voltage (V)", logicOffLevel, 0, 0);
+	    
 	    return null;
 	}
 	double dlt;
@@ -152,15 +165,20 @@ package com.lushprojects.circuitjs1.client;
 	public void setEditValue(int n, EditInfo ei) {
 		if (n == 0)
 		dlt=ei.value;
-	  	 if (n == 1)
+	  	if (n == 1)
 		dut=ei.value;
 	    	if (n == 2)
 		slewRate = ei.value;
+	    	if (n == 3)
+	    	    logicOnLevel = ei.value;
+	    	if (n == 4)
+	    	    logicOffLevel = ei.value;
+	    	
 		
 		if(dlt>dut)
 		{
-		upperTrigger=dlt;
-		lowerTrigger=dut;
+    		upperTrigger=dlt;
+    		lowerTrigger=dut;
 		}
 		else
 		{
