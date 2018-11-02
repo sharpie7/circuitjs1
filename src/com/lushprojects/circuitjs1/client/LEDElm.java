@@ -21,9 +21,11 @@ package com.lushprojects.circuitjs1.client;
 
     class LEDElm extends DiodeElm {
 	double colorR, colorG, colorB, maxBrightnessCurrent;
+	static String lastLEDModelName = "default-led";
+	
 	public LEDElm(int xx, int yy) {
 	    super(xx, yy);
-	    fwdrop = 2.1024259;
+	    modelName = lastLEDModelName;
 	    setup();
 	    maxBrightnessCurrent = .01;
 	    colorR = 1; colorG = colorB = 0;
@@ -31,9 +33,13 @@ package com.lushprojects.circuitjs1.client;
 	public LEDElm(int xa, int ya, int xb, int yb, int f,
 		      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	    if ((f & FLAG_FWDROP) == 0)
-		fwdrop = 2.1024259;
-	    setup();
+	    if ((f & (FLAG_MODEL|FLAG_FWDROP)) == 0) {
+		final double fwdrop = 2.1024259;
+	        model = DiodeModel.getModelWithParameters(fwdrop, 0);
+	        modelName = model.name;
+	        CirSim.console("model name wparams = " + modelName);
+		setup();
+	    }
 	    colorR = new Double(st.nextToken()).doubleValue();
 	    colorG = new Double(st.nextToken()).doubleValue();
 	    colorB = new Double(st.nextToken()).doubleValue();
@@ -91,36 +97,40 @@ package com.lushprojects.circuitjs1.client;
 
 	void getInfo(String arr[]) {
 	    super.getInfo(arr);
-	    arr[0] = "LED";
+	    if (model.oldStyle)
+		arr[0] = "LED";
+	    else
+		arr[0] = sim.LS("LED") + " (" + modelName + ")";
 	}
 
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
-		return super.getEditInfo(n);
-	    if (n == 1)
 		return new EditInfo("Red Value (0-1)", colorR, 0, 1).
 		    setDimensionless();
-	    if (n == 2)
+	    if (n == 1)
 		return new EditInfo("Green Value (0-1)", colorG, 0, 1).
 		    setDimensionless();
-	    if (n == 3)
+	    if (n == 2)
 		return new EditInfo("Blue Value (0-1)", colorB, 0, 1).
 		    setDimensionless();
-	    if (n == 4)
+	    if (n == 3)
 		return new EditInfo("Max Brightness Current (A)", maxBrightnessCurrent, 0, .1);
-	    return null;
+	    return super.getEditInfo(n-4);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0)
-		super.setEditValue(0, ei);
-	    if (n == 1)
 		colorR = ei.value;
-	    if (n == 2)
+	    if (n == 1)
 		colorG = ei.value;
-	    if (n == 3)
+	    if (n == 2)
 		colorB = ei.value;
-	    if (n == 4)
+	    if (n == 3)
 		maxBrightnessCurrent = ei.value;
+	    super.setEditValue(n-4, ei);
 	}
 	int getShortcut() { return 'l'; }
+	
+	void setLastModelName(String n) {
+	    lastLEDModelName = n;
+	}
     }

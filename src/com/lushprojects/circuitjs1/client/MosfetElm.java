@@ -71,10 +71,10 @@ package com.lushprojects.circuitjs1.client;
 	void setupDiodes() {
 	    // diode from node 1 to body terminal 
 	    diodeB1 = new Diode(sim);
-	    diodeB1.setup(.8,  0);
+	    diodeB1.setupForDefaultModel();
 	    // diode from node 2 to body terminal
 	    diodeB2 = new Diode(sim);
-	    diodeB2.setup(.8,  0);
+	    diodeB2.setupForDefaultModel();
 	}
 	
 	double getDefaultThreshold() { return 1.5; }

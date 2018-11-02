@@ -19,19 +19,23 @@
 
 package com.lushprojects.circuitjs1.client;
 
+// diode that can be embedded in other elements.  series resistance is handled in DiodeElm, not here.
 class Diode {
     int nodes[];
     CirSim sim;
-
     
     Diode(CirSim s) {
 	sim = s;
 	nodes = new int[2];
     }
-    void setup(double fw, double zv) {
-	fwdrop = fw;
-	zvoltage = zv;
-	leakage = 1 / (Math.exp(fwdrop * vdcoef) - 1);
+    void setup(DiodeModel model) {
+	leakage = model.saturationCurrent;
+	zvoltage = model.breakdownVoltage;
+	vscale = model.vscale;
+	vdcoef = model.vdcoef;
+	
+	sim.console("setup " + leakage + " " + zvoltage + " " + model.emissionCoefficient + " " +  vdcoef);
+
 	// critical voltage for limiting; current is vscale/sqrt(2) at
 	// this voltage
 	vcrit = vscale * Math.log(vscale/(Math.sqrt(2)*leakage));
@@ -47,20 +51,20 @@ class Diode {
 	}
     }
 	
+    void setupForDefaultModel() {
+	setup(DiodeModel.getDefaultModel());
+    }
+    
     void reset() {
 	lastvoltdiff = 0;
     }
 	
-    // The diode emission coefficient. Although this is 1 for the ideal Shockley diode, real discrete
-    // diodes have a value around 2, so their exponential is around half as steep as that of an ideal
-    // Shockley diode.
-    static final double emcoef = 2;
     // Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
     static final double vt = 0.025865;
     // The diode's "scale voltage", the voltage increase which will raise current by a factor of e.
-    static final double vscale = emcoef * vt;
+    double vscale;
     // The multiplicative equivalent of dividing by vscale (for speed).
-    static final double vdcoef = 1 / vscale;
+    double vdcoef;
     // The Zener breakdown curve is represented by a steeper exponential, one like the ideal
     // Shockley curve, but flipped and translated. This curve removes the moderating influence
     // of emcoef, replacing vscale and vdcoef with vt and vzcoef.

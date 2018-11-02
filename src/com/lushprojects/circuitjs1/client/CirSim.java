@@ -207,7 +207,7 @@ MouseOutHandler, MouseWheelHandler {
     Scope scopes[];
     boolean showResistanceInVoltageSources;
    int scopeColCount[];
-    static EditDialog editDialog, customLogicEditDialog;
+    static EditDialog editDialog, customLogicEditDialog, diodeModelEditDialog;
     static SliderDialog sliderDialog;
     static ExportAsUrlDialog exportAsUrlDialog;
     static ExportAsTextDialog exportAsTextDialog;
@@ -1444,6 +1444,8 @@ MouseOutHandler, MouseWheelHandler {
 	    console.log(text);
 	}-*/;
 
+    public static native void debugger() /*-{ debugger; }-*/;
+    
     class NodeMapEntry {
 	int node;
 	NodeMapEntry() { node = -1; }
@@ -2798,6 +2800,7 @@ MouseOutHandler, MouseWheelHandler {
     String dumpCircuit() {
 	int i;
 	CustomLogicModel.clearDumpedFlags();
+	DiodeModel.clearDumpedFlags();
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
 	f |= (voltsCheckItem.getState()) ? 0 : 4;
@@ -2811,11 +2814,9 @@ MouseOutHandler, MouseWheelHandler {
 		
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
-	    if (ce instanceof CustomLogicElm) {
-		String m = ((CustomLogicElm)ce).dumpModel();
-		if (!m.isEmpty())
-		    dump += m + "\n";
-	    }
+	    String m = ce.dumpModel();
+	    if (m != null && !m.isEmpty())
+		dump += m + "\n";
 	    dump += ce.dump() + "\n";
 	}
 	for (i = 0; i != scopeCount; i++) {
@@ -3027,8 +3028,15 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		    }
 		    // do not add new symbols here without testing export as link
+		    
+		    // if first character is a digit then parse the type as a number
 		    if (tint >= '0' && tint <= '9')
 			tint = new Integer(type).intValue();
+		    
+		    if (tint == 34) {
+			new DiodeModel(st);
+			break;
+		    }
 		    if (tint == 38) {
 			Adjustable adj = new Adjustable(st, this);
 			adjustables.add(adj);
@@ -4210,6 +4218,8 @@ MouseOutHandler, MouseWheelHandler {
     	if (sliderDialog!=null && sliderDialog.isShowing())
 		return true;
     	if (customLogicEditDialog!=null && customLogicEditDialog.isShowing())
+		return true;
+    	if (diodeModelEditDialog!=null && diodeModelEditDialog.isShowing())
 		return true;
     	if (exportAsUrlDialog != null && exportAsUrlDialog.isShowing())
     		return true;

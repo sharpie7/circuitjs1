@@ -55,23 +55,27 @@ class VaractorElm extends DiodeElm {
 	interpPoint2(lead1, lead2, plate2[0], plate2[1], 1, hs);
     }
 	
+    
     void draw(Graphics g) {
-	super.draw(g);
+	// draw leads and diode arrow
+	drawDiode(g);
 	    
-	// draw first lead and plate
+	// draw first plate
 	setVoltageColor(g, volts[0]);
-	drawThickLine(g, point1, lead1);
 	setPowerColor(g, false);
 	drawThickLine(g, plate1[0], plate1[1]);
 	if (sim.powerCheckItem.getState())
 	    g.setColor(Color.gray);
 
-	// draw second lead and plate
+	// draw second plate
 	setVoltageColor(g, volts[1]);
-	drawThickLine(g, point2, lead2);
 	setPowerColor(g, false);
 	drawThickLine(g, plate2[0], plate2[1]);
+	
+	doDots(g);
+	drawPosts(g);
     }
+    
     void stamp() {
 	super.stamp();
 	sim.stampVoltageSource(nodes[0], nodes[2], voltSource);
@@ -86,7 +90,7 @@ class VaractorElm extends DiodeElm {
 	if (capvoltdiff > 0)
 	    capacitance = c0;
 	else
-	    capacitance = c0/Math.pow(1-capvoltdiff/fwdrop, .5);
+	    capacitance = c0/Math.pow(1-capvoltdiff/model.fwdrop, .5);
 	compResistance = sim.timeStep/(2*capacitance);
 	voltSourceValue = -capvoltdiff-capCurrent*compResistance;
     }
