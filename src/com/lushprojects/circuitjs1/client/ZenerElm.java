@@ -22,22 +22,26 @@ package com.lushprojects.circuitjs1.client;
 // Zener code contributed by J. Mike Rollins
 // http://www.camotruck.net/rollins/simulator.html
 class ZenerElm extends DiodeElm {
+    static String lastZenerModelName = "default-zener";
+    
     public ZenerElm(int xx, int yy) {
 	super(xx, yy);
-	zvoltage = default_zvoltage;
+	modelName = lastZenerModelName;
 	setup();
     }
     public ZenerElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
 	super(xa, ya, xb, yb, f, st);
-	zvoltage = new Double(st.nextToken()).doubleValue();
+	if ((f & FLAG_MODEL) == 0) {
+	    double zvoltage = new Double(st.nextToken()).doubleValue();
+            model = DiodeModel.getModelWithParameters(model.fwdrop, zvoltage);
+            modelName = model.name;
+            CirSim.console("model name wparams = " + modelName);
+	}
 	setup();
     }
     int getDumpType() { return 'z'; }
-    String dump() {
-	return super.dump() + " " + zvoltage;
-    }
-	
+    
     final int hs = 8;
     Polygon poly;
     Point cathode[];
@@ -86,21 +90,12 @@ class ZenerElm extends DiodeElm {
     void getInfo(String arr[]) {
 	super.getInfo(arr);
 	arr[0] = "Zener diode";
-	arr[5] = "Vz = " + getVoltageText(zvoltage);
+	arr[5] = "Vz = " + getVoltageText(model.breakdownVoltage);
     }
-    public EditInfo getEditInfo(int n) {
-	if (n == 0)
-	    return new EditInfo("Fwd Voltage @ 1A", fwdrop, 10, 1000);
-	if (n == 1)
-	    return new EditInfo("Zener Voltage @ 5mA", zvoltage, 1, 25);
-	return null;
-    } 
-    public void setEditValue(int n, EditInfo ei) {
-	if (n == 0)
-	    fwdrop = ei.value;
-	if (n == 1)
-	    zvoltage = ei.value;
-	setup();
+    
+    int getShortcut() { return 'z'; }
+    
+    void setLastModelName(String n) {
+	lastZenerModelName = n;
     }
-	int getShortcut() { return 'z'; }
 }

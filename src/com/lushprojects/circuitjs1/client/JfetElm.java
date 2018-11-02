@@ -27,14 +27,14 @@ package com.lushprojects.circuitjs1.client;
 	    super(xx, yy, pnpflag);
 	    noDiagonal = true;
 	    diode = new Diode(sim);
-	    diode.setup(.8, 0);
+	    diode.setupForDefaultModel();
 	}
 	public JfetElm(int xa, int ya, int xb, int yb, int f,
 		       StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	    noDiagonal = true;
 	    diode = new Diode(sim);
-	    diode.setup(.8, 0);
+	    diode.setupForDefaultModel();
 	}
 	
 	void reset() {
