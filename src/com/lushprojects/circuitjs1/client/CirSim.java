@@ -1510,7 +1510,11 @@ MouseOutHandler, MouseWheelHandler {
     
     // generate info we need to calculate wire currents.  Most other elements calculate currents using
     // the voltage on their terminal nodes.  But wires have the same voltage at both ends, so we need
-    // to use the neighbors' currents instead.
+    // to use the neighbors' currents instead.  We used to treat wires as zero voltage sources to make
+    // this easier, but this is very inefficient, since it makes the matrix 2 rows bigger for each wire.
+    // So we create a list of WireInfo objects instead to help us calculate the wire currents instead,
+    // so we make the matrix less complex, and we only calculate the wire currents when we need them
+    // (once per frame, not once per subiteration)
     boolean calcWireInfo() {
 	int i;
 	int moved = 0;
@@ -1552,15 +1556,16 @@ MouseOutHandler, MouseWheelHandler {
 		wi.neighbors = neighbors0;
 		wi.post = 0;
 		wire.hasWireInfo = true;
+		moved = 0;
 	    } else if (isReady1) {
 		wi.neighbors = neighbors1;
 		wi.post = 1;
 		wire.hasWireInfo = true;
+		moved = 0;
 	    } else {
 		// move to the end of the list and try again later
 		wireInfoList.add(wireInfoList.remove(i--));
 		moved++; 
-//		console("moved to end " + moved);
 		if (moved > wireInfoList.size() * 2) {
 		    stop("wire loop detected", wire);
 		    return false;
