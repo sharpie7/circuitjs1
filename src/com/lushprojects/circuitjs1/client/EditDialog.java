@@ -177,7 +177,7 @@ class EditDialog extends DialogBox  {
 			return noCommaFormat.format(v*1e9) + "n";
 		if (va < 1e-3)
 			return noCommaFormat.format(v*1e6) + "u";
-		if (va < 1 && !ei.forceLargeM)
+		if (va < 1 /*&& !ei.forceLargeM*/)
 			return noCommaFormat.format(v*1e3) + "m";
 		if (va < 1e3)
 			return noCommaFormat.format(v);
@@ -210,8 +210,8 @@ class EditDialog extends DialogBox  {
 		case 'n': case 'N': mult = 1e-9; break;
 		case 'u': case 'U': mult = 1e-6; break;
 
-		// for ohm values, we assume mega for lowercase m, otherwise milli
-		case 'm': mult = (ei.forceLargeM) ? 1e6 : 1e-3; break;
+		// for ohm values, we used to assume mega for lowercase m, otherwise milli
+		case 'm': mult = /*(ei.forceLargeM) ? 1e6 : */ 1e-3; break;
 
 		case 'k': case 'K': mult = 1e3; break;
 		case 'M': mult = 1e6; break;
