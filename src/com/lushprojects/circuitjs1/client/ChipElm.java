@@ -67,9 +67,9 @@ package com.lushprojects.circuitjs1.client;
 	    int i;
 	    Font oldfont = g.getFont();
 	    Font f = new Font("SansSerif", 0, 10*csize);
-	    g.setFont(f);
 //	    FontMetrics fm = g.getFontMetrics();
 	    for (i = 0; i != getPostCount(); i++) {
+		g.setFont(f);
 		Pin p = pins[i];
 		setVoltageColor(g, volts[i]);
 		Point a = p.post;
@@ -85,14 +85,24 @@ package com.lushprojects.circuitjs1.client;
 		    drawThickCircle(g, p.bubbleX, p.bubbleY, 3);
 		}
 		g.setColor(whiteColor);
-//		int sw = fm.stringWidth(p.text);
-		int sw=(int)g.context.measureText(p.text).getWidth();
-		int asc=(int)g.currentFontSize;
-		g.drawString(p.text, p.textloc.x-sw/2,
-			     p.textloc.y+asc/2);
-		if (p.lineOver) {
-		    int ya = p.textloc.y-asc/2;
-		    g.drawLine(p.textloc.x-sw/2, ya, p.textloc.x+sw/2, ya);
+		int fsz = 10*csize;
+		while (true) {
+		    int sw=(int)g.context.measureText(p.text).getWidth();
+		    // scale font down if it's too big
+		    if (sw > 10*csize) {
+			fsz -= 2;
+			Font f2 = new Font("SansSerif", 0, fsz);
+			g.setFont(f2);
+			continue;
+		    }
+		    int asc=(int)g.currentFontSize;
+		    g.drawString(p.text, p.textloc.x-sw/2,
+			    p.textloc.y+asc/2);
+		    if (p.lineOver) {
+			int ya = p.textloc.y-asc/2;
+			g.drawLine(p.textloc.x-sw/2, ya, p.textloc.x+sw/2, ya);
+		    }
+		    break;
 		}
 	    }
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
