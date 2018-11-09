@@ -260,7 +260,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	void getInfo(String arr[]) {
-	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP)" : "NPN)") + " beta=" +	showFormat.format(beta);
+	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP)" : "NPN)") + " \u03b2=" + showFormat.format(beta);
 	    double vbc = volts[0]-volts[1];
 	    double vbe = volts[0]-volts[2];
 	    double vce = volts[1]-volts[2];
