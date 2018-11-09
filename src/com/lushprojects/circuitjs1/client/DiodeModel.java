@@ -36,8 +36,8 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	emissionCoefficient = ec;
 	breakdownVoltage = bv;
 	description = d;
-	CirSim.console("creating diode model " + this);
-	CirSim.debugger();
+//	CirSim.console("creating diode model " + this);
+//	CirSim.debugger();
 	updateModel();
     }
     
@@ -57,7 +57,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	DiodeModel lm = modelMap.get(name);
 	if (lm != null)
 	    return lm;
-	CirSim.console("copying to " + name);
+//	CirSim.console("copying to " + name);
 	lm = new DiodeModel(oldmodel);
 	lm.name = name;
 	modelMap.put(name, lm);
@@ -117,13 +117,13 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	if (zvoltage != 0)
 	    name = name + " zvoltage=" + zvoltage;
 	DiodeModel dm = getModelWithName(name);
-	CirSim.console("got model with name " + name);
+//	CirSim.console("got model with name " + name);
 	dm.saturationCurrent = leakage;
 	dm.emissionCoefficient = emcoef;
 	dm.breakdownVoltage = zvoltage;
 	dm.readOnly = dm.oldStyle = true;
-	CirSim.console("at drop current is " + (leakage*(Math.exp(fwdrop*vdcoef)-1)));
-	CirSim.console("sat " + leakage + " em " + emcoef);
+//	CirSim.console("at drop current is " + (leakage*(Math.exp(fwdrop*vdcoef)-1)));
+//	CirSim.console("sat " + leakage + " em " + emcoef);
 	dm.updateModel();
 	return dm;
     }
@@ -196,7 +196,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	// make sure we don't overwrite a default model
 	if (dm == null || !dm.builtIn)
 	    modelMap.put(name, this);
-	CirSim.console("parsed model " + name);
+//	CirSim.console("parsed model " + name);
     }
     
     public EditInfo getEditInfo(int n) {

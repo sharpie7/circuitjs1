@@ -59,14 +59,14 @@ class DiodeElm extends CircuitElm {
 	    }
 	    model = DiodeModel.getModelWithParameters(fwdrop, zvoltage);
 	    modelName = model.name;
-	    CirSim.console("model name wparams = " + modelName);
+//	    CirSim.console("model name wparams = " + modelName);
 	}
 	setup();
     }
     boolean nonLinear() { return true; }
         
     void setup() {
-	CirSim.console("setting up for model " + modelName + " " + model);
+//	CirSim.console("setting up for model " + modelName + " " + model);
         model = DiodeModel.getModelWithNameOrCopy(modelName, model);
 	diode.setup(model);
 	hasResistance = (model.seriesResistance > 0);
