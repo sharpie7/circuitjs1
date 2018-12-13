@@ -105,4 +105,16 @@ AB1 AB0=010
 ??? ???=001
 </pre>
 The first lines checks if the two inputs are equal.  The next three lines test if A is larger.  Otherwise, B must be larger.
+<p>
+<h3>3-Bit Counter:</h3>
+<p>
+Inputs: <tt>Clk</tt><br>
+Outputs: <tt>A,B,C</tt><br>
+Definition:</p><pre>+ AB0=AB1
++ A01=A10
++ 011=100
++ 111=000
+? ABC=ABC
+</pre>
+This counter counts up on positive transition of the Clk input.  The first line handles counting up from 000, 010, 100, or 110.  The second line handles counting up from 001 or 101.  The next two lines handle 011 and 111.  The last line ensures that the output doesn't change unless the clock makes a positive transition.
 </body></html>
