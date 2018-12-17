@@ -765,6 +765,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Relay"), "RelayElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Memristor"), "MemristorElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Spark Gap"), "SparkGapElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -4680,6 +4681,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new OTAElm(x1, y1, x2, y2, f, st);
     	if (tint==403)
     	    return new ScopeElm(x1, y1, x2, y2, f, st);
+    	if (tint==404)
+    	    return new FuseElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4890,6 +4893,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OhmMeterElm(x1, y1);
     	if (n=="ScopeElm")
     	    	return (CircuitElm) new ScopeElm(x1,y1);
+    	if (n=="FuseElm")
+	    	return (CircuitElm) new FuseElm(x1,y1);
     	return null;
     }
     
