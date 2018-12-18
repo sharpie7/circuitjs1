@@ -250,13 +250,16 @@ class EditDialog extends DialogBox  {
 	    Object src = e.getSource();
 	    int i;
 	    boolean changed = false;
+	    boolean applied = false;
 	    for (i = 0; i != einfocount; i++) {
 		EditInfo ei = einfos[i];
 		if (ei.choice == src || ei.checkbox == src || ei.button == src) {
 		    
 		    // if we're pressing a button, make sure to apply changes first
-		    if (ei.button == src)
+		    if (ei.button == src && !ei.newDialog) {
 			apply();
+			applied = true;
+		    }
 		    
 		    elm.setEditValue(i, ei);
 		    if (ei.newDialog)
@@ -266,7 +269,9 @@ class EditDialog extends DialogBox  {
 	    }
 	    if (changed) {
 		// apply changes before we reset everything
-		apply();
+		// (need to check if we already applied changes; otherwise Diode create simple model button doesn't work)
+		if (!applied)
+		    apply();
 		
 		clearDialog();
 		buildDialog();

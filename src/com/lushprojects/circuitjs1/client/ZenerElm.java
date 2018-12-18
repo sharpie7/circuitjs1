@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.user.client.Window;
+
 // Zener code contributed by J. Mike Rollins
 // http://www.camotruck.net/rollins/simulator.html
 class ZenerElm extends DiodeElm {
@@ -98,4 +100,24 @@ class ZenerElm extends DiodeElm {
     void setLastModelName(String n) {
 	lastZenerModelName = n;
     }
+
+    public void setEditValue(int n, EditInfo ei) {
+        if (n == 2) {
+            String val = Window.prompt(sim.LS("Breakdown Voltage"), sim.LS("5.6"));
+            try {
+        		double zvoltage = new Double(val).doubleValue();
+        		zvoltage = Math.abs(zvoltage);
+        		if (zvoltage > 0) {
+        		    model = DiodeModel.getZenerModel(zvoltage);
+        		    modelName = model.name;
+        		    ei.newDialog = true;
+        		    return;
+        		}
+            } catch (Exception e) {
+            }
+        }
+        
+        super.setEditValue(n, ei);
+    }
+    
 }
