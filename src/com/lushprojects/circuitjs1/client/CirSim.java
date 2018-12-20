@@ -35,6 +35,7 @@ import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -209,12 +210,9 @@ MouseOutHandler, MouseWheelHandler {
    int scopeColCount[];
     static EditDialog editDialog, customLogicEditDialog, diodeModelEditDialog;
     static SliderDialog sliderDialog;
-    static ExportAsUrlDialog exportAsUrlDialog;
-    static ExportAsTextDialog exportAsTextDialog;
-    static ExportAsLocalFileDialog exportAsLocalFileDialog;
-    static ImportFromTextDialog importFromTextDialog;
     static ImportFromDropbox importFromDropbox;
     static ScrollValuePopup scrollValuePopup;
+    static DialogBox dialogShowing;
     static AboutBox aboutBox;
     static ImportFromDropboxDialog importFromDropboxDialog;
 //    Class dumpTypes[], shortcuts[];
@@ -502,13 +500,14 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	}));
 	conventionCheckItem.setState(convention);
-	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."),
-			new MyCommand("options","other")));
+	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
+	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
 
 	mainMenuBar = new MenuBar(true);
 	mainMenuBar.setAutoOpen(true);
 	composeMainMenu(mainMenuBar);
 	composeMainMenu(drawMenuBar);
+	loadShortcuts();
 
 	  
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
@@ -686,6 +685,67 @@ MouseOutHandler, MouseWheelHandler {
         if (stor == null)
             return;
         stor.setItem(key,  val ? "true" : "false");
+    }
+    
+    // save shortcuts to local storage
+    void saveShortcuts() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        String str = "";
+        int i;
+        // format: code1=ClassName;code2=ClassName;etc
+        for (i = 0; i != shortcuts.length; i++) {
+            String sh = shortcuts[i];
+            if (sh == null)
+        		continue;
+            str += i + "=" + sh + ";";
+        }
+        stor.setItem("shortcuts", str);
+    }
+    
+    // load shortcuts from local storage
+    void loadShortcuts() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        String str = stor.getItem("shortcuts");
+        if (str == null)
+            return;
+        String keys[] = str.split(";");
+        
+        // clear existing shortcuts
+        int i;
+        for (i = 0; i != shortcuts.length; i++)
+            shortcuts[i] = null;
+        
+        // clear shortcuts from menu
+        for (i = 0; i != mainMenuItems.size(); i++) {
+            CheckboxMenuItem item = mainMenuItems.get(i);
+            // stop when we get to drag menu items
+            if (item.getShortcut().length() > 1)
+        		break;
+            item.setShortcut("");
+        }
+        
+        for (i = 0; i != keys.length; i++) {
+            String arr[] = keys[i].split("=");
+            if (arr.length != 2)
+        		continue;
+            int c = Integer.parseInt(arr[0]);
+            String className = arr[1];
+            shortcuts[c] = className;
+            
+            // find menu item and fix it
+            int j;
+            for (j = 0; j != mainMenuItems.size(); j++) {
+        		if (mainMenuItemNames.get(j) == className) {
+        		    CheckboxMenuItem item = mainMenuItems.get(j);
+        		    item.setShortcut(Character.toString((char)c));
+        		    break;
+        		}
+            }
+        }
     }
     
     // install touch handlers
@@ -883,19 +943,19 @@ MouseOutHandler, MouseWheelHandler {
     	MenuBar otherMenuBar = new MenuBar(true);
     	CheckboxMenuItem mi;
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag All"), "DragAll"));
-    	mi.addShortcut(LS("(Alt-drag)"));
+    	mi.setShortcut(LS("(Alt-drag)"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Row"), "DragRow"));
-    	mi.addShortcut(LS("(A-S-drag)"));
+    	mi.setShortcut(LS("(A-S-drag)"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Column"), "DragColumn"));
-    	mi.addShortcut(isMac ? LS("(A-Cmd-drag)") : LS("(A-M-drag)"));
+    	mi.setShortcut(isMac ? LS("(A-Cmd-drag)") : LS("(A-M-drag)"));
     	otherMenuBar.addItem(getClassCheckItem(LS("Drag Selected"), "DragSelected"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Post"), "DragPost"));
-    	mi.addShortcut("(" + ctrlMetaKey + "-drag)");
+    	mi.setShortcut("(" + ctrlMetaKey + "-drag)");
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Drag")), otherMenuBar);
 
     	mainMenuBar.addItem(mi=getClassCheckItem(LS("Select/Drag Sel"), "Select"));
-    	mi.addShortcut(LS("(space or Shift-drag)"));
+    	mi.setShortcut(LS("(space or Shift-drag)"));
     }
     
     public void setiFrameHeight() {
@@ -2473,7 +2533,7 @@ MouseOutHandler, MouseWheelHandler {
     		loadFileInput.click();
     	}
     	if (item=="importfromtext") {
-    		importFromTextDialog = new ImportFromTextDialog(this);
+    		dialogShowing = new ImportFromTextDialog(this);
     	}
     	if (item=="importfromdropbox") {
     		importFromDropboxDialog = new ImportFromDropboxDialog(this);
@@ -2494,6 +2554,10 @@ MouseOutHandler, MouseWheelHandler {
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
+    	if (menu=="options" && item=="shortcuts") {
+    	    	dialogShowing = new ShortcutsDialog(this);
+    	    	dialogShowing.show();
+    	}
     	if (menu=="options" && item=="other")
     		doEdit(new EditOptions(this));
     	if (item=="undo")
@@ -2774,32 +2838,21 @@ MouseOutHandler, MouseWheelHandler {
     void doExportAsUrl()
     {
     	String dump = dumpCircuit();
-//	if (expDialog == null) {
-//	    expDialog = ImportExportDialogFactory.Create(this,
-//		 ImportExportDialog.Action.EXPORT);
-////	    expDialog = new ImportExportClipboardDialog(this,
-////		 ImportExportDialog.Action.EXPORT);
-//	}
-//        expDialog.setDump(dump);
-//	expDialog.execute();
-	    exportAsUrlDialog = new ExportAsUrlDialog(dump);
-	    exportAsUrlDialog.show();
+	dialogShowing = new ExportAsUrlDialog(dump);
+	dialogShowing.show();
     }
-    
     
     void doExportAsText()
     {
     	String dump = dumpCircuit();
-	    exportAsTextDialog = new ExportAsTextDialog(this, dump);
-	    exportAsTextDialog.show();
+    	dialogShowing = new ExportAsTextDialog(this, dump);
+    	dialogShowing.show();
     }
-    
-    
-    
+        
     void doExportAsLocalFile() {
     	String dump = dumpCircuit();
-    	exportAsLocalFileDialog = new ExportAsLocalFileDialog(dump);
-    	exportAsLocalFileDialog.show();
+    	dialogShowing = new ExportAsLocalFileDialog(dump);
+    	dialogShowing.show();
     }
     
 
@@ -4227,19 +4280,13 @@ MouseOutHandler, MouseWheelHandler {
 		return true;
     	if (diodeModelEditDialog!=null && diodeModelEditDialog.isShowing())
 		return true;
-    	if (exportAsUrlDialog != null && exportAsUrlDialog.isShowing())
-    		return true;
-    	if (exportAsTextDialog != null && exportAsTextDialog.isShowing())
-    		return true;
-       	if (exportAsLocalFileDialog != null && exportAsLocalFileDialog.isShowing())
+       	if (dialogShowing != null && dialogShowing.isShowing())
        		return true;
     	if (contextPanel!=null && contextPanel.isShowing())
     		return true;
     	if (scrollValuePopup != null && scrollValuePopup.isShowing())
     		return true;
     	if (aboutBox !=null && aboutBox.isShowing())
-    		return true;
-    	if (importFromTextDialog !=null && importFromTextDialog.isShowing())
     		return true;
     	if (importFromDropboxDialog != null && importFromDropboxDialog.isShowing())
     		return true;
