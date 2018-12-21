@@ -692,14 +692,14 @@ MouseOutHandler, MouseWheelHandler {
         Storage stor = Storage.getLocalStorageIfSupported();
         if (stor == null)
             return;
-        String str = "";
+        String str = "1";
         int i;
-        // format: code1=ClassName;code2=ClassName;etc
+        // format: version;code1=ClassName;code2=ClassName;etc
         for (i = 0; i != shortcuts.length; i++) {
             String sh = shortcuts[i];
             if (sh == null)
         		continue;
-            str += i + "=" + sh + ";";
+            str += ";" + i + "=" + sh;
         }
         stor.setItem("shortcuts", str);
     }
@@ -728,7 +728,8 @@ MouseOutHandler, MouseWheelHandler {
             item.setShortcut("");
         }
         
-        for (i = 0; i != keys.length; i++) {
+        // go through keys (skipping version at start)
+        for (i = 1; i < keys.length; i++) {
             String arr[] = keys[i].split("=");
             if (arr.length != 2)
         		continue;
