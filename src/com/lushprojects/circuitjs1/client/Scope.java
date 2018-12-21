@@ -20,7 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.storage.client.Storage;
 
 import java.util.Vector;
 
@@ -245,15 +245,16 @@ class Scope {
     	showScale = showFreq = lockScale = showMin = false;
     	showFFT = false;
     	plot2d = false;
-    	
-    	// set showV and showI appropriately depending on what plots are present
-    	int i;
-    	for (i = 0; i != plots.size(); i++) {
-    	    ScopePlot plot = plots.get(i);
-    	    if (plot.units == UNITS_V)
-    		showV = true;
-    	    if (plot.units == UNITS_A)
-    		showI = true;
+    	if (!loadDefaults()) {
+    	    // set showV and showI appropriately depending on what plots are present
+    	    int i;
+    	    for (i = 0; i != plots.size(); i++) {
+    		ScopePlot plot = plots.get(i);
+    		if (plot.units == UNITS_V)
+    		    showV = true;
+    		if (plot.units == UNITS_A)
+    		    showI = true;
+    	    }
     	}
     }
     
@@ -359,7 +360,9 @@ class Scope {
 	}
 	return true;
     }
-    
+
+    // returns true if we have a plot of voltage and nothing else (except current).
+    // The default case is a plot of voltage and current, so we're basically checking if that case is true. 
     boolean showingVoltageAndMaybeCurrent() {
 	int i;
 	boolean gotv = false;
@@ -1361,6 +1364,18 @@ class Scope {
     boolean isShowingVceAndIc() {
 	return plot2d && plots.size() == 2 && plots.get(0).value == VAL_VCE && plots.get(1).value == VAL_IC;
     }
+
+    int getFlags() {
+    	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
+			(showMax ? 0 : 4) |   // showMax used to be always on
+			(showFreq ? 8 : 0) |
+			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
+			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
+			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
+			(showDutyCycle ? 32768 : 0);
+	flags |= FLAG_PLOTS;
+	return flags;
+    }
     
     String dump() {
 	ScopePlot vPlot = plots.get(0);
@@ -1368,14 +1383,7 @@ class Scope {
 	CircuitElm elm = vPlot.elm;
     	if (elm == null)
     		return null;
-    	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
-    			(showMax ? 0 : 4) |   // showMax used to be always on
-    			(showFreq ? 8 : 0) |
-    			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
-    			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
-    			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
-    			(showDutyCycle ? 32768 : 0);
-    	flags |= FLAG_PLOTS;
+    	int flags = getFlags();
     	int eno = sim.locateElm(elm);
     	if (eno < 0)
     		return null;
@@ -1477,12 +1485,16 @@ class Scope {
     	    }
     	    setValues(value, ivalue, sim.getElm(e), yElm);
     	}
+    	plot2d = plot2dFlag;
+    	setFlags(flags);
+    }
+    
+    void setFlags(int flags) {
     	showI = (flags & 1) != 0;
     	showV = (flags & 2) != 0;
     	showMax = (flags & 4) == 0;
     	showFreq = (flags & 8) != 0;
     	lockScale = (flags & 16) != 0;
-    	plot2d = plot2dFlag;
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
@@ -1490,6 +1502,32 @@ class Scope {
     	maxScale = (flags & 8192) != 0;
     	showRMS = (flags & 16384) != 0;
     	showDutyCycle = (flags & 32768) != 0;
+    }
+    
+    void saveAsDefault() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+	ScopePlot vPlot = plots.get(0);
+    	int flags = getFlags();
+    	
+    	// store current scope settings as default.  1 is a version code
+    	stor.setItem("scopeDefaults", "1 " + flags + " " + vPlot.speed);
+    	CirSim.console("saved defaults " + flags);
+    }
+
+    boolean loadDefaults() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return false;
+        String str = stor.getItem("scopeDefaults");
+        if (str == null)
+            return false;
+        String arr[] = str.split(" ");
+        int flags = Integer.parseInt(arr[1]);
+        setFlags(flags);
+        speed = Integer.parseInt(arr[2]);
+        return true;
     }
     
     void allocImage() {
