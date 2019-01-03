@@ -860,6 +860,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ammeter"), "AmmeterElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Data Export"), "DataRecorderElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -4731,6 +4732,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new ScopeElm(x1, y1, x2, y2, f, st);
     	if (tint==404)
     	    return new FuseElm(x1, y1, x2, y2, f, st);
+    	if (tint==405)
+    	    return new LEDArrayElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4943,6 +4946,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	return (CircuitElm) new ScopeElm(x1,y1);
     	if (n=="FuseElm")
 	    	return (CircuitElm) new FuseElm(x1,y1);
+    	if (n=="LEDArrayElm")
+    	    	return (CircuitElm) new LEDArrayElm(x1, y1);
     	return null;
     }
     

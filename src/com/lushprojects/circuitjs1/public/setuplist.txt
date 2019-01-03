@@ -417,5 +417,6 @@ wienbridge.txt Wien Bridge Oscillator
 varactor.txt Varactor
 varactorvco.txt VCO
 -
+ledarray.txt LED Array
 -
 blank.txt Blank Circuit

@@ -36,7 +36,7 @@ package com.lushprojects.circuitjs1.client;
 		setPoints();
 	    } catch (Exception e) {}
 	}
-	String getChipName() { return "Demultiplexer"; }
+	String getChipName() { return "demultiplexer"; }
 	String dump() { return super.dump() + " " + selectBitCount; }
 
 	void setupPins() {
@@ -78,7 +78,7 @@ package com.lushprojects.circuitjs1.client;
             if (n < 2)
 		return super.getEditInfo(n);
             if (n == 2)
-                return new EditInfo("# of Select Bits", selectBitCount, 1, 1).setDimensionless();
+                return new EditInfo("# of Select Bits", selectBitCount).setDimensionless();
             return null;
         }
         public void setEditValue(int n, EditInfo ei) {
