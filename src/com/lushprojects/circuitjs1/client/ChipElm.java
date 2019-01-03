@@ -28,7 +28,7 @@ package com.lushprojects.circuitjs1.client;
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
-		bits = (this instanceof DecadeElm) ? 10 : 4;
+		bits = (this instanceof RingCounterElm) ? 10 : 4;
 	    noDiagonal = true;
 	    setupPins();
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);

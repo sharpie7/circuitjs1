@@ -923,7 +923,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add SIPO shift register"), "SipoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add PISO shift register"), "PisoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter"), "CounterElm"));
-    	chipMenuBar.addItem(getClassCheckItem(LS("Add Decade Counter"), "DecadeElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Ring Counter"), "DecadeElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Latch"), "LatchElm"));
     	//chipMenuBar.addItem(getClassCheckItem("Add Static RAM", "SRAMElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
@@ -4672,7 +4672,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (tint==164)
     		return (CircuitElm) new CounterElm(x1, y1, x2, y2, f, st);
     	if (tint==163)
-    		return (CircuitElm) new DecadeElm(x1, y1, x2, y2, f, st);
+    		return (CircuitElm) new RingCounterElm(x1, y1, x2, y2, f, st);
     	if (tint==165)
     		return (CircuitElm) new TimerElm(x1, y1, x2, y2, f, st);
     	if (tint==166)
@@ -4880,7 +4880,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (n=="CounterElm")
     		return (CircuitElm) new CounterElm(x1, y1);
     	if (n=="DecadeElm")
-    		return (CircuitElm) new DecadeElm(x1, y1);
+    		return (CircuitElm) new RingCounterElm(x1, y1);
     	if (n=="TimerElm")
     		return (CircuitElm) new TimerElm(x1, y1);
     	if (n=="DACElm")
