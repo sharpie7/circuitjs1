@@ -63,9 +63,10 @@ public class CheckboxMenuItem extends MenuItem implements Command {
 	
 	public void execute() {
 		setState(!on);
-		if (extcmd!=null)
-			extcmd.execute();
-        	
+		if (extcmd!=null) {
+		    extcmd.execute();
+		    CircuitElm.sim.repaint();
+		}
       }
 
 	public void setTitle(String s) {
