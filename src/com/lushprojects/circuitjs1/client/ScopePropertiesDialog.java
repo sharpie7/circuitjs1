@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
@@ -130,11 +131,23 @@ Label scopeSpeedLabel;
 		
 		updateUI();
 		hp = new HorizontalPanel();
+		hp.setWidth("100%");
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		hp.setStyleName("topSpace");
 		fp.add(hp);
 		hp.add(okButton = new Button(CirSim.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
+			}
+		});
+
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		Button saveAsDefaultButton;
+		hp.add(saveAsDefaultButton = new Button(CirSim.LS("Save as Default")));
+		saveAsDefaultButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				scope.saveAsDefault();
 			}
 		});
 		this.center();

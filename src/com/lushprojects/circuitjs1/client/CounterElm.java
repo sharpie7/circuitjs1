@@ -20,19 +20,27 @@
 package com.lushprojects.circuitjs1.client;
 
     class CounterElm extends ChipElm {
-	final int FLAG_ENABLE = 2;
-	boolean invertreset=false;
-	public CounterElm(int xx, int yy) { super(xx, yy); }
+	boolean invertreset;
+	int modulus;
+	final int FLAG_UP_DOWN = 4;
+
+	public CounterElm(int xx, int yy) {
+	    super(xx, yy);
+	}
+
 	public CounterElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	if(st.hasMoreTokens())invertreset=new Boolean(st.nextToken()).booleanValue();
-	else invertreset=true;
-	pins[1].bubble = invertreset;
+	    invertreset = true;
+	    try {
+	   	invertreset = Boolean.parseBoolean(st.nextToken());
+		modulus = Integer.parseInt(st.nextToken());
+	    } catch (Exception e) {}
+	    pins[1].bubble = invertreset;
 	}
 
 	String dump() {
-	return super.dump()+" "+invertreset;
+	    return super.dump() + " " + invertreset + " " + modulus;
 	}
 
 	boolean needsBits() { return true; }
@@ -51,14 +59,12 @@ package com.lushprojects.circuitjs1.client;
 		pins[ii] = new Pin(i, SIDE_E, "Q" + (bits-i-1));
 		pins[ii].output = pins[ii].state = true;
 	    }
-	    if (hasEnable())
-		pins[bits+2] = new Pin(sizeY-2, SIDE_W, "En");
+	    if (hasUpDown())
+	        pins[bits+2] = new Pin(sizeY-2, SIDE_W, "U/D");
 	    allocNodes();
 	}
 	int getPostCount() {
-	    if (hasEnable())
-		return bits+3;
-	    return bits+2;
+	    return (hasUpDown()) ? bits+3 : bits+2;
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
@@ -74,6 +80,15 @@ package com.lushprojects.circuitjs1.client;
     	    if (n == 2) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Invert reset pin",invertreset);
+		return ei;
+	    }
+            if (n == 3)
+                return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
+            if (n == 4)
+                return new EditInfo("Modulus", modulus, 1, 1).setDimensionless();
+    	    if (n == 5) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Up/Down Pin", hasUpDown());
 		return ei;
 	    }
 	    return null;
@@ -94,37 +109,51 @@ package com.lushprojects.circuitjs1.client;
 		setPoints();
 	    }
 	    if (n == 2) {
-		if (ei.checkbox.getState())
-		    {		    
-		    invertreset=true;
-	            pins[1].bubble = true;
-		    }
-		else
-		    {
-		    invertreset=false;
-	            pins[1].bubble = false;
-		    }
+		invertreset = ei.checkbox.getState();
+		setupPins();
+		setPoints();
+	    }
+	    if (n == 3 && ei.value >= 3) {
+		bits = (int)ei.value;
+		setupPins();
+		setPoints();
+	    }
+	    if (n == 4)
+		modulus = (int)ei.value;
+	    if (n == 5) {
+		flags = ei.changeFlag(flags, FLAG_UP_DOWN);
+		setupPins();
 		setPoints();
 	    }
 	}
-	boolean hasEnable() { return (flags & FLAG_ENABLE) != 0; }
+	boolean hasUpDown() { return (flags & FLAG_UP_DOWN) != 0; }
 	int getVoltageSourceCount() { return bits; }
 	void execute() {
-	    boolean en = true;
-	    if (hasEnable())
-		en = pins[bits+2].value;
-	    if (pins[0].value && !lastClock && en) {
+	    if (pins[0].value && !lastClock) {
 		int i;
-		for (i = bits-1; i >= 0; i--) {
-		    int ii = i+2;
-		    if (!pins[ii].value) {
-			pins[ii].value = true;
-			break;
-		    }
-		    pins[ii].value = false;
-		}
+		int value = 0;
+		
+		// get direction
+		int dir = 1;
+		if (hasUpDown() && pins[bits+2].value)
+		    dir = -1;
+		
+		// get current value
+		int lastBit = 2+bits-1;
+		for (i = 0; i != bits; i++)
+		    if (pins[lastBit-i].value)
+			value |= 1<<i;
+		
+		// update value
+		value += dir;
+		if (modulus != 0)
+		   value = (value+modulus) % modulus;
+		
+		// convert value to binary
+		for (i = 0; i != bits; i++)
+		    pins[lastBit-i].value = (value & (1<<i)) != 0;
 	    }
-	    if (!pins[1].value==invertreset) {
+	    if (!pins[1].value == invertreset) {
 		int i;
 		for (i = 0; i != bits; i++)
 		    pins[i+2].value = false;

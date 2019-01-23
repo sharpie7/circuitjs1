@@ -34,7 +34,7 @@ class Diode {
 	vscale = model.vscale;
 	vdcoef = model.vdcoef;
 	
-	sim.console("setup " + leakage + " " + zvoltage + " " + model.emissionCoefficient + " " +  vdcoef);
+//	sim.console("setup " + leakage + " " + zvoltage + " " + model.emissionCoefficient + " " +  vdcoef);
 
 	// critical voltage for limiting; current is vscale/sqrt(2) at
 	// this voltage

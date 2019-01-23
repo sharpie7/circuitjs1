@@ -24,23 +24,20 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
 
 class EditInfo {
+    	// mn/mx were used in the java version to create sliders in the edit dialog but we don't do that in the javascript version, so this
+    	// constructor is deprecated
 	EditInfo(String n, double val, double mn, double mx) {
 		name = n;
 		value = val;
-		if (mn == 0 && mx == 0 && val > 0) {
-			minval = 1e10;
-			while (minval > val/100)
-				minval /= 10.;
-			maxval = minval * 1000;
-		} else {
-			minval = mn;
-			maxval = mx;
-		}
-		forceLargeM = name.indexOf("(ohms)") > 0 ||
-				name.indexOf("(Hz)") > 0;
-				dimensionless = false;
+		dimensionless = false;
 	}
 	
+	EditInfo(String n, double val) {
+		name = n;
+		value = val;
+		dimensionless = false;
+	}
+		
 	EditInfo setDimensionless() { dimensionless = true; return this; }
 	int changeFlag(int flags, int bit) {
 	    if (checkbox.getState())
@@ -49,16 +46,14 @@ class EditInfo {
 	}
 	
 	String name, text;
-	double value, minval, maxval;
+	double value;
 	TextBox textf;
-	//    Scrollbar bar;
 	Choice choice;
 	Checkbox checkbox;
 	Button button;
 	TextArea textArea;
 	Anchor anchor;
 	boolean newDialog;
-	boolean forceLargeM;
 	boolean dimensionless;
 	
 	// for slider dialog

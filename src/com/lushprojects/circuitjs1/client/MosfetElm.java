@@ -422,7 +422,8 @@ package com.lushprojects.circuitjs1.client;
 	@SuppressWarnings("static-access")
 	void getFetInfo(String arr[], String n) {
 	    arr[0] = sim.LS(((pnp == -1) ? "p-" : "n-") + n);
-	    arr[0] += " (Vt = " + getVoltageText(pnp*vt) + ")";
+	    arr[0] += " (Vt=" + getVoltageText(pnp*vt);
+	    arr[0] += ", \u03b2=" + beta + ")";
 	    arr[1] = ((pnp == 1) ? "Ids = " : "Isd = ") + getCurrentText(ids);
 	    arr[2] = "Vgs = " + getVoltageText(volts[0]-volts[pnp == -1 ? 2 : 1]);
 	    arr[3] = ((pnp == 1) ? "Vds = " : "Vsd = ") + getVoltageText(volts[2]-volts[1]);

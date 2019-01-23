@@ -59,14 +59,14 @@ class DiodeElm extends CircuitElm {
 	    }
 	    model = DiodeModel.getModelWithParameters(fwdrop, zvoltage);
 	    modelName = model.name;
-	    CirSim.console("model name wparams = " + modelName);
+//	    CirSim.console("model name wparams = " + modelName);
 	}
 	setup();
     }
     boolean nonLinear() { return true; }
         
     void setup() {
-	CirSim.console("setting up for model " + modelName + " " + model);
+//	CirSim.console("setting up for model " + modelName + " " + model);
         model = DiodeModel.getModelWithNameOrCopy(modelName, model);
 	diode.setup(model);
 	hasResistance = (model.seriesResistance > 0);
@@ -199,6 +199,11 @@ class DiodeElm extends CircuitElm {
             ei.button = new Button(sim.LS("Edit Model"));
             return ei;
         }
+        if (n == 2) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Create Simple Model"));
+            return ei;
+        }
         return super.getEditInfo(n);
     }
     
@@ -235,6 +240,19 @@ class DiodeElm extends CircuitElm {
             CirSim.diodeModelEditDialog = editDialog;
             editDialog.show();
             return;
+        }
+        if (n == 2) {
+            String val = Window.prompt(sim.LS("Fwd Voltage @ 1A"), sim.LS("0.8"));
+            try {
+        		double fwdrop = new Double(val).doubleValue();
+        		if (fwdrop > 0) {
+        		    model = DiodeModel.getModelWithVoltageDrop(fwdrop);
+        		    modelName = model.name;
+        		    ei.newDialog = true;
+        		    return;
+        		}
+            } catch (Exception e) {
+            }
         }
         
         super.setEditValue(n, ei);
