@@ -19,13 +19,16 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class DecadeElm extends ChipElm {
-	public DecadeElm(int xx, int yy) { super(xx, yy); }
-	public DecadeElm(int xa, int ya, int xb, int yb, int f,
+    class RingCounterElm extends ChipElm {
+	boolean justLoaded;
+	
+	public RingCounterElm(int xx, int yy) { super(xx, yy); }
+	public RingCounterElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
+	    justLoaded = true;
 	}
-	String getChipName() { return "decade counter"; }
+	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
 	void setupPins() {
 	    sizeX = bits > 2 ? bits : 2;
@@ -47,6 +50,13 @@ package com.lushprojects.circuitjs1.client;
 	int getVoltageSourceCount() { return bits; }
 	void execute() {
 	    int i;
+	    
+	    // if we just loaded then the volts[] array is likely to be all zeroes, which might force us to do a reset, so defer execution until the next iteration
+	    if (justLoaded) {
+		justLoaded = false;
+		return;
+	    }
+	    
 	    if (pins[0].value && !lastClock) {
 		for (i = 0; i != bits; i++)
 		    if (pins[i+2].value)
@@ -63,5 +73,24 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    lastClock = pins[0].value;
 	}
+        public EditInfo getEditInfo(int n) {
+            if (n < 2)
+        		return super.getEditInfo(n);
+            if (n == 2)
+                return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
+            return null;
+        }
+        public void setEditValue(int n, EditInfo ei) {
+            if (n < 2) {
+        		super.setEditValue(n,  ei);
+        		return;
+            }
+            if (n == 2 && ei.value >= 2) {
+                bits = (int)ei.value;
+                setupPins();
+                setPoints();
+            }
+        }
+	
 	int getDumpType() { return 163; }
     }

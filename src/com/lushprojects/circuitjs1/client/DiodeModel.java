@@ -36,8 +36,8 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	emissionCoefficient = ec;
 	breakdownVoltage = bv;
 	description = d;
-	CirSim.console("creating diode model " + this);
-	CirSim.debugger();
+//	CirSim.console("creating diode model " + this);
+//	CirSim.debugger();
 	updateModel();
     }
     
@@ -57,7 +57,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	DiodeModel lm = modelMap.get(name);
 	if (lm != null)
 	    return lm;
-	CirSim.console("copying to " + name);
+//	CirSim.console("copying to " + name);
 	lm = new DiodeModel(oldmodel);
 	lm.name = name;
 	modelMap.put(name, lm);
@@ -95,6 +95,8 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	dm.name = name;
     }
     
+    // create a new model using given parameters, keeping backward compatibility.  The method we use has problems, as explained below, but we don't want to
+    // change circuit behavior
     static DiodeModel getModelWithParameters(double fwdrop, double zvoltage) {
 	createModelMap();
 	
@@ -117,13 +119,66 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	if (zvoltage != 0)
 	    name = name + " zvoltage=" + zvoltage;
 	DiodeModel dm = getModelWithName(name);
-	CirSim.console("got model with name " + name);
+//	CirSim.console("got model with name " + name);
 	dm.saturationCurrent = leakage;
 	dm.emissionCoefficient = emcoef;
 	dm.breakdownVoltage = zvoltage;
 	dm.readOnly = dm.oldStyle = true;
-	CirSim.console("at drop current is " + (leakage*(Math.exp(fwdrop*vdcoef)-1)));
-	CirSim.console("sat " + leakage + " em " + emcoef);
+//	CirSim.console("at drop current is " + (leakage*(Math.exp(fwdrop*vdcoef)-1)));
+//	CirSim.console("sat " + leakage + " em " + emcoef);
+	dm.updateModel();
+	return dm;
+    }
+    
+    // create a new model using given fwdrop, using older method (pre-Aug 2017) that keeps a constant leakage current, but changes the emission coefficient.
+    // We discovered that changing the leakage current to get a given fwdrop does not work well; the leakage currents can be way too high or low.
+    static DiodeModel getModelWithVoltageDrop(double fwdrop) {
+	createModelMap();
+
+	// look for existing model with same parameters
+	Iterator it = modelMap.entrySet().iterator();
+	while (it.hasNext()) {
+	    Map.Entry<String,DiodeModel> pair = (Map.Entry)it.next();
+	    DiodeModel dm = pair.getValue();
+	    if (Math.abs(dm.fwdrop-fwdrop) < 1e-8 && Math.abs(dm.breakdownVoltage) < 1e-8)
+		return dm;
+	}
+
+	// create a new one, converting to new parameter values
+	double leakage = 100e-9;
+	double vdcoef = Math.log(1/leakage + 1)/fwdrop;
+	double emcoef = 1/(vdcoef*vt);
+	String name = "fwdrop=" + fwdrop;
+	DiodeModel dm = getModelWithName(name);
+//	CirSim.console("got model with name " + name);
+	dm.saturationCurrent = leakage;
+	dm.emissionCoefficient = emcoef;
+	dm.breakdownVoltage = 0;
+	dm.updateModel();
+	return dm;
+    }
+
+    // create a new model using given zener voltage, otherwise the same as default
+    static DiodeModel getZenerModel(double zvoltage) {
+	createModelMap();
+
+	// look for existing model with same parameters
+	Iterator it = modelMap.entrySet().iterator();
+	while (it.hasNext()) {
+	    Map.Entry<String,DiodeModel> pair = (Map.Entry)it.next();
+	    DiodeModel dm = pair.getValue();
+	    if (Math.abs(dm.breakdownVoltage-zvoltage) < 1e-8)
+		return dm;
+	}
+
+	// create a new one from default
+	DiodeModel dd = getModelWithName("default");
+	
+	String name = "zvoltage=" + zvoltage;
+	DiodeModel dm = getModelWithName(name);
+	dm.saturationCurrent = dd.saturationCurrent;
+	dm.emissionCoefficient = dd.emissionCoefficient;
+	dm.breakdownVoltage = zvoltage;
 	dm.updateModel();
 	return dm;
     }
@@ -196,7 +251,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	// make sure we don't overwrite a default model
 	if (dm == null || !dm.builtIn)
 	    modelMap.put(name, this);
-	CirSim.console("parsed model " + name);
+//	CirSim.console("parsed model " + name);
     }
     
     public EditInfo getEditInfo(int n) {

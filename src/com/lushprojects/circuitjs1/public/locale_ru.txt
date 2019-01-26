@@ -340,6 +340,7 @@
 "ECL NOR/OR"="ЭСЛ ИЛИ-НЕ/ИЛИ"
 "Edge-Triggered D Flip-Flop"="D-триггер с динам. управлением"
 "Edit"="Редактировать"
+"Edit..."="Редактировать..."
 "Edit Component"="Свойства"
 "Edit Model"="Редактировать модель"
 "Emitter Follower"="Эмиттерный повторитель"

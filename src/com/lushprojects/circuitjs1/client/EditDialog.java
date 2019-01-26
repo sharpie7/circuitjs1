@@ -177,7 +177,7 @@ class EditDialog extends DialogBox  {
 			return noCommaFormat.format(v*1e9) + "n";
 		if (va < 1e-3)
 			return noCommaFormat.format(v*1e6) + "u";
-		if (va < 1 && !ei.forceLargeM)
+		if (va < 1 /*&& !ei.forceLargeM*/)
 			return noCommaFormat.format(v*1e3) + "m";
 		if (va < 1e3)
 			return noCommaFormat.format(v);
@@ -210,8 +210,8 @@ class EditDialog extends DialogBox  {
 		case 'n': case 'N': mult = 1e-9; break;
 		case 'u': case 'U': mult = 1e-6; break;
 
-		// for ohm values, we assume mega for lowercase m, otherwise milli
-		case 'm': mult = (ei.forceLargeM) ? 1e6 : 1e-3; break;
+		// for ohm values, we used to assume mega for lowercase m, otherwise milli
+		case 'm': mult = /*(ei.forceLargeM) ? 1e6 : */ 1e-3; break;
 
 		case 'k': case 'K': mult = 1e3; break;
 		case 'M': mult = 1e6; break;
@@ -250,13 +250,16 @@ class EditDialog extends DialogBox  {
 	    Object src = e.getSource();
 	    int i;
 	    boolean changed = false;
+	    boolean applied = false;
 	    for (i = 0; i != einfocount; i++) {
 		EditInfo ei = einfos[i];
 		if (ei.choice == src || ei.checkbox == src || ei.button == src) {
 		    
 		    // if we're pressing a button, make sure to apply changes first
-		    if (ei.button == src)
+		    if (ei.button == src && !ei.newDialog) {
 			apply();
+			applied = true;
+		    }
 		    
 		    elm.setEditValue(i, ei);
 		    if (ei.newDialog)
@@ -266,7 +269,9 @@ class EditDialog extends DialogBox  {
 	    }
 	    if (changed) {
 		// apply changes before we reset everything
-		apply();
+		// (need to check if we already applied changes; otherwise Diode create simple model button doesn't work)
+		if (!applied)
+		    apply();
 		
 		clearDialog();
 		buildDialog();

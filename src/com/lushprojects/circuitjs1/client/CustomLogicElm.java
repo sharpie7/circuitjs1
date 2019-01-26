@@ -20,7 +20,7 @@ public class CustomLogicElm extends ChipElm {
     public CustomLogicElm(int xa, int ya, int xb, int yb, int f,
             StringTokenizer st) {
 	super(xa, ya, xb, yb, f, st);
-	modelName = st.nextToken();
+	modelName = CustomLogicModel.unescape(st.nextToken());
 	updateModels();
 	int i;
 	for (i = 0; i != getPostCount(); i++) {
@@ -33,7 +33,7 @@ public class CustomLogicElm extends ChipElm {
     
     String dump() {
 	String s = super.dump();
-	s += " " + modelName;
+	s += " " + CustomLogicModel.escape(modelName);
 
 	// the code to do this in ChipElm doesn't work here because we don't know
 	// how many pins to read until we read the model name!  So we have to

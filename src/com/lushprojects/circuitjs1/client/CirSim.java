@@ -35,6 +35,7 @@ import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -209,12 +210,9 @@ MouseOutHandler, MouseWheelHandler {
    int scopeColCount[];
     static EditDialog editDialog, customLogicEditDialog, diodeModelEditDialog;
     static SliderDialog sliderDialog;
-    static ExportAsUrlDialog exportAsUrlDialog;
-    static ExportAsTextDialog exportAsTextDialog;
-    static ExportAsLocalFileDialog exportAsLocalFileDialog;
-    static ImportFromTextDialog importFromTextDialog;
     static ImportFromDropbox importFromDropbox;
     static ScrollValuePopup scrollValuePopup;
+    static DialogBox dialogShowing;
     static AboutBox aboutBox;
     static ImportFromDropboxDialog importFromDropboxDialog;
 //    Class dumpTypes[], shortcuts[];
@@ -502,13 +500,14 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	}));
 	conventionCheckItem.setState(convention);
-	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."),
-			new MyCommand("options","other")));
+	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
+	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
 
 	mainMenuBar = new MenuBar(true);
 	mainMenuBar.setAutoOpen(true);
 	composeMainMenu(mainMenuBar);
 	composeMainMenu(drawMenuBar);
+	loadShortcuts();
 
 	  
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
@@ -688,6 +687,68 @@ MouseOutHandler, MouseWheelHandler {
         stor.setItem(key,  val ? "true" : "false");
     }
     
+    // save shortcuts to local storage
+    void saveShortcuts() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        String str = "1";
+        int i;
+        // format: version;code1=ClassName;code2=ClassName;etc
+        for (i = 0; i != shortcuts.length; i++) {
+            String sh = shortcuts[i];
+            if (sh == null)
+        		continue;
+            str += ";" + i + "=" + sh;
+        }
+        stor.setItem("shortcuts", str);
+    }
+    
+    // load shortcuts from local storage
+    void loadShortcuts() {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        String str = stor.getItem("shortcuts");
+        if (str == null)
+            return;
+        String keys[] = str.split(";");
+        
+        // clear existing shortcuts
+        int i;
+        for (i = 0; i != shortcuts.length; i++)
+            shortcuts[i] = null;
+        
+        // clear shortcuts from menu
+        for (i = 0; i != mainMenuItems.size(); i++) {
+            CheckboxMenuItem item = mainMenuItems.get(i);
+            // stop when we get to drag menu items
+            if (item.getShortcut().length() > 1)
+        		break;
+            item.setShortcut("");
+        }
+        
+        // go through keys (skipping version at start)
+        for (i = 1; i < keys.length; i++) {
+            String arr[] = keys[i].split("=");
+            if (arr.length != 2)
+        		continue;
+            int c = Integer.parseInt(arr[0]);
+            String className = arr[1];
+            shortcuts[c] = className;
+            
+            // find menu item and fix it
+            int j;
+            for (j = 0; j != mainMenuItems.size(); j++) {
+        		if (mainMenuItemNames.get(j) == className) {
+        		    CheckboxMenuItem item = mainMenuItems.get(j);
+        		    item.setShortcut(Character.toString((char)c));
+        		    break;
+        		}
+            }
+        }
+    }
+    
     // install touch handlers
     // don't feel like rewriting this in java.  Anyway, java doesn't let us create mouse
     // events and dispatch them.
@@ -765,6 +826,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Relay"), "RelayElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Memristor"), "MemristorElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Spark Gap"), "SparkGapElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -798,6 +860,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ammeter"), "AmmeterElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Data Export"), "DataRecorderElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -861,7 +924,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add SIPO shift register"), "SipoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add PISO shift register"), "PisoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter"), "CounterElm"));
-    	chipMenuBar.addItem(getClassCheckItem(LS("Add Decade Counter"), "DecadeElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Ring Counter"), "DecadeElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Latch"), "LatchElm"));
     	//chipMenuBar.addItem(getClassCheckItem("Add Static RAM", "SRAMElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
@@ -882,19 +945,19 @@ MouseOutHandler, MouseWheelHandler {
     	MenuBar otherMenuBar = new MenuBar(true);
     	CheckboxMenuItem mi;
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag All"), "DragAll"));
-    	mi.addShortcut(LS("(Alt-drag)"));
+    	mi.setShortcut(LS("(Alt-drag)"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Row"), "DragRow"));
-    	mi.addShortcut(LS("(A-S-drag)"));
+    	mi.setShortcut(LS("(A-S-drag)"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Column"), "DragColumn"));
-    	mi.addShortcut(isMac ? LS("(A-Cmd-drag)") : LS("(A-M-drag)"));
+    	mi.setShortcut(isMac ? LS("(A-Cmd-drag)") : LS("(A-M-drag)"));
     	otherMenuBar.addItem(getClassCheckItem(LS("Drag Selected"), "DragSelected"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Post"), "DragPost"));
-    	mi.addShortcut("(" + ctrlMetaKey + "-drag)");
+    	mi.setShortcut("(" + ctrlMetaKey + "-drag)");
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Drag")), otherMenuBar);
 
     	mainMenuBar.addItem(mi=getClassCheckItem(LS("Select/Drag Sel"), "Select"));
-    	mi.addShortcut(LS("(space or Shift-drag)"));
+    	mi.setShortcut(LS("(space or Shift-drag)"));
     }
     
     public void setiFrameHeight() {
@@ -1510,7 +1573,11 @@ MouseOutHandler, MouseWheelHandler {
     
     // generate info we need to calculate wire currents.  Most other elements calculate currents using
     // the voltage on their terminal nodes.  But wires have the same voltage at both ends, so we need
-    // to use the neighbors' currents instead.
+    // to use the neighbors' currents instead.  We used to treat wires as zero voltage sources to make
+    // this easier, but this is very inefficient, since it makes the matrix 2 rows bigger for each wire.
+    // So we create a list of WireInfo objects instead to help us calculate the wire currents instead,
+    // so we make the matrix less complex, and we only calculate the wire currents when we need them
+    // (once per frame, not once per subiteration)
     boolean calcWireInfo() {
 	int i;
 	int moved = 0;
@@ -1552,15 +1619,16 @@ MouseOutHandler, MouseWheelHandler {
 		wi.neighbors = neighbors0;
 		wi.post = 0;
 		wire.hasWireInfo = true;
+		moved = 0;
 	    } else if (isReady1) {
 		wi.neighbors = neighbors1;
 		wi.post = 1;
 		wire.hasWireInfo = true;
+		moved = 0;
 	    } else {
 		// move to the end of the list and try again later
 		wireInfoList.add(wireInfoList.remove(i--));
 		moved++; 
-//		console("moved to end " + moved);
 		if (moved > wireInfoList.size() * 2) {
 		    stop("wire loop detected", wire);
 		    return false;
@@ -2467,7 +2535,7 @@ MouseOutHandler, MouseWheelHandler {
     		loadFileInput.click();
     	}
     	if (item=="importfromtext") {
-    		importFromTextDialog = new ImportFromTextDialog(this);
+    		dialogShowing = new ImportFromTextDialog(this);
     	}
     	if (item=="importfromdropbox") {
     		importFromDropboxDialog = new ImportFromDropboxDialog(this);
@@ -2488,6 +2556,10 @@ MouseOutHandler, MouseWheelHandler {
 
     	if ((menu=="elm" || menu=="scopepop") && contextPanel!=null)
     		contextPanel.hide();
+    	if (menu=="options" && item=="shortcuts") {
+    	    	dialogShowing = new ShortcutsDialog(this);
+    	    	dialogShowing.show();
+    	}
     	if (menu=="options" && item=="other")
     		doEdit(new EditOptions(this));
     	if (item=="undo")
@@ -2768,32 +2840,21 @@ MouseOutHandler, MouseWheelHandler {
     void doExportAsUrl()
     {
     	String dump = dumpCircuit();
-//	if (expDialog == null) {
-//	    expDialog = ImportExportDialogFactory.Create(this,
-//		 ImportExportDialog.Action.EXPORT);
-////	    expDialog = new ImportExportClipboardDialog(this,
-////		 ImportExportDialog.Action.EXPORT);
-//	}
-//        expDialog.setDump(dump);
-//	expDialog.execute();
-	    exportAsUrlDialog = new ExportAsUrlDialog(dump);
-	    exportAsUrlDialog.show();
+	dialogShowing = new ExportAsUrlDialog(dump);
+	dialogShowing.show();
     }
-    
     
     void doExportAsText()
     {
     	String dump = dumpCircuit();
-	    exportAsTextDialog = new ExportAsTextDialog(this, dump);
-	    exportAsTextDialog.show();
+    	dialogShowing = new ExportAsTextDialog(this, dump);
+    	dialogShowing.show();
     }
-    
-    
-    
+        
     void doExportAsLocalFile() {
     	String dump = dumpCircuit();
-    	exportAsLocalFileDialog = new ExportAsLocalFileDialog(dump);
-    	exportAsLocalFileDialog.show();
+    	dialogShowing = new ExportAsLocalFileDialog(dump);
+    	dialogShowing.show();
     }
     
 
@@ -4221,19 +4282,13 @@ MouseOutHandler, MouseWheelHandler {
 		return true;
     	if (diodeModelEditDialog!=null && diodeModelEditDialog.isShowing())
 		return true;
-    	if (exportAsUrlDialog != null && exportAsUrlDialog.isShowing())
-    		return true;
-    	if (exportAsTextDialog != null && exportAsTextDialog.isShowing())
-    		return true;
-       	if (exportAsLocalFileDialog != null && exportAsLocalFileDialog.isShowing())
+       	if (dialogShowing != null && dialogShowing.isShowing())
        		return true;
     	if (contextPanel!=null && contextPanel.isShowing())
     		return true;
     	if (scrollValuePopup != null && scrollValuePopup.isShowing())
     		return true;
     	if (aboutBox !=null && aboutBox.isShowing())
-    		return true;
-    	if (importFromTextDialog !=null && importFromTextDialog.isShowing())
     		return true;
     	if (importFromDropboxDialog != null && importFromDropboxDialog.isShowing())
     		return true;
@@ -4618,7 +4673,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (tint==164)
     		return (CircuitElm) new CounterElm(x1, y1, x2, y2, f, st);
     	if (tint==163)
-    		return (CircuitElm) new DecadeElm(x1, y1, x2, y2, f, st);
+    		return (CircuitElm) new RingCounterElm(x1, y1, x2, y2, f, st);
     	if (tint==165)
     		return (CircuitElm) new TimerElm(x1, y1, x2, y2, f, st);
     	if (tint==166)
@@ -4675,6 +4730,10 @@ MouseOutHandler, MouseWheelHandler {
     	    return new OTAElm(x1, y1, x2, y2, f, st);
     	if (tint==403)
     	    return new ScopeElm(x1, y1, x2, y2, f, st);
+    	if (tint==404)
+    	    return new FuseElm(x1, y1, x2, y2, f, st);
+    	if (tint==405)
+    	    return new LEDArrayElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4824,7 +4883,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (n=="CounterElm")
     		return (CircuitElm) new CounterElm(x1, y1);
     	if (n=="DecadeElm")
-    		return (CircuitElm) new DecadeElm(x1, y1);
+    		return (CircuitElm) new RingCounterElm(x1, y1);
     	if (n=="TimerElm")
     		return (CircuitElm) new TimerElm(x1, y1);
     	if (n=="DACElm")
@@ -4885,6 +4944,10 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OhmMeterElm(x1, y1);
     	if (n=="ScopeElm")
     	    	return (CircuitElm) new ScopeElm(x1,y1);
+    	if (n=="FuseElm")
+	    	return (CircuitElm) new FuseElm(x1,y1);
+    	if (n=="LEDArrayElm")
+    	    	return (CircuitElm) new LEDArrayElm(x1, y1);
     	return null;
     }
     
