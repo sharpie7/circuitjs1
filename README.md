@@ -15,8 +15,12 @@ Thanks to Edward Calver for 15 new components and other improvements. Thanks to 
 
 The tools you will need to build the project are:
 
-* Eclipse, Oxygen version.
-* GWT plugin for Eclipse.
+* JDK 8+
+* Maven 3+
+
+Simply run `mvn install` from the circuitjs1 directory to build the project. Copy the `target/site` directory to your web server to deploy.
+
+## Development
 
 Install "Eclipse for Java developers" from [here](https://www.eclipse.org/downloads/packages/). To add the GWT plugin for Eclipse follow the instructions [here](https://gwt-plugins.github.io/documentation/gwt-eclipse-plugin/Download.html).
 

@@ -4,6 +4,9 @@ war/circuitjs1/
 war/circuitjs1/circuits/
 war/WEB-INF/
 
+# Maven target
+/target/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
