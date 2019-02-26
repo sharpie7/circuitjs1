@@ -332,6 +332,7 @@ dac.txt Binary-Weighted DAC
 r2rladder.txt R-2R Ladder DAC
 swtreedac.txt Switch-Tree DAC
 digsine.txt Digital Sine Wave
+qam-256.txt QAM-256 Modulator/Demodulator
 -
 +Phase-Locked Loops
 xorphasedet.txt XOR Phase Detector
