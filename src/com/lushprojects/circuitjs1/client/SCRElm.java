@@ -31,10 +31,13 @@ class SCRElm extends CircuitElm {
     final int cnode = 1;
     final int gnode = 2;
     final int inode = 3;
+    final int FLAG_GATE_FIX = 1;
     Diode diode;
+    
     public SCRElm(int xx, int yy) {
 	super(xx, yy);
 	setDefaults();
+	flags |= FLAG_GATE_FIX;
 	setup();
     }
     public SCRElm(int xa, int ya, int xb, int yb, int f,
@@ -83,14 +86,23 @@ class SCRElm extends CircuitElm {
     Polygon poly;
     Point cathode[], gate[];
 	
+    boolean applyGateFix() { return (flags & FLAG_GATE_FIX) != 0; }
+    
     void setPoints() {
 	super.setPoints();
 	int dir = 0;
 	if (abs(dx) > abs(dy)) {
 	    dir = -sign(dx)*sign(dy);
+	    
+	    // correct dn (length) or else calcLeads() may get confused, and also gate may be drawn weirdly.  Can't do this with old circuits or it may
+	    // break them
+	    if (applyGateFix())
+		dn = abs(dx);
 	    point2.y = point1.y;
 	} else {
 	    dir = sign(dy)*sign(dx);
+	    if (applyGateFix())
+		dn = abs(dy);
 	    point2.x = point1.x;
 	}
 	if (dir == 0)
