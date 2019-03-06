@@ -63,7 +63,7 @@ public class LoadFile extends FileUpload implements  ChangeHandler {
 		/*-{
 			var oFiles = $doc.getElementById("LoadFileElement").files,
     		nFiles = oFiles.length;
-    		if (nFiles>=1 && oFiles[0].size<32000) {
+    		if (nFiles>=1 && oFiles[0].size<128000) {
         		var reader = new FileReader();
     			reader.onload = function(e) {
       				var text = reader.result;
