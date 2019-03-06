@@ -191,7 +191,7 @@ package com.lushprojects.circuitjs1.client;
 		    g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*(dsx-dsyn*pnp), src[0].y+4);
 		    g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*(dsx-dsyn*pnp), drn[0].y+4);
 		    if (hasBodyTerminal())
-			g.drawString("B",  body[0].x-3+9*(dsx-dsyn),  body[0].y+4);
+			g.drawString("B",  body[0].x-3+9*(dsx-dsyn*pnp),  body[0].y+4);
 		}	    
 		
 		drawPosts(g);
