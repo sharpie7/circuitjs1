@@ -825,7 +825,9 @@ public abstract class CircuitElm implements Editable {
     // is n1 connected to ground somehow?
     boolean hasGroundConnection(int n1) { return false; }
     
+    // is this a wire or equivalent to a wire?
     boolean isWire() { return false; }
+    
     boolean canViewInScope() { return getPostCount() <= 2; }
     boolean comparePair(int x1, int x2, int y1, int y2) {
 	return ((x1 == y1 && x2 == y2) || (x1 == y2 && x2 == y1));

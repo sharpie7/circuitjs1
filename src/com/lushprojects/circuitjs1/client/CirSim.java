@@ -1882,9 +1882,9 @@ MouseOutHandler, MouseWheelHandler {
 		} else
 		    cur.broken = false;
 	    }
-	    // look for voltage source loops
-	    // IES
-	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) /*|| ce instanceof WireElm*/) {
+	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
+	    // because those are optimized out, so the findPath won't work)
+	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) || (ce.isWire() && !(ce instanceof WireElm))) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
@@ -1892,6 +1892,17 @@ MouseOutHandler, MouseWheelHandler {
 		    return;
 		}
 	    }
+	    
+	    // look for path from rail to ground
+	    if (ce instanceof RailElm) {
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
+			    ce.getNode(0));
+		if (fpi.findPath(0)) {
+		    stop("Path to ground with no resistance!", ce);
+		    return;
+		}
+	    }
+	    
 	    // look for shorted caps, or caps w/ voltage but no R
 	    if (ce instanceof CapacitorElm) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.SHORT, ce,
@@ -2131,8 +2142,8 @@ MouseOutHandler, MouseWheelHandler {
 			continue;
 		}
 		if (type == VOLTAGE) {
-		    // when checking for voltage loops, we only care about voltage sources/wires
-		    if (!(ce.isWire() || ce instanceof VoltageElm))
+		    // when checking for voltage loops, we only care about voltage sources/wires/ground
+		    if (!(ce.isWire() || ce instanceof VoltageElm || ce instanceof GroundElm))
 			continue;
 		}
 		// when checking for shorts, just check wires
