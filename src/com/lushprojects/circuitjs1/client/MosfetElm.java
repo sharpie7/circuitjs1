@@ -177,15 +177,21 @@ package com.lushprojects.circuitjs1.client;
 		    drawDots(g, body[0], drn [0],  curcount_body2);
 		}
 		
-		if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
-			g.setColor(Color.white);
-			g.setFont(unitsFont);
-			int ds = sign(dx);
-			g.drawString("G", gate[1].x-10*ds, gate[1].y-5);
-			g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*ds, src[0].y+4); // x+6 if ds=1, -12 if -1
-			g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*ds, drn[0].y+4);
-			if (hasBodyTerminal())
-			    g.drawString("B",  body[0].x-3+9*ds,  body[0].y+4);
+		// label pins when highlighted
+		if (needsHighlight() || sim.dragElm == this) {
+		    g.setColor(Color.white);
+		    g.setFont(unitsFont);
+
+		    // make fiddly adjustments to pin label locations depending on orientation
+		    int dsx = sign(dx);
+		    int dsy = sign(dy);
+		    int dsyn = dy == 0 ? 0 : 1;
+
+		    g.drawString("G", gate[1].x - (dx < 0 ? -2 : 12), gate[1].y + ((dy > 0) ? -5 : 12));
+		    g.drawString(pnp == -1 ? "D" : "S", src[0].x-3+9*(dsx-dsyn*pnp), src[0].y+4);
+		    g.drawString(pnp == -1 ? "S" : "D", drn[0].x-3+9*(dsx-dsyn*pnp), drn[0].y+4);
+		    if (hasBodyTerminal())
+			g.drawString("B",  body[0].x-3+9*(dsx-dsyn),  body[0].y+4);
 		}	    
 		
 		drawPosts(g);
