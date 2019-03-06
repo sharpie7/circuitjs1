@@ -255,6 +255,7 @@ package com.lushprojects.circuitjs1.client;
 	    case Scope.VAL_VBE: t = "Vbe"; break;
 	    case Scope.VAL_VBC: t = "Vbc"; break;
 	    case Scope.VAL_VCE: t = "Vce"; break;
+	    case Scope.VAL_POWER: t = "P"; break;
 	    }
 	    return sim.LS("transistor") + ", " + t;
 	}
@@ -285,6 +286,7 @@ package com.lushprojects.circuitjs1.client;
 	    case Scope.VAL_VBE: return volts[0]-volts[2];
 	    case Scope.VAL_VBC: return volts[0]-volts[1];
 	    case Scope.VAL_VCE: return volts[1]-volts[2];
+	    case Scope.VAL_POWER: return getPower(); 
 	    }
 	    return 0;
 	}
@@ -293,6 +295,7 @@ package com.lushprojects.circuitjs1.client;
 	    switch (x) {
 	    case Scope.VAL_IB: case Scope.VAL_IC:
 	    case Scope.VAL_IE: return Scope.UNITS_A;
+	    case Scope.VAL_POWER: return Scope.UNITS_W;
 	    default: return Scope.UNITS_V;
 	    }
 	}

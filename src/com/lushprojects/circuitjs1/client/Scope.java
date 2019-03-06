@@ -136,7 +136,8 @@ class Scope {
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
     // other flags go here too, see dump()
-    static final int VAL_POWER = 1;
+    static final int VAL_POWER = 7;
+    static final int VAL_POWER_OLD = 1;
     static final int VAL_CURRENT = 3;
     static final int VAL_IB = 1;
     static final int VAL_IC = 2;
@@ -1410,9 +1411,15 @@ class Scope {
     	int e = new Integer(st.nextToken()).intValue();
     	if (e == -1)
     		return;
-    	setElm(sim.getElm(e));
+    	CircuitElm ce = sim.getElm(e);
+    	setElm(ce);
     	speed = new Integer(st.nextToken()).intValue();
     	int value = new Integer(st.nextToken()).intValue();
+    	
+    	// fix old value for VAL_POWER which doesn't work for transistors (because it's the same as VAL_IB) 
+    	if (!(ce instanceof TransistorElm) && value == VAL_POWER_OLD)
+    	    value = VAL_POWER;
+    	
     	int flags = new Integer(st.nextToken()).intValue();
     	scale[UNITS_V] = new Double(st.nextToken()).doubleValue();
     	scale[UNITS_A] = new Double(st.nextToken()).doubleValue();
