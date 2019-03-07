@@ -485,8 +485,8 @@ package com.lushprojects.circuitjs1.client;
 		return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-		if (n == 0 && Math.abs(ei.value) > 0)
-			vt = Math.abs(ei.value);
+		if (n == 0)
+			vt = pnp*ei.value;
 		if (n == 1 && ei.value > 0)
 			beta = lastBeta = ei.value;	
 		if (n == 2) {
