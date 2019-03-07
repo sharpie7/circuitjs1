@@ -455,7 +455,7 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 0)
 			return new EditInfo("Threshold Voltage", pnp*vt, .01, 5);
 		if (n == 1)
-			return new EditInfo("Beta", beta, .01, 5);
+			return new EditInfo("<a href=\"mosfet-beta.html\" target=\"_blank\">Beta</a>", beta, .01, 5);
 		if (n == 2) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Show Bulk", showBulk());
@@ -485,9 +485,9 @@ package com.lushprojects.circuitjs1.client;
 		return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-		if (n == 0)
-			vt = pnp*ei.value;
-		if (n == 1)
+		if (n == 0 && Math.abs(ei.value) > 0)
+			vt = Math.abs(ei.value);
+		if (n == 1 && ei.value > 0)
 			beta = lastBeta = ei.value;	
 		if (n == 2) {
 		    globalFlags = (!ei.checkbox.getState()) ? (globalFlags|FLAG_HIDE_BULK) :
