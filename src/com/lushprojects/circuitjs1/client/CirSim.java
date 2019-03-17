@@ -58,6 +58,7 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestException;
@@ -657,11 +658,6 @@ MouseOutHandler, MouseWheelHandler {
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
 		setSimRunning(true);
-	    // setup timer
-
-	    timer.scheduleRepeating(FASTTIMER);
-	  
-
     }
 
     MenuItem menuItemWithShortcut(String text, String shortcut, MyCommand cmd) {
@@ -1068,10 +1064,13 @@ MouseOutHandler, MouseWheelHandler {
     		simRunning = true;
     		runStopButton.setHTML(LSHTML("<strong>RUN</strong>&nbsp;/&nbsp;Stop"));
     		runStopButton.setStylePrimaryName("topButton");
+    		timer.scheduleRepeating(FASTTIMER);
     	} else {
     		simRunning = false;
     		runStopButton.setHTML(LSHTML("Run&nbsp;/&nbsp;<strong>STOP</strong>"));
     		runStopButton.setStylePrimaryName("topButton-red");
+    		timer.cancel();
+		repaint();
     	}
     }
     
@@ -1079,6 +1078,20 @@ MouseOutHandler, MouseWheelHandler {
     	return simRunning;
     }
     
+    boolean needsRepaint;
+    
+    void repaint() {
+	if (!needsRepaint) {
+	    needsRepaint = true;
+	    Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+		public boolean execute() {
+		      updateCircuit();
+		      needsRepaint = false;
+		      return false;
+		  }
+	    }, FASTTIMER);
+	}
+    }
     
 // *****************************************************************
 //                     UPDATE CIRCUIT
@@ -1472,7 +1485,7 @@ MouseOutHandler, MouseWheelHandler {
     
     void needAnalyze() {
 	analyzeFlag = true;
-	//cv.repaint();
+    	repaint();
     }
     
     Vector<CircuitNode> nodeList;
@@ -1869,9 +1882,9 @@ MouseOutHandler, MouseWheelHandler {
 		} else
 		    cur.broken = false;
 	    }
-	    // look for voltage source loops
-	    // IES
-	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) /*|| ce instanceof WireElm*/) {
+	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
+	    // because those are optimized out, so the findPath won't work)
+	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) || (ce.isWire() && !(ce instanceof WireElm))) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
@@ -1879,6 +1892,17 @@ MouseOutHandler, MouseWheelHandler {
 		    return;
 		}
 	    }
+	    
+	    // look for path from rail to ground
+	    if (ce instanceof RailElm) {
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
+			    ce.getNode(0));
+		if (fpi.findPath(0)) {
+		    stop("Path to ground with no resistance!", ce);
+		    return;
+		}
+	    }
+	    
 	    // look for shorted caps, or caps w/ voltage but no R
 	    if (ce instanceof CapacitorElm) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.SHORT, ce,
@@ -2118,8 +2142,8 @@ MouseOutHandler, MouseWheelHandler {
 			continue;
 		}
 		if (type == VOLTAGE) {
-		    // when checking for voltage loops, we only care about voltage sources/wires
-		    if (!(ce.isWire() || ce instanceof VoltageElm))
+		    // when checking for voltage loops, we only care about voltage sources/wires/ground
+		    if (!(ce.isWire() || ce instanceof VoltageElm || ce instanceof GroundElm))
 			continue;
 		}
 		// when checking for shorts, just check wires
@@ -2749,6 +2773,7 @@ MouseOutHandler, MouseWheelHandler {
     		//			setMouseMode(prevMouseMode);
     		tempMouseMode = mouseMode;
     	}
+	repaint();
     }
     
 
@@ -3307,6 +3332,7 @@ MouseOutHandler, MouseWheelHandler {
    	}
     	if (changed)
     	    writeRecoveryToStorage();
+    	repaint();
     }
     
     void dragSplitter(int x, int y) {
@@ -3642,8 +3668,7 @@ MouseOutHandler, MouseWheelHandler {
     				mousePost = i;
     		}
     	}
-    	//	if (mouseElm != origMouse)
-    	//	    cv.repaint();
+    	repaint();
     	setMouseElm(newMouseElm);
     }
 
@@ -3901,7 +3926,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (dragElm != null)
     		dragElm.delete();
     	dragElm = null;
-    	//	cv.repaint();
+    	repaint();
     }
     
     public void onMouseWheel(MouseWheelEvent e) {
@@ -3922,6 +3947,7 @@ MouseOutHandler, MouseWheelHandler {
     	    zoomCircuit(e.getDeltaY());
     	    zoomTime = System.currentTimeMillis();
    	}
+    	repaint();
     }
 
     void zoomCircuit(int dy) {
