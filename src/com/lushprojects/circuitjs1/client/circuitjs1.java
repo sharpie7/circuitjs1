@@ -66,6 +66,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 
@@ -100,8 +101,13 @@ public class circuitjs1 implements EntryPoint {
   	String url;
 	QueryParameters qp = new QueryParameters();
 	String lang = qp.getValue("lang");
-	if (lang == null)
-	    lang = language();
+	if (lang == null) {
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    if (stor != null)
+		lang = stor.getItem("language");
+	    if (lang == null)
+		lang = language();
+	}
   	GWT.log("got language " + lang);
 //  	lang = "pl";
   	lang = lang.replaceFirst("-.*", "");
