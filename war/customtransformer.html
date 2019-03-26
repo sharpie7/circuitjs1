@@ -1,0 +1,29 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><style>#header + #content > #left > #rlblock_left,
+#content > #right > .dose > .dosesingle,
+#content > #center > .dose > .dosesingle
+{display:none !important;}</style><style>img[src="http://s05.flagcounter.com/count/pTvk/bg=FFFFFF/txt=000000/border=CCCCCC/columns=6/maxflags=36/viewers=0/labels=0/"]
+{display:none !important;}</style></head><body><h1>Custom Transformer</h1>
+You can use the custom transformer element to create more complex transformers.  Edit the transformer's description
+to specify what kind of transformer you want.
+<p>
+An example description is: <tt>1:1</tt>.  That is a simple transformer with an equal number of turns in the primary
+and secondary.  The inductance of each winding is equal to the "Base Inductance".
+<p>
+<tt>1:10</tt> gives you a step-up transformer.  The secondary has 10 times as many turns as the primary (so
+it has 100 times the base inductance).
+<p>
+<tt>1,2:3</tt> gives you a transformer with two primary windings.  The second primary winding has twice as many
+turns as the first.  The secondary winding has 3 times as many.  The only difference between primary and secondary
+windings is how they're displayed on the screen.
+<p>
+<tt>1:.5+.5</tt> gives you a tapped transformer.
+<p>
+<tt>1:1+2</tt> gives you a tapped transformer where the first part of the secondary has as many turns as the primary,
+and the second part has twice as many.
+<p>
+<tt>1,-1:1</tt> gives you a transformer with two primary windings, where the bottom winding has its polarity swapped.
+<p>
+So, the description is a list of windings separated by commas, with <tt>:</tt> to separate primary and secondary,
+and <tt>+</tt> to separate parts of a tapped coil.
+</body></html>

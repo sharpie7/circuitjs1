@@ -532,18 +532,17 @@ public abstract class CircuitElm implements Editable {
 	    g.context.setStrokeStyle(grad);
 	}
 	g.context.setLineCap(LineCap.ROUND);
-	if (len > 24)
-	    g.context.scale(1, hs/(len/6));
-	else
-	    g.context.scale(1, hs > 0 ? 1 : -1);
+	g.context.scale(1, hs > 0 ? 1 : -1);
 
 	int loop;
-	for (loop = 0; loop != 3; loop++) {
+	// draw more loops for a longer coil
+	int loopCt = (int)Math.ceil(len/11);
+	for (loop = 0; loop != loopCt; loop++) {
 	    g.context.beginPath();
-	    double start = len*loop/3;
+	    double start = len*loop/loopCt;
 	    g.context.moveTo(start,0);
-	    g.context.arc(len*(loop+.5)/3, 0, len/6, Math.PI, Math.PI*2);
-	    g.context.lineTo(len*(loop+1)/3, 0);
+	    g.context.arc(len*(loop+.5)/loopCt, 0, len/(2*loopCt), Math.PI, Math.PI*2);
+	    g.context.lineTo(len*(loop+1)/loopCt, 0);
 	    g.context.stroke();
 	}
 

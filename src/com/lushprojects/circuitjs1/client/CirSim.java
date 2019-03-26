@@ -501,6 +501,7 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	}));
 	conventionCheckItem.setState(convention);
+	
 	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
 
@@ -823,6 +824,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Memristor"), "MemristorElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Spark Gap"), "SparkGapElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Custom Transformer"), "CustomTransformerElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -1132,6 +1134,7 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		runCircuit(didAnalyze);
 	    } catch (Exception e) {
+		debugger();
 		console("exception in runCircuit " + e);
 		e.printStackTrace();
 		return;
@@ -4431,7 +4434,7 @@ MouseOutHandler, MouseWheelHandler {
     // gaussian elimination.  On entry, a[0..n-1][0..n-1] is the
     // matrix to be factored.  ipvt[] returns an integer vector of pivot
     // indices, used in the lu_solve() routine.
-    boolean lu_factor(double a[][], int n, int ipvt[]) {
+    static boolean lu_factor(double a[][], int n, int ipvt[]) {
 	int i,j,k;
 	
 	// check for a possible singular matrix by scanning for rows that
@@ -4506,7 +4509,7 @@ MouseOutHandler, MouseWheelHandler {
     // Solves the set of n linear equations using a LU factorization
     // previously performed by lu_factor.  On input, b[0..n-1] is the right
     // hand side of the equations, and on output, contains the solution.
-    void lu_solve(double a[][], int n, int ipvt[], double b[]) {
+    static void lu_solve(double a[][], int n, int ipvt[], double b[]) {
 	int i;
 
 	// find first nonzero b element
@@ -4760,6 +4763,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new FuseElm(x1, y1, x2, y2, f, st);
     	if (tint==405)
     	    return new LEDArrayElm(x1, y1, x2, y2, f, st);
+    	if (tint==406)
+    	    return new CustomTransformerElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4974,6 +4979,8 @@ MouseOutHandler, MouseWheelHandler {
 	    	return (CircuitElm) new FuseElm(x1,y1);
     	if (n=="LEDArrayElm")
     	    	return (CircuitElm) new LEDArrayElm(x1, y1);
+    	if (n=="CustomTransformerElm")
+    	    	return (CircuitElm) new CustomTransformerElm(x1, y1);
     	return null;
     }
     
@@ -5126,5 +5133,28 @@ MouseOutHandler, MouseWheelHandler {
 		dotsCheckItem.setState(c);
 		
 		printCanvas(cv.getCanvasElement());
+	}
+	
+	static void invertMatrix(double a[][], int n) {
+	    int ipvt[] = new int[n];
+	    lu_factor(a, n, ipvt);
+	    int i, j;
+	    double b[] = new double[n];
+	    double inva[][] = new double[n][n];
+	    
+	    // solve for each column of identity matrix
+	    for (i = 0; i != n; i++) {
+		for (j = 0; j != n; j++)
+		    b[j] = 0;
+		b[i] = 1;
+		lu_solve(a, n, ipvt, b);
+		for (j = 0; j != n; j++)
+		    inva[j][i] = b[j];
+	    }
+	    
+	    // return in original matrix
+	    for (i = 0; i != n; i++)
+		for (j = 0; j != n; j++)
+		    a[i][j] = inva[i][j];
 	}
 }
