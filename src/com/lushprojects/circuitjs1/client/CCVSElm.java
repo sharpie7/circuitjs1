@@ -121,5 +121,12 @@ package com.lushprojects.circuitjs1.client;
                 pins[3].current = -c;
             }
         }
+        
+        public EditInfo getEditInfo(int n) {
+            // can't set number of inputs
+            if (n == 1)
+        	return null;
+            return super.getEditInfo(n);
+        }
     }
 
