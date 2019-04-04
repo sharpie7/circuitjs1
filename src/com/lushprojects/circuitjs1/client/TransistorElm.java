@@ -324,6 +324,11 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
+	void setBeta(float b) {
+	    beta = b;
+	    setup();
+	}
+	
         void stepFinished() {
             // stop for huge currents that make simulator act weird
             if (Math.abs(ic) > 1e12 || Math.abs(ib) > 1e12)

@@ -136,6 +136,19 @@ public abstract class CompositeElm extends CircuitElm {
 		return dumpStr;
     }
     
+    // dump subset of elements (some of them may not have any state, and/or may be very long, so we avoid dumping them for brevity)
+    public String dumpElements(int mask) {
+	String dumpStr=super.dump();
+	for (int i = 0; i < compElmList.size(); i++) {
+	    if ((mask & (1<<i)) == 0)
+		continue;
+	    String tstring = compElmList.get(i).dump().replace(' ', '_');
+	    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
+	    dumpStr += " "+ tstring;
+	}
+	return dumpStr;
+    }
+    
     public boolean getConnection(int n1, int n2) {
 	// TODO Find out if more sophisticated handling is needed here
 	// In the meantime subclasses should override this if they know  nodes are not connected
@@ -255,7 +268,7 @@ public abstract class CompositeElm extends CircuitElm {
      public void   setCurrent(int vsn, double c) {
 	for (int i=0;i<voltageSources.size(); i++)
 	    if (voltageSources.get(i).vsNode == vsn) {
-		voltageSources.get(i).elm.setCurrent(voltageSources.get(i).vsNumForElement, c);
+		voltageSources.get(i).elm.setCurrent(vsn, c);
 	    }
 	
     }

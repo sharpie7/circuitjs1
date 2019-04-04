@@ -251,6 +251,10 @@ package com.lushprojects.circuitjs1.client;
 	    return 0;
 	}
 	
+	double getCurrentIntoNode(int n) {
+	    return pins[n].current;
+	}
+	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);

@@ -898,6 +898,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Voltage-Controlled Current Source"), "VCCSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Voltage Source"), "CCVSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source"), "CCCSElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Optocoupler"), "OptocouplerElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -2237,7 +2238,7 @@ MouseOutHandler, MouseWheelHandler {
 	stampMatrix(n2, vn, -1);
     }
 
-    // use this if the amount of voltage is going to be updated in doStep()
+    // use this if the amount of voltage is going to be updated in doStep(), by updateVoltageSource()
     void stampVoltageSource(int n1, int n2, int vs) {
 	int vn = nodeList.size()+vs;
 	stampMatrix(vn, n1, -1);
@@ -2247,6 +2248,7 @@ MouseOutHandler, MouseWheelHandler {
 	stampMatrix(n2, vn, -1);
     }
     
+    // update voltage source in doStep()
     void updateVoltageSource(int n1, int n2, int vs, double v) {
 	int vn = nodeList.size()+vs;
 	stampRightSide(vn, v);
@@ -4765,6 +4767,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new LEDArrayElm(x1, y1, x2, y2, f, st);
     	if (tint==406)
     	    return new CustomTransformerElm(x1, y1, x2, y2, f, st);
+    	if (tint==407)
+    	    return new OptocouplerElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4981,6 +4985,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	return (CircuitElm) new LEDArrayElm(x1, y1);
     	if (n=="CustomTransformerElm")
     	    	return (CircuitElm) new CustomTransformerElm(x1, y1);
+    	if (n=="OptocouplerElm")
+		return (CircuitElm) new OptocouplerElm(x1, y1);
     	return null;
     }
     
