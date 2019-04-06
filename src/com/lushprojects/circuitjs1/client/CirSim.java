@@ -28,6 +28,7 @@ package com.lushprojects.circuitjs1.client;
 
 
 import java.util.Vector;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -373,6 +374,7 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(exportAsUrlItem);
 	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
+	  fileMenuBar.addItem(new MenuItem(LS("Export As Image..."), new MyCommand("file","exportasimage")));
 	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
@@ -2576,6 +2578,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsLocalFile();
     	if (item=="exportastext")
     		doExportAsText();
+    	if (item=="exportasimage")
+		doExportAsImage();
     	if (item=="dcanalysis")
     	    	doDCAnalysis();
     	if (item=="print")
@@ -2880,7 +2884,13 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing = new ExportAsTextDialog(this, dump);
     	dialogShowing.show();
     }
-        
+
+    void doExportAsImage()
+    {
+    	dialogShowing = new ExportAsImageDialog();
+    	dialogShowing.show();
+    }
+    
     void doExportAsLocalFile() {
     	String dump = dumpCircuit();
     	dialogShowing = new ExportAsLocalFileDialog(dump);
@@ -5099,13 +5109,23 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	void doPrint() {
+	    Canvas cv = getCircuitAsCanvas(true);
+	    printCanvas(cv.getCanvasElement());
+	}
+	
+	public Canvas getCircuitAsCanvas(boolean print) {
 	    	// create canvas to draw circuit into
 	    	Canvas cv = Canvas.createIfSupported();
 	    	Rectangle bounds = getCircuitBounds();
-	    	int w = bounds.width * 2;
-	    	int h = bounds.height * 2;
+	    	
+		// add some space on edges because bounds calculation is not perfect
+	    	int wmargin = 140;
+	    	int hmargin = 100;
+	    	int w = (bounds.width+wmargin) ;
+	    	int h = (bounds.height+hmargin) ;
 	    	cv.setCoordinateSpaceWidth(w);
 	    	cv.setCoordinateSpaceHeight(h);
+	    	double oldTransform[] = Arrays.copyOf(transform, 6);
 	    
 		Context2d context = cv.getContext2d();
 		Graphics g = new Graphics(context);
@@ -5113,32 +5133,46 @@ MouseOutHandler, MouseWheelHandler {
 	        
 	        double scale = 1;
 	        
-	        if (bounds != null)
-		    // add some space on edges because bounds calculation is not perfect
-	            scale = Math.min(w /(double)(bounds.width+140),
-	                             h/(double)(bounds.height+100));
-	        scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
-//	        console("scaling to " + scale + " " + cv.getOffsetWidth() + " " + bounds + " " + w + " " + h);
-		context.scale(scale, scale);
-		context.translate(-(bounds.x-70), -(bounds.y-50));
-		
 		// turn on white background, turn off current display
 		boolean p = printableCheckItem.getState();
 		boolean c = dotsCheckItem.getState();
-		printableCheckItem.setState(true);
+		if (print)
+		    printableCheckItem.setState(true);
+	        if (printableCheckItem.getState()) {
+	            CircuitElm.whiteColor = Color.black;
+	            CircuitElm.lightGrayColor = Color.black;
+	            g.setColor(Color.white);
+	        } else {
+	            CircuitElm.whiteColor = Color.white;
+	            CircuitElm.lightGrayColor = Color.lightGray;
+	            g.setColor(Color.black);
+	            g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
+	        }
 		dotsCheckItem.setState(false);
-	  	CircuitElm.whiteColor = Color.black;
-	  	CircuitElm.lightGrayColor = Color.black;
-	  	g.setColor(Color.white);
+
+	        if (bounds != null)
+	            scale = Math.min(w /(double)(bounds.width+wmargin),
+	                             h/(double)(bounds.height+hmargin));
+	        scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
+	        
+	        // ScopeElms need the transform array to be updated
+		transform[0] = transform[3] = scale;
+		transform[4] = -(bounds.x-wmargin/2);
+		transform[5] = -(bounds.y-hmargin/2);
+		context.scale(scale, scale);
+		context.translate(transform[4], transform[5]);
 		
+		// draw elements
 		int i;
 		for (i = 0; i != elmList.size(); i++) {
 		    getElm(i).draw(g);
 		}
+		
+		// restore everything
 		printableCheckItem.setState(p);
 		dotsCheckItem.setState(c);
-		
-		printCanvas(cv.getCanvasElement());
+		transform = oldTransform;
+		return cv;
 	}
 	
 	static void invertMatrix(double a[][], int n) {
