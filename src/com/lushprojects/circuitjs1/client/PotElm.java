@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 
 class PotElm extends CircuitElm implements Command, MouseWheelHandler {
+    final int FLAG_SHOW_VALUES = 1;
 	double position, maxResistance, resistance1, resistance2;
 	double current1, current2, current3;
 	double curcount1, curcount2, curcount3;
@@ -37,6 +38,7 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 		maxResistance = 1000;
 		position = .5;
 		sliderText = "Resistance";
+		flags = FLAG_SHOW_VALUES;
 		createSlider();
 	}
     
@@ -204,7 +206,64 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 		     curcount3+distance(post3, corner2));
 	}
 	drawPosts(g);
+
+	if (sim.showValuesCheckItem.getState() && resistance1 > 0 && (flags & FLAG_SHOW_VALUES) != 0) {
+	    // check for vertical pot with 3rd terminal on left
+	    boolean reverseY = (post3.x < lead1.x && lead1.x == lead2.x);
+	    // check for horizontal pot with 3rd terminal on top
+	    boolean reverseX = (post3.y < lead1.y && lead1.x != lead2.x);
+	    // check if we need to swap texts (if leads are reversed, e.g. drawn right to left)
+	    boolean rev = (lead1.x == lead2.x && lead1.y < lead2.y) || (lead1.y == lead2.y && lead1.x > lead2.x);
+	    
+	    // draw units
+	    String s1 = getShortUnitText(rev ? resistance2 : resistance1, "");
+	    String s2 = getShortUnitText(rev ? resistance1 : resistance2, "");
+	    g.setFont(unitsFont);
+	    g.setColor(whiteColor);
+	    int ya = (int)g.currentFontSize/2;
+	    int w;
+	    w = (int)g.context.measureText(s1).getWidth();
+	    
+	    // vertical?
+	    if (lead1.x == lead2.x)
+		g.drawString(s1, !reverseY ? arrowPoint.x+2 : arrowPoint.x-2-w, Math.max(arrow1.y, arrow2.y)+5+ya);
+	    else
+		g.drawString(s1, Math.min(arrow1.x, arrow2.x)-2-w, !reverseX ? arrowPoint.y+4+ya : arrowPoint.y-4);
+	    
+	    w = (int)g.context.measureText(s2).getWidth();
+	    if (lead1.x == lead2.x)
+		g.drawString(s2, !reverseY ? arrowPoint.x+2 : arrowPoint.x-2-w, Math.min(arrow1.y, arrow2.y)-3);
+	    else
+		g.drawString(s2, Math.max(arrow1.x, arrow2.x)+2, !reverseX ? arrowPoint.y+4+ya : arrowPoint.y-4); 
+	}
     }
+    
+    // draw component values (number of resistor ohms, etc).  hs = offset
+    void drawValues(Graphics g, String s, Point pt, int hs) {
+	if (s == null)
+	    return;
+	g.setFont(unitsFont);
+	//FontMetrics fm = g.getFontMetrics();
+	int w = (int)g.context.measureText(s).getWidth();
+	g.setColor(whiteColor);
+	int ya = (int)g.currentFontSize/2;
+	int xc = pt.x;
+	int yc = pt.y;
+	int dpx = hs;
+	int dpy = 0;
+	if (lead1.x != lead2.x) {
+	    dpx = 0;
+	    dpy = -hs;
+	}
+	sim.console("dv " + dpx + " " + w);
+	if (dpx == 0)
+	    g.drawString(s, xc-w/2, yc-abs(dpy)-2);
+	else {
+	    int xx = xc+abs(dpx)+2;
+	    g.drawString(s, xx, yc+dpy+ya);
+	}
+    }
+    
     void reset() {
 	curcount1 = curcount2 = curcount3 = 0;
 	super.reset();
@@ -246,6 +305,11 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	    ei.text = sliderText;
 	    return ei;
 	}
+	if (n == 2) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Show Values", (flags & FLAG_SHOW_VALUES) != 0);
+            return ei;
+	}
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
@@ -256,6 +320,8 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	    label.setText(sliderText);
 	    sim.setiFrameHeight();
 	}
+	if (n == 2)
+	    flags = ei.changeFlag(flags, FLAG_SHOW_VALUES);
     }
     void setMouseElm(boolean v) {
     	super.setMouseElm(v);

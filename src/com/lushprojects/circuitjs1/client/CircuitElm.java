@@ -100,7 +100,7 @@ public abstract class CircuitElm implements Editable {
 	ps1 = new Point();
 	ps2 = new Point();
 
-	showFormat=NumberFormat.getFormat("####.##");
+	showFormat=NumberFormat.getFormat("####.###");
 
 	shortFormat=NumberFormat.getFormat("####.#");
     }
@@ -590,7 +590,7 @@ public abstract class CircuitElm implements Editable {
 	    return;
 	g.setFont(unitsFont);
 	//FontMetrics fm = g.getFontMetrics();
-	int w = (int)g.context.measureText(s).getWidth();;
+	int w = (int)g.context.measureText(s).getWidth();
 	g.setColor(whiteColor);
 	int ya = (int)g.currentFontSize/2;
 	int xc, yc;
@@ -722,34 +722,33 @@ public abstract class CircuitElm implements Editable {
     	return myGetUnitText(v,u, true);
     }
     
-    static String myGetUnitText(double v, String u, boolean sf) {
-    NumberFormat s;
-    String sp = "";
-    if (sf)
-    	s=shortFormat;
-    else {
-    	s=showFormat;
-    	sp = " ";
+    static String format(double v, boolean sf) {
+	if (sf && Math.abs(v) > 10)
+	    return shortFormat.format(Math.round(v));
+	return (sf ? shortFormat : showFormat).format(v);
     }
+    
+    static String myGetUnitText(double v, String u, boolean sf) {
+	String sp = sf ? "" : " ";
 	double va = Math.abs(v);
 	if (va < 1e-14)
 	    // this used to return null, but then wires would display "null" with 0V
 	    return "0" + sp + u;
 	if (va < 1e-9)
-	    return s.format(v*1e12) + sp + "p" + u;
+	    return format(v*1e12, sf) + sp + "p" + u;
 	if (va < 1e-6)
-	    return s.format(v*1e9) + sp + "n" + u;
+	    return format(v*1e9, sf) + sp + "n" + u;
 	if (va < 1e-3)
-	    return s.format(v*1e6) + sp + CirSim.muString + u;
+	    return format(v*1e6, sf) + sp + CirSim.muString + u;
 	if (va < 1)
-	    return s.format(v*1e3) + sp + "m" + u;
+	    return format(v*1e3, sf) + sp + "m" + u;
 	if (va < 1e3)
-	    return s.format(v) + sp + u;
+	    return format(v, sf) + sp + u;
 	if (va < 1e6)
-	    return s.format(v*1e-3) + sp + "k" + u;
+	    return format(v*1e-3, sf) + sp + "k" + u;
 	if (va < 1e9)
-	    return s.format(v*1e-6) + sp + "M" + u;
-	return s.format(v*1e-9) + sp + "G" + u;
+	    return format(v*1e-6, sf) + sp + "M" + u;
+	return format(v*1e-9, sf) + sp + "G" + u;
     }
     
     static String getCurrentText(double i) {
