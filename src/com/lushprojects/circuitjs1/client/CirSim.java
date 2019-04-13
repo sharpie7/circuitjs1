@@ -1890,12 +1890,14 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
 	    // because those are optimized out, so the findPath won't work)
-	    if ((ce instanceof VoltageElm && ce.getPostCount() == 2) || (ce.isWire() && !(ce instanceof WireElm))) {
-		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
+	    if (ce.getPostCount() == 2) {
+		if (ce instanceof VoltageElm || (ce.isWire() && !(ce instanceof WireElm))) {
+		    FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
-		if (fpi.findPath(ce.getNode(0))) {
-		    stop("Voltage source/wire loop with no resistance!", ce);
-		    return;
+		    if (fpi.findPath(ce.getNode(0))) {
+			stop("Voltage source/wire loop with no resistance!", ce);
+			return;
+		    }
 		}
 	    }
 	    
@@ -1932,7 +1934,9 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	//System.out.println("ac6");
 
-	simplifyMatrix(matrixSize);
+	if (!simplifyMatrix(matrixSize))
+	    return;
+	
 	/*
 	System.out.println("matrixSize = " + matrixSize + " " + circuitNonLinear);
 	for (j = 0; j != circuitMatrixSize; j++) {
@@ -1942,6 +1946,10 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	System.out.print("\n");*/
 
+	// check if we called stop()
+	if (circuitMatrix == null)
+	    return;
+	
 	// if a matrix is linear, we can do the lu_factor here instead of
 	// needing to do it every frame
 	if (!circuitNonLinear) {
@@ -1968,7 +1976,7 @@ MouseOutHandler, MouseWheelHandler {
 
     // simplify the matrix; this speeds things up quite a bit, especially for
     // digital circuits
-    void simplifyMatrix(int matrixSize) {
+    boolean simplifyMatrix(int matrixSize) {
 	int i, j;
 	for (i = 0; i != matrixSize; i++) {
 	    int qp = -1;
@@ -2004,7 +2012,7 @@ MouseOutHandler, MouseWheelHandler {
 	    if (j == matrixSize) {
 		if (qp == -1) {
 		    stop("Matrix error", null);
-		    return;
+		    return false;
 		}
 		RowInfo elt = circuitRowInfo[qp];
 		// we found a row with only one nonzero nonconst entry; that value
@@ -2070,6 +2078,7 @@ MouseOutHandler, MouseWheelHandler {
 	    for (j = 0; j != matrixSize; j++)
 		origMatrix[i][j] = circuitMatrix[i][j];
 	circuitNeedsMap = true;
+	return true;
     }
     
     // make list of posts we need to draw.  posts shared by 2 elements should be hidden, all
