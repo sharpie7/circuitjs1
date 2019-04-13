@@ -294,6 +294,7 @@ mux3state.txt 2-to-1 Mux
 majority.txt Majority Logic
 digcompare.txt 2-Bit Comparator
 7segdecoder.txt 7-Segment LED Decoder
+brentkung.txt Brent-Kung Adder
 -
 +Sequential Logic
 +Flip-Flops
