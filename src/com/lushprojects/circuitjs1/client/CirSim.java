@@ -130,6 +130,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmScopeMenuItem;
     MenuItem elmFloatScopeMenuItem;
     MenuItem elmFlipMenuItem;
+    MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
     MenuBar mainMenuBar;
     MenuItem scopeRemovePlotMenuItem;
@@ -613,6 +614,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
+	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut(LS("Split Wire"), LS(ctrlMetaKey + "-click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
 	
 	scopePopupMenu = new ScopePopupMenu();
@@ -2634,6 +2636,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="flip")
     	    doFlip();
+    	if (item=="split")
+    	    doSplit(menuElm);
     	if (item=="selectAll")
     		doSelectAll();
     	//	if (e.getSource() == exitItem) {
@@ -3490,6 +3494,27 @@ MouseOutHandler, MouseWheelHandler {
     	needAnalyze();
     }
     
+    void doSplit(CircuitElm ce) {
+	int x = snapGrid(inverseTransformX(menuX));
+	int y = snapGrid(inverseTransformY(menuY));
+	if (ce == null || !(ce instanceof WireElm))
+	    return;
+	if (ce.x == ce.x2)
+	    x = ce.x;
+	else
+	    y = ce.y;
+	
+	// don't create zero-length wire
+	if (x == ce.x && y == ce.y || x == ce.x2 && y == ce.y2)
+	    return;
+	
+	WireElm newWire = new WireElm(x, y);
+	newWire.drag(ce.x2, ce.y2);
+	ce.drag(x, y);
+	elmList.addElement(newWire);
+	needAnalyze();
+    }
+    
     void selectArea(int x, int y) {
     	int x1 = min(x, initDragGridX);
     	int x2 = max(x, initDragGridX);
@@ -3700,8 +3725,8 @@ MouseOutHandler, MouseWheelHandler {
 
     public void onContextMenu(ContextMenuEvent e) {
     	e.preventDefault();
-    	menuX = e.getNativeEvent().getClientX();
-    	menuY = e.getNativeEvent().getClientY();
+    	menuClientX = e.getNativeEvent().getClientX();
+    	menuClientY = e.getNativeEvent().getClientY();
     	doPopupMenu();
     }
     
@@ -3717,8 +3742,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	    scopePopupMenu.doScopePopupChecks(false, scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(scopePopupMenu.getMenuBar());
-    	    	    y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-160));
-    	    	    contextPanel.setPopupPosition(menuX, y);
+    	    	    y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-160));
+    	    	    contextPanel.setPopupPosition(menuClientX, y);
     	    	    contextPanel.show();
     		}
     	} else if (mouseElm != null) {
@@ -3727,10 +3752,11 @@ MouseOutHandler, MouseWheelHandler {
     	    	    elmFloatScopeMenuItem.setEnabled(mouseElm.canViewInScope());
     	    	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     	    	    elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
+    	    	    elmSplitMenuItem.setEnabled(canSplit(mouseElm));
     	    	    elmSliderMenuItem.setEnabled(sliderItemEnabled(mouseElm));
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(elmMenuBar);
-    	    	    contextPanel.setPopupPosition(menuX, menuY);
+    	    	    contextPanel.setPopupPosition(menuClientX, menuClientY);
     	    	    contextPanel.show();
     	    	} else {
     	    	    ScopeElm s = (ScopeElm) mouseElm;
@@ -3739,7 +3765,7 @@ MouseOutHandler, MouseWheelHandler {
     	    		scopePopupMenu.doScopePopupChecks(true, s.elmScope);
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(scopePopupMenu.getMenuBar());
-    			contextPanel.setPopupPosition(menuX, menuY);
+    			contextPanel.setPopupPosition(menuClientX, menuClientY);
     			contextPanel.show();
     	    	    }
     	    	}
@@ -3747,13 +3773,22 @@ MouseOutHandler, MouseWheelHandler {
     		doMainMenuChecks();
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(mainMenuBar);
-    		x=Math.max(0, Math.min(menuX, cv.getCoordinateSpaceWidth()-400));
-    		y=Math.max(0, Math.min(menuY,cv.getCoordinateSpaceHeight()-450));
+    		x=Math.max(0, Math.min(menuClientX, cv.getCoordinateSpaceWidth()-400));
+    		y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-450));
     		contextPanel.setPopupPosition(x,y);
     		contextPanel.show();
     	}
     }
 
+    boolean canSplit(CircuitElm ce) {
+	if (!(ce instanceof WireElm))
+	    return false;
+	WireElm we = (WireElm) ce;
+	if (we.x == we.x2 || we.y == we.y2)
+	    return true;
+	return false;
+    }
+    
     // check if the user can create sliders for this element
     boolean sliderItemEnabled(CircuitElm elm) {
 	int i;
@@ -3809,13 +3844,14 @@ MouseOutHandler, MouseWheelHandler {
     	plotXElm = plotYElm = null;
     }
     
+    int menuClientX, menuClientY;
     int menuX, menuY;
     
     public void onMouseDown(MouseDownEvent e) {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
-    	menuX = e.getX();
-    	menuY = e.getY();
+    	menuX = menuClientX = e.getX();
+    	menuY = menuClientY = e.getY();
     	mouseDownTime = System.currentTimeMillis();
     	
     	// maybe someone did copy in another window?  should really do this when
@@ -3919,6 +3955,10 @@ MouseOutHandler, MouseWheelHandler {
     	// click to clear selection
     	if (tempMouseMode == MODE_SELECT && selectedArea == null)
     	    clearSelection();
+
+    	// cmd-click = split wire
+    	if (tempMouseMode == MODE_DRAG_POST && draggingPost == -1)
+    	    doSplit(mouseElm);
     	
     	tempMouseMode = mouseMode;
     	selectedArea = null;
