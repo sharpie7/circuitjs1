@@ -21,6 +21,7 @@ public class CustomLogicModel implements Editable {
     String rules;
     Vector<String> rulesLeft, rulesRight;
     boolean dumped;
+    boolean triState;
     
     static CustomLogicModel getModelWithName(String name) {
 	if (modelMap == null)
@@ -205,6 +206,8 @@ public class CustomLogicModel implements Editable {
 		used[x-'a'] = true;
 		newRl += x;
 	    }
+	    String rr = s0[1];
+	    triState = (rr.contains("_"));		
 	    rulesLeft.add(newRl);
 	    rulesRight.add(s0[1]);
 	}
