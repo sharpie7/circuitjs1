@@ -388,7 +388,7 @@ class CustomTransformerElm extends CircuitElm {
 	}
 	
 	void getInfo(String arr[]) {
-	    arr[0] = "transformer (multi-coil)";
+	    arr[0] = "transformer (custom)";
 	    arr[1] = "L = " + getUnitText(inductance, "H");
 	    int i;
 	    for (i = 0; i != coilCount ; i++) {
