@@ -19,21 +19,21 @@
 
 package com.lushprojects.circuitjs1.client;
 
-// stub implementation of DiacElm, based on SparkGapElm
-// FIXME need to add DiacElm.java to srclist
-// FIXME need to uncomment DiacElm line from CirSim.java
-
 class DiacElm extends CircuitElm {
+    // resistor from 0 to 2, 3
+    // diodes from 2, 3 to 1
     double onresistance, offresistance, breakdown, holdcurrent;
     boolean state;
+    Diode diode1, diode2;
+    
     public DiacElm(int xx, int yy) {
 	super(xx, yy);
-	// FIXME need to adjust defaults to make sense for diac
-	offresistance = 1e9;
-	onresistance = 1e3;
-	breakdown = 1e3;
-	holdcurrent = 0.001;
+	offresistance = 1e8;
+	onresistance = 500;
+	breakdown = 30;
+	holdcurrent = .01;
 	state = false;
+	createDiodes();
     }
     public DiacElm(int xa, int ya, int xb, int yb, int f,
 		       StringTokenizer st) {
@@ -42,6 +42,14 @@ class DiacElm extends CircuitElm {
 	offresistance = new Double(st.nextToken()).doubleValue();
 	breakdown = new Double(st.nextToken()).doubleValue();
 	holdcurrent = new Double(st.nextToken()).doubleValue();
+	createDiodes();
+    }
+    
+    void createDiodes() {
+	diode1 = new Diode(sim);
+	diode2 = new Diode(sim);
+	diode1.setupForDefaultModel();
+	diode2.setupForDefaultModel();
     }
     boolean nonLinear() {return true;}
     int getDumpType() { return 203; }
@@ -49,52 +57,73 @@ class DiacElm extends CircuitElm {
 	return super.dump() + " " + onresistance + " " + offresistance + " "
 	    + breakdown + " " + holdcurrent;
     }
-    Point ps3, ps4;
+    
+    Polygon arrows[];
+    Point plate1[], plate2[];
+    
     void setPoints() {
 	super.setPoints();
-	calcLeads(32);
-	ps3 = new Point();
-	ps4 = new Point();
+	calcLeads(16);
+	
+	plate1 = newPointArray(2);
+	plate2 = newPointArray(2);
+	interpPoint2(lead1, lead2, plate1[0], plate1[1], 0, 16);
+	interpPoint2(lead1, lead2, plate2[0], plate2[1], 1, 16);
+	
+	arrows = new Polygon[2];
+	
+	int i;
+	for (i = 0; i != 2; i++) {
+	    int sgn = -1+i*2;
+	    Point p1 = interpPoint(lead1, lead2, i,    8*sgn);
+	    Point p2 = interpPoint(lead1, lead2, 1-i, 16*sgn);
+	    Point p3 = interpPoint(lead1, lead2, 1-i,  0*sgn);
+	    arrows[i] = createPolygon(p1, p2, p3);
+	}
     }
     
     void draw(Graphics g) {
-	// FIXME need to draw Diac
-	int i;
 	double v1 = volts[0];
 	double v2 = volts[1];
 	setBbox(point1, point2, 6);
 	draw2Leads(g);
+	setVoltageColor(g, v1);
+	drawThickLine(g, plate1[0], plate1[1]);
+	setVoltageColor(g, v2);
+	drawThickLine(g, plate2[0], plate2[1]);
+	g.fillPolygon(arrows[0]);
+	setVoltageColor(g, v1);
+	g.fillPolygon(arrows[1]);
 	setPowerColor(g, true);
 	doDots(g);
 	drawPosts(g);
     }
     
     void calculateCurrent() {
-	double vd = volts[0] - volts[1];
-	if(state)
-	    current = vd/onresistance;
-	else
-	    current = vd/offresistance;
+	double r = (state) ? onresistance : offresistance;
+	current = (volts[0]-volts[2])/r + (volts[0]-volts[3])/r;
     }
     void startIteration() {
 	double vd = volts[0] - volts[1];
-	if(Math.abs(current) < holdcurrent) state = false;
+	if(Math.abs(current) < holdcurrent) state = false;	
 	if(Math.abs(vd) > breakdown) state = true;
-	//System.out.print(this + " res current set to " + current + "\n");
     }
     void doStep() {
-	if(state)
-	    sim.stampResistor(nodes[0], nodes[1], onresistance);
-	else
-	    sim.stampResistor(nodes[0], nodes[1], offresistance);
+	double r = (state) ? onresistance : offresistance;
+	sim.stampResistor(nodes[0], nodes[2], r);
+	sim.stampResistor(nodes[0], nodes[3], r);
+	diode1.doStep(volts[2]-volts[1]);
+	diode2.doStep(volts[1]-volts[3]);
     }
     void stamp() {
 	sim.stampNonLinear(nodes[0]);
 	sim.stampNonLinear(nodes[1]);
+	diode1.stamp(nodes[2], nodes[1]);
+	diode2.stamp(nodes[1], nodes[3]);
     }
+    int getInternalNodeCount() { return 2; }
     void getInfo(String arr[]) {
-	// FIXME
-	arr[0] = "spark gap";
+	arr[0] = "DIAC";
 	getBasicInfo(arr);
 	arr[3] = state ? "on" : "off";
 	arr[4] = "Ron = " + getUnitText(onresistance, sim.ohmString);
