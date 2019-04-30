@@ -876,13 +876,13 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (N-Channel)"), "NJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add JFET (P-Channel)"), "PJfetElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add SCR"), "SCRElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add DIAC"), "DiacElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add TRIAC"), "TriacElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (NPN)"), "NDarlingtonElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Darlington Pair (PNP)"), "PDarlingtonElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
-    	activeMenuBar.addItem(getClassCheckItem("Add Diac", "DiacElm"));
-    	activeMenuBar.addItem(getClassCheckItem("Add Triac", "TriacElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "PhotoResistorElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
