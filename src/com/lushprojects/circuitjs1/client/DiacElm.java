@@ -88,11 +88,14 @@ class DiacElm extends CircuitElm {
 	setBbox(point1, point2, 6);
 	draw2Leads(g);
 	setVoltageColor(g, v1);
+	setPowerColor(g, true);
 	drawThickLine(g, plate1[0], plate1[1]);
 	setVoltageColor(g, v2);
+	setPowerColor(g, true);
 	drawThickLine(g, plate2[0], plate2[1]);
 	g.fillPolygon(arrows[0]);
 	setVoltageColor(g, v1);
+	setPowerColor(g, true);
 	g.fillPolygon(arrows[1]);
 	setPowerColor(g, true);
 	doDots(g);
@@ -130,6 +133,7 @@ class DiacElm extends CircuitElm {
 	arr[5] = "Roff = " + getUnitText(offresistance, sim.ohmString);
 	arr[6] = "Vbrkdn = " + getUnitText(breakdown, "V");
 	arr[7] = "Ihold = " + getUnitText(holdcurrent, "A");
+        arr[8] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)

@@ -132,12 +132,13 @@ class DiodeElm extends CircuitElm {
 	draw2Leads(g);
 
 	// draw arrow thingy
-	setPowerColor(g, true);
 	setVoltageColor(g, v1);
+	setPowerColor(g, true);
 	g.fillPolygon(poly);
 
 	// draw thing arrow is pointing to
 	setVoltageColor(g, v2);
+	setPowerColor(g, true);
 	drawThickLine(g, cathode[0], cathode[1]);
     }
 	

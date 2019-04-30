@@ -62,10 +62,11 @@ class SparkGapElm extends CircuitElm {
 	double v2 = volts[1];
 	setBbox(point1, point2, 8);
 	draw2Leads(g);
-	setPowerColor(g, true);
 	setVoltageColor(g, volts[0]);
+	setPowerColor(g, true);
 	g.fillPolygon(arrow1);
 	setVoltageColor(g, volts[1]);
+	setPowerColor(g, true);
 	g.fillPolygon(arrow2);
 	if (state)
 	    doDots(g);

@@ -119,21 +119,25 @@ package com.lushprojects.circuitjs1.client;
 		int segments = 6;
 		int i;
 		setPowerColor(g, true);
+		boolean power = sim.powerCheckItem.getState();
 		double segf = 1./segments;
 		boolean enhancement = vt > 0 && showBulk();
 		for (i = 0; i != segments; i++) {
 		    if ((i == 1 || i == 4) && enhancement) continue;
 		    double v = volts[1]+(volts[2]-volts[1])*i/segments;
-		    setVoltageColor(g, v);
+		    if (!power)
+			setVoltageColor(g, v);
 		    interpPoint(src[1], drn[1], ps1, i*segf);
 		    interpPoint(src[1], drn[1], ps2, (i+1)*segf);
 		    drawThickLine(g, ps1, ps2);
 		}
 		
 		// draw little extensions of that line
-		setVoltageColor(g, volts[1]);
+		if (!power)
+		    setVoltageColor(g, volts[1]);
 		drawThickLine(g, src[1], src[2]);
-		setVoltageColor(g, volts[2]);
+		if (!power)
+		    setVoltageColor(g, volts[2]);
 		drawThickLine(g, drn[1], drn[2]);
 		
 		// draw bulk connection
@@ -149,8 +153,8 @@ package com.lushprojects.circuitjs1.client;
 		    setVoltageColor(g, volts[bodyTerminal]);
 		    g.fillPolygon(arrowPoly);
 		}
-		if (sim.powerCheckItem.getState())
-			g.setColor(Color.gray);
+		if (power)
+		    g.setColor(Color.gray);
 		
 		// draw gate
 		setVoltageColor(g, volts[0]);
