@@ -420,5 +420,6 @@ varactor.txt Varactor
 varactorvco.txt VCO
 -
 ledarray.txt LED Array
+triacdimmer.txt DIAC/TRIAC Dimmer
 -
 blank.txt Blank Circuit

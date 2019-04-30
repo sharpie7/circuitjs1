@@ -882,7 +882,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
     	activeMenuBar.addItem(getClassCheckItem("Add Diac", "DiacElm"));
-    	//	activeMenuBar.addItem(getClassCheckItem("Add Triac", "TriacElm"));
+    	activeMenuBar.addItem(getClassCheckItem("Add Triac", "TriacElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "PhotoResistorElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
@@ -3376,7 +3376,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (scopeHeightFraction>0.9)
     		scopeHeightFraction=0.9;
     	setCircuitArea();
-    	
+    	repaint();
     }
 
     void dragAll(int x, int y) {
