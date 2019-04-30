@@ -863,6 +863,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Data Export"), "DataRecorderElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Stop Trigger"), "StopTriggerElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -881,7 +882,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
     	activeMenuBar.addItem(getClassCheckItem("Add Diac", "DiacElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Triac", "TriacElm"));
+    	//	activeMenuBar.addItem(getClassCheckItem("Add Triac", "TriacElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "PhotoResistorElm"));
     	//    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
@@ -2513,6 +2514,8 @@ MouseOutHandler, MouseWheelHandler {
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
 	    // those we have already completed.
 	    if ((iter+1)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+		break;
+	    if (!simRunning)
 		break;
 	} // for (iter = 1; ; iter++)
 	lastIterTime = lit;
@@ -4828,6 +4831,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new CustomTransformerElm(x1, y1, x2, y2, f, st);
     	if (tint==407)
     	    return new OptocouplerElm(x1, y1, x2, y2, f, st);
+    	if (tint==408)
+    	    return new StopTriggerElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -5046,6 +5051,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	return (CircuitElm) new CustomTransformerElm(x1, y1);
     	if (n=="OptocouplerElm")
 		return (CircuitElm) new OptocouplerElm(x1, y1);
+    	if (n=="StopTriggerElm")
+		return (CircuitElm) new StopTriggerElm(x1, y1);
     	return null;
     }
     
