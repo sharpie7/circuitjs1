@@ -35,7 +35,8 @@ public class OTAElm extends CompositeElm {
     public OTAElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 	super(xa, ya, xb, yb, f, st, modelString, modelExternalNodes);
 	noDiagonal = true;
-	initOTA();
+	negVolt = ((RailElm) compElmList.get(0)).maxVoltage;
+	posVolt = ((RailElm) compElmList.get(1)).maxVoltage;
     }
 
     private void initOTA() {

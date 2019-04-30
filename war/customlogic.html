@@ -21,6 +21,8 @@ input pins is chosen, and the output pins are set to match the <i>output</i> pat
 (<tt>A</tt>, <tt>B</tt>, etc.).  The <i>input</i> has to be at least as long as the number of input pins.  If it's longer,
 than the additional pattern characters will be matched against the output pins; this allows you to create devices with state.
 </p><p>
+The output pattern can also contain <tt>_</tt> to indicate a high-impedance state.
+</p><p>
 Examples: 
 </p><p>
 </p><h3> 3 input NAND: </h3>
@@ -117,4 +119,27 @@ Definition:</p><pre>+ AB0=AB1
 ? ABC=ABC
 </pre>
 This counter counts up on positive transition of the Clk input.  The first line handles counting up from 000, 010, 100, or 110.  The second line handles counting up from 001 or 101.  The next two lines handle 011 and 111.  The last line ensures that the output doesn't change unless the clock makes a positive transition.
+</p><h3> 3 input NAND with enable: </h3>
+<p>
+Inputs: <tt>A,B,C,En</tt><br>
+Outputs: <tt>X</tt><br>
+Definition:</p><pre>1111=0
+???1=1
+???0=_
+</pre>
+<p>
+Same as the 3 input NAND above, except that the output goes into a high-impedance state if the enable pin is low.
+</p><p>
+</p><h3> Tri-state buffer: </h3>
+<p>
+Inputs: <tt>A,En</tt><br>
+Outputs: <tt>X</tt><br>
+Definition:</p><pre>A1=A
+?0=_
+</pre>
+<p>
+Output is the same as A if the enable bit is high, otherwise it
+goes into a high-impedance state if the enable pin is low.
+</p><p>
+</body></html>
 </body></html>

@@ -198,6 +198,11 @@ package com.lushprojects.circuitjs1.client;
             }
         }
 
+        void setExpr(String expr) {
+            exprString = expr;
+            parseExpr();
+        }
+        
         void parseExpr() {
             ExprParser parser = new ExprParser(exprString);
             expr = parser.parseExpression();

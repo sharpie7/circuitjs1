@@ -294,6 +294,7 @@ mux3state.txt 2-to-1 Mux
 majority.txt Majority Logic
 digcompare.txt 2-Bit Comparator
 7segdecoder.txt 7-Segment LED Decoder
+brentkung.txt Brent-Kung Adder
 -
 +Sequential Logic
 +Flip-Flops
@@ -332,6 +333,7 @@ dac.txt Binary-Weighted DAC
 r2rladder.txt R-2R Ladder DAC
 swtreedac.txt Switch-Tree DAC
 digsine.txt Digital Sine Wave
+qam-256.txt QAM-256 Modulator/Demodulator
 -
 +Phase-Locked Loops
 xorphasedet.txt XOR Phase Detector
@@ -418,5 +420,6 @@ varactor.txt Varactor
 varactorvco.txt VCO
 -
 ledarray.txt LED Array
+triacdimmer.txt DIAC/TRIAC Dimmer
 -
 blank.txt Blank Circuit

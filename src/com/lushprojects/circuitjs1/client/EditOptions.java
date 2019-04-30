@@ -19,6 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
+
 class EditOptions implements Editable {
 	CirSim sim;
 	
@@ -30,6 +33,17 @@ class EditOptions implements Editable {
 		if (n == 1)
 			return new EditInfo("Range for voltage color (V)",
 					CircuitElm.voltageRange, 0, 0);
+		if (n == 2) {
+	            EditInfo ei =  new EditInfo("Change Language", 0, -1, -1);
+	            ei.choice = new Choice();
+	            ei.choice.add("(no change)");
+	            ei.choice.add("English");
+	            ei.choice.add("Dansk");
+	            ei.choice.add("Deutsch");
+	            ei.choice.add("Polski");
+	            ei.choice.add("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"); // Russian 
+	            return ei;
+		}
 
 		return null;
 	}
@@ -43,5 +57,28 @@ class EditOptions implements Editable {
 		}
 		if (n == 1 && ei.value > 0)
 			CircuitElm.voltageRange = ei.value;
+		if (n == 2) {
+		    	int lang = ei.choice.getSelectedIndex();
+		    	if (lang == 0)
+		    	    return;
+		    	String langString = null;
+		    	switch (lang) {
+		    	case 1: langString = "en"; break;
+		    	case 2: langString = "da"; break;
+		    	case 3: langString = "de"; break;
+		    	case 4: langString = "pl"; break;
+		    	case 5: langString = "ru"; break;
+		    	}
+		    	if (langString == null)
+		    	    return;
+		        Storage stor = Storage.getLocalStorageIfSupported();
+		        if (stor == null) {
+		            Window.alert(sim.LS("Can't set language"));
+		            return;
+		        }
+		        stor.setItem("language", langString);
+		        if (Window.confirm(sim.LS("Must restart to set language.  Restart now?")))
+		            Window.Location.reload();
+		}
 	}
 };

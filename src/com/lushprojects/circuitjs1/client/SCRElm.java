@@ -138,16 +138,18 @@ class SCRElm extends CircuitElm {
 	draw2Leads(g);
 
 	// draw arrow thingy
-	setPowerColor(g, true);
 	setVoltageColor(g, v1);
+	setPowerColor(g, true);
 	g.fillPolygon(poly);
 
-	// draw thing arrow is pointing to
-	setVoltageColor(g, v2);
-	drawThickLine(g, cathode[0], cathode[1]);
-
+	setVoltageColor(g, volts[gnode]);
 	drawThickLine(g, lead2,   gate[0]);
 	drawThickLine(g, gate[0], gate[1]);
+	
+	// draw thing arrow is pointing to
+	setVoltageColor(g, v2);
+	setPowerColor(g, true);
+	drawThickLine(g, cathode[0], cathode[1]);
 	
 	curcount_a = updateDotCount(ia, curcount_a);
 	curcount_c = updateDotCount(ic, curcount_c);
@@ -158,6 +160,15 @@ class SCRElm extends CircuitElm {
 	    drawDots(g, gate[1], gate[0], curcount_g);
 	    drawDots(g, gate[0], lead2, curcount_g+distance(gate[1], gate[0]));
 	}
+	
+	if ((needsHighlight() || sim.dragElm == this) && point1.x == point2.x && point2.y > point1.y) {
+	    g.setColor(Color.white);
+	    int ds = sign(dx);
+	    g.drawString("C", lead2.x+((ds < 0) ? 5 : -15), lead2.y+12);
+	    g.drawString("A", lead1.x+5, lead1.y-4); // x+6 if ds=1, -12 if -1
+	    g.drawString("G", gate[0].x, gate[0].y+12);
+	}
+	
 	drawPosts(g);
     }
 	
@@ -216,6 +227,7 @@ class SCRElm extends CircuitElm {
 	arr[3] = "Vac = " + getVoltageText(vac);
 	arr[4] = "Vag = " + getVoltageText(vag);
 	arr[5] = "Vgc = " + getVoltageText(vgc);
+        arr[6] = "P = " + getUnitText(getPower(), "W");
     }
     void calculateCurrent() {
 	ic = (volts[cnode]-volts[gnode])/cresistance;
