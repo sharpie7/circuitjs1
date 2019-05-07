@@ -168,6 +168,7 @@ transswitch.txt Switch
 follower.txt Emitter Follower
 +Multivibrators
 multivib-a.txt Astable Multivib
+multivib-a-mos.txt Astable Multivib (power mosfet)
 multivib-bi.txt Bistable Multivib (Flip-Flop)
 multivib-mono.txt Monostable Multivib (One-Shot)
 -
