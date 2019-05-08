@@ -888,8 +888,9 @@ MouseOutHandler, MouseWheelHandler {
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (- on top)"), "OpAmpElm"));
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (+ on top)"), "OpAmpSwapElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (ideal, - on top)"), "OpAmpElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (ideal, + on top)"), "OpAmpSwapElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (real)"), "OpAmpRealElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Analog Switch (SPST)"), "AnalogSwitchElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Analog Switch (SPDT)"), "AnalogSwitch2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Tristate Buffer"), "TriStateElm"));
@@ -4833,6 +4834,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new OptocouplerElm(x1, y1, x2, y2, f, st);
     	if (tint==408)
     	    return new StopTriggerElm(x1, y1, x2, y2, f, st);
+    	if (tint==409)
+    	    return new OpAmpRealElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -5053,6 +5056,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OptocouplerElm(x1, y1);
     	if (n=="StopTriggerElm")
 		return (CircuitElm) new StopTriggerElm(x1, y1);
+    	if (n=="OpAmpRealElm")
+		return (CircuitElm) new OpAmpRealElm(x1, y1);
     	return null;
     }
     

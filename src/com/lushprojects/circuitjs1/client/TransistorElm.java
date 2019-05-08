@@ -325,7 +325,7 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
-	void setBeta(float b) {
+	void setBeta(double b) {
 	    beta = b;
 	    setup();
 	}

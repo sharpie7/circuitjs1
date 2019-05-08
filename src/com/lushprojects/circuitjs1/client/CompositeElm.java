@@ -112,16 +112,12 @@ public abstract class CompositeElm extends CircuitElm {
 		voltageSources.add(vsRecord);
 	    }
 	}
-
     }
 
     public boolean nonLinear() {
 	return true; // Lets assume that any useful composite elements are
 		     // non-linear
     }
-    
-    abstract public int getDumpType();
-    
     
     public String dump() {
 		String dumpStr=super.dump();
@@ -205,6 +201,11 @@ public abstract class CompositeElm extends CircuitElm {
 	    compElmList.get(i).stamp();
     }
 
+    public void startIteration() {
+	for (int i = 0; i < compElmList.size(); i++)
+	    compElmList.get(i).startIteration();
+    }
+    
     public void doStep() {
 	for (int i = 0; i < compElmList.size(); i++)
 	    compElmList.get(i).doStep();
@@ -214,8 +215,6 @@ public abstract class CompositeElm extends CircuitElm {
 	for (int i = 0; i < compElmList.size(); i++)
 	    compElmList.get(i).stepFinished();
     }
-
-    abstract void getInfo(String arr[]);
 
     public void setNode(int p, int n) {
 	// nodes[p] = n
