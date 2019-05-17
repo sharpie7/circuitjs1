@@ -519,12 +519,12 @@ package com.lushprojects.circuitjs1.client;
 		    setPoints();
 		}
 	}
-	double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x && ya == y)
+	double getCurrentIntoNode(int n) {
+	    if (n == 0)
 		return 0;
-	    if (hasBodyTerminal() && xa == body[0].x && ya == body[0].y)
+	    if (n == 3)
 		return -diodeCurrent1 - diodeCurrent2;
-	    if (xa == src[0].x && ya == src[0].y)
+	    if (n == 1)
 		return ids + diodeCurrent1;
 	    return -ids + diodeCurrent2;
 	}

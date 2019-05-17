@@ -19,13 +19,21 @@ import java.util.Map.Entry;
 
 public abstract class CompositeElm extends CircuitElm {
 
-    Vector<CircuitElm> compElmList = new Vector<CircuitElm>();
-    protected Vector<CircuitNode> compNodeList = new Vector<CircuitNode>();
+    // list of elements contained in this subcircuit
+    Vector<CircuitElm> compElmList;
+    
+    // list of nodes, mapping each one to a list of elements that reference that node
+    protected Vector<CircuitNode> compNodeList;
+    
     protected int numPosts = 0;
     protected int numNodes = 0;
     protected Point posts[];
-    protected Vector<VoltageSourceRecord> voltageSources = new Vector<VoltageSourceRecord>();
+    protected Vector<VoltageSourceRecord> voltageSources;
 
+    CompositeElm(int xx, int yy) {
+	super(xx, yy);
+    }
+    
     CompositeElm(int xx, int yy, String s, int externalNodes[]) {
 	super(xx, yy);
 	loadComposite(null, s, externalNodes);
@@ -44,6 +52,10 @@ public abstract class CompositeElm extends CircuitElm {
 	CircuitNode cn;
 	CircuitNodeLink cnLink;
 	VoltageSourceRecord vsRecord;
+
+	compElmList = new Vector<CircuitElm>();
+	compNodeList = new Vector<CircuitNode>();
+	voltageSources = new Vector<VoltageSourceRecord>();
 
 	// Build compElmList and compNodeHash from input string
 
@@ -93,6 +105,20 @@ public abstract class CompositeElm extends CircuitElm {
 	    compNodeList.add(compNodeHash.get(key));
 	}
 
+	// allocate more nodes for sub-elements' internal nodes
+	for (int i = 0; i != compElmList.size(); i++) {
+	    CircuitElm ce = compElmList.get(i);
+	    int inodes = ce.getInternalNodeCount();
+	    for (int j = 0; j != inodes; j++) {
+		cnLink = new CircuitNodeLink();
+		cnLink.num = j + ce.getPostCount();
+		cnLink.elm = ce;
+		cn = new CircuitNode();
+		cn.links.add(cnLink);
+		compNodeList.add(cn);
+	    }
+	}
+
 	numNodes = compNodeList.size();
 
 //	CirSim.console("Dumping compNodeList");
@@ -118,23 +144,31 @@ public abstract class CompositeElm extends CircuitElm {
 	return true; // Lets assume that any useful composite elements are
 		     // non-linear
     }
-    
+
     public String dump() {
-		String dumpStr=super.dump();
-		for (int i = 0; i < compElmList.size(); i++) {
-		    String tstring = compElmList.get(i).dump().replace(' ', '_');
-		    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
-		    dumpStr += " "+ tstring;
-		}
-//		for (int i=0; i<numPosts; i++) {
-//		    dumpStr += " "+posts[i].x + " " + posts[i].y;
-//		}
-		return dumpStr;
-    }
-    
-    // dump subset of elements (some of them may not have any state, and/or may be very long, so we avoid dumping them for brevity)
-    public String dumpElements(int mask) {
 	String dumpStr=super.dump();
+	dumpStr += dumpElements();
+	return dumpStr;
+    }
+
+    public String dumpElements() {
+	String dumpStr = "";
+	for (int i = 0; i < compElmList.size(); i++) {
+	    String tstring = compElmList.get(i).dump().replace(' ', '_');
+	    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
+	    dumpStr += " "+ tstring;
+	}
+	return dumpStr;
+    }
+
+    // dump subset of elements (some of them may not have any state, and/or may be very long, so we avoid dumping them for brevity)
+    public String dumpWithMask(int mask) {
+	String dumpStr=super.dump();
+	return dumpStr + dumpElements(mask);
+    }
+
+    public String dumpElements(int mask) {
+	String dumpStr = "";
 	for (int i = 0; i < compElmList.size(); i++) {
 	    if ((mask & (1<<i)) == 0)
 		continue;
@@ -144,11 +178,23 @@ public abstract class CompositeElm extends CircuitElm {
 	}
 	return dumpStr;
     }
-    
+
+    // are n1 and n2 connected internally somehow?
     public boolean getConnection(int n1, int n2) {
-	// TODO Find out if more sophisticated handling is needed here
-	// In the meantime subclasses should override this if they know  nodes are not connected
-	return true;
+	Vector<CircuitNodeLink> cnLinks1 = compNodeList.get(n1).links;
+	Vector<CircuitNodeLink> cnLinks2 = compNodeList.get(n2).links;
+	
+	// see if any elements are connected to both n1 and n2, then call getConnection() on those
+	for (int i = 0; i < cnLinks1.size(); i++) {
+	    CircuitNodeLink link1 = cnLinks1.get(i);
+	    for (int j = 0; j < cnLinks2.size(); j++) {
+		CircuitNodeLink link2 = cnLinks2.get(j);
+		if (link1.elm == link2.elm &&
+		    link1.elm.getConnection(link1.num, link2.num))
+		    return true;
+	    }
+	}
+	return false;
     }
     
     // is n1 connected to ground somehow?
@@ -157,7 +203,7 @@ public abstract class CompositeElm extends CircuitElm {
 	cnLinks = compNodeList.get(n1).links;
 	for (int i = 0; i < cnLinks.size(); i++) {
 	    if (cnLinks.get(i).elm.hasGroundConnection(cnLinks.get(i).num))
-		    return true;
+		return true;
 	}
 	return false; 
     }
@@ -197,8 +243,14 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     public void stamp() {
-	for (int i = 0; i < compElmList.size(); i++)
-	    compElmList.get(i).stamp();
+	for (int i = 0; i < compElmList.size(); i++) {
+	    CircuitElm ce = compElmList.get(i);
+	    // current sources need special stamp method
+	    if (ce instanceof CurrentElm)
+		((CurrentElm) ce).stampCurrentSource(false);
+	    else
+		ce.stamp();
+	}
     }
 
     public void startIteration() {
@@ -272,11 +324,6 @@ public abstract class CompositeElm extends CircuitElm {
 	
     }
 
- // It is hard to write a general purpose getCurrentIntoNode routine because this is not defined
- // for many circuit elements. Working-around by using getCurrentIntoPoint doesn't work for 
-    // internal components as they don't have points.
-    // If all components in the composite have "getCurrentIntoNode" implemented then you can use this
-    // routine. If not then you must override with your own code.
     double getCurrentIntoNode(int n) {
 	double c=0;
 	Vector<CircuitNodeLink> cnLinks;
@@ -285,15 +332,6 @@ public abstract class CompositeElm extends CircuitElm {
 	    c+=cnLinks.get(i).elm.getCurrentIntoNode(cnLinks.get(i).num);
 	}
 	return c;
-    }
-    
-    
-    double getCurrentIntoPoint(int xa, int ya) {
-	for(int i=0; i<posts.length; i++) {
-	    if (posts[i].x==xa && posts[i].y == ya)
-		return getCurrentIntoNode(i);
-	}
-	return 0;
     }
 
 }

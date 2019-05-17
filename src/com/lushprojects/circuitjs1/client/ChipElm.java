@@ -243,14 +243,6 @@ package com.lushprojects.circuitjs1.client;
 	    return pins[n1].output;
 	}
 	
-	double getCurrentIntoPoint(int xa, int ya) {
-	    int i;
-	    for (i = 0; i != getPostCount(); i++)
-		if (pins[i].post.x == xa && pins[i].post.y == ya)
-		    return pins[i].current;
-	    return 0;
-	}
-	
 	double getCurrentIntoNode(int n) {
 	    return pins[n].current;
 	}

@@ -92,8 +92,8 @@ class SchmittElm extends InvertingSchmittElm{
             arr[0] = "Schmitt Trigger~"; // ~ is for localization
         }
 
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x2 && ya == y2)
+	@Override double getCurrentIntoNode(int n) {
+	    if (n == 1)
 		return current;
 	    return 0;
 	}

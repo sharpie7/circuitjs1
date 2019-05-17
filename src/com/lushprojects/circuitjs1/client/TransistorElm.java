@@ -345,12 +345,4 @@ package com.lushprojects.circuitjs1.client;
 		return -ic;
 	    return -ie;
 	}
-	
-	double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x && ya == y)
-		return -ib;
-	    if (xa == coll[0].x && ya == coll[0].y)
-		return -ic;
-	    return -ie;
-	}
     }

@@ -62,8 +62,8 @@ public class OpAmpRealElm extends CompositeElm {
 	double currentMult = currentLimit / defaultCurrentLimit;
 	((ResistorElm) compElmList.get(21)).resistance /= currentMult;
 	((ResistorElm) compElmList.get(22)).resistance /= currentMult;
-	((TransistorElm) compElmList.get(13)).setBeta(currentMult * 100);
-	((TransistorElm) compElmList.get(18)).setBeta(currentMult * 100);
+	((TransistorElm) compElmList.get(13)).setBeta(currentMult * 100); // Q14
+	((TransistorElm) compElmList.get(18)).setBeta(currentMult * 100); // Q20
 	
 	curCounts = new double[5];
     }
@@ -76,7 +76,7 @@ public class OpAmpRealElm extends CompositeElm {
     CapacitorElm getCapacitor() { return ((CapacitorElm) compElmList.get(20)); }
     
     public String dump() {
-	return super.dumpElements(0) + " " + slewRate + " " + getCapacitor().voltdiff + " " + currentLimit + " " + modelType;
+	return super.dumpWithMask(0) + " " + slewRate + " " + getCapacitor().voltdiff + " " + currentLimit + " " + modelType;
     }
     
     public boolean getConnection(int n1, int n2) {

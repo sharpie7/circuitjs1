@@ -149,20 +149,19 @@ class RelayElm extends CircuitElm {
 	adjustBbox(swpoles[poleCount-1][0], swposts[poleCount-1][1]); // XXX
     }
 	
-    @Override double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == coilPosts[0].x && ya == coilPosts[0].y)
-	    return -coilCurrent;
-	if (xa == coilPosts[1].x && ya == coilPosts[1].y)
-	    return coilCurrent;
-	int i;
-	for (i = 0; i != poleCount; i++) {
-	    if (xa == swposts[i][0].x && ya == swposts[i][0].y)
-		return -switchCurrent[i];
-	    if (i_position != 2 && xa == swposts[i][i_position+1].x &&
-		    ya == swposts[i][i_position+1].y)
-		return switchCurrent[i];
+    double getCurrentIntoNode(int n) {
+	if (n < 3*poleCount) {
+	    int p = n/3;
+	    int k = n%3;
+	    if (k == 0)
+		return -switchCurrent[p];
+	    if (k == 1+i_position)
+		return switchCurrent[p];
+	    return 0;
 	}
-	return 0;
+	if (n == 3*poleCount)
+	    return -coilCurrent;
+	return coilCurrent;
     }
 
     void setPoints() {

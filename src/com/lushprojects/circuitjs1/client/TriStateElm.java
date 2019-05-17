@@ -95,8 +95,8 @@ class TriStateElm extends CircuitElm {
 	current = (volts[0] - volts[1]) / resistance;
     }
 
-    double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == x2 && ya == y2)
+    double getCurrentIntoNode(int n) {
+	if (n == 1)
 	    return current;
 	return 0;
     }

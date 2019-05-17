@@ -126,8 +126,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getShortcut() { return '1'; }
 	
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x2 && ya == y2)
+	@Override double getCurrentIntoNode(int n) {
+	    if (n == 1)
 		return current;
 	    return 0;
 	}

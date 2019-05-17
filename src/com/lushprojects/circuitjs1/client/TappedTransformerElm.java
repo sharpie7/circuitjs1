@@ -231,14 +231,14 @@ package com.lushprojects.circuitjs1.client;
 	    //arr[5] = "I2 = " + getCurrentText(current2);
 	    arr[4] = "Vd2 = " + getVoltageText(volts[1]-volts[3]);
 	}
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == ptEnds[0].x && ya == ptEnds[0].y)
+	@Override double getCurrentIntoNode(int n) {
+	    if (n == 0)
 		return -current[0];
-	    if (xa == ptEnds[1].x && ya == ptEnds[1].y)
+	    if (n == 1)
 		return current[0];
-	    if (xa == ptEnds[2].x && ya == ptEnds[2].y)
+	    if (n == 2)
 		return -current[1];
-	    if (xa == ptEnds[3].x && ya == ptEnds[3].y)
+	    if (n == 3)
 		return current[3];
 	    return current[2];
 	}

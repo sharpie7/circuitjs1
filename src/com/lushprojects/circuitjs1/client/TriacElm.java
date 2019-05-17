@@ -182,10 +182,10 @@ class TriacElm extends CircuitElm {
 	return (n == 0) ? point1 : (n == 1) ? point2 : gate[1];
     }
 	
-    @Override double getCurrentIntoPoint(int xa, int ya) {
-        if (xa == point1.x && ya == point1.y)
+    @Override double getCurrentIntoNode(int n) {
+	if (n == 0)
             return -i2;
-        if (xa == point2.x && ya == point2.y)
+	if (n == 1)
             return -i1;
         return -ig;
     }
