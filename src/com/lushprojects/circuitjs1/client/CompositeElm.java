@@ -19,6 +19,9 @@ import java.util.Map.Entry;
 
 public abstract class CompositeElm extends CircuitElm {
 
+    // need to use escape() instead of converting spaces to _'s so composite elements can be nested
+    final int FLAG_ESCAPE = 1;
+    
     // list of elements contained in this subcircuit
     Vector<CircuitElm> compElmList;
     
@@ -34,6 +37,10 @@ public abstract class CompositeElm extends CircuitElm {
 	super(xx, yy);
     }
     
+    public CompositeElm(int xa, int ya, int xb, int yb, int f) {
+	super(xa, ya, xb, yb, f);
+    }
+    
     CompositeElm(int xx, int yy, String s, int externalNodes[]) {
 	super(xx, yy);
 	loadComposite(null, s, externalNodes);
@@ -46,6 +53,8 @@ public abstract class CompositeElm extends CircuitElm {
 	allocNodes();
     }
 
+    boolean useEscape() { return (flags & FLAG_ESCAPE) != 0; }
+    
     public void loadComposite(StringTokenizer stIn, String model, int externalNodes[]) {
 	HashMap<Integer, CircuitNode> compNodeHash = new HashMap<Integer, CircuitNode>();
 	StringTokenizer modelLinet = new StringTokenizer(model, "\r");
@@ -67,7 +76,9 @@ public abstract class CompositeElm extends CircuitElm {
 	    if (stIn!=null) {
 		int tint = newce.getDumpType();
 		String dumpedCe= stIn.nextToken();
-		StringTokenizer stCe = new StringTokenizer(dumpedCe, "_");
+		if (useEscape())
+		    dumpedCe = CustomLogicModel.unescape(dumpedCe);
+		StringTokenizer stCe = new StringTokenizer(dumpedCe, useEscape() ? " " : "_");
 		int flags = new Integer(stCe.nextToken()).intValue();
 		newce = CirSim.createCe(tint, 0, 0, 0, 0, flags, stCe);
 	    }
@@ -146,7 +157,11 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     public String dump() {
+	// dump new circuits with escape()
+	int f = flags;
+	flags |= FLAG_ESCAPE;
 	String dumpStr=super.dump();
+	flags = f;
 	dumpStr += dumpElements();
 	return dumpStr;
     }
@@ -154,16 +169,20 @@ public abstract class CompositeElm extends CircuitElm {
     public String dumpElements() {
 	String dumpStr = "";
 	for (int i = 0; i < compElmList.size(); i++) {
-	    String tstring = compElmList.get(i).dump().replace(' ', '_');
-	    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
-	    dumpStr += " "+ tstring;
+	    String tstring = compElmList.get(i).dump();
+	    tstring = tstring.replaceFirst("[A-Za-z0-9]+ 0 0 0 0 ", ""); // remove unused tint x1 y1 x2 y2 coords for internal components
+	    dumpStr += " "+ CustomLogicModel.escape(tstring);
 	}
 	return dumpStr;
     }
 
     // dump subset of elements (some of them may not have any state, and/or may be very long, so we avoid dumping them for brevity)
     public String dumpWithMask(int mask) {
+	// dump new circuits with escape()
+	int f = flags;
+	flags |= FLAG_ESCAPE;
 	String dumpStr=super.dump();
+	flags = f;
 	return dumpStr + dumpElements(mask);
     }
 
@@ -172,9 +191,9 @@ public abstract class CompositeElm extends CircuitElm {
 	for (int i = 0; i < compElmList.size(); i++) {
 	    if ((mask & (1<<i)) == 0)
 		continue;
-	    String tstring = compElmList.get(i).dump().replace(' ', '_');
-	    tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
-	    dumpStr += " "+ tstring;
+	    String tstring = compElmList.get(i).dump();
+	    tstring = tstring.replaceFirst("[A-Za-z0-9]+ 0 0 0 0 ", ""); // remove unused tint x1 y1 x2 y2 coords for internal components
+	    dumpStr += " "+ CustomLogicModel.escape(tstring);
 	}
 	return dumpStr;
     }

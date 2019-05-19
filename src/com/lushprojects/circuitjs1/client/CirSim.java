@@ -5281,15 +5281,15 @@ MouseOutHandler, MouseWheelHandler {
                 
                 // set them to 0 so they're easy to remove
                 ce.x = ce.y = ce.x2 = ce.y2 = 0;
-                
-                String tstring = ce.dump().replace(' ', '_');
-                tstring = tstring.replaceFirst("[A-Za-z0-9]+_0_0_0_0_", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
+
+                String tstring = ce.dump();
+                tstring = tstring.replaceFirst("[A-Za-z0-9]+ 0 0 0 0 ", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
                 
                 // restore positions
                 ce.x = x1; ce.y = y1; ce.x2 = x2; ce.y2 = y2;
                 if (dump.length() > 0)
                     dump += " ";
-                dump += tstring;
+                dump += CustomLogicModel.escape(tstring);
 	    }
 	    CustomCompositeModel ccm = new CustomCompositeModel();
 	    ccm.nodeList = nodeList;

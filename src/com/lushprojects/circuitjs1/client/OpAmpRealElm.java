@@ -24,7 +24,7 @@ public class OpAmpRealElm extends CompositeElm {
     double slewRate;
     double currentLimit;
     final double defaultCurrentLimit = .0231;
-    final int FLAG_SWAP = 1;
+    final int FLAG_SWAP = 2;
 
     public OpAmpRealElm(int xx, int yy) {
 	super(xx, yy, modelString, modelExternalNodes);

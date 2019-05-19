@@ -18,13 +18,18 @@ public class CustomCompositeElm extends CompositeElm {
     
     public CustomCompositeElm(int xx, int yy) {
 	super(xx, yy);
-	modelName = "default"; // lastModelName;
+	
+	// use last model as default when creating new element in UI.
+	// use default otherwise, to avoid infinite recursion when creating nested subcircuits.
+	modelName = (xx == 0 && yy == 0) ? "default" : lastModelName;
+	
+	flags |= FLAG_ESCAPE;
 	updateModels();
     }
 
     public CustomCompositeElm(int xa, int ya, int xb, int yb, int f,
             StringTokenizer st) {
-	super(xa, ya);
+	super(xa, ya, xb, yb, f);
 	modelName = CustomLogicModel.unescape(st.nextToken());
 	updateModels(st);
     }
