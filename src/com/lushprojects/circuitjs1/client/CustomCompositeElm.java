@@ -1,5 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
+import java.util.Vector;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.lushprojects.circuitjs1.client.ChipElm.Pin;
@@ -16,7 +18,7 @@ public class CustomCompositeElm extends CompositeElm {
     
     public CustomCompositeElm(int xx, int yy) {
 	super(xx, yy);
-	modelName = lastModelName;
+	modelName = "default"; // lastModelName;
 	updateModels();
     }
 
@@ -75,14 +77,13 @@ public class CustomCompositeElm extends CompositeElm {
 	chip.x2 = x2;
 	chip.y2 = y2;
 	
-	chip.sizeX = 2;
-	chip.sizeY = (postCount+1)/2;
+	chip.sizeX = model.sizeX;
+	chip.sizeY = model.sizeY;
 	chip.allocPins(postCount);
 	int i;
 	for (i = 0; i != postCount; i++) {
-	    boolean left = i < chip.sizeY;
-	    int side = (left) ? chip.SIDE_W : chip.SIDE_E;
-	    chip.setPin(i, left ? i : i-chip.sizeY, side, model.extList.get(i).name);
+	    ExtListEntry pin = model.extList.get(i);
+	    chip.setPin(i, pin.pos, pin.side, pin.name);
 	}
 	
 	chip.setPoints();
@@ -112,29 +113,50 @@ public class CustomCompositeElm extends CompositeElm {
     
     int getPostCount() { return postCount; }
     
+    Vector<CustomCompositeModel> models;
+    
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("Model Name", 0, -1, -1);
-	    ei.text = modelName;
+            models = CustomCompositeModel.getModelList();
+            ei.choice = new Choice();
+            int i;
+            for (i = 0; i != models.size(); i++) {
+                CustomCompositeModel ccm = models.get(i);
+                ei.choice.add(ccm.name);
+                if (ccm == model)
+                    ei.choice.select(i);
+            }
 	    return ei;
 	}
+        if (n == 1) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Edit Model"));
+            return ei;
+        }
 	return null;
     }
     
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
-	    sim.debugger();
-	    String newName = ei.textf.getText();
-	    CustomCompositeModel newModel = CustomCompositeModel.getModelWithName(newName);
-	    if (newModel == null) {
-		Window.alert(CirSim.LS("Can't find that model."));
-		return;
-	    }
-	    modelName = newName;
+            model = models.get(ei.choice.getSelectedIndex());
+	    lastModelName = modelName = model.name;
 	    updateModels();
 	    setPoints();
 	    return;
 	}
+        if (n == 1) {
+            if (model.name.equals("default")) {
+        	Window.alert(CirSim.LS("Can't edit this model."));
+        	return;
+            }
+            EditCompositeModelDialog dlg = new EditCompositeModelDialog();
+            dlg.setModel(model);
+            dlg.createDialog();
+            CirSim.dialogShowing = dlg;
+            dlg.show();
+            return;
+        }
     }
     
     int getDumpType() { return 410; }

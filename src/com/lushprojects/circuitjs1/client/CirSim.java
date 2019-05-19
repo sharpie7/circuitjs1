@@ -376,7 +376,7 @@ MouseOutHandler, MouseWheelHandler {
 	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
 	  fileMenuBar.addItem(new MenuItem(LS("Export As Image..."), new MyCommand("file","exportasimage")));
-	  fileMenuBar.addItem(new MenuItem(LS("Export As Subcircuit..."), new MyCommand("file","exportassubcircuit")));
+	  fileMenuBar.addItem(new MenuItem(LS("Create Subcircuit..."), new MyCommand("file","createsubcircuit")));
 	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
@@ -937,7 +937,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
-    	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm")); // don't change this, it will break people's saved shortcuts
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Digital Chips")), chipMenuBar);
     	
     	MenuBar achipMenuBar = new MenuBar(true);
@@ -2600,8 +2600,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsText();
     	if (item=="exportasimage")
 		doExportAsImage();
-    	if (item=="exportassubcircuit")
-		doExportAsSubcircuit();
+    	if (item=="createsubcircuit")
+		doCreateSubcircuit();
     	if (item=="dcanalysis")
     	    	doDCAnalysis();
     	if (item=="print")
@@ -2915,11 +2915,12 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing.show();
     }
     
-    void doExportAsSubcircuit()
+    void doCreateSubcircuit()
     {
-    	ExportAsSubcircuitDialog dlg = new ExportAsSubcircuitDialog();
-    	if (dlg.error())
+    	EditCompositeModelDialog dlg = new EditCompositeModelDialog();
+    	if (!dlg.createModel())
     	    return;
+    	dlg.createDialog();
     	dialogShowing = dlg;
     	dialogShowing.show();
     }
@@ -5016,8 +5017,8 @@ MouseOutHandler, MouseWheelHandler {
     	if (n=="LabeledNodeElm")
     		return (CircuitElm) new LabeledNodeElm(x1, y1);
     	
-    	// if you change this, it will break people's saved shortcuts and subcircuits
-    	if (n=="UserDefinedLogicElm")
+    	// if you take out UserDefinedLogicElm, it will break people's saved shortcuts
+    	if (n=="UserDefinedLogicElm" || n=="CustomLogicElm")
     	    	return (CircuitElm) new CustomLogicElm(x1, y1);
     	
     	if (n=="TestPointElm")
@@ -5242,11 +5243,11 @@ MouseOutHandler, MouseWheelHandler {
 		return cv;
 	}
 	
-	public boolean getCircuitAsCustomDevice(DeviceInfo di) {
+	public CustomCompositeModel getCircuitAsCustomDevice() {
 	    int i;
 	    String nodeList = "";
 	    String dump = "";
-	    String models = "";
+//	    String models = "";
 	    CustomLogicModel.clearDumpedFlags();
 	    DiodeModel.clearDumpedFlags();
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
@@ -5270,9 +5271,9 @@ MouseOutHandler, MouseWheelHandler {
 		    nodeList += " " + ce.getNode(j);
 		}
 		
-		String m = ce.dumpModel();
-	        if (m != null && !m.isEmpty())
-	            models += m + "\n";
+//		String m = ce.dumpModel();
+//	        if (m != null && !m.isEmpty())
+//	            models += m + "\n";
 	        
 	        // save positions
                 int x1 = ce.x;  int y1 = ce.y;
@@ -5290,11 +5291,11 @@ MouseOutHandler, MouseWheelHandler {
                     dump += " ";
                 dump += tstring;
 	    }
-	    di.nodeList = nodeList;
-	    di.models = models;
-	    di.dump = dump;
-	    di.extList = extList;
-	    return true;
+	    CustomCompositeModel ccm = new CustomCompositeModel();
+	    ccm.nodeList = nodeList;
+	    ccm.elmDump = dump;
+	    ccm.extList = extList;
+	    return ccm;
 	}
 	
 	static void invertMatrix(double a[][], int n) {

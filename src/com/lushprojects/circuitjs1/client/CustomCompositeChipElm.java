@@ -24,6 +24,7 @@ package com.lushprojects.circuitjs1.client;
     class CustomCompositeChipElm extends ChipElm {
 	public CustomCompositeChipElm(int xx, int yy) {
 	    super(xx, yy);
+	    setSize(2);
 	}
 	boolean needsBits() { return false; }
 	void setupPins() { }
