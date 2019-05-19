@@ -5243,7 +5243,14 @@ MouseOutHandler, MouseWheelHandler {
 		return cv;
 	}
 	
-	public CustomCompositeModel getCircuitAsCustomDevice() {
+	boolean isSelection() {
+	    for (int i = 0; i != elmList.size(); i++)
+		if (getElm(i).isSelected())
+		    return true;
+	    return false;
+	}
+	
+	public CustomCompositeModel getCircuitAsComposite() {
 	    int i;
 	    String nodeList = "";
 	    String dump = "";
@@ -5251,8 +5258,11 @@ MouseOutHandler, MouseWheelHandler {
 	    CustomLogicModel.clearDumpedFlags();
 	    DiodeModel.clearDumpedFlags();
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
+	    boolean sel = isSelection();
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
+		if (sel && !ce.isSelected())
+		    continue;
 		if (ce instanceof WireElm)
 		    continue;
 		if (ce instanceof LabeledNodeElm) {

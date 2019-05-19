@@ -149,6 +149,9 @@ public abstract class CompositeElm extends CircuitElm {
 		voltageSources.add(vsRecord);
 	    }
 	}
+	
+	// dump new circuits with escape()
+	flags |= FLAG_ESCAPE;
     }
 
     public boolean nonLinear() {
@@ -157,11 +160,7 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     public String dump() {
-	// dump new circuits with escape()
-	int f = flags;
-	flags |= FLAG_ESCAPE;
 	String dumpStr=super.dump();
-	flags = f;
 	dumpStr += dumpElements();
 	return dumpStr;
     }
@@ -178,11 +177,7 @@ public abstract class CompositeElm extends CircuitElm {
 
     // dump subset of elements (some of them may not have any state, and/or may be very long, so we avoid dumping them for brevity)
     public String dumpWithMask(int mask) {
-	// dump new circuits with escape()
-	int f = flags;
-	flags |= FLAG_ESCAPE;
 	String dumpStr=super.dump();
-	flags = f;
 	return dumpStr + dumpElements(mask);
     }
 

@@ -62,7 +62,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	void setModel(CustomCompositeModel m) { model = m; }
 	
         boolean createModel() {
-            model = CirSim.theSim.getCircuitAsCustomDevice();
+            model = CirSim.theSim.getCircuitAsComposite();
             if (model == null)
         	return false;
             if (model.extList.size() == 0) {
