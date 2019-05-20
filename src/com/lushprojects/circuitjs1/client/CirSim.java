@@ -4229,15 +4229,21 @@ MouseOutHandler, MouseWheelHandler {
     
     String copyOfSelectedElms() {
 	String r="";
-    	for (int i = elmList.size()-1; i >= 0; i--) {
-		CircuitElm ce = getElm(i);
-		// See notes on do cut why we don't copy ScopeElms.
-		if (ce.isSelected() && !(ce instanceof ScopeElm))
-			r += ce.dump() + "\n";
+	CustomLogicModel.clearDumpedFlags();
+	CustomCompositeModel.clearDumpedFlags();
+	DiodeModel.clearDumpedFlags();
+	for (int i = elmList.size()-1; i >= 0; i--) {
+	    CircuitElm ce = getElm(i);
+	    String m = ce.dumpModel();
+	    if (m != null && !m.isEmpty())
+		r += m + "\n";
+	    // See notes on do cut why we don't copy ScopeElms.
+	    if (ce.isSelected() && !(ce instanceof ScopeElm))
+		r += ce.dump() + "\n";
 	}
 	return r;
     }
-
+    
     void doCopy() {
     	// clear selection when we're done if we're copying a single element using the context menu
     	boolean clearSel = (menuElm != null && !menuElm.selected);
