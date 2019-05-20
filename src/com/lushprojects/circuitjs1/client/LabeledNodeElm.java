@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 import java.util.HashMap;
 
 class LabeledNodeElm extends CircuitElm {
+    final int FLAG_ESCAPE = 4;
+    
     public LabeledNodeElm(int xx, int yy) {
 	super(xx, yy);
 	text = "label";
@@ -30,11 +32,18 @@ class LabeledNodeElm extends CircuitElm {
 	    StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
 	text = st.nextToken();
-	while (st.hasMoreTokens())
-	    text += ' ' + st.nextToken();
+	if ((flags & FLAG_ESCAPE) == 0) {
+	    // old-style dump before escape/unescape
+	    while (st.hasMoreTokens())
+		text += ' ' + st.nextToken();
+	} else {
+	    // new-style dump
+	    text = CustomLogicModel.unescape(text); 
+	}
     }
     String dump() {
-	return super.dump() + " " + text;
+	flags |= FLAG_ESCAPE;
+	return super.dump() + " " + " " + CustomLogicModel.escape(text);
     }
 
     String text;
