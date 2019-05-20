@@ -9,13 +9,14 @@ import java.util.Map.Entry;
 // all the internal workings of the element are simulated from the individual components.
 // However, it may allow some types of components to be more quickly programed in to the simulator
 // than writing each component from scratch.
-// It may also, eventually, provide a path to allow user created circuits to be 
+//
+// It also provides a path to allow user created circuits to be 
 // re-imported in to the simuation as new circuit elements.
 
 // Instatiations should:
 // - Set the variable "diagonal" in the constructors
 // - Override constructors to set up the elements posts/leads etc. and configure the contents of the CompositeElm
-// - Override getDumpType, dump, draw, getPost, getInfo, setPoints, canViewInScope, getCurrentIntoPoint
+// - Override getDumpType, dump, draw, getInfo, setPoints, canViewInScope
 
 public abstract class CompositeElm extends CircuitElm {
 
