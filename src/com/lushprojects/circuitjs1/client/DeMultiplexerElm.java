@@ -86,7 +86,7 @@ package com.lushprojects.circuitjs1.client;
                 super.setEditValue(n,  ei);
                 return;
             }
-            if (n == 2 && ei.value >= 2 && ei.value <= 6) {
+            if (n == 2 && ei.value >= 1 && ei.value <= 6) {
                 selectBitCount = (int)ei.value;
                 setupPins();
                 setPoints();
