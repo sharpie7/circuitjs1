@@ -76,11 +76,6 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
             });
             int i;
             int postCount = model.extList.size();
-            for (i = 0; i != postCount-1; i++)
-        	if (model.extList.get(i).name.equals(model.extList.get(i+1).name)) {
-        	    Window.alert(CirSim.LS("Input names must be unique"));
-        	    return false;
-        	}
 
             model.sizeX = 2;
             model.sizeY = (postCount+1)/2;

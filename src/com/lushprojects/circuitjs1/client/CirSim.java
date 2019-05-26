@@ -70,6 +70,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -5174,7 +5175,7 @@ MouseOutHandler, MouseWheelHandler {
 	    win.document.open();
 	    win.document.write('<img src="'+img+'"/>');
 	    win.document.close();
-	    win.print();
+	    setTimeout(function(){win.print();},1000);
 	}-*/;
 
 	void doDCAnalysis() {
@@ -5265,18 +5266,51 @@ MouseOutHandler, MouseWheelHandler {
 	    DiodeModel.clearDumpedFlags();
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
 	    boolean sel = isSelection();
+	    
+	    // mapping of node labels -> node numbers
+	    HashMap<String, Integer> nodeNameHash = new HashMap<String, Integer>();
+	    
+	    // mapping of node numbers -> equivalent node numbers (if they both have the same label)
+	    HashMap<Integer, Integer> nodeNumberHash = new HashMap<Integer, Integer>();
+	    
+	    // find all the labeled nodes, get a list of them, and create a node number map
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
 		if (sel && !ce.isSelected())
 		    continue;
-		if (ce instanceof WireElm)
-		    continue;
 		if (ce instanceof LabeledNodeElm) {
-		    String label = ((LabeledNodeElm) ce).text;
+		    LabeledNodeElm lne = (LabeledNodeElm) ce;
+		    String label = lne.text;
+		    Integer map = nodeNameHash.get(label);
+		    
+		    // this node name already seen?  map the new node number to the old one
+		    if (map != null) {
+			Integer val = nodeNumberHash.get(lne.getNode(0));
+			if (val != null && !val.equals(map)) {
+			    Window.alert("Can't have a node with two labels!");
+			    return null;
+			}
+			nodeNumberHash.put(lne.getNode(0), map); 
+			continue;
+		    }
+		    nodeNameHash.put(label, lne.getNode(0));
+		    // put an entry in nodeNumberHash so we can detect if we try to map it to something else later
+		    nodeNumberHash.put(lne.getNode(0), lne.getNode(0));
+		    if (lne.isInternal())
+			continue;
+		    // create ext list entry for external nodes
 		    ExtListEntry ent = new ExtListEntry(label, ce.getNode(0));
 		    extList.add(ent);
-		    continue;
 		}
+	    }
+	    
+	    // output all the elements
+	    for (i = 0; i != elmList.size(); i++) {
+		CircuitElm ce = getElm(i);
+		if (sel && !ce.isSelected())
+		    continue;
+		if (ce instanceof WireElm || ce instanceof LabeledNodeElm)
+		    continue;
 		if (ce instanceof GraphicElm)
 		    continue;
 		int j;
@@ -5284,13 +5318,12 @@ MouseOutHandler, MouseWheelHandler {
 		    nodeList += "\r";
 		nodeList += ce.getClass().getSimpleName();
 		for (j = 0; j != ce.getPostCount(); j++) {
-		    nodeList += " " + ce.getNode(j);
+		    int n = ce.getNode(j);
+		    Integer nobj = nodeNumberHash.get(n);
+		    int n0 = (nobj == null) ? n : nobj;
+		    nodeList += " " + n0;
 		}
 		
-//		String m = ce.dumpModel();
-//	        if (m != null && !m.isEmpty())
-//	            models += m + "\n";
-	        
 	        // save positions
                 int x1 = ce.x;  int y1 = ce.y;
                 int x2 = ce.x2; int y2 = ce.y2;

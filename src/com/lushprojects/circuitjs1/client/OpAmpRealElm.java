@@ -3,7 +3,7 @@ package com.lushprojects.circuitjs1.client;
 public class OpAmpRealElm extends CompositeElm {
 
     // from https://commons.wikimedia.org/wiki/File:OpAmpTransistorLevel_Colored_Labeled.svg
-    private static String modelString =
+    private static String model741String =
 	    "NTransistorElm 3 8 9\rNTransistorElm 2 8 10\rPTransistorElm 11 12 9\rPTransistorElm 11 13 10\rNTransistorElm 14 12 1\r" + // Q1-5
             "NTransistorElm 14 13 5\rNTransistorElm 12 7 14\rPTransistorElm 8 8 7\rPTransistorElm 8 11 7\rNTransistorElm 17 11 16\r" + // Q6-10
             "NTransistorElm 17 17 4\rPTransistorElm 18 18 7\rPTransistorElm 18 20 7\rNTransistorElm 20 7 25\rNTransistorElm 13 22 24\r" + // Q11-15
@@ -12,10 +12,22 @@ public class OpAmpRealElm extends CompositeElm {
             "ResistorElm 15 6\rResistorElm 6 25\r" + // output resistors
             "ResistorElm 4 1\rResistorElm 4 14\rResistorElm 4 5\rResistorElm 4 16\rResistorElm 4 24\rResistorElm 4 23\rResistorElm 17 18\r" +
             "ResistorElm 22 21\rResistorElm 21 20\r";
-    private static int[] modelExternalNodes = { 2, 3, 6, 7, 4 }; // , 1, 5 };
+    private static int[] model741ExternalNodes = { 2, 3, 6, 7, 4 }; // , 1, 5 };
     // 0 = input -, 1 = input +, 2 = output, 3 = V+, 4 = V-, 5, 6 = offset null
     
-    private static double[] resistances = { 50, 25, 1e3, 50e3, 1e3, 5e3, 50e3, 50, 39e3, 7500, 4500 }; 
+    private static String lm324ModelString =
+	    "TransistorElm 1 2 3\rCurrentElm 4 3\rTransistorElm 2 2 5\rTransistorElm 2 6 5\rCapacitorElm 6 7\rCurrentElm 4 8\rCurrentElm 4 7\rTransistorElm 8 4 9\r" +
+	    "TransistorElm 7 4 10\rTransistorElm 10 4 11\rTransistorElm 11 7 12\rResistorElm 11 12\rTransistorElm 7 5 12\rCurrentElm 12 5\rTransistorElm 6 5 8\r" + 
+	    "ResistorElm 9 5\rTransistorElm 9 7 5\rTransistorElm 13 6 3";
+    private static int[] lm324ExternalNodes = { 1, 13, 12, 4, 5 };
+    private static String lm324ModelDump =
+	    "0 -1 -0 0 10000/0 0.000006/0 1 0 0 100/0 1 0 0 100/0 1e-11 0/0 0.000004/0 0.0001/0 1 0 0 100/0 1 0 0 100/0 1 0 0 100/0 1 0 0 100/0 25/0 -1 0 0 100/0 0.00005/" +
+	    "0 -1 0 0 100/0 10000/0 1 0 0 100/0 -1 0 0 10000";
+    
+    static final int MODEL_741 = 0;
+    static final int MODEL_324 = 1;
+    
+    private static double[] model741resistances = { 50, 25, 1e3, 50e3, 1e3, 5e3, 50e3, 50, 39e3, 7500, 4500 }; 
 
     int modelType;
     final int opheight = 16;
@@ -23,40 +35,54 @@ public class OpAmpRealElm extends CompositeElm {
     double curCounts[];
     double slewRate;
     double currentLimit;
+    double capValue;
     final double defaultCurrentLimit = .0231;
     final int FLAG_SWAP = 2;
 
     public OpAmpRealElm(int xx, int yy) {
-	super(xx, yy, modelString, modelExternalNodes);
+	super(xx, yy); // , model741String, model741ExternalNodes);
 	noDiagonal = true;
 	slewRate = .6;
 	currentLimit = defaultCurrentLimit;
-	modelType = 741;
-	init741();
+	modelType = MODEL_741;
+	initModel();
     }
 
     public OpAmpRealElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
-	super(xa, ya, xb, yb, f, null, modelString, modelExternalNodes);
+	super(xa, ya, xb, yb, f); // , null, model741String, model741ExternalNodes);
 	noDiagonal = true;
 	slewRate = Double.parseDouble(st.nextToken());
-	getCapacitor().voltdiff = Double.parseDouble(st.nextToken());
+	capValue = Double.parseDouble(st.nextToken());
 	currentLimit = defaultCurrentLimit;
-	modelType = 741;
+	modelType = MODEL_741;
 	try {
 	    currentLimit = Double.parseDouble(st.nextToken());
 	    modelType = Integer.parseInt(st.nextToken());
 	} catch (Exception e) {}
-	init741();
+	initModel();
     }
 
+    private void initModel() {
+	flags |= FLAG_ESCAPE;
+	if (modelType == MODEL_741)
+	    init741();
+	else
+	    init324();
+	curCounts = new double[5];
+	setPoints();
+    }
+    
     private void init741() {
+	loadComposite(null, model741String, model741ExternalNodes);
+	
 	// adjust capacitor value to get desired slew rate
 	getCapacitor().capacitance = 30e-12 / (slewRate/.6);
+	getCapacitor().voltdiff = capValue;
 	
 	// set resistor values
 	int i;
 	for (i = 0; i != 11; i++)
-	    ((ResistorElm) compElmList.get(21+i)).resistance = resistances[i];
+	    ((ResistorElm) compElmList.get(21+i)).resistance = model741resistances[i];
 	
 	// adjust output stage resistor values and transistor betas to increase current if desired
 	double currentMult = currentLimit / defaultCurrentLimit;
@@ -65,15 +91,31 @@ public class OpAmpRealElm extends CompositeElm {
 	((TransistorElm) compElmList.get(13)).setBeta(currentMult * 100); // Q14
 	((TransistorElm) compElmList.get(18)).setBeta(currentMult * 100); // Q20
 	
-	curCounts = new double[5];
     }
 
+    private void init324() {
+	StringTokenizer st = new StringTokenizer(lm324ModelDump, "/");
+	loadComposite(st, lm324ModelString, lm324ExternalNodes);
+	
+	// adjust capacitor value to get desired slew rate
+	getCapacitor().capacitance = 10e-12 / (slewRate/.55);
+	getCapacitor().voltdiff = capValue;
+	
+	// adjust output stage resistor values and transistor betas to increase current if desired
+	double currentMult = currentLimit / defaultCurrentLimit;
+	((ResistorElm) compElmList.get(11)).resistance /= currentMult;
+	((TransistorElm) compElmList.get(9)).setBeta(currentMult * 100);
+	((TransistorElm) compElmList.get(10)).setBeta(currentMult * 100);
+	((TransistorElm) compElmList.get(12)).setBeta(currentMult * 100);
+	((TransistorElm) compElmList.get(16)).setBeta(currentMult * 100);
+    }
+    
     public void reset() {
 	super.reset();
 	curCounts = new double[5];
     }
 
-    CapacitorElm getCapacitor() { return ((CapacitorElm) compElmList.get(20)); }
+    CapacitorElm getCapacitor() { return ((CapacitorElm) compElmList.get(modelType == MODEL_741 ? 20 : 4)); }
     
     public String dump() {
 	return super.dumpWithMask(0) + " " + slewRate + " " + getCapacitor().voltdiff + " " + currentLimit + " " + modelType;
@@ -159,7 +201,8 @@ public class OpAmpRealElm extends CompositeElm {
     }
 
     void getInfo(String arr[]) {
-        arr[0] = "op-amp (741)";
+	String type = (modelType == MODEL_741) ? "LM741" : "LM324";
+        arr[0] = "op-amp (" + type + ")";
         arr[1] = "V+ = " + getVoltageText(volts[1]);
         arr[2] = "V- = " + getVoltageText(volts[0]);
         arr[3] = "Vout = " + getVoltageText(volts[2]);
@@ -176,20 +219,34 @@ public class OpAmpRealElm extends CompositeElm {
             ei.checkbox = new Checkbox("Swap Inputs", (flags & FLAG_SWAP) != 0);
             return ei;
         }
+        if (n == 3) {
+            EditInfo ei =  new EditInfo("<a href=\"opampreal.html\">Model</a>", modelType);
+            ei.choice = new Choice();
+            ei.choice.add("LM741");
+            ei.choice.add("LM324");
+            ei.choice.select(modelType);
+            return ei;
+
+        }
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
 	    slewRate = ei.value;
-	    init741();
+	    initModel();
 	}
 	if (n == 1) {
 	    currentLimit = ei.value;
-	    init741();
+	    initModel();
 	}
 	if (n == 2) {
 	    flags = ei.changeFlag(flags, FLAG_SWAP);
 	    setPoints();
+	}
+	if (n == 3) {
+	    modelType = ei.choice.getSelectedIndex();
+	    capValue = 0;
+	    initModel();
 	}
     }
     
