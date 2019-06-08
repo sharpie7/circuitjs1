@@ -4871,7 +4871,7 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new PolarCapacitorElm(x1, y1);
     	if (n=="InductorElm")
     		return (CircuitElm) new InductorElm(x1, y1);
-    	if (n=="DCVoltageElm")
+    	if (n=="DCVoltageElm" || n=="VoltageElm")
     		return (CircuitElm) new DCVoltageElm(x1, y1);
     	if (n=="VarRailElm")
     		return (CircuitElm) new VarRailElm(x1, y1);
@@ -4929,11 +4929,11 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new OpAmpElm(x1, y1);
     	if (n=="OpAmpSwapElm")
     		return (CircuitElm) new OpAmpSwapElm(x1, y1);
-    	if (n=="NMosfetElm")
+    	if (n=="NMosfetElm" || n == "MosfetElm")
     		return (CircuitElm) new NMosfetElm(x1, y1);
     	if (n=="PMosfetElm")
     		return (CircuitElm) new PMosfetElm(x1, y1);
-    	if (n=="NJfetElm")
+    	if (n=="NJfetElm" || n == "JfetElm")
     		return (CircuitElm) new NJfetElm(x1, y1);
     	if (n=="PJfetElm")
     		return (CircuitElm) new PJfetElm(x1, y1);
@@ -5036,7 +5036,7 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
-    	if (n=="NDarlingtonElm")
+    	if (n=="NDarlingtonElm" || n == "DarlingtonElm")
 		return (CircuitElm) new NDarlingtonElm(x1, y1);
     	if (n=="PDarlingtonElm")
 		return (CircuitElm) new PDarlingtonElm(x1, y1);
@@ -5309,7 +5309,8 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		if (sel && !ce.isSelected())
 		    continue;
-		if (ce instanceof WireElm || ce instanceof LabeledNodeElm)
+		// don't need these elements dumped
+		if (ce instanceof WireElm || ce instanceof LabeledNodeElm || ce instanceof ScopeElm)
 		    continue;
 		if (ce instanceof GraphicElm)
 		    continue;
