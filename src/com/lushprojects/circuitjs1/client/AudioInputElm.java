@@ -44,6 +44,7 @@ class AudioInputElm extends RailElm {
     	
     	static int lastSamplingRate;
     	
+    	// cache to preserve audio data when doing cut/paste, or undo/redo
     	static int fileNumCounter = 1;
     	static HashMap<Integer, AudioFileEntry> audioFileMap = new HashMap<Integer, AudioFileEntry>();
     	
@@ -96,7 +97,7 @@ class AudioInputElm extends RailElm {
 	    return fileName == null ? "No file" : fileName;
 	}
 	
-	void setSampleRate(int sr) {
+	void setSamplingRate(int sr) {
 	    samplingRate = sr;
 	}
 	
@@ -129,7 +130,6 @@ class AudioInputElm extends RailElm {
                 file.addChangeHandler(new ChangeHandler() {
 			    public void onChange(ChangeEvent event) {
 				fileName = file.getFilename().replaceAll("^.*\\\\", "").replaceAll("\\.[^.]*$", "");
-//				AudioInputElm.fetchAudio(thisElm, file.getFilename());
 				AudioInputElm.fetchLoadFileData(thisElm, file.getElement());
 			    }
 			  });
@@ -149,31 +149,11 @@ class AudioInputElm extends RailElm {
 		startPosition = ei.value;
 	}
 	
-	static native boolean oldfetchAudio(AudioInputElm elm, String file) /*-{
-        	var context = new (window.AudioContext || window.webkitAudioContext)();
-        	var url = file;
-                var request = new XMLHttpRequest();
-                request.open("GET", url, true);
-                request.responseType = "arraybuffer";
-                var loader = this;
-                request.onload = function() {
-                        // Asynchronously decode the audio file data in request.response
-                        var audioData = request.response;
-
-                        context.decodeAudioData(audioData, function(buffer) {
-                            var data = buffer.getChannelData(0); 
-                            elm.@com.lushprojects.circuitjs1.client.AudioInputElm::gotAudioData(*)(data);
-                        },
-                        function(e){ console.log("Error with decoding audio data" + e.err); });
-                }
-                request.send();
-	}-*/;
-	
-
-	static native String fetchLoadFileData(AudioInputElm elm, Element element) /*-{
-	    var oFiles = element.files;
+	// fetch audio data for a selected file
+	static native String fetchLoadFileData(AudioInputElm elm, Element uploadElement) /*-{
+	    var oFiles = uploadElement.files;
        	    var context = new (window.AudioContext || window.webkitAudioContext)();
-       	    elm.@com.lushprojects.circuitjs1.client.AudioInputElm::setSampleRate(I)(context.sampleRate);
+       	    elm.@com.lushprojects.circuitjs1.client.AudioInputElm::setSamplingRate(I)(context.sampleRate);
 	    if (oFiles.length >= 1) {
                         var reader = new FileReader();
                         reader.onload = function(e) {
@@ -186,16 +166,6 @@ class AudioInputElm extends RailElm {
 
                         reader.readAsArrayBuffer(oFiles[0]);
 	    }
-	}-*/;
-	
-	static native boolean fetchAudio(AudioInputElm elm, String audioData) /*-{
-		var context = new (window.AudioContext || window.webkitAudioContext)();
-		var url = file;
-                context.decodeAudioData(audioData, function(buffer) {
-                    var data = buffer.getChannelData(0); 
-                    	elm.@com.lushprojects.circuitjs1.client.AudioInputElm::gotAudioData(*)(data);
-                	},
-                	function(e){ console.log("Error with decoding audio data" + e.err); });
 	}-*/;
 	
 	void gotAudioData(JsArrayNumber d) {
