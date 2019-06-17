@@ -628,12 +628,12 @@ MouseOutHandler, MouseWheelHandler {
 		readSetup(startCircuitText, true);
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
-			readSetup(null, 0, false, true);
+			readSetup(new byte[] {}, false, true);
 			getSetupList(false);
 			ImportFromDropboxDialog.setSim(this);
 			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
 		} else {
-			readSetup(null, 0, false, true);
+			readSetup(new byte[] {}, false, true);
 			if (stopMessage == null && startCircuit != null) {
 				getSetupList(false);
 				readSetupFile(startCircuit, startLabel, true);
@@ -2986,7 +2986,7 @@ MouseOutHandler, MouseWheelHandler {
 					// processing goes here
 					if (response.getStatusCode()==Response.SC_OK) {
 					String text = response.getText();
-					processSetupList(text.getBytes(), text.length(), openDefault);
+					processSetupList(text.getBytes(), openDefault);
 					// end or processing
 					}
 					else 
@@ -2998,7 +2998,8 @@ MouseOutHandler, MouseWheelHandler {
 		}
     }
 		
-    void processSetupList(byte b[], int len, final boolean openDefault) {
+    void processSetupList(byte b[], final boolean openDefault) {
+	int len = b.length;
     	MenuBar currentMenuBar;
     	MenuBar stack[] = new MenuBar[6];
     	int stackptr = 0;
@@ -3061,7 +3062,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void readSetup(String text, boolean retain, boolean centre) {
-	readSetup(text.getBytes(), text.length(), retain, centre);
+	readSetup(text.getBytes(), retain, centre);
 	titleLabel.setText(null);
     }
 
@@ -3093,7 +3094,7 @@ MouseOutHandler, MouseWheelHandler {
 		    public void onResponseReceived(Request request, Response response) {
 			if (response.getStatusCode()==Response.SC_OK) {
 			    String text = response.getText();
-			    readSetup(text.getBytes(), text.length(), false, centre);
+			    readSetup(text.getBytes(), false, centre);
 			}
 			else 
 			    GWT.log("Bad file server response:"+response.getStatusText() );
@@ -3105,8 +3106,9 @@ MouseOutHandler, MouseWheelHandler {
 
 	}
 
-    void readSetup(byte b[], int len, boolean retain, boolean centre) {
+    void readSetup(byte b[], boolean retain, boolean centre) {
 	int i;
+	int len = b.length;
 	if (!retain) {
 	    clearMouseElm();
 	    for (i = 0; i != elmList.size(); i++) {
