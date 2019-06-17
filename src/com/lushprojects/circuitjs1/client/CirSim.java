@@ -848,6 +848,7 @@ MouseOutHandler, MouseWheelHandler {
     	inputMenuBar.addItem(getClassCheckItem(LS("Add FM Source"), "FMElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Current Source"), "CurrentElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Noise Generator"), "NoiseElm"));
+    	inputMenuBar.addItem(getClassCheckItem(LS("Add Audio Input"), "AudioInputElm"));
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Inputs and Sources")), inputMenuBar);
     	
@@ -3226,6 +3227,8 @@ MouseOutHandler, MouseWheelHandler {
 	needAnalyze();
 	if (centre)
 		centreCircuit();
+	
+	AudioInputElm.clearCache();  // to save memory
     }
 
     // delete sliders for an element
@@ -4847,6 +4850,8 @@ MouseOutHandler, MouseWheelHandler {
     	    return new OpAmpRealElm(x1, y1, x2, y2, f, st);
     	if (tint==410)
     	    return new CustomCompositeElm(x1, y1, x2, y2, f, st);
+    	if (tint==411)
+    	    return new AudioInputElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -5074,6 +5079,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OpAmpRealElm(x1, y1);
     	if (n=="CustomCompositeElm")
 		return (CircuitElm) new CustomCompositeElm(x1, y1);
+    	if (n=="AudioInputElm")
+		return (CircuitElm) new AudioInputElm(x1, y1);
     	return null;
     }
     

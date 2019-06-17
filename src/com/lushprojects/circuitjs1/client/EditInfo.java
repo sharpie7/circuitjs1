@@ -19,6 +19,7 @@
 
 package com.lushprojects.circuitjs1.client;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
@@ -52,7 +53,7 @@ class EditInfo {
 	Checkbox checkbox;
 	Button button;
 	TextArea textArea;
-	Anchor anchor;
+	Widget widget;
 	boolean newDialog;
 	boolean dimensionless;
 	
@@ -60,7 +61,7 @@ class EditInfo {
 	TextBox minBox, maxBox, labelBox;
 	
 	boolean canCreateAdjustable() {
-	    return choice == null && checkbox == null && button == null && textArea == null && anchor == null;
+	    return choice == null && checkbox == null && button == null && textArea == null && widget == null;
 	}
 }
     
