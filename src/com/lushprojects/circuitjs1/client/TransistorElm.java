@@ -20,6 +20,9 @@
 package com.lushprojects.circuitjs1.client;
 
     class TransistorElm extends CircuitElm {
+	// node 0 = base
+	// node 1 = collector
+	// node 2 = emitter
 	int pnp;
 	double beta;
 	double fgain, inv_fgain;
@@ -197,6 +200,7 @@ package com.lushprojects.circuitjs1.client;
 		    gmin = .1;
 //		sim.console("gmin " + gmin + " vbc " + vbc + " vbe " + vbe);
 	    }
+	    
 	    //System.out.print("T " + vbc + " " + vbe + "\n");
 	    vbc = pnp*limitStep(pnp*vbc, pnp*lastvbc);
 	    vbe = pnp*limitStep(pnp*vbe, pnp*lastvbe);
@@ -219,28 +223,25 @@ package com.lushprojects.circuitjs1.client;
 	    double gce = -gee*fgain;
 	    double gcc = -gec*inv_rgain;
 
-	    /*System.out.print("gee = " + gee + "\n");
-	    System.out.print("gec = " + gec + "\n");
-	    System.out.print("gce = " + gce + "\n");
-	    System.out.print("gcc = " + gcc + "\n");
-	    System.out.print("gce+gcc = " + (gce+gcc) + "\n");
-	    System.out.print("gee+gec = " + (gee+gec) + "\n");*/
+	    // add minimum conductance (gmin) between b,e and b,c
+	    gcc -= gmin;
+	    gee -= gmin;
 	    
 	    // stamps from page 302 of Pillage.  Node 0 is the base,
-	    // node 1 the collector, node 2 the emitter.  Also stamp
-	    // minimum conductance (gmin) between b,e and b,c
-	    sim.stampMatrix(nodes[0], nodes[0], -gee-gec-gce-gcc + gmin*2);
-	    sim.stampMatrix(nodes[0], nodes[1], gec+gcc - gmin);
-	    sim.stampMatrix(nodes[0], nodes[2], gee+gce - gmin);
-	    sim.stampMatrix(nodes[1], nodes[0], gce+gcc - gmin);
-	    sim.stampMatrix(nodes[1], nodes[1], -gcc + gmin);
+	    // node 1 the collector, node 2 the emitter.
+	    sim.stampMatrix(nodes[0], nodes[0], -gee-gec-gce-gcc);
+	    sim.stampMatrix(nodes[0], nodes[1], gec+gcc);
+	    sim.stampMatrix(nodes[0], nodes[2], gee+gce);
+	    sim.stampMatrix(nodes[1], nodes[0], gce+gcc);
+	    sim.stampMatrix(nodes[1], nodes[1], -gcc);
 	    sim.stampMatrix(nodes[1], nodes[2], -gce);
-	    sim.stampMatrix(nodes[2], nodes[0], gee+gec - gmin);
+	    sim.stampMatrix(nodes[2], nodes[0], gee+gec);
 	    sim.stampMatrix(nodes[2], nodes[1], -gec);
-	    sim.stampMatrix(nodes[2], nodes[2], -gee + gmin);
+	    sim.stampMatrix(nodes[2], nodes[2], -gee);
 
 	    // we are solving for v(k+1), not delta v, so we use formula
-	    // 10.5.13, multiplying J by v(k)
+	    // 10.5.13 (from Pillage), multiplying J by v(k)
+	    
 	    sim.stampRightSide(nodes[0], -ib - (gec+gcc)*vbc - (gee+gce)*vbe);
 	    sim.stampRightSide(nodes[1], -ic + gce*vbe + gcc*vbc);
 	    sim.stampRightSide(nodes[2], -ie + gee*vbe + gec*vbc);
@@ -255,6 +256,7 @@ package com.lushprojects.circuitjs1.client;
 	    case Scope.VAL_VBE: t = "Vbe"; break;
 	    case Scope.VAL_VBC: t = "Vbc"; break;
 	    case Scope.VAL_VCE: t = "Vce"; break;
+	    case Scope.VAL_POWER: t = "P"; break;
 	    }
 	    return sim.LS("transistor") + ", " + t;
 	}
@@ -285,6 +287,7 @@ package com.lushprojects.circuitjs1.client;
 	    case Scope.VAL_VBE: return volts[0]-volts[2];
 	    case Scope.VAL_VBC: return volts[0]-volts[1];
 	    case Scope.VAL_VCE: return volts[1]-volts[2];
+	    case Scope.VAL_POWER: return getPower(); 
 	    }
 	    return 0;
 	}
@@ -293,6 +296,7 @@ package com.lushprojects.circuitjs1.client;
 	    switch (x) {
 	    case Scope.VAL_IB: case Scope.VAL_IC:
 	    case Scope.VAL_IE: return Scope.UNITS_A;
+	    case Scope.VAL_POWER: return Scope.UNITS_W;
 	    default: return Scope.UNITS_V;
 	    }
 	}
@@ -321,6 +325,11 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
+	void setBeta(double b) {
+	    beta = b;
+	    setup();
+	}
+	
         void stepFinished() {
             // stop for huge currents that make simulator act weird
             if (Math.abs(ic) > 1e12 || Math.abs(ib) > 1e12)
@@ -333,14 +342,6 @@ package com.lushprojects.circuitjs1.client;
 	    if (n==0)
 		return -ib;
 	    if (n==1)
-		return -ic;
-	    return -ie;
-	}
-	
-	double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x && ya == y)
-		return -ib;
-	    if (xa == coll[0].x && ya == coll[0].y)
 		return -ic;
 	    return -ie;
 	}

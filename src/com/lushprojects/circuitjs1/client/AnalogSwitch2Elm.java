@@ -107,11 +107,11 @@ class AnalogSwitch2Elm extends AnalogSwitchElm {
 	arr[1] = "I = " + getCurrentDText(getCurrent());
     }
     
-    double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == x && ya == y)
+    double getCurrentIntoNode(int n) {
+	if (n == 0)
 	    return -current;
 	int position = (open) ? 1 : 0;
-	if (xa == swposts[position].x && ya == swposts[position].y)
+	if (n == position+1)
 	    return current;
 	return 0;
     }	

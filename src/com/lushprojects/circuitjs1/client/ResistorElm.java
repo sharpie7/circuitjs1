@@ -81,7 +81,7 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    g.context.restore();
 	    if (sim.showValuesCheckItem.getState()) {
 		String s = getShortUnitText(resistance, "");
-		drawValues(g, s, hs);
+		drawValues(g, s, hs+2);
 	    }
 	    doDots(g);
 	    drawPosts(g);

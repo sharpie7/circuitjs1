@@ -104,7 +104,7 @@ public class DataRecorderElm extends CircuitElm {
                 String fname = "data-"+ dtf.format(date) + ".circuitjs.txt";
                 Anchor a=new Anchor(fname, url);
                 a.getElement().setAttribute("Download", fname);
-                ei.anchor = a;
+                ei.widget = a;
                 return ei;
             }
 	    return null;

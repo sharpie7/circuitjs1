@@ -56,6 +56,4 @@ package com.lushprojects.circuitjs1.client;
 	int getShortcut() { return 'g'; }
 	
 	@Override double getCurrentIntoNode(int n) { return -current; }
-	
-	@Override double getCurrentIntoPoint(int xa, int ya) { return -current; }
     }

@@ -22,6 +22,9 @@ package com.lushprojects.circuitjs1.client;
 import java.util.HashMap;
 
 class LabeledNodeElm extends CircuitElm {
+    final int FLAG_ESCAPE = 4;
+    final int FLAG_INTERNAL = 1;
+    
     public LabeledNodeElm(int xx, int yy) {
 	super(xx, yy);
 	text = "label";
@@ -30,16 +33,24 @@ class LabeledNodeElm extends CircuitElm {
 	    StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
 	text = st.nextToken();
-	while (st.hasMoreTokens())
-	    text += ' ' + st.nextToken();
+	if ((flags & FLAG_ESCAPE) == 0) {
+	    // old-style dump before escape/unescape
+	    while (st.hasMoreTokens())
+		text += ' ' + st.nextToken();
+	} else {
+	    // new-style dump
+	    text = CustomLogicModel.unescape(text); 
+	}
     }
     String dump() {
-	return super.dump() + " " + text;
+	flags |= FLAG_ESCAPE;
+	return super.dump() + " " + CustomLogicModel.escape(text);
     }
 
     String text;
     static HashMap<String,Integer> nodeList;
     int nodeNumber;
+    boolean isInternal() { return (flags & FLAG_INTERNAL) != 0; }
 
     public static native void console(String text)
     /*-{
@@ -106,7 +117,7 @@ class LabeledNodeElm extends CircuitElm {
 	setBbox(point1, ps2, circleSize);
 	drawPosts(g);
     }
-    double getCurrentIntoPoint(int xa, int ya) { return -current; }
+    double getCurrentIntoNode(int n) { return -current; }
     void setCurrent(int x, double c) { current = -c; }
     void stamp() {
 	sim.stampVoltageSource(nodeNumber, nodes[0], voltSource, 0);
@@ -125,11 +136,17 @@ class LabeledNodeElm extends CircuitElm {
 	    ei.text = text;
 	    return ei;
 	}
+        if (n == 1) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Internal Node", isInternal());
+            return ei;
+        }
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
-	if (n == 0) {
+	if (n == 0)
 	    text = ei.textf.getText();
-	}
+	if (n == 1)
+	    flags = ei.changeFlag(flags, FLAG_INTERNAL);
     }
 }

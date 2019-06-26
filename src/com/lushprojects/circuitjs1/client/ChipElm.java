@@ -84,7 +84,7 @@ package com.lushprojects.circuitjs1.client;
 		    g.setColor(lightGrayColor);
 		    drawThickCircle(g, p.bubbleX, p.bubbleY, 3);
 		}
-		g.setColor(whiteColor);
+		g.setColor(p.selected ? selectColor : whiteColor);
 		int fsz = 10*csize;
 		while (true) {
 		    int sw=(int)g.context.measureText(p.text).getWidth();
@@ -151,6 +151,45 @@ package com.lushprojects.circuitjs1.client;
 		}
 	    }
 	}
+	
+	// see if we can move pin to position xp, yp, and return the new position
+	boolean getPinPos(int xp, int yp, int pin, int pos[]) {
+	    int x0 = x+cspc2; int y0 = y;
+	    int xr = x0-cspc;
+	    int yr = y0-cspc;
+	    double xd = (xp-xr)/(double)cspc2 - .5;
+	    double yd = (yp-yr)/(double)cspc2 - .5;
+	    if (xd < .25 && yd > 0 && yd < sizeY-1) {
+		pos[0] = (int) Math.max(Math.round(yd), 0);
+		pos[1] = SIDE_W;
+	    } else if (xd > sizeX-.75) {
+		pos[0] = (int) Math.min(Math.round(yd), sizeY-1);
+		pos[1] = SIDE_E;
+	    } else if (yd < .25) {
+		pos[0] = (int) Math.max(Math.round(xd), 0);
+		pos[1] = SIDE_N;
+	    } else if (yd > sizeY-.75) {
+		pos[0] = (int) Math.min(Math.round(xd), sizeX-1);
+		pos[1] = SIDE_S;
+	    } else
+		return false;
+	    
+	    if (pos[0] < 0)
+		return false;
+	    if ((pos[1] == SIDE_N || pos[1] == SIDE_S) && pos[0] >= sizeX)
+		return false;
+	    if ((pos[1] == SIDE_W || pos[1] == SIDE_E) && pos[0] >= sizeY)
+		return false;
+		
+	    for (int i = 0; i != getPostCount(); i++) {
+		if (pin == i)
+		    continue;
+		if (pins[i].overlaps(pos[0], pos[1]))
+		    return false;
+	    }
+	    return true;
+	}
+	
 	Point getPost(int n) {
 	    return pins[n].post;
 	}
@@ -243,12 +282,8 @@ package com.lushprojects.circuitjs1.client;
 	    return pins[n1].output;
 	}
 	
-	double getCurrentIntoPoint(int xa, int ya) {
-	    int i;
-	    for (i = 0; i != getPostCount(); i++)
-		if (pins[i].post.x == xa && pins[i].post.y == ya)
-		    return pins[i].current;
-	    return 0;
+	double getCurrentIntoNode(int n) {
+	    return pins[n].current;
 	}
 	
 	public EditInfo getEditInfo(int n) {
@@ -281,10 +316,11 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 
-	final int SIDE_N = 0;
-	final int SIDE_S = 1;
-	final int SIDE_W = 2;
-	final int SIDE_E = 3;
+	static final int SIDE_N = 0;
+	static final int SIDE_S = 1;
+	static final int SIDE_W = 2;
+	static final int SIDE_E = 3;
+	
 	class Pin {
 	    Pin(int p, int s, String t) {
 		pos = p; side = s; text = t;
@@ -293,7 +329,7 @@ package com.lushprojects.circuitjs1.client;
 	    Point textloc;
 	    int pos, side, voltSource, bubbleX, bubbleY;
 	    String text;
-	    boolean lineOver, bubble, clock, output, value, state;
+	    boolean lineOver, bubble, clock, output, value, state, selected;
 	    double curcount, current;
 	    void setPoint(int px, int py, int dx, int dy, int dax, int day,
 			  int sx, int sy) {
@@ -328,6 +364,26 @@ package com.lushprojects.circuitjs1.client;
 		    clockPointsX[2] = xa+dax*cspc+dx*cspc/2;
 		    clockPointsY[2] = ya+day*cspc+dy*cspc/2;
 		}
+	    }
+	    
+	    // convert position, side to a grid position (0=top left) so we can detect overlaps
+	    int toGrid(int p, int s) {
+		if (s == SIDE_N)
+		    return p;
+		if (s == SIDE_S)
+		    return p+sizeX*(sizeY-1);
+		if (s == SIDE_W)
+		    return p*sizeX;
+		if (s == SIDE_E)
+		    return p*sizeX+sizeX-1;
+		return -1;
+	    }
+	    
+	    boolean overlaps(int p, int s) {
+		int g = toGrid(p, s);
+		if (g == -1)
+		    return true;
+		return toGrid(pos, side) == g;
 	    }
 	}
     }

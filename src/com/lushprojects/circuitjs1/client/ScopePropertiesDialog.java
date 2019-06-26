@@ -81,8 +81,6 @@ Label scopeSpeedLabel;
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, powerBox = new ScopeCheckBox(CirSim.LS("Show Power Consumed"), "showpower"));
-		    powerBox.addValueChangeHandler(this); 
 		} else {
 		    grid = new Grid(9, 3);
 		    addLabelToGrid(grid,"Plots");
@@ -99,6 +97,8 @@ Label scopeSpeedLabel;
 		    addItemToGrid(grid, vceBox = new ScopeCheckBox(CirSim.LS("Show Vce"), "showvce"));
 		    vceBox.addValueChangeHandler(this);
 		}
+		addItemToGrid(grid, powerBox = new ScopeCheckBox(CirSim.LS("Show Power Consumed"), "showpower"));
+		powerBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, resistanceBox = new ScopeCheckBox(CirSim.LS("Show Resistance"), "showresistance"));
 		resistanceBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(CirSim.LS("Show Spectrum"), "showfft"));

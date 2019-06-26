@@ -1,0 +1,19 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"><style>#header + #content > #left > #rlblock_left,
+#content > #right > .dose > .dosesingle,
+#content > #center > .dose > .dosesingle
+{display:none !important;}</style><style>img[src="http://s05.flagcounter.com/count/pTvk/bg=FFFFFF/txt=000000/border=CCCCCC/columns=6/maxflags=36/viewers=0/labels=0/"]
+{display:none !important;}</style></head><body><h1>Real Op-Amps</h1>
+The ideal op-amp element uses an ideal approximation to op-amp behavior.  It has infinite <a href="https://en.wikipedia.org/wiki/Slew_rate">slew rate</a>
+and output current.
+<p>
+The real op-amp element uses a subcircuit to emulate a real op-amp implementation with finite slew rate and output current.  Presently,
+the two implementation options are LM741 and LM324.
+<p>
+You can also modify the slew rate or output current, which will modify the circuit to change these values from the default.
+<p>
+These subcircuits are complicated, so you may run problems with convergence, especially if you increase the slew rate.  Try decreasing
+the time step size if this happens.
+<p>
+The LM324 can act very glitchy as well if the slew rate is increased.  Decreasing the time step size proportionately should fix this.
+</body></html>

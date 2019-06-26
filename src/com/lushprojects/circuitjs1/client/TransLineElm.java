@@ -226,12 +226,12 @@ class TransLineElm extends CircuitElm {
 	}
     }
     
-    double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == posts[0].x && ya== posts[0].y)
+    double getCurrentIntoNode(int n) {
+	if (n == 0)
 	    return current1;
-	if (xa == posts[2].x && ya == posts[2].y)
+	if (n == 2)
 	    return -current1;
-	if (xa == posts[3].x && ya == posts[3].y)
+	if (n == 3)
 	    return -current2;
 	return current2;
     }

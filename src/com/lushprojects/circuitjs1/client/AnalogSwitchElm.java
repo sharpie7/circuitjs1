@@ -154,13 +154,5 @@ class AnalogSwitchElm extends CircuitElm {
 	    return -current;
 	return current;
     }  
-    
-    double getCurrentIntoPoint(int xa, int ya) {
-	if (xa==point3.x && ya==point3.y)
-	    return 0;
-	if (xa == x && ya == y)
-	    return -current;
-	return current;
-    }
 }
 

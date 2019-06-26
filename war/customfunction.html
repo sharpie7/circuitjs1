@@ -5,9 +5,9 @@
 {display:none !important;}</style><style>img[src="http://s05.flagcounter.com/count/pTvk/bg=FFFFFF/txt=000000/border=CCCCCC/columns=6/maxflags=36/viewers=0/labels=0/"]
 {display:none !important;}</style></head><body><h1>Controlled Source Output Function</h1>
 The controlled source elements take an output function parameter.  The output function takes the inputs, if any,
-as parameters (which will be <tt>a</tt>, <tt>b</tt>, etc. for a voltage-controlled sourse, or <tt>i</tt> for a current-controlled source).  You
+as parameters (which will be <tt>a</tt>, <tt>b</tt>, etc. for a voltage-controlled source, or <tt>i</tt> for a current-controlled source).  You
 can also specify <tt>t</tt> for
-the current time, <tt>pi</tt> for &pi;, and <tt>e</tt> for <i>e</i> (unless there is an input <tt>e</tt>).
+the current simulation time, <tt>pi</tt> for &pi;, and <tt>e</tt> for <i>e</i> (unless there is an input <tt>e</tt>).
 <p>
 The function can use arithmetic like <tt>a+b</tt>, <tt>a*b</tt>, <tt>a^2/(b-1)</tt>, etc.  It can also use functions like
 <tt>sin(x)</tt>,
@@ -30,6 +30,8 @@ The <tt>step(x)</tt> function is 0 if <tt>x</tt> < 0, and 1 otherwise.
 The <tt>step(x,y)</tt> function is 1 if 0 < <tt>x</tt> < <tt>y</tt>, and 0 otherwise.
 </p><p>
 The <tt>clamp(x,lo,hi)</tt> function is equal to <tt>min(max(x, lo), hi)</tt>.
+</p><p>
+The <tt>select(x,a,b)</tt> function is equal to <tt>b</tt> if <tt>x</tt> is greater than zero, and <tt>a</tt> otherwise.
 </p><p>
 The <tt>pwl(x,x0,y0,x1,y1,x2,y2,...,xn,yn)</tt> function is short for piece-wise linear, and works as follows.  If <tt>x < x0</tt>, then
 the result is <tt>y0</tt>.  If <tt>x0 < x < x1</tt>, then the result is a linear interpolation between <tt>y0</tt> and <tt>y1</tt>.

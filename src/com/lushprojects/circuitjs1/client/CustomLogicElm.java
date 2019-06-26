@@ -1,6 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.ChipElm.Pin;
 
 public class CustomLogicElm extends ChipElm {
     String modelName;
@@ -9,6 +10,7 @@ public class CustomLogicElm extends ChipElm {
     CustomLogicModel model;
     boolean lastValues[];
     boolean patternValues[];
+    boolean highImpedance[];
     static String lastModelName = "default";
     
     public CustomLogicElm(int xx, int yy) {
@@ -88,6 +90,7 @@ public class CustomLogicElm extends ChipElm {
 	}
 	lastValues = new boolean[postCount];
 	patternValues = new boolean[26];
+	highImpedance = new boolean[postCount];
     }
 
     void fixPinName(Pin p) {
@@ -106,6 +109,54 @@ public class CustomLogicElm extends ChipElm {
     @Override
     int getVoltageSourceCount() {
 	return outputCount;
+    }
+
+    // keep track of whether we have any tri-state outputs.  if not, then we can simplify things quite a bit, making the simulation faster
+    boolean hasTriState() { return model == null ? false : model.triState; }
+    
+    boolean nonLinear() { return hasTriState(); }
+    
+    int getInternalNodeCount() {
+	// for tri-state outputs, we need an internal node to connect a voltage source to, and then connect a resistor from there to the output.
+	// we do this for all outputs if any of them are tri-state
+	return (hasTriState()) ? outputCount : 0; 
+    }
+    
+    void stamp() {
+	int i;
+	int add = (hasTriState()) ? outputCount : 0;
+	for (i = 0; i != getPostCount(); i++) {
+	    Pin p = pins[i];
+	    if (p.output) {
+		sim.stampVoltageSource(0, nodes[i+add], p.voltSource);
+		if (hasTriState()) {
+		    sim.stampNonLinear(nodes[i+add]);
+		    sim.stampNonLinear(nodes[i]);
+		}
+	    }
+	}
+    }
+    
+    void doStep() {
+	int i;
+	for (i = 0; i != getPostCount(); i++) {
+	    Pin p = pins[i];
+	    if (!p.output)
+		p.value = volts[i] > 2.5;
+	}
+	execute();
+	int add = (hasTriState()) ? outputCount : 0;
+	for (i = 0; i != getPostCount(); i++) {
+	    Pin p = pins[i];
+	    if (p.output) {
+		// connect output voltage source (to internal node if tri-state, otherwise connect directly to output)
+		sim.updateVoltageSource(0, nodes[i+add], p.voltSource, p.value ? 5 : 0);
+		
+		// add resistor for tri-state if necessary
+		if (hasTriState())
+		    sim.stampResistor(nodes[i+add], nodes[i], highImpedance[i] ? 1e8 : 1e-3);
+	    }
+	}
     }
 
     void execute() {
@@ -160,8 +211,11 @@ public class CustomLogicElm extends ChipElm {
 	    String rr = model.rulesRight.get(i);
 	    for (j = 0; j != rr.length(); j++) {
 		char x = rr.charAt(j);
+		highImpedance[j+inputCount] = false;
 		if (x >= 'a' && x <= 'z')
 		    pins[j+inputCount].value = patternValues[x-'a'];
+		else if (x == '_')
+		    highImpedance[j+inputCount] = true;
 		else
 		    pins[j+inputCount].value = (x == '1');
 	    }

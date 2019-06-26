@@ -146,15 +146,15 @@ package com.lushprojects.circuitjs1.client;
 	    //   di3/dt = a7 v1 + a8 v2 + a9 v3
 	    // integrate di1/dt using trapezoidal approx and we get:
 	    //   i1(t2) = i1(t1) + dt/2 (i1(t1) + i1(t2))
-	    //          = i1(t1) + a1 dt/2 v1(t1)+a2 dt/2 v2(t1)+a3 dt/2 v3(t3) +
-	    //                     a1 dt/2 v1(t2)+a2 dt/2 v2(t2)+a3 dt/2 v3(t3)
+	    //          = i1(t1) + a1 dt/2 v1(t1)+a2 dt/2 v2(t1)+a3 dt/2 v3(t1) +
+	    //                     a1 dt/2 v1(t2)+a2 dt/2 v2(t2)+a3 dt/2 v3(t2)
 	    // the norton equivalent of this for i1 is:
 	    //  a. current source, I = i1(t1) + a1 dt/2 v1(t1) + a2 dt/2 v2(t1)
 	    //                                + a3 dt/2 v3(t1)
 	    //  b. resistor, G = a1 dt/2
 	    //  c. current source controlled by voltage v2, G = a2 dt/2
 	    //  d. current source controlled by voltage v3, G = a3 dt/2
-	    // and similarly for i2
+	    // and similarly for i2, i3
 	    // 
 	    // first winding goes from node 0 to 1, second is from 2 to 3 to 4
 	    double l1 = inductance;
@@ -231,14 +231,14 @@ package com.lushprojects.circuitjs1.client;
 	    //arr[5] = "I2 = " + getCurrentText(current2);
 	    arr[4] = "Vd2 = " + getVoltageText(volts[1]-volts[3]);
 	}
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == ptEnds[0].x && ya == ptEnds[0].y)
+	@Override double getCurrentIntoNode(int n) {
+	    if (n == 0)
 		return -current[0];
-	    if (xa == ptEnds[1].x && ya == ptEnds[1].y)
+	    if (n == 1)
 		return current[0];
-	    if (xa == ptEnds[2].x && ya == ptEnds[2].y)
+	    if (n == 2)
 		return -current[1];
-	    if (xa == ptEnds[3].x && ya == ptEnds[3].y)
+	    if (n == 3)
 		return current[3];
 	    return current[2];
 	}

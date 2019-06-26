@@ -46,7 +46,16 @@ class RailElm extends VoltageElm {
 	lead1 = interpPoint(point1, point2, 1-circleSize/dn);
     }
     
+    String getRailText() {
+	return null;
+    }
+    
     void draw(Graphics g) {
+	String rt = getRailText();
+        double w = rt == null ? circleSize : g.context.measureText(rt).getWidth()/2;
+        if (w > dn*.8)
+            w = dn*.8;
+	lead1 = interpPoint(point1, point2, 1-w/dn);
 	setBbox(point1, point2, circleSize);
 	setVoltageColor(g, volts[0]);
 	drawThickLine(g, point1, lead1);
