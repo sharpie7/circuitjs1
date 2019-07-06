@@ -5251,7 +5251,10 @@ MouseOutHandler, MouseWheelHandler {
 		for (i = 0; i != elmList.size(); i++) {
 		    getElm(i).draw(g);
 		}
-		
+		for (i = 0; i != postDrawList.size(); i++) {
+		    CircuitElm.drawPost(g, postDrawList.get(i));
+		}
+
 		// restore everything
 		printableCheckItem.setState(p);
 		dotsCheckItem.setState(c);
