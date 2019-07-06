@@ -122,7 +122,7 @@ public class CustomCompositeElm extends CompositeElm {
     
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
-	    EditInfo ei = new EditInfo("<a href=\"subcircuits.html\">Model Name</a>", 0, -1, -1);
+	    EditInfo ei = new EditInfo("<a href=\"subcircuits.html\" target=\"_blank\">Model Name</a>", 0, -1, -1);
             models = CustomCompositeModel.getModelList();
             ei.choice = new Choice();
             int i;
