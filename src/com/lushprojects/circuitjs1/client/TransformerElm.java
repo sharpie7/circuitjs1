@@ -205,14 +205,10 @@ package com.lushprojects.circuitjs1.client;
 	    current[0] = voltdiff1*a1 + voltdiff2*a2 + curSourceValue1;
 	    current[1] = voltdiff1*a3 + voltdiff2*a4 + curSourceValue2;
 	}
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == ptEnds[0].x && ya == ptEnds[0].y)
-		return -current[0];
-	    if (xa == ptEnds[2].x && ya == ptEnds[2].y)
-		return current[0];
-	    if (xa == ptEnds[1].x && ya == ptEnds[1].y)
-		return -current[1];
-	    return current[1];
+	@Override double getCurrentIntoNode(int n) {
+	    if (n < 2)
+		return -current[n];
+	    return current[n-2];
 	}
 	void getInfo(String arr[]) {
 	    arr[0] = "transformer";

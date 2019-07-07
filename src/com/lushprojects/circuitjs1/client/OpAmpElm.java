@@ -207,11 +207,4 @@ package com.lushprojects.circuitjs1.client;
 		return -current;
 	   return 0;
 	}
-	
-	
-	@Override double getCurrentIntoPoint(int xa, int ya) { 
-	    if (xa == x2 && ya == y2)
-		return -current;
-	    return 0;
-	}
     }

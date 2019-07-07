@@ -25,7 +25,7 @@ public class OptocouplerElm extends CompositeElm {
     }
 
     public String dump() {
-	return dumpElements(0);
+	return dumpWithMask(0);
     }
     
     private void initOptocoupler() {

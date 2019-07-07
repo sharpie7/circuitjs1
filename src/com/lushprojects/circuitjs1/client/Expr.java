@@ -175,6 +175,11 @@ class ExprParser {
 	int c = text.charAt(i);
 	if ((c >= '0' && c <= '9') || c == '.') {
 	    for (i = pos; i != tlen; i++) {
+		if (text.charAt(i) == 'e' || text.charAt(i) == 'E') {
+		    i++;
+		    if (i < tlen && (text.charAt(i) == '+' || text.charAt(i) == '-'))
+			i++;
+		}
 		if (!((text.charAt(i) >= '0' && text.charAt(i) <= '9') ||
 		      text.charAt(i) == '.'))
 		    break;

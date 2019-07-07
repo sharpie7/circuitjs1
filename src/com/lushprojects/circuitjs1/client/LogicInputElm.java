@@ -128,7 +128,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getShortcut() { return 'i'; }
 	
-	double getCurrentIntoPoint(int xa, int ya) {
+	double getCurrentIntoNode(int n) {
 	    return -current;
 	}
     }

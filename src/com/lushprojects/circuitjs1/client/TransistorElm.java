@@ -325,7 +325,7 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
-	void setBeta(float b) {
+	void setBeta(double b) {
 	    beta = b;
 	    setup();
 	}
@@ -342,14 +342,6 @@ package com.lushprojects.circuitjs1.client;
 	    if (n==0)
 		return -ib;
 	    if (n==1)
-		return -ic;
-	    return -ie;
-	}
-	
-	double getCurrentIntoPoint(int xa, int ya) {
-	    if (xa == x && ya == y)
-		return -ib;
-	    if (xa == coll[0].x && ya == coll[0].y)
 		return -ic;
 	    return -ie;
 	}

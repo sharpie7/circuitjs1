@@ -275,13 +275,15 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	current2 = (volts[1]-volts[2])/resistance2;
 	current3 = -current1-current2;
     }
-    @Override double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == point1.x && ya == point1.y)
+    
+    @Override double getCurrentIntoNode(int n) {
+	if (n == 0)
 	    return -current1;
-	if (xa == point2.x && ya == point2.y)
+	if (n == 1)
 	    return -current2;
 	return -current3;
     }
+    
     void stamp() {
 	resistance1 = maxResistance*position;
 	resistance2 = maxResistance*(1-position);

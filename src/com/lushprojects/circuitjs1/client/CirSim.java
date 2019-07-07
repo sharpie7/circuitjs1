@@ -70,6 +70,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -376,6 +377,7 @@ MouseOutHandler, MouseWheelHandler {
 	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
 	  fileMenuBar.addItem(new MenuItem(LS("Export As Image..."), new MyCommand("file","exportasimage")));
+	  fileMenuBar.addItem(new MenuItem(LS("Create Subcircuit..."), new MyCommand("file","createsubcircuit")));
 	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
 	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
@@ -626,12 +628,12 @@ MouseOutHandler, MouseWheelHandler {
 		readSetup(startCircuitText, true);
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
-			readSetup(null, 0, false, true);
+			readSetup(new byte[] {}, false, true);
 			getSetupList(false);
 			ImportFromDropboxDialog.setSim(this);
 			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
 		} else {
-			readSetup(null, 0, false, true);
+			readSetup(new byte[] {}, false, true);
 			if (stopMessage == null && startCircuit != null) {
 				getSetupList(false);
 				readSetupFile(startCircuit, startLabel, true);
@@ -846,6 +848,7 @@ MouseOutHandler, MouseWheelHandler {
     	inputMenuBar.addItem(getClassCheckItem(LS("Add FM Source"), "FMElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Current Source"), "CurrentElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Noise Generator"), "NoiseElm"));
+    	inputMenuBar.addItem(getClassCheckItem(LS("Add Audio Input"), "AudioInputElm"));
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Inputs and Sources")), inputMenuBar);
     	
@@ -888,8 +891,9 @@ MouseOutHandler, MouseWheelHandler {
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (- on top)"), "OpAmpElm"));
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (+ on top)"), "OpAmpSwapElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (ideal, - on top)"), "OpAmpElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (ideal, + on top)"), "OpAmpSwapElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Op Amp (real)"), "OpAmpRealElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Analog Switch (SPST)"), "AnalogSwitchElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Analog Switch (SPDT)"), "AnalogSwitch2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Tristate Buffer"), "TriStateElm"));
@@ -904,6 +908,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Voltage Source"), "CCVSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source"), "CCCSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Optocoupler"), "OptocouplerElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
     	MenuBar gateMenuBar = new MenuBar(true);
@@ -934,7 +939,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
-    	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm")); // don't change this, it will break people's saved shortcuts
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Digital Chips")), chipMenuBar);
     	
     	MenuBar achipMenuBar = new MenuBar(true);
@@ -1987,6 +1992,7 @@ MouseOutHandler, MouseWheelHandler {
 	    RowInfo re = circuitRowInfo[i];
 	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
 			       re.dropRow);*/
+//	    if (qp != -100) continue;   // uncomment to disable matrix simplification
 	    if (re.lsChanges || re.dropRow || re.rsChanges)
 		continue;
 	    double rsadd = 0;
@@ -2014,6 +2020,7 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    if (j == matrixSize) {
 		if (qp == -1) {
+		    // probably a singular matrix, try disabling matrix simplification above to check this
 		    stop("Matrix error", null);
 		    return false;
 		}
@@ -2540,7 +2547,8 @@ MouseOutHandler, MouseWheelHandler {
 	    Point p = wi.wire.getPost(wi.post);
 	    for (j = 0; j != wi.neighbors.size(); j++) {
 		CircuitElm ce = wi.neighbors.get(j);
-		cur += ce.getCurrentIntoPoint(p.x, p.y);
+		int n = ce.getNodeAtPoint(p.x, p.y);
+		cur += ce.getCurrentIntoNode(n);
 	    }
 	    if (wi.post == 0)
 		wi.wire.setCurrent(-1, cur);
@@ -2594,6 +2602,8 @@ MouseOutHandler, MouseWheelHandler {
     		doExportAsText();
     	if (item=="exportasimage")
 		doExportAsImage();
+    	if (item=="createsubcircuit")
+		doCreateSubcircuit();
     	if (item=="dcanalysis")
     	    	doDCAnalysis();
     	if (item=="print")
@@ -2907,6 +2917,16 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing.show();
     }
     
+    void doCreateSubcircuit()
+    {
+    	EditCompositeModelDialog dlg = new EditCompositeModelDialog();
+    	if (!dlg.createModel())
+    	    return;
+    	dlg.createDialog();
+    	dialogShowing = dlg;
+    	dialogShowing.show();
+    }
+    
     void doExportAsLocalFile() {
     	String dump = dumpCircuit();
     	dialogShowing = new ExportAsLocalFileDialog(dump);
@@ -2917,6 +2937,7 @@ MouseOutHandler, MouseWheelHandler {
     String dumpCircuit() {
 	int i;
 	CustomLogicModel.clearDumpedFlags();
+	CustomCompositeModel.clearDumpedFlags();
 	DiodeModel.clearDumpedFlags();
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
@@ -2966,7 +2987,7 @@ MouseOutHandler, MouseWheelHandler {
 					// processing goes here
 					if (response.getStatusCode()==Response.SC_OK) {
 					String text = response.getText();
-					processSetupList(text.getBytes(), text.length(), openDefault);
+					processSetupList(text.getBytes(), openDefault);
 					// end or processing
 					}
 					else 
@@ -2978,7 +2999,8 @@ MouseOutHandler, MouseWheelHandler {
 		}
     }
 		
-    void processSetupList(byte b[], int len, final boolean openDefault) {
+    void processSetupList(byte b[], final boolean openDefault) {
+	int len = b.length;
     	MenuBar currentMenuBar;
     	MenuBar stack[] = new MenuBar[6];
     	int stackptr = 0;
@@ -3041,11 +3063,16 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void readSetup(String text, boolean retain, boolean centre) {
-	readSetup(text.getBytes(), text.length(), retain, centre);
+	readSetup(text.getBytes(), retain, centre);
 	titleLabel.setText(null);
     }
 
 
+    void setCircuitTitle(String s) {
+	if (s != null)
+	    titleLabel.setText(s);
+    }
+    
 	void readSetupFile(String str, String title, boolean centre) {
 		t = 0;
 		System.out.println(str);
@@ -3057,30 +3084,32 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	void loadFileFromURL(String url, final boolean centre) {
-		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
-		try {
-			requestBuilder.sendRequest(null, new RequestCallback() {
-				public void onError(Request request, Throwable exception) {
-					GWT.log("File Error Response", exception);
-				}
+	    RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
+	    
+	    try {
+		requestBuilder.sendRequest(null, new RequestCallback() {
+		    public void onError(Request request, Throwable exception) {
+			GWT.log("File Error Response", exception);
+		    }
 
-				public void onResponseReceived(Request request, Response response) {
-					if (response.getStatusCode()==Response.SC_OK) {
-					String text = response.getText();
-					readSetup(text.getBytes(), text.length(), false, centre);
-					}
-					else 
-						GWT.log("Bad file server response:"+response.getStatusText() );
-				}
-			});
-		} catch (RequestException e) {
-			GWT.log("failed file reading", e);
-		}
-		
+		    public void onResponseReceived(Request request, Response response) {
+			if (response.getStatusCode()==Response.SC_OK) {
+			    String text = response.getText();
+			    readSetup(text.getBytes(), false, centre);
+			}
+			else 
+			    GWT.log("Bad file server response:"+response.getStatusText() );
+		    }
+		});
+	    } catch (RequestException e) {
+		GWT.log("failed file reading", e);
+	    }
+
 	}
 
-    void readSetup(byte b[], int len, boolean retain, boolean centre) {
+    void readSetup(byte b[], boolean retain, boolean centre) {
 	int i;
+	int len = b.length;
 	if (!retain) {
 	    clearMouseElm();
 	    for (i = 0; i != elmList.size(); i++) {
@@ -3159,37 +3188,16 @@ MouseOutHandler, MouseWheelHandler {
 			adjustables.add(adj);
 			break;
 		    }
+		    if (tint == '.') {
+			new CustomCompositeModel(st);
+			break;
+		    }
 		    int x1 = new Integer(st.nextToken()).intValue();
 		    int y1 = new Integer(st.nextToken()).intValue();
 		    int x2 = new Integer(st.nextToken()).intValue();
 		    int y2 = new Integer(st.nextToken()).intValue();
 		    int f  = new Integer(st.nextToken()).intValue();
-		    // The following lines are functionally replaced by the call to
-		    // createCe below
-//		    Class cls = dumpTypes[tint];
-//		    if (cls == null) {
-//			System.out.println("unrecognized dump type: " + type);
-//			break;
-//		    }
-//		    // find element class
-//		    Class carr[] = new Class[6];
-//		    //carr[0] = getClass();
-//		    carr[0] = carr[1] = carr[2] = carr[3] = carr[4] =
-//			int.class;
-//		    carr[5] = StringTokenizer.class;
-//		    Constructor cstr = null;
-//		    cstr = cls.getConstructor(carr);
-//		
-//		    // invoke constructor with starting coordinates
-//		    Object oarr[] = new Object[6];
-//		    //oarr[0] = this;
-//		    oarr[0] = new Integer(x1);
-//		    oarr[1] = new Integer(y1);
-//		    oarr[2] = new Integer(x2);
-//		    oarr[3] = new Integer(y2);
-//		    oarr[4] = new Integer(f );
-//		    oarr[5] = st;
-//		    ce = (CircuitElm) cstr.newInstance(oarr);
+		    
 		    CircuitElm newce = createCe(tint, x1, y1, x2, y2, f, st);
 		    if (newce==null) {
 				System.out.println("unrecognized dump type: " + type);
@@ -3197,9 +3205,6 @@ MouseOutHandler, MouseWheelHandler {
 			    }
 		    newce.setPoints();
 		    elmList.addElement(newce);
-//		} catch (java.lang.reflect.InvocationTargetException ee) {
-//		    ee.getTargetException().printStackTrace();
-//		    break;
 		} catch (Exception ee) {
 		    ee.printStackTrace();
 		    console("exception while undumping " + ee);
@@ -3222,6 +3227,8 @@ MouseOutHandler, MouseWheelHandler {
 	needAnalyze();
 	if (centre)
 		centreCircuit();
+	
+	AudioInputElm.clearCache();  // to save memory
     }
 
     // delete sliders for an element
@@ -4228,15 +4235,21 @@ MouseOutHandler, MouseWheelHandler {
     
     String copyOfSelectedElms() {
 	String r="";
-    	for (int i = elmList.size()-1; i >= 0; i--) {
-		CircuitElm ce = getElm(i);
-		// See notes on do cut why we don't copy ScopeElms.
-		if (ce.isSelected() && !(ce instanceof ScopeElm))
-			r += ce.dump() + "\n";
+	CustomLogicModel.clearDumpedFlags();
+	CustomCompositeModel.clearDumpedFlags();
+	DiodeModel.clearDumpedFlags();
+	for (int i = elmList.size()-1; i >= 0; i--) {
+	    CircuitElm ce = getElm(i);
+	    String m = ce.dumpModel();
+	    if (m != null && !m.isEmpty())
+		r += m + "\n";
+	    // See notes on do cut why we don't copy ScopeElms.
+	    if (ce.isSelected() && !(ce instanceof ScopeElm))
+		r += ce.dump() + "\n";
 	}
 	return r;
     }
-
+    
     void doCopy() {
     	// clear selection when we're done if we're copying a single element using the context menu
     	boolean clearSel = (menuElm != null && !menuElm.selected);
@@ -4833,6 +4846,12 @@ MouseOutHandler, MouseWheelHandler {
     	    return new OptocouplerElm(x1, y1, x2, y2, f, st);
     	if (tint==408)
     	    return new StopTriggerElm(x1, y1, x2, y2, f, st);
+    	if (tint==409)
+    	    return new OpAmpRealElm(x1, y1, x2, y2, f, st);
+    	if (tint==410)
+    	    return new CustomCompositeElm(x1, y1, x2, y2, f, st);
+    	if (tint==411)
+    	    return new AudioInputElm(x1, y1, x2, y2, f, st);
     	return null;
     }
 
@@ -4847,7 +4866,7 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new SwitchElm(x1, y1);
     	if (n=="Switch2Elm")
     		return (CircuitElm) new Switch2Elm(x1, y1);
-    	if (n=="NTransistorElm")
+    	if (n=="NTransistorElm" || n == "TransistorElm")
     		return (CircuitElm) new NTransistorElm(x1, y1);
     	if (n=="PTransistorElm")
     		return (CircuitElm) new PTransistorElm(x1, y1);
@@ -4859,7 +4878,7 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new PolarCapacitorElm(x1, y1);
     	if (n=="InductorElm")
     		return (CircuitElm) new InductorElm(x1, y1);
-    	if (n=="DCVoltageElm")
+    	if (n=="DCVoltageElm" || n=="VoltageElm")
     		return (CircuitElm) new DCVoltageElm(x1, y1);
     	if (n=="VarRailElm")
     		return (CircuitElm) new VarRailElm(x1, y1);
@@ -4917,11 +4936,11 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new OpAmpElm(x1, y1);
     	if (n=="OpAmpSwapElm")
     		return (CircuitElm) new OpAmpSwapElm(x1, y1);
-    	if (n=="NMosfetElm")
+    	if (n=="NMosfetElm" || n == "MosfetElm")
     		return (CircuitElm) new NMosfetElm(x1, y1);
     	if (n=="PMosfetElm")
     		return (CircuitElm) new PMosfetElm(x1, y1);
-    	if (n=="NJfetElm")
+    	if (n=="NJfetElm" || n == "JfetElm")
     		return (CircuitElm) new NJfetElm(x1, y1);
     	if (n=="PJfetElm")
     		return (CircuitElm) new PJfetElm(x1, y1);
@@ -5011,8 +5030,11 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new MonostableElm(x1, y1);
     	if (n=="LabeledNodeElm")
     		return (CircuitElm) new LabeledNodeElm(x1, y1);
-    	if (n=="UserDefinedLogicElm")
+    	
+    	// if you take out UserDefinedLogicElm, it will break people's saved shortcuts
+    	if (n=="UserDefinedLogicElm" || n=="CustomLogicElm")
     	    	return (CircuitElm) new CustomLogicElm(x1, y1);
+    	
     	if (n=="TestPointElm")
     	    	return new TestPointElm(x1, y1);
     	if (n=="AmmeterElm")
@@ -5021,7 +5043,7 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DataRecorderElm(x1, y1);
     	if (n=="AudioOutputElm")
 		return (CircuitElm) new AudioOutputElm(x1, y1);
-    	if (n=="NDarlingtonElm")
+    	if (n=="NDarlingtonElm" || n == "DarlingtonElm")
 		return (CircuitElm) new NDarlingtonElm(x1, y1);
     	if (n=="PDarlingtonElm")
 		return (CircuitElm) new PDarlingtonElm(x1, y1);
@@ -5053,6 +5075,12 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new OptocouplerElm(x1, y1);
     	if (n=="StopTriggerElm")
 		return (CircuitElm) new StopTriggerElm(x1, y1);
+    	if (n=="OpAmpRealElm")
+		return (CircuitElm) new OpAmpRealElm(x1, y1);
+    	if (n=="CustomCompositeElm")
+		return (CircuitElm) new CustomCompositeElm(x1, y1);
+    	if (n=="AudioInputElm")
+		return (CircuitElm) new AudioInputElm(x1, y1);
     	return null;
     }
     
@@ -5156,7 +5184,7 @@ MouseOutHandler, MouseWheelHandler {
 	    win.document.open();
 	    win.document.write('<img src="'+img+'"/>');
 	    win.document.close();
-	    win.print();
+	    setTimeout(function(){win.print();},1000);
 	}-*/;
 
 	void doDCAnalysis() {
@@ -5229,6 +5257,104 @@ MouseOutHandler, MouseWheelHandler {
 		dotsCheckItem.setState(c);
 		transform = oldTransform;
 		return cv;
+	}
+	
+	boolean isSelection() {
+	    for (int i = 0; i != elmList.size(); i++)
+		if (getElm(i).isSelected())
+		    return true;
+	    return false;
+	}
+	
+	public CustomCompositeModel getCircuitAsComposite() {
+	    int i;
+	    String nodeList = "";
+	    String dump = "";
+//	    String models = "";
+	    CustomLogicModel.clearDumpedFlags();
+	    DiodeModel.clearDumpedFlags();
+	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
+	    boolean sel = isSelection();
+	    
+	    // mapping of node labels -> node numbers
+	    HashMap<String, Integer> nodeNameHash = new HashMap<String, Integer>();
+	    
+	    // mapping of node numbers -> equivalent node numbers (if they both have the same label)
+	    HashMap<Integer, Integer> nodeNumberHash = new HashMap<Integer, Integer>();
+	    
+	    // find all the labeled nodes, get a list of them, and create a node number map
+	    for (i = 0; i != elmList.size(); i++) {
+		CircuitElm ce = getElm(i);
+		if (sel && !ce.isSelected())
+		    continue;
+		if (ce instanceof LabeledNodeElm) {
+		    LabeledNodeElm lne = (LabeledNodeElm) ce;
+		    String label = lne.text;
+		    Integer map = nodeNameHash.get(label);
+		    
+		    // this node name already seen?  map the new node number to the old one
+		    if (map != null) {
+			Integer val = nodeNumberHash.get(lne.getNode(0));
+			if (val != null && !val.equals(map)) {
+			    Window.alert("Can't have a node with two labels!");
+			    return null;
+			}
+			nodeNumberHash.put(lne.getNode(0), map); 
+			continue;
+		    }
+		    nodeNameHash.put(label, lne.getNode(0));
+		    // put an entry in nodeNumberHash so we can detect if we try to map it to something else later
+		    nodeNumberHash.put(lne.getNode(0), lne.getNode(0));
+		    if (lne.isInternal())
+			continue;
+		    // create ext list entry for external nodes
+		    ExtListEntry ent = new ExtListEntry(label, ce.getNode(0));
+		    extList.add(ent);
+		}
+	    }
+	    
+	    // output all the elements
+	    for (i = 0; i != elmList.size(); i++) {
+		CircuitElm ce = getElm(i);
+		if (sel && !ce.isSelected())
+		    continue;
+		// don't need these elements dumped
+		if (ce instanceof WireElm || ce instanceof LabeledNodeElm || ce instanceof ScopeElm)
+		    continue;
+		if (ce instanceof GraphicElm)
+		    continue;
+		int j;
+		if (nodeList.length() > 0)
+		    nodeList += "\r";
+		nodeList += ce.getClass().getSimpleName();
+		for (j = 0; j != ce.getPostCount(); j++) {
+		    int n = ce.getNode(j);
+		    Integer nobj = nodeNumberHash.get(n);
+		    int n0 = (nobj == null) ? n : nobj;
+		    nodeList += " " + n0;
+		}
+		
+	        // save positions
+                int x1 = ce.x;  int y1 = ce.y;
+                int x2 = ce.x2; int y2 = ce.y2;
+                
+                // set them to 0 so they're easy to remove
+                ce.x = ce.y = ce.x2 = ce.y2 = 0;
+
+                String tstring = ce.dump();
+                tstring = tstring.replaceFirst("[A-Za-z0-9]+ 0 0 0 0 ", ""); // remove unused tint_x1 y1 x2 y2 coords for internal components
+                
+                // restore positions
+                ce.x = x1; ce.y = y1; ce.x2 = x2; ce.y2 = y2;
+                if (dump.length() > 0)
+                    dump += " ";
+                dump += CustomLogicModel.escape(tstring);
+	    }
+	    CustomCompositeModel ccm = new CustomCompositeModel();
+	    ccm.nodeList = nodeList;
+	    ccm.elmDump = dump;
+	    ccm.extList = extList;
+	    return ccm;
 	}
 	
 	static void invertMatrix(double a[][], int n) {

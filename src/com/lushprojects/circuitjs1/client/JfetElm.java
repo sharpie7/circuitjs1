@@ -73,10 +73,10 @@ package com.lushprojects.circuitjs1.client;
 	    drawPosts(g);
 	}
 	
-        double getCurrentIntoPoint(int xa, int ya) {
-            if (xa == x && ya == y)
+        double getCurrentIntoNode(int n) {
+            if (n == 0)
                 return -gateCurrent;
-            if (xa == src[0].x && ya == src[0].y)
+            if (n == 1)
                 return gateCurrent+ids;
             return -ids;
         }

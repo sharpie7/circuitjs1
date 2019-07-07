@@ -379,12 +379,8 @@ class CustomTransformerElm extends CircuitElm {
 	    }
 	}
 	
-	@Override double getCurrentIntoPoint(int xa, int ya) {
-	    int i;
-	    for (i = 0; i != nodeCount; i++)
-		if (xa == nodePoints[i].x && ya == nodePoints[i].y)
-		    return -nodeCurrents[i];
-	    return 0;
+	@Override double getCurrentIntoNode(int n) {
+	    return -nodeCurrents[n];
 	}
 	
 	void getInfo(String arr[]) {

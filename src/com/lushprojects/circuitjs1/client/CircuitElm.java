@@ -510,6 +510,19 @@ public abstract class CircuitElm implements Editable {
     Point getPost(int n) {
 	return (n == 0) ? point1 : (n == 1) ? point2 : null;
     }
+    
+    int getNodeAtPoint(int xp, int yp) {
+	if (getPostCount() == 2)
+	    return (x == xp && y == yp) ? 0 : 1;
+	int i;
+	for (i = 0; i != getPostCount(); i++) {
+	    Point p = getPost(i);
+	    if (p.x == xp && p.y == yp)
+		return i;
+	}
+	return 0;
+    }
+    
     /*
     void drawPost(Graphics g, int x0, int y0, int n) {
 	if (sim.dragElm == null && !needsHighlight() &&
@@ -936,27 +949,12 @@ public abstract class CircuitElm implements Editable {
     void updateModels() {}
     void stepFinished() {}
     
-    // Sadly not all elements override this routine to set it correctly.
-    // If you depend on it (eg if you have a compositeElement) then check it is implemented correctly in
-    // all relevant element types.
-    //
-    // In general it would be better if the future standard was to define getCurrentIntoNode for 
-    // each element and then to define getCurrentIntoPoint to map the point to the node and then
-    // call getCurrentIntoNode
     double getCurrentIntoNode(int n) {
+	// if we take out the getPostCount() == 2 it gives the wrong value for rails
 	if (n==0 && getPostCount() == 2)
 	    return -current;
 	else
 	    return current;
-    }
-    
-    double getCurrentIntoPoint(int xa, int ya) {
-	if (xa == x && ya == y && getPostCount() == 2)
-	    return -current;
-//	if ((xa == x2 && ya == y2) || getPostCount() == 1)
-//	    return current;
-//	sim.stop("bad current into point", this);  // for debugging
-	return current;
     }
     
     void flipPosts() {

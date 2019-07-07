@@ -163,6 +163,7 @@ public class CustomLogicModel implements Editable {
 	int i;
 	rulesLeft = new Vector<String>();
 	rulesRight = new Vector<String>();
+	triState = false;
 	for (i = 0; i != lines.length; i++) {
 	    String s = lines[i].toLowerCase();
 	    if (s.length() == 0 || s.startsWith("#"))
@@ -207,7 +208,8 @@ public class CustomLogicModel implements Editable {
 		newRl += x;
 	    }
 	    String rr = s0[1];
-	    triState = (rr.contains("_"));		
+	    if (rr.contains("_"))
+		triState = true;
 	    rulesLeft.add(newRl);
 	    rulesRight.add(s0[1]);
 	}
@@ -225,7 +227,7 @@ public class CustomLogicModel implements Editable {
 	if (s.length() == 0)
 	    return "\\0";
 	return s.replace("\\", "\\\\").replace("\n", "\\n").replace(" ", "\\s").replace("+", "\\p").
-		replace("=", "\\q").replace("#", "\\h").replace("&", "\\a");
+		replace("=", "\\q").replace("#", "\\h").replace("&", "\\a").replace("\r", "\\r");
     }
     
     static String unescape(String s) {
@@ -237,6 +239,8 @@ public class CustomLogicModel implements Editable {
 		char c = s.charAt(i+1);
 		if (c == 'n')
 		    s = s.substring(0, i) + "\n" + s.substring(i+2);
+		else if (c == 'r')
+		    s = s.substring(0, i) + "\r" + s.substring(i+2);
 		else if (c == 's')
 		    s = s.substring(0, i) + " " + s.substring(i+2);
 		else if (c == 'p')
