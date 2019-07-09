@@ -220,7 +220,7 @@ public class OpAmpRealElm extends CompositeElm {
             return ei;
         }
         if (n == 3) {
-            EditInfo ei =  new EditInfo("<a href=\"opampreal.html\">Model</a>", modelType);
+            EditInfo ei =  new EditInfo("<a href=\"opampreal.html\" target=\"_blank\">Model</a>", modelType);
             ei.choice = new Choice();
             ei.choice.add("LM741");
             ei.choice.add("LM324");
