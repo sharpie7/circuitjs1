@@ -44,6 +44,7 @@ public class LoadFile extends FileUpload implements  ChangeHandler {
 		sim=s;
 		this.setName("Import");
 		this.getElement().setId("LoadFileElement");
+	    	this.getElement().setAttribute("accept", "text/plain");
 		this.addChangeHandler(this);
 		this.addStyleName("offScreen");
 	}

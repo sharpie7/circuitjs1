@@ -126,6 +126,7 @@ class AudioInputElm extends RailElm {
                 EditInfo ei = new EditInfo("", 0, -1, -1);
                 final AudioInputElm thisElm = this;
                 final FileUpload file = new FileUpload();
+	    	file.getElement().setAttribute("accept", "audio/*");
                 ei.widget = file;
                 file.addChangeHandler(new ChangeHandler() {
 			    public void onChange(ChangeEvent event) {
