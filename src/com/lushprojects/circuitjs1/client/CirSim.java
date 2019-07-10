@@ -3166,7 +3166,7 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		    }
 		    if (tint == '!') {
-			new CustomLogicModel(st);
+			CustomLogicModel.undumpModel(st);
 			break;
 		    }
 		    if (tint == '%' || tint == '?' || tint == 'B') {
@@ -3180,7 +3180,7 @@ MouseOutHandler, MouseWheelHandler {
 			tint = new Integer(type).intValue();
 		    
 		    if (tint == 34) {
-			new DiodeModel(st);
+			DiodeModel.undumpModel(st);
 			break;
 		    }
 		    if (tint == 38) {
@@ -3189,7 +3189,7 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		    }
 		    if (tint == '.') {
-			new CustomCompositeModel(st);
+			CustomCompositeModel.undumpModel(st);
 			break;
 		    }
 		    int x1 = new Integer(st.nextToken()).intValue();

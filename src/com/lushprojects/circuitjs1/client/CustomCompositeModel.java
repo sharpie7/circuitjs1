@@ -89,9 +89,19 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     CustomCompositeModel() {
     }
     
-    CustomCompositeModel(StringTokenizer st) {
-	name = CustomLogicModel.unescape(st.nextToken());
+    static void undumpModel(StringTokenizer st) {
+	String name = CustomLogicModel.unescape(st.nextToken());
 	CustomCompositeElm.lastModelName = name;
+	CustomCompositeModel model = getModelWithName(name);
+	if (model == null) {
+	    model = new CustomCompositeModel();
+	    model.name = name;
+	    modelMap.put(name, model);
+	}
+	model.undump(st);
+    }
+    
+    void undump(StringTokenizer st) {
 	flags = Integer.parseInt(st.nextToken());
 	sizeX = Integer.parseInt(st.nextToken());
 	sizeY = Integer.parseInt(st.nextToken());
@@ -107,7 +117,6 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	}
 	nodeList = CustomLogicModel.unescape(st.nextToken());
 	elmDump = CustomLogicModel.unescape(st.nextToken());
-	modelMap.put(name, this);
     }
     
     String arrayToList(String arr[]) {
