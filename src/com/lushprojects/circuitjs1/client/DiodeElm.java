@@ -68,6 +68,7 @@ class DiodeElm extends CircuitElm {
     void setup() {
 //	CirSim.console("setting up for model " + modelName + " " + model);
         model = DiodeModel.getModelWithNameOrCopy(modelName, model);
+        modelName = model.name;   // in case we couldn't find that model
 	diode.setup(model);
 	hasResistance = (model.seriesResistance > 0);
 	diodeEndNode = (hasResistance) ? 2 : 1;

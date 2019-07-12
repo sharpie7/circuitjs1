@@ -57,6 +57,10 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	DiodeModel lm = modelMap.get(name);
 	if (lm != null)
 	    return lm;
+	if (oldmodel == null) {
+	    CirSim.console("model not found: " + name);
+	    return getDefaultModel();
+	}
 //	CirSim.console("copying to " + name);
 	lm = new DiodeModel(oldmodel);
 	lm.name = name;
@@ -237,21 +241,20 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	breakdownVoltage = copy.breakdownVoltage;
 	updateModel();
     }
+
+    static void undumpModel(StringTokenizer st) {
+	String name = CustomLogicModel.unescape(st.nextToken());
+	DiodeModel dm = DiodeModel.getModelWithName(name);
+	dm.undump(st);
+    }
     
-    DiodeModel(StringTokenizer st) {
-	name = CustomLogicModel.unescape(st.nextToken());
+    void undump(StringTokenizer st) {
 	flags = new Integer(st.nextToken()).intValue();
 	saturationCurrent = Double.parseDouble(st.nextToken());
 	seriesResistance = Double.parseDouble(st.nextToken());
 	emissionCoefficient = Double.parseDouble(st.nextToken());
 	breakdownVoltage = Double.parseDouble(st.nextToken());
 	updateModel();
-	DiodeModel dm = DiodeModel.getModelWithName(name);
-	
-	// make sure we don't overwrite a default model
-	if (dm == null || !dm.builtIn)
-	    modelMap.put(name, this);
-//	CirSim.console("parsed model " + name);
     }
     
     public EditInfo getEditInfo(int n) {
