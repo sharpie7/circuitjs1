@@ -4018,7 +4018,7 @@ MouseOutHandler, MouseWheelHandler {
     	else if (scopeSelected != -1)
     	    scopes[scopeSelected].onMouseWheel(e);
     	else if (!dialogIsShowing()) {
-    	    zoomCircuit(e.getDeltaY());
+    	    zoomCircuit(-e.getDeltaY());
     	    zoomTime = System.currentTimeMillis();
    	}
     	repaint();
