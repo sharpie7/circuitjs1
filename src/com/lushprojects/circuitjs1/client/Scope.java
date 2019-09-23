@@ -983,7 +983,7 @@ class Scope {
         }
 	if (visiblePlots.size() > 0) {
 	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
-	    info[ct++] = CircuitElm.getUnitText(t, "s");
+	    info[ct++] = CircuitElm.getTimeText(t);
 	}
 	int szw = 0, szh = 15*ct;
 	int i;

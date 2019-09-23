@@ -1302,8 +1302,8 @@ MouseOutHandler, MouseWheelHandler {
 //		*/
 		
 	    } else {
-	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
-	    	info[1] = LS("time step = ") + CircuitElm.getUnitText(timeStep, "s");
+	    	info[0] = "t = " + CircuitElm.getTimeText(t);
+	    	info[1] = LS("time step = ") + CircuitElm.getTimeText(timeStep);
 	    }
 	    if (hintType != -1) {
 		for (i = 0; info[i] != null; i++)

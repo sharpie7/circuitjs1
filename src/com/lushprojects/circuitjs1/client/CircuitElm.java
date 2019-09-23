@@ -723,8 +723,18 @@ public abstract class CircuitElm implements Editable {
     }
     static String getVoltageText(double v) {
 	return getUnitText(v, "V");
-	
-	
+    }
+    static String getTimeText(double v) {
+	if (v >= 60) {
+	    double h = Math.floor(v/3600);
+	    v -= 3600*h;
+	    double m = Math.floor(v/60);
+	    v -= 60*m;
+	    if (h == 0)
+		return m + ":" + ((v >= 10) ? "" : "0") + showFormat.format(v);
+	    return h + ":" + ((m >= 10) ? "" : "0") + m + ":" + ((v >= 10) ? "" : "0") + showFormat.format(v); 
+	}
+	return getUnitText(v, "s");
     }
     
     // IES - hacking
