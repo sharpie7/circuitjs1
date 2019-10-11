@@ -40,7 +40,7 @@ class EditOptions implements Editable {
 	            ei.choice.add("Dansk");
 	            ei.choice.add("Deutsch");
 	            ei.choice.add("English");
-	            ei.choice.add("Italian");
+	            ei.choice.add("Italiano");
 	            ei.choice.add("Polski");
 	            ei.choice.add("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"); // Russian 
 	            return ei;
