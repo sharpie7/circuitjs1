@@ -278,10 +278,10 @@ class VoltageElm extends CircuitElm {
 	arr[1] = "I = " + getCurrentText(getCurrent());
 	arr[2] = ((this instanceof RailElm) ? "V = " : "Vd = ") +
 	    getVoltageText(getVoltageDiff());
+	int i = 3;
 	if (waveform != WF_DC && waveform != WF_VAR && waveform != WF_NOISE) {
-	    arr[3] = "f = " + getUnitText(frequency, "Hz");
-	    arr[4] = "Vmax = " + getVoltageText(maxVoltage);
-	    int i = 5;
+	    arr[i++] = "f = " + getUnitText(frequency, "Hz");
+	    arr[i++] = "Vmax = " + getVoltageText(maxVoltage);
 	    if (waveform == WF_AC && bias == 0)
 		arr[i++] = "V(rms) = " + getVoltageText(maxVoltage/1.41421356);
 	    if (bias != 0)
@@ -289,12 +289,10 @@ class VoltageElm extends CircuitElm {
 	    else if (frequency > 500)
 		arr[i++] = "wavelength = " +
 		    getUnitText(2.9979e8/frequency, "m");
-	    arr[i++] = "P = " + getUnitText(getPower(), "W");
 	}
-	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources) {
-	    arr[3] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
-	    arr[4] = "P = " + getUnitText(getPower(), "W");
-	}
+	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources)
+	    arr[i++] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
+	arr[i++] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0)
