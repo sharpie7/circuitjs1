@@ -1,0 +1,53 @@
+body {
+  color: blue;
+  margin: 10px;
+  border: 0px;
+  padding: 0px;
+  background: #fff;
+  direct
+}
+
+.trigger{
+	transition: right 1s;
+}
+
+
+.triggerLabel{
+	border-radius: 10px 0px 0px 10px;
+	background:white;
+	width:20px;
+	height:50px;
+	position:absolute;
+	top:50px;
+	right:166px;
+	z-index:1;
+	transition: right 1s;
+}
+
+.trigger:checked + .triggerLabel{
+	right:0;
+}
+
+.trigger + .triggerLabel + div{
+z-index:1;
+transition: width 1s;
+}
+
+.trigger:checked + .triggerLabel + div{
+	width:0 !important;
+
+}
+
+.trigger + .triggerLabel + div +div {
+width:100%;
+}
+
+.trigger + .triggerLabel + div +div >canvas{
+transition: width 1s;
+width:100%;
+}
+
+.trigger:checked + .triggerLabel + div +div >canvas{
+	width:100% !important;
+	
+}

@@ -4,4 +4,5 @@
     <inherits name="com.google.gwt.http.HTTP" />
     <inherits name='com.google.gwt.user.theme.clean.Clean'/>
     <entry-point class="com.lushprojects.circuitjs1.client.circuitjs1" />
+    <stylesheet src='/circuitjs1/style.css' />
  </module>

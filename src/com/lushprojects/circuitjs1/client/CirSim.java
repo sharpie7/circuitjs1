@@ -36,6 +36,7 @@ import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -68,6 +69,8 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -78,6 +81,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.CanvasElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -233,6 +238,7 @@ MouseOutHandler, MouseWheelHandler {
 	MenuBar menuBar;
 	MenuBar fileMenuBar;
 	VerticalPanel verticalPanel;
+
 	CellPanel buttonPanel;
 	private boolean mouseDragging;
 	double scopeHeightFraction=0.2;
@@ -386,7 +392,7 @@ MouseOutHandler, MouseWheelHandler {
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
 	  aboutItem=new MenuItem(LS("About..."),(Command)null);
-	  fileMenuBar.addItem(aboutItem);
+	  fileMenuBar.addItem(aboutItem);	
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
 	  int width=(int)RootLayoutPanel.get().getOffsetWidth();
@@ -397,8 +403,18 @@ MouseOutHandler, MouseWheelHandler {
 	      VERTICALPANELWIDTH = 128;
 
 	  menuBar = new MenuBar();
-	  menuBar.addItem(LS("File"), fileMenuBar);
+	  menuBar.addItem(LS("File"), fileMenuBar); 
 	  verticalPanel=new VerticalPanel();
+	  verticalPanel.getElement().addClassName("verticalPanel");
+	  Element checkbox = DOM.createInputCheck();
+	  Element label = DOM.createLabel();
+	  label.addClassName("triggerLabel");
+	  checkbox.setId("trigger");
+	  label.setAttribute("for", "trigger" );
+	  checkbox.addClassName("trigger");
+
+	  
+
 	  
 	  // make buttons side by side if there's room
 	  buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
@@ -518,6 +534,8 @@ MouseOutHandler, MouseWheelHandler {
 
 	  
 	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
+	  DOM.appendChild(layoutPanel.getElement(), checkbox);
+	  DOM.appendChild(layoutPanel.getElement(), label);
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
 	
