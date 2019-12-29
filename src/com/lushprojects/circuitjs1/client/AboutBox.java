@@ -46,6 +46,7 @@ public class AboutBox extends PopupPanel {
 		"Krystian Sławiński for the Polish translation; " +
 		"Usevalad Khatkevich for the Russian translation; " +
 		"Lucio Sciamanna for the Italian translation; " +
+		"Mauro Hemerly Gazzani for the Portuguese translation; " +
 		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; " +
 		"Colin Howell for code improvements.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+

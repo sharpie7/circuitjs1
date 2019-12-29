@@ -42,6 +42,7 @@ class EditOptions implements Editable {
 	            ei.choice.add("English");
 	            ei.choice.add("Italiano");
 	            ei.choice.add("Polski");
+	            ei.choice.add("Português");
 	            ei.choice.add("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"); // Russian 
 	            return ei;
 		}
@@ -69,7 +70,8 @@ class EditOptions implements Editable {
 		    	case 3: langString = "en"; break;
 		    	case 4: langString = "it"; break;
 		    	case 5: langString = "pl"; break;
-		    	case 6: langString = "ru"; break;
+				case 6: langString = "pt"; break;
+		    	case 7: langString = "ru"; break;
 		    	}
 		    	if (langString == null)
 		    	    return;
