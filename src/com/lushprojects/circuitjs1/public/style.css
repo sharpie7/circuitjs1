@@ -1,53 +1,135 @@
-body {
-  color: blue;
-  margin: 10px;
-  border: 0px;
-  padding: 0px;
-  background: #fff;
-  direct
+@charset "UTF-8";
+
+.trigger {
+	display: none;
 }
 
-.trigger{
-	transition: right 1s;
+.toptrigger {
+	display: none;
 }
 
-
-.triggerLabel{
+.triggerLabel {
 	border-radius: 10px 0px 0px 10px;
-	background:white;
-	width:20px;
-	height:50px;
-	position:absolute;
-	top:50px;
-	right:166px;
-	z-index:1;
+	background: white;
+	width: 20px;
+	height: 50px;
+	position: absolute;
+	top: 50px;
+	right: 166px;
+	z-index: 1;
 	transition: right 1s;
 }
 
-.trigger:checked + .triggerLabel{
-	right:0;
+.trigger:checked+.triggerLabel {
+	right: 0;
 }
 
-.trigger + .triggerLabel + div{
-z-index:1;
-transition: width 1s;
+/* selects the side panel */
+.trigger+.triggerLabel+div {
+	z-index: 1;
+	transition: width 1s;
 }
 
-.trigger:checked + .triggerLabel + div{
-	width:0 !important;
-
+.trigger:checked+.triggerLabel+div {
+	width: 0 !important;
 }
 
-.trigger + .triggerLabel + div +div {
-width:100%;
+/* selects the div containing the canvas */
+.trigger+.triggerLabel+div+div {
+	width: 100%;
+	transition: width 1s;
 }
 
-.trigger + .triggerLabel + div +div >canvas{
-transition: width 1s;
-width:100%;
+/* selects the the canvas */
+.trigger+.triggerLabel+div+div>canvas {
+	transition: width 1s;
+	width: 100%;
 }
 
-.trigger:checked + .triggerLabel + div +div >canvas{
-	width:100% !important;
-	
+.trigger:checked+.triggerLabel+div+div>canvas {
+	width: 100% !important;
+}
+
+@media only screen and (max-width: 600px) {
+	.triggerLabel {
+		right: 0;
+	}
+	.triggerLabel:before {
+		content: "‖";
+		font-size: 32px;
+		padding-left: 3px;
+		position: absolute;
+		padding-top: 5px;
+	}
+	.toptriggerlabel {
+		z-index: 1;
+		top: 5px;
+		right: 5px;
+		width: 20px;
+		height: 20px;
+		position: absolute;
+	}
+	.toptriggerlabel:before {
+		content: "☰";
+		font-size: 16px;
+		padding-left: 2px;
+		pointer-events: none;
+	}
+	.toptrigger:checked+label+div>div>table {
+		display: initial;
+	}
+	.trigger:checked+.triggerLabel {
+		right: 166px;
+	}
+
+	/* selects the side panel */
+	.trigger+.triggerLabel+div {
+		width: 0 !important;
+		background: white;
+	}
+	.trigger:checked+.triggerLabel+div {
+		width: 166px !important;
+	}
+
+	/* selects the div containing the canvas */
+	.trigger+.triggerLabel+div+div {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* selects the canvas */
+	.trigger+.triggerLabel+div+div>canvas {
+		width: 100% !important;
+	}
+	.gwt-MenuBar-horizontal>table {
+		height: auto;
+		position: fixed;
+		width: 100%;
+		text-align: center;
+		display: none;
+		top: 30px;
+		background: white;
+		z-index: 2;
+	}
+	.gwt-MenuBar-horizontal * {
+		display: block;
+	}
+	.gwt-MenuBarPopup {
+		z-index: 2;
+		width: 100%;
+		left: 0 !important;
+	}
+	.menuPopupMiddleCenter {
+		background: white;
+	}
+	.gwt-MenuBarPopup>div>table {
+		z-index: 2;
+		width: 100%;
+		height: 300px;
+		position: fixed;
+	}
+	.menuPopupMiddleCenterInner>div>table {
+		width: 100%;
+		text-align: center;
+	}
 }

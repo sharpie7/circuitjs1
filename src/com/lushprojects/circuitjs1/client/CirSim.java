@@ -36,7 +36,6 @@ import java.lang.Math;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -81,8 +80,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.CanvasElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -91,7 +88,6 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.user.client.ui.Frame;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.Navigator;
 
@@ -405,13 +401,22 @@ MouseOutHandler, MouseWheelHandler {
 	  menuBar = new MenuBar();
 	  menuBar.addItem(LS("File"), fileMenuBar); 
 	  verticalPanel=new VerticalPanel();
+	  
+
 	  verticalPanel.getElement().addClassName("verticalPanel");
-	  Element checkbox = DOM.createInputCheck();
-	  Element label = DOM.createLabel();
-	  label.addClassName("triggerLabel");
-	  checkbox.setId("trigger");
-	  label.setAttribute("for", "trigger" );
-	  checkbox.addClassName("trigger");
+	  Element sidePanelCheckbox = DOM.createInputCheck();
+	  Element sidePanelCheckboxLabel = DOM.createLabel();
+	  sidePanelCheckboxLabel.addClassName("triggerLabel");
+	  sidePanelCheckbox.setId("trigger");
+	  sidePanelCheckboxLabel.setAttribute("for", "trigger" );
+	  sidePanelCheckbox.addClassName("trigger");
+	  Element topPanelCheckbox = DOM.createInputCheck(); 
+	  Element topPanelCheckboxLabel = DOM.createLabel();
+	  topPanelCheckbox.setId("toptrigger");
+	  topPanelCheckbox.addClassName("toptrigger");
+	  topPanelCheckboxLabel.addClassName("toptriggerlabel");
+	  topPanelCheckboxLabel.setAttribute("for", "toptrigger");
+
 
 	  
 
@@ -533,9 +538,11 @@ MouseOutHandler, MouseWheelHandler {
 	loadShortcuts();
 
 	  
-	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
-	  DOM.appendChild(layoutPanel.getElement(), checkbox);
-	  DOM.appendChild(layoutPanel.getElement(), label);
+	  DOM.appendChild(layoutPanel.getElement(), topPanelCheckbox);
+	  DOM.appendChild(layoutPanel.getElement(), topPanelCheckboxLabel);	
+	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);	  
+	  DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
+	  DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);	  
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
 	
