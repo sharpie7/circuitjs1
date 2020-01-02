@@ -1302,8 +1302,8 @@ MouseOutHandler, MouseWheelHandler {
 //		*/
 		
 	    } else {
-	    	info[0] = "t = " + CircuitElm.getUnitText(t, "s");
-	    	info[1] = LS("time step = ") + CircuitElm.getUnitText(timeStep, "s");
+	    	info[0] = "t = " + CircuitElm.getTimeText(t);
+	    	info[1] = LS("time step = ") + CircuitElm.getTimeText(timeStep);
 	    }
 	    if (hintType != -1) {
 		for (i = 0; info[i] != null; i++)
@@ -3860,6 +3860,8 @@ MouseOutHandler, MouseWheelHandler {
     public void onMouseDown(MouseDownEvent e) {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
+    	
+	stopElm = null; // if stopped, allow user to select other elements to fix circuit 
     	menuX = menuClientX = e.getX();
     	menuY = menuClientY = e.getY();
     	mouseDownTime = System.currentTimeMillis();
@@ -4018,7 +4020,7 @@ MouseOutHandler, MouseWheelHandler {
     	else if (scopeSelected != -1)
     	    scopes[scopeSelected].onMouseWheel(e);
     	else if (!dialogIsShowing()) {
-    	    zoomCircuit(e.getDeltaY());
+    	    zoomCircuit(-e.getDeltaY());
     	    zoomTime = System.currentTimeMillis();
    	}
     	repaint();

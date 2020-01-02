@@ -33,9 +33,9 @@ package com.lushprojects.circuitjs1.client;
 	    maxOut = 15;
 	    minOut = -15;
 	    gbw = 1e6;
-	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
-	    flags = FLAG_GAIN;
+           flags = FLAG_GAIN; // need to do this before setSize()
 	    gain = 100000;
+           setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
 	}
 	public OpAmpElm(int xa, int ya, int xb, int yb, int f,
 			StringTokenizer st) {
