@@ -9,50 +9,21 @@
 }
 
 .triggerLabel {
-	border-radius: 10px 0px 0px 10px;
-	background: white;
-	width: 20px;
-	height: 50px;
-	position: absolute;
-	top: 50px;
-	right: 166px;
-	z-index: 1;
-	transition: right 1s;
-}
-
-.trigger:checked+.triggerLabel {
-	right: 0;
-}
-
-/* selects the side panel */
-.trigger+.triggerLabel+div {
-	z-index: 1;
-	transition: width 1s;
-}
-
-.trigger:checked+.triggerLabel+div {
-	width: 0 !important;
-}
-
-/* selects the div containing the canvas */
-.trigger+.triggerLabel+div+div {
-	width: 100%;
-	transition: width 1s;
-}
-
-/* selects the the canvas */
-.trigger+.triggerLabel+div+div>canvas {
-	transition: width 1s;
-	width: 100%;
-}
-
-.trigger:checked+.triggerLabel+div+div>canvas {
-	width: 100% !important;
+	display: none;
 }
 
 @media only screen and (max-width: 600px) {
 	.triggerLabel {
+		display: initial;
+		border-radius: 10px 0px 0px 10px;
+		background: white;
+		width: 20px;
+		height: 50px;
+		position: absolute;
+		top: 50px;
 		right: 0;
+		z-index: 1;
+		transition: right 1s;
 	}
 	.triggerLabel:before {
 		content: "‖";
@@ -86,6 +57,8 @@
 	.trigger+.triggerLabel+div {
 		width: 0 !important;
 		background: white;
+		z-index: 1;
+		transition: width 1s;
 	}
 	.trigger:checked+.triggerLabel+div {
 		width: 166px !important;
@@ -131,5 +104,10 @@
 	.menuPopupMiddleCenterInner>div>table {
 		width: 100%;
 		text-align: center;
+	}
+	.menuPopupTopLeft, .menuPopupTopCenter, .menuPopupTopRight,
+		.menuPopupMiddleLeft, .menuPopupMiddleRight, .menuPopupMiddleCenter,
+		.menuPopupBottomLeft, .menuPopupBottomCenter, .menuPopupBottomRight {
+		background: white !important;
 	}
 }
