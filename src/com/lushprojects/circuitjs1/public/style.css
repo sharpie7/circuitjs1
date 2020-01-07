@@ -17,7 +17,7 @@
 }
 
 @media only screen and (max-width: 600px) {
-	.gwt-MenuBar-horizontal {
+	.gwt-MenuBar-horizontal>table {
 		display: none;
 	}
 	.triggerLabel {
@@ -64,7 +64,7 @@
 		position: absolute;
 	}
 	.trigger:checked+.triggerLabel {
-		right: 166px;
+		right: 128px;
 	}
 	.toptrigger:checked+label+div>div {
 		display: block !important;
@@ -81,7 +81,7 @@
 		transition: width 1s;
 	}
 	.trigger:checked+.triggerLabel+div {
-		width: 166px !important;
+		width: 128px !important;
 	}
 
 	/* selects the div containing the canvas */
