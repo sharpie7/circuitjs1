@@ -12,7 +12,14 @@
 	display: none;
 }
 
+.menuBarMobile {
+	display: none;
+}
+
 @media only screen and (max-width: 600px) {
+	.gwt-MenuBar-horizontal {
+		display: none;
+	}
 	.triggerLabel {
 		display: initial;
 		border-radius: 10px 0px 0px 10px;
@@ -46,11 +53,24 @@
 		padding-left: 2px;
 		pointer-events: none;
 	}
-	.toptrigger:checked+label+div>div>table {
-		display: initial;
+
+	/*Trick to hide the menu when the user taps out of the menu*/
+	.toptrigger:checked {
+		display: block;
+		opacity: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 2;
+		position: absolute;
 	}
 	.trigger:checked+.triggerLabel {
 		right: 166px;
+	}
+	.toptrigger:checked+label+div>div {
+		display: block !important;
+	}
+	.toptrigger:checked+label+div>div>table {
+		display: block !important;
 	}
 
 	/* selects the side panel */
@@ -79,7 +99,6 @@
 		position: fixed;
 		width: 100%;
 		text-align: center;
-		display: none;
 		top: 30px;
 		background: white;
 		z-index: 2;

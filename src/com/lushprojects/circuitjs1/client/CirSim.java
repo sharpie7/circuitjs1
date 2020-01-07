@@ -58,6 +58,8 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -404,6 +406,8 @@ MouseOutHandler, MouseWheelHandler {
 	  
 
 	  verticalPanel.getElement().addClassName("verticalPanel");
+	  verticalPanel.getElement().setId("painel");
+	  //verticalPanel.getElement().setAttribute("onclick", "document.getElementById('painel').style.opacity = 0");
 	  Element sidePanelCheckbox = DOM.createInputCheck();
 	  Element sidePanelCheckboxLabel = DOM.createLabel();
 	  sidePanelCheckboxLabel.addClassName("triggerLabel");
@@ -446,7 +450,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	MenuBar drawMenuBar = new MenuBar(true);
 	drawMenuBar.setAutoOpen(true);
-
+	
 	menuBar.addItem(LS("Draw"), drawMenuBar);
 	
 	m = new MenuBar(true);
@@ -536,11 +540,28 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(mainMenuBar);
 	composeMainMenu(drawMenuBar);
 	loadShortcuts();
+	
+//	//creates another menubar for mobile devices
+//	MenuBar menuBarMobile = new MenuBar(true);
+//	//composeMainMenu(menuBarMobile);
+//	//composeMainMenu(drawMenuBar);
+//	 menuBarMobile.getElement().addClassName("menuBarMobile");
+//	 menuBarMobile.getElement().setAttribute("onclick", "document.getElementsByClassName('toptrigger')[0].checked = 0");
 
 	  
 	  DOM.appendChild(layoutPanel.getElement(), topPanelCheckbox);
 	  DOM.appendChild(layoutPanel.getElement(), topPanelCheckboxLabel);	
-	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);	  
+	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
+	  
+	  menuBar.getElement().insertFirst(menuBar.getElement().getChild(1));
+	  menuBar.getElement().getFirstChildElement().setAttribute("onclick", "document.getElementsByClassName('toptrigger')[0].checked = false");
+
+	  //creates a clone of the menubar for mobile devices
+	  //Element menuBarMobile = DOM.clone(menuBar.getElement(), true);
+	 
+//	  DOM.appendChild(layoutPanel.getElement(), menuBarMobile.getElement());
+	  
+	  
 	  DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
 	  DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);	  
 	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
@@ -688,7 +709,7 @@ MouseOutHandler, MouseWheelHandler {
 		      }
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
-		cv.addMouseWheelHandler(this);
+		cv.addMouseWheelHandler(this);		
 		setSimRunning(true);
     }
 
