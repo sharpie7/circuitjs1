@@ -5002,8 +5002,12 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new PhaseCompElm(x1, y1);
     	if (n=="CounterElm")
     		return (CircuitElm) new CounterElm(x1, y1);
-    	if (n=="DecadeElm")
+    	
+	// if you take out RingCounterElm, it will break subcircuits
+    	// if you take out DecadeElm, it will break the menus and people's saved shortcuts
+    	if (n=="DecadeElm" || n=="RingCounterElm")
     		return (CircuitElm) new RingCounterElm(x1, y1);
+    	
     	if (n=="TimerElm")
     		return (CircuitElm) new TimerElm(x1, y1);
     	if (n=="DACElm")
