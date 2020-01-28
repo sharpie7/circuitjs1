@@ -80,7 +80,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.CanvasElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.MetaElement;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -316,7 +319,14 @@ MouseOutHandler, MouseWheelHandler {
     
     public void init() {
 
+	//sets the meta tag to allow the css media queries to work
+	MetaElement meta = Document.get().createMetaElement();
+	meta.setName("viewport");
+	meta.setContent("width=device-width");
+	NodeList<com.google.gwt.dom.client.Element> node = Document.get().getElementsByTagName("head");
+	node.getItem(0).appendChild(meta);
 
+	
 	boolean printable = false;
 	boolean convention = true;
 	boolean euroRes = false;
@@ -829,8 +839,10 @@ MouseOutHandler, MouseWheelHandler {
 	function getTouchPos(canvasDom, touchEvent) {
   		var rect = canvasDom.getBoundingClientRect();
   		return {
-    			x: touchEvent.touches[0].clientX - rect.left,
-    			y: touchEvent.touches[0].clientY - rect.top
+//    			x: touchEvent.touches[0].clientX - rect.left,
+			x: touchEvent.touches[0].clientX,
+//    			y: touchEvent.touches[0].clientY - rect.top
+    			y: touchEvent.touches[0].clientY
   		};
 	}
 	
