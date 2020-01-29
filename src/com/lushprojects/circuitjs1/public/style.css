@@ -113,9 +113,5 @@
 		width: 100% !important;
 	}
 
-	/* selects the canvas */
-	.trigger+.triggerLabel+div+div>canvas {
-		position: relative;
-		width: 100% !important;
-	}
+
 }

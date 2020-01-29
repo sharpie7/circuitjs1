@@ -58,6 +58,8 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -276,7 +278,8 @@ MouseOutHandler, MouseWheelHandler {
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
     	height=(int)RootLayoutPanel.get().getOffsetHeight();
     	height=height-MENUBARHEIGHT;
-    	width=width-VERTICALPANELWIDTH;
+    	//not needed anymore since the width of the canvas' container div is set to 100% in ths CSS file
+    	//width=width-VERTICALPANELWIDTH;
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
@@ -839,10 +842,10 @@ MouseOutHandler, MouseWheelHandler {
 	function getTouchPos(canvasDom, touchEvent) {
   		var rect = canvasDom.getBoundingClientRect();
   		return {
-//    			x: touchEvent.touches[0].clientX - rect.left,
-			x: touchEvent.touches[0].clientX,
-//    			y: touchEvent.touches[0].clientY - rect.top
-    			y: touchEvent.touches[0].clientY
+    			x: touchEvent.touches[0].clientX - rect.left,
+//			x: touchEvent.touches[0].clientX,
+    			y: touchEvent.touches[0].clientY - rect.top
+//    			y: touchEvent.touches[0].clientY
   		};
 	}
 	
