@@ -58,8 +58,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -803,6 +801,7 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addEventListener("touchstart", function (e) {
         	mousePos = getTouchPos(cv, e);
   		var touch = e.touches[0];
+  		
   		var etype = "mousedown";
   		clearTimeout(tmout);
   		if (e.timeStamp-lastTap < 300) {
@@ -818,6 +817,7 @@ MouseOutHandler, MouseWheelHandler {
     			clientX: touch.clientX,
     			clientY: touch.clientY
   		});
+  		
   		e.preventDefault();
   		cv.dispatchEvent(mouseEvent);
 	}, false);
@@ -843,9 +843,7 @@ MouseOutHandler, MouseWheelHandler {
   		var rect = canvasDom.getBoundingClientRect();
   		return {
     			x: touchEvent.touches[0].clientX - rect.left,
-//			x: touchEvent.touches[0].clientX,
     			y: touchEvent.touches[0].clientY - rect.top
-//    			y: touchEvent.touches[0].clientY
   		};
 	}
 	

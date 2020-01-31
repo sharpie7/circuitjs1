@@ -99,6 +99,8 @@
 		height: 300px;
 		position: fixed;
 		top: 30px;
+		/* trick to prevent sub menus from opening in the same touch */
+		transition:all 0.1s;
 	}
 	.gwt-MenuBarPopup>div>table {
 		width: 100%;
