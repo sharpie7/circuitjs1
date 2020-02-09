@@ -269,11 +269,6 @@ package com.lushprojects.circuitjs1.client;
 		pcircle = interpPoint(point1, point2, 1-dist/dn);
 		pcircler = 3;
 	    }
-	    
-	    if (hasBodyTerminal())
-		bodyTerminal = 3;
-	    else
-		bodyTerminal = (pnp == -1) ? 2 : 1;
 	}
 
 	double lastv1, lastv2;
@@ -285,6 +280,11 @@ package com.lushprojects.circuitjs1.client;
 	    sim.stampNonLinear(nodes[1]);
 	    sim.stampNonLinear(nodes[2]);
 	    
+	    if (hasBodyTerminal())
+		bodyTerminal = 3;
+	    else
+		bodyTerminal = (pnp == -1) ? 2 : 1;
+
 	    if (doBodyDiode()) {
 		if (pnp == -1) {
 		    // pnp: diodes conduct when S or D are higher than body
@@ -418,7 +418,6 @@ package com.lushprojects.circuitjs1.client;
 		return;
 	    
 	    double rs = -pnp*ids0 + Gds*realvds + gm*realvgs;
-	    //System.out.println("M " + vds + " " + vgs + " " + ids + " " + gm + " "+ Gds + " " + volts[0] + " " + volts[1] + " " + volts[2] + " " + source + " " + rs + " " + this);
 	    sim.stampMatrix(nodes[drain],  nodes[drain],  Gds);
 	    sim.stampMatrix(nodes[drain],  nodes[source], -Gds-gm); 
 	    sim.stampMatrix(nodes[drain],  nodes[gate],   gm);
