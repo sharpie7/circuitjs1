@@ -4670,16 +4670,10 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new WireElm(x1, y1, x2, y2, f, st);
     	if (tint=='c')
     		return (CircuitElm) new CapacitorElm(x1, y1, x2, y2, f, st);   	
-    	if (tint==209)
-		return (CircuitElm) new PolarCapacitorElm(x1, y1, x2, y2, f, st);   	
     	if (tint=='l')
     		return (CircuitElm) new InductorElm(x1, y1, x2, y2, f, st);
     	if (tint=='v')
     		return (CircuitElm) new VoltageElm(x1, y1, x2, y2, f, st);
-    	if (tint==172)
-    		return (CircuitElm) new VarRailElm(x1, y1, x2, y2, f, st);
-    	if (tint==174)
-    		return (CircuitElm) new PotElm(x1, y1, x2, y2, f, st);
     	if (tint=='O')
     		return (CircuitElm) new OutputElm(x1, y1, x2, y2, f, st);
     	if (tint=='i')
@@ -4690,10 +4684,6 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new DiodeElm(x1, y1, x2, y2, f, st);
     	if (tint=='z')
     		return (CircuitElm) new ZenerElm(x1, y1, x2, y2, f, st);
-    	if (tint==170)
-    		return (CircuitElm) new SweepElm(x1, y1, x2, y2, f, st);
-    	if (tint==162)
-    		return (CircuitElm) new LEDElm(x1, y1, x2, y2, f, st);
     	if (tint=='A')
     		return (CircuitElm) new AntennaElm(x1, y1, x2, y2, f, st);
     	if (tint=='L')
@@ -4702,64 +4692,30 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new LogicOutputElm(x1, y1, x2, y2, f, st);
     	if (tint=='T')
     		return (CircuitElm) new TransformerElm(x1, y1, x2, y2, f, st);
-    	if (tint==169)
-    		return (CircuitElm) new TappedTransformerElm(x1, y1, x2, y2, f, st);
-    	if (tint==171)
-    		return (CircuitElm) new TransLineElm(x1, y1, x2, y2, f, st);
-    	if (tint==178)
-    		return (CircuitElm) new RelayElm(x1, y1, x2, y2, f, st);
     	if (tint=='m')
     		return (CircuitElm) new MemristorElm(x1, y1, x2, y2, f, st);
-    	if (tint==187)
-    		return (CircuitElm) new SparkGapElm(x1, y1, x2, y2, f, st);
-    	if (tint==200)
-    		return (CircuitElm) new AMElm(x1, y1, x2, y2, f, st);
-    	if (tint==201)
-    		return (CircuitElm) new FMElm(x1, y1, x2, y2, f, st);
     	if (tint=='n')
-		return (CircuitElm) new NoiseElm(x1, y1, x2, y2, f, st);
-    	if (tint==181)
-    		return (CircuitElm) new LampElm(x1, y1, x2, y2, f, st);
+    		return (CircuitElm) new NoiseElm(x1, y1, x2, y2, f, st);
     	if (tint=='a')
     		return (CircuitElm) new OpAmpElm(x1, y1, x2, y2, f, st);
     	if (tint=='f')
     		return (CircuitElm) new MosfetElm(x1, y1, x2, y2, f, st);
     	if (tint=='j')
     		return (CircuitElm) new JfetElm(x1, y1, x2, y2, f, st);
-    	if (tint==159)
-    		return (CircuitElm) new AnalogSwitchElm(x1, y1, x2, y2, f, st);
-    	if (tint==160)
-    		return (CircuitElm) new AnalogSwitch2Elm(x1, y1, x2, y2, f, st);
-    	if (tint==180)
-    		return (CircuitElm) new TriStateElm(x1, y1, x2, y2, f, st);
-    	if (tint==182)
-    		return (CircuitElm) new SchmittElm(x1, y1, x2, y2, f, st);
-    	if (tint==183)
-    		return (CircuitElm) new InvertingSchmittElm(x1, y1, x2, y2, f, st);
-    	if (tint==177)
-    		return (CircuitElm) new SCRElm(x1, y1, x2, y2, f, st);
-    	if (tint==203)
-    		return (CircuitElm) new DiacElm(x1, y1, x2, y2, f, st);
-    	if (tint==206)
-    		return (CircuitElm) new TriacElm(x1, y1, x2, y2, f, st);
-    	if (tint==173)
-    		return (CircuitElm) new TriodeElm(x1, y1, x2, y2, f, st);
-    	if (tint==175)
-    		return (CircuitElm) new TunnelDiodeElm(x1, y1, x2, y2, f, st);
-    	if (tint==176)
-		return (CircuitElm) new VaractorElm(x1, y1, x2, y2, f, st);
-    	if (tint==179)
-    		return (CircuitElm) new CC2Elm(x1, y1, x2, y2, f, st);
     	if (tint=='I')
     		return (CircuitElm) new InverterElm(x1, y1, x2, y2, f, st);
-    	if (tint==151)
-    		return (CircuitElm) new NandGateElm(x1, y1, x2, y2, f, st);
-    	if (tint==153)
-    		return (CircuitElm) new NorGateElm(x1, y1, x2, y2, f, st);
+    	if (tint=='b')
+    		return (CircuitElm) new BoxElm(x1, y1, x2, y2, f, st);
+    	if (tint=='x')
+    		return (CircuitElm) new TextElm(x1, y1, x2, y2, f, st);
     	if (tint==150)
     		return (CircuitElm) new AndGateElm(x1, y1, x2, y2, f, st);
+    	if (tint==151)
+    		return (CircuitElm) new NandGateElm(x1, y1, x2, y2, f, st);
     	if (tint==152)
     		return (CircuitElm) new OrGateElm(x1, y1, x2, y2, f, st);
+    	if (tint==153)
+    		return (CircuitElm) new NorGateElm(x1, y1, x2, y2, f, st);
     	if (tint==154)
     		return (CircuitElm) new XorGateElm(x1, y1, x2, y2, f, st);
     	if (tint==155)
@@ -4768,20 +4724,20 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new JKFlipFlopElm(x1, y1, x2, y2, f, st);
     	if (tint==157)
     		return (CircuitElm) new SevenSegElm(x1, y1, x2, y2, f, st);
-    	if (tint==184)
-    		return (CircuitElm) new MultiplexerElm(x1, y1, x2, y2, f, st);
-    	if (tint==185)
-    		return (CircuitElm) new DeMultiplexerElm(x1, y1, x2, y2, f, st);
-    	if (tint==189)
-    		return (CircuitElm) new SipoShiftElm(x1, y1, x2, y2, f, st);
-    	if (tint==186)
-    		return (CircuitElm) new PisoShiftElm(x1, y1, x2, y2, f, st);
+    	if (tint==158)
+    		return (CircuitElm) new VCOElm(x1, y1, x2, y2, f, st);
+    	if (tint==159)
+    		return (CircuitElm) new AnalogSwitchElm(x1, y1, x2, y2, f, st);
+    	if (tint==160)
+    		return (CircuitElm) new AnalogSwitch2Elm(x1, y1, x2, y2, f, st);
     	if (tint==161)
     		return (CircuitElm) new PhaseCompElm(x1, y1, x2, y2, f, st);
-    	if (tint==164)
-    		return (CircuitElm) new CounterElm(x1, y1, x2, y2, f, st);
+    	if (tint==162)
+    		return (CircuitElm) new LEDElm(x1, y1, x2, y2, f, st);
     	if (tint==163)
     		return (CircuitElm) new RingCounterElm(x1, y1, x2, y2, f, st);
+    	if (tint==164)
+    		return (CircuitElm) new CounterElm(x1, y1, x2, y2, f, st);
     	if (tint==165)
     		return (CircuitElm) new TimerElm(x1, y1, x2, y2, f, st);
     	if (tint==166)
@@ -4790,28 +4746,72 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new ADCElm(x1, y1, x2, y2, f, st);
     	if (tint==168)
     		return (CircuitElm) new LatchElm(x1, y1, x2, y2, f, st);
+    	if (tint==169)
+    		return (CircuitElm) new TappedTransformerElm(x1, y1, x2, y2, f, st);
+    	if (tint==170)
+    		return (CircuitElm) new SweepElm(x1, y1, x2, y2, f, st);
+    	if (tint==171)
+    		return (CircuitElm) new TransLineElm(x1, y1, x2, y2, f, st);
+    	if (tint==172)
+    		return (CircuitElm) new VarRailElm(x1, y1, x2, y2, f, st);
+    	if (tint==173)
+    		return (CircuitElm) new TriodeElm(x1, y1, x2, y2, f, st);
+    	if (tint==174)
+    		return (CircuitElm) new PotElm(x1, y1, x2, y2, f, st);
+    	if (tint==175)
+    		return (CircuitElm) new TunnelDiodeElm(x1, y1, x2, y2, f, st);
+    	if (tint==176)
+    		return (CircuitElm) new VaractorElm(x1, y1, x2, y2, f, st);
+    	if (tint==177)
+    		return (CircuitElm) new SCRElm(x1, y1, x2, y2, f, st);
+    	if (tint==178)
+    		return (CircuitElm) new RelayElm(x1, y1, x2, y2, f, st);
+    	if (tint==179)
+    		return (CircuitElm) new CC2Elm(x1, y1, x2, y2, f, st);
+    	if (tint==180)
+    		return (CircuitElm) new TriStateElm(x1, y1, x2, y2, f, st);
+    	if (tint==181)
+    		return (CircuitElm) new LampElm(x1, y1, x2, y2, f, st);
+    	if (tint==182)
+    		return (CircuitElm) new SchmittElm(x1, y1, x2, y2, f, st);
+    	if (tint==183)
+    		return (CircuitElm) new InvertingSchmittElm(x1, y1, x2, y2, f, st);
+    	if (tint==184)
+    		return (CircuitElm) new MultiplexerElm(x1, y1, x2, y2, f, st);
+    	if (tint==185)
+    		return (CircuitElm) new DeMultiplexerElm(x1, y1, x2, y2, f, st);
+    	if (tint==186)
+    		return (CircuitElm) new PisoShiftElm(x1, y1, x2, y2, f, st);
+    	if (tint==187)
+    		return (CircuitElm) new SparkGapElm(x1, y1, x2, y2, f, st);
     	if (tint==188)
     		return (CircuitElm) new SeqGenElm(x1, y1, x2, y2, f, st);
-    	if (tint==158)
-    		return (CircuitElm) new VCOElm(x1, y1, x2, y2, f, st);
-    	if (tint=='b')
-    		return (CircuitElm) new BoxElm(x1, y1, x2, y2, f, st);
-    	if (tint=='x')
-    		return (CircuitElm) new TextElm(x1, y1, x2, y2, f, st);
+    	if (tint==189)
+    		return (CircuitElm) new SipoShiftElm(x1, y1, x2, y2, f, st);
     	if (tint==193)
     		return (CircuitElm) new TFlipFlopElm(x1, y1, x2, y2, f, st);
-    	if (tint==197)
-    		return (CircuitElm) new SevenSegDecoderElm(x1, y1, x2, y2, f, st);
-    	if (tint==196)
-    		return (CircuitElm) new FullAdderElm(x1, y1, x2, y2, f, st);
-    	if (tint==195)
-    		return (CircuitElm) new HalfAdderElm(x1, y1, x2, y2, f, st);
     	if (tint==194)
     		return (CircuitElm) new MonostableElm(x1, y1, x2, y2, f, st);
+    	if (tint==195)
+    		return (CircuitElm) new HalfAdderElm(x1, y1, x2, y2, f, st);
+    	if (tint==196)
+    		return (CircuitElm) new FullAdderElm(x1, y1, x2, y2, f, st);
+    	if (tint==197)
+    		return (CircuitElm) new SevenSegDecoderElm(x1, y1, x2, y2, f, st);
+    	if (tint==200)
+    	    return (CircuitElm) new AMElm(x1, y1, x2, y2, f, st);
+    	if (tint==201)
+    	    return (CircuitElm) new FMElm(x1, y1, x2, y2, f, st);
+    	if (tint==203)
+    	    return (CircuitElm) new DiacElm(x1, y1, x2, y2, f, st);
+    	if (tint==206)
+    	    return (CircuitElm) new TriacElm(x1, y1, x2, y2, f, st);
     	if (tint==207)
-    		return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
+    	    return (CircuitElm) new LabeledNodeElm(x1, y1, x2, y2, f, st);
     	if (tint==208)
     	    return (CircuitElm) new CustomLogicElm(x1, y1, x2, y2, f, st);
+    	if (tint==209)
+    	    return (CircuitElm) new PolarCapacitorElm(x1, y1, x2, y2, f, st);   	
     	if (tint==210)
     	    return (CircuitElm) new DataRecorderElm(x1, y1, x2, y2, f, st);
     	if (tint==211)
