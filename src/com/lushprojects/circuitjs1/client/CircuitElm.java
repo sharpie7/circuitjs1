@@ -847,6 +847,7 @@ public abstract class CircuitElm implements Editable {
     	g.setColor(getVoltageColor(g, volts));
     }
     
+    // yellow argument is unused, can't remember why it was there
     void setPowerColor(Graphics g, boolean yellow) {
 
 	/*if (conductanceCheckItem.getState()) {
