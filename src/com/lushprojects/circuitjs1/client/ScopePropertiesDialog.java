@@ -9,12 +9,14 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.CheckBox;
 
 class ScopeCheckBox extends CheckBox {
@@ -42,6 +44,7 @@ CirSim sim;
 TextArea textArea;
 CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox;
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox;
+TextBox labelTextBox;
 Scrollbar speedBar;
 Scope scope;
 Grid grid, speedGrid;
@@ -75,14 +78,14 @@ Label scopeSpeedLabel;
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
 		if (!transistor) {
-		    grid = new Grid(8, 3);
+		    grid = new Grid(10, 3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
 		} else {
-		    grid = new Grid(9, 3);
+		    grid = new Grid(11, 3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
@@ -128,6 +131,12 @@ Label scopeSpeedLabel;
 		dutyBox.addValueChangeHandler(this); 
 		fp.add(grid);
 
+		addLabelToGrid(grid, CirSim.LS("Custom Label"));
+		labelTextBox = new TextBox();
+		addItemToGrid(grid, labelTextBox);
+		String labelText = scope.getText();
+		if (labelText != null)
+		    labelTextBox.setText(labelText);
 		
 		updateUI();
 		hp = new HorizontalPanel();
@@ -171,7 +180,7 @@ Label scopeSpeedLabel;
 	    scopeSpeedLabel.setText(CircuitElm.getUnitText(scope.calcGridStepX(), "s")+"/div");
 	}
 	
-	void addItemToGrid(Grid g, CheckBox scb) {
+	void addItemToGrid(Grid g, FocusWidget scb) {
 	    g.setWidget(ny, nx, scb);
 	    if (++nx >= grid.getColumnCount()) {
 		nx = 0;
@@ -221,6 +230,10 @@ Label scopeSpeedLabel;
 	
 	protected void closeDialog()
 	{
+	    	String label = labelTextBox.getText();
+	    	if (label.length() == 0)
+	    	    label = null;
+	    	scope.setText(label);
 		this.hide();
 	}
 
