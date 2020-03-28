@@ -100,6 +100,9 @@ class SliderDialog extends DialogBox  {
 			Adjustable adj = findAdjustable(i);
 			String name = CirSim.LS(ei.name);
 			idx = vp.getWidgetIndex(hp);
+
+			// remove HTML
+			name = name.replaceAll("<[^>]*>", "");
 			ei.checkbox = new Checkbox(name, adj != null);
 			vp.insert(ei.checkbox, idx++);
                         ei.checkbox.addValueChangeHandler( new ValueChangeHandler<Boolean>() {

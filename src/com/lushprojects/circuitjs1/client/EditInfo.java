@@ -40,6 +40,7 @@ class EditInfo {
 	}
 		
 	EditInfo setDimensionless() { dimensionless = true; return this; }
+	EditInfo disallowSliders() { noSliders = true; return this; }
 	int changeFlag(int flags, int bit) {
 	    if (checkbox.getState())
 		return flags | bit;
@@ -56,12 +57,14 @@ class EditInfo {
 	Widget widget;
 	boolean newDialog;
 	boolean dimensionless;
+	boolean noSliders;
 	
 	// for slider dialog
 	TextBox minBox, maxBox, labelBox;
 	
 	boolean canCreateAdjustable() {
-	    return choice == null && checkbox == null && button == null && textArea == null && widget == null;
+	    return choice == null && checkbox == null && button == null && textArea == null &&
+			widget == null && !noSliders;
 	}
 }
     
