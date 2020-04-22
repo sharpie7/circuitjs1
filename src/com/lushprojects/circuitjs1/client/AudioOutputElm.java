@@ -197,7 +197,7 @@ public class AudioOutputElm extends CircuitElm {
 	}
 	
         void createButton() {
-            String label = "&#9654; Play Audio";
+            String label = "&#9654; " + sim.LS("Play Audio");
             if (labelNum > 1)
         	label += " " + labelNum;
             sim.addWidgetToVerticalPanel(button = new Button(label));
@@ -352,9 +352,16 @@ public class AudioOutputElm extends CircuitElm {
             }
             
             double adj = -(max+min)/2;
-            double mult = 32766/(max+adj);
+            double mult = (.25*32766)/(max+adj);
+            
+            // fade in over 1/20 sec
+	    int fadeLen = samplingRate/20;
+	    int fadeOut = ct-fadeLen;
+	    
+	    double fadeMult = mult/fadeLen;
             for (i = 0; i != ct; i++) {
-        	int s = (int)((data[(i+base)%dataCount]+adj)*mult);
+		double fade = (i < fadeLen) ? i*fadeMult : (i > fadeOut) ? (ct-i)*fadeMult : mult;
+        	int s = (int)((data[(i+base)%dataCount]+adj)*fade);
         	arr.push(s);
             }
             playJS(arr, samplingRate);
