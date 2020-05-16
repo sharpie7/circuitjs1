@@ -145,11 +145,12 @@ class VoltageElm extends CircuitElm {
 	setBbox(x, y, x2, y2);
 	draw2Leads(g);
 	if (waveform == WF_DC) {
-	    setPowerColor(g, false);
 	    setVoltageColor(g, volts[0]);
+	    setPowerColor(g, false);
 	    interpPoint2(lead1, lead2, ps1, ps2, 0, 10);
 	    drawThickLine(g, ps1, ps2);
 	    setVoltageColor(g, volts[1]);
+	    setPowerColor(g, false);
 	    int hs = 16;
 	    setBbox(point1, point2, hs);
 	    interpPoint2(lead1, lead2, ps1, ps2, 1, hs);
@@ -230,6 +231,7 @@ class VoltageElm extends CircuitElm {
 	case WF_NOISE:
 	{
 	    g.setColor(needsHighlight() ? selectColor : whiteColor);
+	    setPowerColor(g, false);
 	    drawCenteredText(g, sim.LS("Noise"), xc, yc, true);
 	    break;
 	}

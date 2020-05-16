@@ -98,4 +98,5 @@ package com.lushprojects.circuitjs1.client;
 	double getVoltageDiff() {
 	    return volts[1] - volts[0];
 	}
+	double getPower() { return -getVoltageDiff()*current; }
     }

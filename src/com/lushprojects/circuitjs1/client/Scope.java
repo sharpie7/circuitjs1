@@ -352,6 +352,14 @@ class Scope {
 	setValue(val);
     }
     
+    void setText(String s) {
+	text = s;
+    }
+    
+    String getText() {
+	return text;
+    }
+    
     boolean showingValue(int v) {
 	int i;
 	for (i = 0; i != plots.size(); i++) {
@@ -512,7 +520,7 @@ class Scope {
     void drawFFT(Graphics g) {
     	if (fft == null || fft.getSize() != scopePointCount)
     		fft = new FFT(scopePointCount);
-      int y = (rect.height - 1) / 2;
+      int y = (rect.height - 1) - 12;
       double[] real = new double[scopePointCount];
       double[] imag = new double[scopePointCount];
       ScopePlot plot = (visiblePlots.size() == 0) ? plots.firstElement() : visiblePlots.firstElement();
@@ -533,18 +541,17 @@ class Scope {
     	  if (m > maxM)
     		  maxM = m;
       }
-      double magnitude = fft.magnitude(real[0], imag[0]);
-      int prevHeight = (int) ((magnitude * y) / maxM);
+      int prevHeight = 0;
       int prevX = 0;
       g.setColor("#FF0000");
-      for (int i = 1; i < scopePointCount / 2; i++) {
+      for (int i = 0; i < scopePointCount / 2; i++) {
         int x = 2 * i * rect.width / scopePointCount;
         // rect.width may be greater than or less than scopePointCount/2,
         // so x may be greater than or equal to prevX.
-        if (x == prevX) continue;
-        magnitude = fft.magnitude(real[i], imag[i]);
+        double magnitude = fft.magnitude(real[i], imag[i]);
         int height = (int) ((magnitude * y) / maxM);
-        g.drawLine(prevX, y - prevHeight, x, y - height);
+        if (x != prevX)
+            g.drawLine(prevX, y - prevHeight, x, y - height);
         prevHeight = height;
         prevX = x;
       }
@@ -1327,6 +1334,7 @@ class Scope {
     
     void properties() {
 	properties = new ScopePropertiesDialog(sim, this);
+	CirSim.dialogShowing = properties;
     }
     
     void speedUp() {
@@ -1402,7 +1410,7 @@ class Scope {
     		x += " " + scale[p.units];
     	}
     	if (text != null)
-    		x += " " + text;
+    	    	x += " " + CustomLogicModel.escape(text);
     	return x;
     }
     
@@ -1492,6 +1500,8 @@ class Scope {
     	    }
     	    setValues(value, ivalue, sim.getElm(e), yElm);
     	}
+    	if (text != null)
+    	    text = CustomLogicModel.unescape(text);
     	plot2d = plot2dFlag;
     	setFlags(flags);
     }

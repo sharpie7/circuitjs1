@@ -231,6 +231,7 @@ public class CustomLogicElm extends ChipElm {
 	if (n == 2) {
 	    EditInfo ei = new EditInfo("Model Name", 0, -1, -1);
 	    ei.text = modelName;
+	    ei.disallowSliders();
 	    return ei;
 	}
 	if (n == 3) {

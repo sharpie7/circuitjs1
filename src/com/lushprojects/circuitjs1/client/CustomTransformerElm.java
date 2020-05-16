@@ -410,6 +410,7 @@ class CustomTransformerElm extends CircuitElm {
 	    if (n == 1) {
 		EditInfo ei = new EditInfo("<a href=\"customtransformer.html\" target=\"_blank\">Description</a>", 0, -1, -1);
 		ei.text = description;
+		ei.disallowSliders();
 		return ei;
 	    }
 	    if (n == 2)
