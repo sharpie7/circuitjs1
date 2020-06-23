@@ -263,7 +263,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
         if (n == 1)
             return new EditInfo("Series Resistance", seriesResistance, -1, -1);
         if (n == 2)
-            return new EditInfo("Emission Coefficient", emissionCoefficient, -1, -1);
+            return new EditInfo("<a href=\"diodecalc.html\">Emission Coefficient</a>", emissionCoefficient, -1, -1);
         if (n == 3)
             return new EditInfo("Breakdown Voltage", breakdownVoltage, -1, -1);
 	return null;
