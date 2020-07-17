@@ -297,6 +297,10 @@ MouseOutHandler, MouseWheelHandler {
 		circuitArea = new Rectangle(0, 0, width, height-h);
     }
     
+    native String decompress(String dump) /*-{
+        return $wnd.LZString.decompressFromEncodedURIComponent(dump);
+    }-*/;
+
 //    Circuit applet;
 
     CirSim() {
@@ -333,6 +337,9 @@ MouseOutHandler, MouseWheelHandler {
 		String cct=qp.getValue("cct");
 		if (cct!=null)
 			startCircuitText = cct.replace("%24", "$");
+		String ctz=qp.getValue("ctz");
+		if (ctz!= null)
+		    startCircuitText = decompress(ctz);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
 		startCircuitLink = qp.getValue("startCircuitLink");

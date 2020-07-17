@@ -42,15 +42,10 @@ public class AboutBox extends PopupPanel {
 		"<p>Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo Hausen for file import/export and many other UI improvements; "+  
 		"J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; "+
 		"Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; " +
-		"Thomas Reitinger for the German translation; " +
-		"Krystian Sławiński for the Polish translation; " +
-		"Usevalad Khatkevich for the Russian translation; " +
-		"Lucio Sciamanna for the Italian translation; " +
-		"Mauro Hemerly Gazzani for the Portuguese translation; " +
-		"J. Miguel Silva for the Spanish translation; " +
-		"Franck Viard for the French translation; " +
+		"Thomas Reitinger, Krystian Sławiński, Usevalad Khatkevich, Lucio Sciamanna, " +
+		"Mauro Hemerly Gazzani, J. Miguel Silva, and Franck Viard for translations; " +
 		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; " +
-		"Colin Howell for code improvements.</p>"+
+		"Colin Howell for code improvements.  LZString (c) 2013 pieroxy.</p>"+
 		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
 		"under the terms of the GNU General Public License as published by "+
 		"the Free Software Foundation, either version 2 of the License, or "+
