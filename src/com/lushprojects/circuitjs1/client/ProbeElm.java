@@ -24,6 +24,8 @@ package com.lushprojects.circuitjs1.client;
 class ProbeElm extends CircuitElm {
     static final int FLAG_SHOWVOLTAGE = 1;
     int meter;
+    int units;
+    int scale;
     final int TP_VOL = 0;
     final int TP_RMS = 1;
     final int TP_MAX = 2;
@@ -40,18 +42,21 @@ class ProbeElm extends CircuitElm {
     	
     	// default for new elements
     	flags = FLAG_SHOWVOLTAGE;
+    	scale = SCALE_AUTO;
     }
     public ProbeElm(int xa, int ya, int xb, int yb, int f,
 		    StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
     	meter = TP_VOL;
+    	scale = SCALE_AUTO;
 	try {
-	    meter = new Integer(st.nextToken()).intValue(); //get meter type from saved dump
+	    meter = Integer.parseInt(st.nextToken()); // get meter type from saved dump
+	    scale = Integer.parseInt(st.nextToken());
 	} catch (Exception e) {}
     }
     int getDumpType() { return 'p'; }
     String dump() {
-        return super.dump() + " " + meter ;
+        return super.dump() + " " + meter + " " + scale;
     }
     String getMeter(){
         switch (meter) {
@@ -126,31 +131,31 @@ class ProbeElm extends CircuitElm {
 	    String s = "";
 	        switch (meter) {
 	            case TP_VOL:
-	                s = myGetUnitText(getVoltageDiff(),"V",false);
+	                s = getUnitTextWithScale(getVoltageDiff(),"V", scale);
 	                break;
 	            case TP_RMS:
-	                s = myGetUnitText(rmsV,"V(rms)",false);
+	                s = getUnitTextWithScale(rmsV,"V(rms)", scale);
 	                break;
 	            case TP_MAX:
-	                s = myGetUnitText(lastMaxV,"Vpk",false);
+	                s = getUnitTextWithScale(lastMaxV,"Vpk", scale);
 	                break;
 	            case TP_MIN:
-	                s = myGetUnitText(lastMinV,"Vmin",false);
+	                s = getUnitTextWithScale(lastMinV,"Vmin", scale);
 	                break;
 	            case TP_P2P:
-	                s = myGetUnitText(lastMaxV-lastMinV,"Vp2p",false);
+	                s = getUnitTextWithScale(lastMaxV-lastMinV,"Vp2p", scale);
 	                break;
 	            case TP_BIN:
 	                s= binaryLevel + "";
 	                break;
 	            case TP_FRQ:
-	                s = myGetUnitText(frequency, "Hz", false);
+	                s = getUnitText(frequency, "Hz");
 	                break;
 	            case TP_PER:
 //	                s = "percent:"+period + " " + sim.timeStep + " " + sim.simTime + " " + sim.getIterCount();
 	                break;
 	            case TP_PWI:
-	                s = myGetUnitText(pulseWidth, "S", false);
+	                s = getUnitText(pulseWidth, "S");
 	                break;
 	            case TP_DUT:
 	                s = showFormat.format(dutyCycle);
@@ -169,7 +174,7 @@ class ProbeElm extends CircuitElm {
            g.drawString("+", plusPoint.x-w/2, plusPoint.y);
 	drawPosts(g);
     }
-	
+
     boolean mustShowVoltage() {
 	return (flags & FLAG_SHOWVOLTAGE) != 0;
     }
@@ -277,6 +282,16 @@ class ProbeElm extends CircuitElm {
             ei.choice.select(meter);
             return ei;
         }
+        if (n == 2) {
+            EditInfo ei =  new EditInfo("Scale", 0);
+            ei.choice = new Choice();
+            ei.choice.add("Auto");
+            ei.choice.add("V");
+            ei.choice.add("mV");
+            ei.choice.add(CirSim.muString + "V");
+            ei.choice.select(scale);
+            return ei;
+        }
 
 return null;
     }
@@ -291,6 +306,8 @@ return null;
         if (n==1){
             meter = ei.choice.getSelectedIndex();
         }
+        if (n == 2)
+            scale = ei.choice.getSelectedIndex();
     }
 }
 

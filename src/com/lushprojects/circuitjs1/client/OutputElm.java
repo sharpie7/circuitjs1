@@ -21,10 +21,22 @@ package com.lushprojects.circuitjs1.client;
 
     class OutputElm extends CircuitElm {
 	final int FLAG_VALUE = 1;
-	public OutputElm(int xx, int yy) { super(xx, yy); }
+        int scale;
+	public OutputElm(int xx, int yy) {
+	    super(xx, yy);
+	    scale = SCALE_AUTO;
+	}
 	public OutputElm(int xa, int ya, int xb, int yb, int f,
 			 StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
+	    scale = SCALE_AUTO;
+	    try {
+		scale = Integer.parseInt(st.nextToken());
+	    } catch (Exception e) {}
+	}
+	
+	String dump() {
+	    return super.dump() + " " + scale;
 	}
 	int getDumpType() { return 'O'; }
 	int getPostCount() { return 1; }
@@ -37,7 +49,7 @@ package com.lushprojects.circuitjs1.client;
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
-	    String s = (flags & FLAG_VALUE) != 0 ? getVoltageText(volts[0]) : "out";
+	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : "out";
 //	    FontMetrics fm = g.getFontMetrics();
 	    if (this == sim.plotXElm)
 		s = "X";
@@ -64,15 +76,27 @@ package com.lushprojects.circuitjs1.client;
 					   (flags & FLAG_VALUE) != 0);
 		return ei;
 	    }
+	    if (n == 1) {
+		EditInfo ei =  new EditInfo("Scale", 0);
+		ei.choice = new Choice();
+		ei.choice.add("Auto");
+		ei.choice.add("V");
+		ei.choice.add("mV");
+		ei.choice.add(CirSim.muString + "V");
+		ei.choice.select(scale);
+		return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0)
 		flags = (ei.checkbox.getState()) ?
-		    (flags | FLAG_VALUE) :
-		    (flags & ~FLAG_VALUE);
+			(flags | FLAG_VALUE) :
+			    (flags & ~FLAG_VALUE);
+	    if (n==1)
+		scale = ei.choice.getSelectedIndex();
 	}
-	
+
 //    void drawHandles(Graphics g, Color c) {
 //    	g.setColor(c);
 //		g.fillRect(x-3, y-3, 7, 7);
