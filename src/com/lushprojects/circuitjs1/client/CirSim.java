@@ -1903,6 +1903,7 @@ MouseOutHandler, MouseWheelHandler {
 		} else
 		    cur.broken = false;
 	    }
+	    
 	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
 	    // because those are optimized out, so the findPath won't work)
 	    if (ce.getPostCount() == 2) {
@@ -1914,8 +1915,17 @@ MouseOutHandler, MouseWheelHandler {
 			return;
 		    }
 		}
+	    } else if (ce instanceof Switch2Elm) {
+		// for Switch2Elms we need to do extra work to look for wire loops
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
+						    ce.getNode(0));
+		for (j = 1; j < ce.getPostCount(); j++)
+		    if (ce.getConnection(0, j) && fpi.findPath(ce.getNode(j))) {
+			stop("Voltage source/wire loop with no resistance!", ce);
+			return;
+		    }
 	    }
-	    
+
 	    // look for path from rail to ground
 	    if (ce instanceof RailElm) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,

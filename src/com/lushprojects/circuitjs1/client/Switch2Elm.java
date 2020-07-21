@@ -144,6 +144,7 @@ package com.lushprojects.circuitjs1.client;
 		return false;
 	    return comparePair(n1, n2, 0, 1+position);
 	}
+	boolean isWire() { return true; }
 	void getInfo(String arr[]) {
 	    arr[0] = "switch (" + (link == 0 ? "S" : "D") + "P" +
 		    ((throwCount > 2) ? throwCount+"T)" : "DT)");
