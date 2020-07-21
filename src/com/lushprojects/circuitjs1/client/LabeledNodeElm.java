@@ -110,7 +110,22 @@ class LabeledNodeElm extends CircuitElm {
 	drawThickLine(g, point1, lead1);
 	g.setColor(needsHighlight() ? selectColor : whiteColor);
 	setPowerColor(g, false);
-	drawCenteredText(g, text, x2, y2, true);
+	String str = text;
+	boolean lineOver = false;
+	if (str.startsWith("/")) {
+	    lineOver = true;
+	    str = str.substring(1);
+	}
+	drawCenteredText(g, str, x2, y2, true);
+	if (lineOver) {
+	    int asc=(int)g.currentFontSize;
+	    if (lineOver) {
+		int ya = y2-asc;
+                int sw=(int)g.context.measureText(str).getWidth();
+                g.drawLine(x2-sw/2, ya, x2+sw/2, ya);
+	    }
+	}
+
 	curcount = updateDotCount(current, curcount);
 	drawDots(g, point1, lead1, curcount);
 	interpPoint(point1, point2, ps2, 1+11./dn);
