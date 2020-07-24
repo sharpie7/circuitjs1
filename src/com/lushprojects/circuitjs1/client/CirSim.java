@@ -1081,6 +1081,8 @@ MouseOutHandler, MouseWheelHandler {
     
     public void setSimRunning(boolean s) {
     	if (s) {
+    	    	if (stopMessage != null)
+    	    	    return;
     		simRunning = true;
     		runStopButton.setHTML(LSHTML("<strong>RUN</strong>&nbsp;/&nbsp;Stop"));
     		runStopButton.setStylePrimaryName("topButton");
