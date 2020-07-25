@@ -323,6 +323,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean convention = true;
 	boolean euroRes = false;
 	boolean usRes = false;
+	boolean running = true;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -345,6 +346,7 @@ MouseOutHandler, MouseWheelHandler {
 		startCircuitLink = qp.getValue("startCircuitLink");
 		euroRes = qp.getBooleanValue("euroResistors", false);
 		usRes = qp.getBooleanValue("usResistors",  false);
+		running = qp.getBooleanValue("running", true);
 		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
@@ -671,7 +673,7 @@ MouseOutHandler, MouseWheelHandler {
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
-		setSimRunning(true);
+		setSimRunning(running);
     }
 
     MenuItem menuItemWithShortcut(String text, String shortcut, MyCommand cmd) {
