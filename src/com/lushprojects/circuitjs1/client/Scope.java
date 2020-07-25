@@ -398,8 +398,32 @@ class Scope {
 	plots = visiblePlots;
 	plots.addAll(s.visiblePlots);
 	s.plots.removeAllElements();
+	calcVisiblePlots();
     }
     
+    int separate(Scope arr[], int pos) {
+	int i;
+	sim.console("Separate " + this);
+	ScopePlot lastPlot = null;
+	for (i = 0; i != visiblePlots.size(); i++) {
+	    if (pos >= arr.length)
+		return pos;
+	    Scope s = new Scope(sim);
+	    ScopePlot sp = visiblePlots.get(i);
+	    if (lastPlot != null && lastPlot.elm == sp.elm && lastPlot.value == 0 && sp.value == VAL_CURRENT)
+		continue;
+	    if (lastPlot != null)
+	        sim.console("sep " + lastPlot.elm + " " + sp.elm + " " + lastPlot.value + " " + sp.value);
+	    s.setValue(sp.value, sp.elm);
+	    s.position = pos;
+	    arr[pos++] = s;
+	    lastPlot = sp;
+	    s.setFlags(getFlags());
+	    s.setSpeed(speed);
+	}
+	return pos;
+    }
+
     void removePlot(int plot) {
 	if (plot < visiblePlots.size()) {
 	    ScopePlot p = visiblePlots.get(plot);

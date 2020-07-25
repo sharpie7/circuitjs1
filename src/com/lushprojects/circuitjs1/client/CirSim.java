@@ -445,6 +445,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(new MenuItem(LS("Stack All"), new MyCommand("scopes", "stackAll")));
 	m.addItem(new MenuItem(LS("Unstack All"),new MyCommand("scopes", "unstackAll")));
 	m.addItem(new MenuItem(LS("Combine All"),new MyCommand("scopes", "combineAll")));
+	m.addItem(new MenuItem(LS("Separate All"),new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 		
 	optionsMenuBar = m = new MenuBar(true );
@@ -2697,6 +2698,8 @@ MouseOutHandler, MouseWheelHandler {
     		unstackAll();
     	if (item=="combineAll")
 		combineAll();
+    	if (item=="separateAll")
+		separateAll();
     	if (item=="zoomin")
     	    zoomCircuit(20);
     	if (item=="zoomout")
@@ -2901,6 +2904,15 @@ MouseOutHandler, MouseWheelHandler {
     	}
     }
     
+    void separateAll() {
+    	int i;
+	Scope newscopes[] = new Scope[20];
+	int ct = 0;
+    	for (i = 0; i < scopeCount; i++)
+    	    ct = scopes[i].separate(newscopes, ct);
+	scopes = newscopes;
+	scopeCount = ct;
+    }
 
     void doEdit(Editable eable) {
     	clearSelection();
