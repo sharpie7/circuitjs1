@@ -324,6 +324,8 @@ MouseOutHandler, MouseWheelHandler {
 	boolean euroRes = false;
 	boolean usRes = false;
 	boolean running = true;
+	boolean hideSidebar = false;
+	boolean hideMenu = false;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -347,6 +349,8 @@ MouseOutHandler, MouseWheelHandler {
 		euroRes = qp.getBooleanValue("euroResistors", false);
 		usRes = qp.getBooleanValue("usResistors",  false);
 		running = qp.getBooleanValue("running", true);
+		hideSidebar = qp.getBooleanValue("hideSidebar", false);
+		hideMenu = qp.getBooleanValue("hideMenu", false);
 		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
@@ -525,9 +529,13 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar);
 	loadShortcuts();
 
-	  
-	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
-	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
+	if (!hideMenu)
+	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
+
+	if (hideSidebar)
+	    VERTICALPANELWIDTH = 0;
+	else
+	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
 	
 	cv =Canvas.createIfSupported();
