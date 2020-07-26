@@ -90,7 +90,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 //	addDefaultModel("1N3891", new DiodeModel(63e-9, 9.6e-3, 2, 0));  // doesn't match datasheet very well
 	
 	// http://users.skynet.be/hugocoolens/spice/diodes/1n4148.htm
-	addDefaultModel("1N4148", new DiodeModel(4.35e-9, .6458, 1, 75, "switching"));
+	addDefaultModel("1N4148", new DiodeModel(4.352e-9, .6458, 1.906, 75, "switching"));
     }
 
     static void addDefaultModel(String name, DiodeModel dm) {
