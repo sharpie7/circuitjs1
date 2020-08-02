@@ -77,7 +77,7 @@ The general approach to building an Electron application for a particular platfo
 
 To build the Electron application:
 * Compile the application using GWT, as above.
-* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 1.8.7 for the target platform.
+* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 9.1.0 for the target platform.
 * Copy the "app" directory from this repository to the location specified [here](https://electronjs.org/docs/tutorial/application-distribution) in the Electron binary directory structure.
 * Copy the "war" directory, containing the compiled CircuitJS1 application, in to the "app" directory the Electron binary directory structure.
 * Run the "Electron" executable file. It should automatically load CircuitJS1.
