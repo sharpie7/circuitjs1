@@ -9,7 +9,7 @@ For a hosted version of the application see:
 * Paul's Page: [http://www.falstad.com/circuit/](http://www.falstad.com/circuit/)
 * Iain's Page: [http://lushprojects.com/circuitjs/](http://lushprojects.com/circuitjs/)
 
-Thanks to Edward Calver for 15 new components and other improvements. Thanks to Rodrigo Hausen for file import/export and many other UI improvements. Thanks to J. Mike Rollins for the Zener diode code. Thanks to Julius Schmidt for the spark gap code and some examples. Thanks to Dustin Soodak for help with the user interface improvements. Thanks to Jacob Calvert for the T Flip Flop. 
+Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo Hausen for file import/export and many other UI improvements; J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; Thomas Reitinger, Krystian Sławiński, Usevalad Khatkevich, Lucio Sciamanna, Mauro Hemerly Gazzani, J. Miguel Silva, and Franck Viard for translations; Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; Colin Howell for code improvements. LZString (c) 2013 pieroxy.
 
 ## Building the web application
 
@@ -22,7 +22,7 @@ Install "Eclipse for Java developers" from [here](https://www.eclipse.org/downlo
 
 This repository is a project folder for your Eclipse project space. Once you have a local copy you can then build and run in development mode or build for deployment. Running in super development mode is done by clicking on the "run" icon on the toolbar and choosing http://127.0.0.1:8888/circuitjs.html from the "Development Mode" tab which appears. Building for deployment is done by selecting the project root node and using the GWT button on the Eclipse taskbar and choosing "GWT Compile Project...".
 
-GWT will build it's output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
+GWT will build its output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
 
 ## Deployment of the web application
 
@@ -65,6 +65,9 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
 .../circuitjs1.html?whiteBackground=<true|false>
 .../circuitjs1.html?conventionalCurrent=<true|false>
+.../circuitjs1.html?hideSidebar=<true|false>
+.../circuitjs1.html?hideMenu=<true|false>
+.../circuitjs1.html?running=<true|false> // Set to false to keep the simulation from starting automatically.
 ```
 ## Building an Electron application (experimental)
 
@@ -82,6 +85,7 @@ To build the Electron application:
 Known limitations of the Electron application:
 * The languge is hard-coded to en-US due to [this Electron issue](https://github.com/electron/electron/issues/11053).
 * "Create short URL" on "Export as URL" doesn't work as it relies on server support.
+* For diodes, "Create Simple Model" doesn't work as it relies on a javascript feature that is not supported.
 
 Thanks to @Immortalin for the initial work in applying Electron to CircuitJS1.
 
