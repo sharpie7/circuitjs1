@@ -65,6 +65,9 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
 .../circuitjs1.html?whiteBackground=<true|false>
 .../circuitjs1.html?conventionalCurrent=<true|false>
+.../circuitjs1.html?running=<true|false> // Start the app without the simulation running, default true
+.../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
+.../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
 ```
 ## Building an Electron application (experimental)
 
