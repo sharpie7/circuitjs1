@@ -297,6 +297,10 @@ MouseOutHandler, MouseWheelHandler {
 		circuitArea = new Rectangle(0, 0, width, height-h);
     }
     
+    native String decompress(String dump) /*-{
+        return $wnd.LZString.decompressFromEncodedURIComponent(dump);
+    }-*/;
+
 //    Circuit applet;
 
     CirSim() {
@@ -319,6 +323,9 @@ MouseOutHandler, MouseWheelHandler {
 	boolean convention = true;
 	boolean euroRes = false;
 	boolean usRes = false;
+	boolean running = true;
+	boolean hideSidebar = false;
+	boolean hideMenu = false;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -333,11 +340,17 @@ MouseOutHandler, MouseWheelHandler {
 		String cct=qp.getValue("cct");
 		if (cct!=null)
 			startCircuitText = cct.replace("%24", "$");
+		String ctz=qp.getValue("ctz");
+		if (ctz!= null)
+		    startCircuitText = decompress(ctz);
 		startCircuit = qp.getValue("startCircuit");
 		startLabel   = qp.getValue("startLabel");
 		startCircuitLink = qp.getValue("startCircuitLink");
 		euroRes = qp.getBooleanValue("euroResistors", false);
 		usRes = qp.getBooleanValue("usResistors",  false);
+		running = qp.getBooleanValue("running", true);
+		hideSidebar = qp.getBooleanValue("hideSidebar", false);
+		hideMenu = qp.getBooleanValue("hideMenu", false);
 		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
@@ -432,6 +445,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(new MenuItem(LS("Stack All"), new MyCommand("scopes", "stackAll")));
 	m.addItem(new MenuItem(LS("Unstack All"),new MyCommand("scopes", "unstackAll")));
 	m.addItem(new MenuItem(LS("Combine All"),new MyCommand("scopes", "combineAll")));
+	m.addItem(new MenuItem(LS("Separate All"),new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 		
 	optionsMenuBar = m = new MenuBar(true );
@@ -516,9 +530,13 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar);
 	loadShortcuts();
 
-	  
-	  layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
-	  layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
+	if (!hideMenu)
+	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
+
+	if (hideSidebar)
+	    VERTICALPANELWIDTH = 0;
+	else
+	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
 	  RootLayoutPanel.get().add(layoutPanel);
 	
 	cv =Canvas.createIfSupported();
@@ -664,7 +682,7 @@ MouseOutHandler, MouseWheelHandler {
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
-		setSimRunning(true);
+		setSimRunning(running);
     }
 
     MenuItem menuItemWithShortcut(String text, String shortcut, MyCommand cmd) {
@@ -1074,6 +1092,8 @@ MouseOutHandler, MouseWheelHandler {
     
     public void setSimRunning(boolean s) {
     	if (s) {
+    	    	if (stopMessage != null)
+    	    	    return;
     		simRunning = true;
     		runStopButton.setHTML(LSHTML("<strong>RUN</strong>&nbsp;/&nbsp;Stop"));
     		runStopButton.setStylePrimaryName("topButton");
@@ -1868,9 +1888,7 @@ MouseOutHandler, MouseWheelHandler {
 	    if (ce instanceof InductorElm) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
-		// first try findPath with maximum depth of 5, to avoid slowdowns
-		if (!fpi.findPath(ce.getNode(0), 5) &&
-		    !fpi.findPath(ce.getNode(0))) {
+		if (!fpi.findPath(ce.getNode(0))) {
 //		    console(ce + " no path");
 		    ce.reset();
 		}
@@ -1880,9 +1898,7 @@ MouseOutHandler, MouseWheelHandler {
 		CurrentElm cur = (CurrentElm) ce;
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
-		// first try findPath with maximum depth of 5, to avoid slowdowns
-		if (!fpi.findPath(ce.getNode(0), 5) &&
-		    !fpi.findPath(ce.getNode(0))) {
+		if (!fpi.findPath(ce.getNode(0))) {
 		    cur.stampCurrentSource(true);
 		} else
 		    cur.stampCurrentSource(false);
@@ -1896,6 +1912,7 @@ MouseOutHandler, MouseWheelHandler {
 		} else
 		    cur.broken = false;
 	    }
+	    
 	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
 	    // because those are optimized out, so the findPath won't work)
 	    if (ce.getPostCount() == 2) {
@@ -1907,10 +1924,18 @@ MouseOutHandler, MouseWheelHandler {
 			return;
 		    }
 		}
+	    } else if (ce instanceof Switch2Elm) {
+		// for Switch2Elms we need to do extra work to look for wire loops
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce, ce.getNode(0));
+		for (j = 1; j < ce.getPostCount(); j++)
+		    if (ce.getConnection(0, j) && fpi.findPath(ce.getNode(j))) {
+			stop("Voltage source/wire loop with no resistance!", ce);
+			return;
+		    }
 	    }
-	    
+
 	    // look for path from rail to ground
-	    if (ce instanceof RailElm) {
+	    if (ce instanceof RailElm || ce instanceof LogicInputElm) {
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 			    ce.getNode(0));
 		if (fpi.findPath(0)) {
@@ -1925,7 +1950,7 @@ MouseOutHandler, MouseWheelHandler {
 						    ce.getNode(1));
 		if (fpi.findPath(ce.getNode(0))) {
 		    console(ce + " shorted");
-		    ce.reset();
+		    ((CapacitorElm) ce).shorted();
 		} else {
 		    // a capacitor loop used to cause a matrix error. but we changed the capacitor model
 		    // so it works fine now. The only issue is if a capacitor is added in parallel with
@@ -2135,27 +2160,31 @@ MouseOutHandler, MouseWheelHandler {
 	static final int VOLTAGE = 2;
 	static final int SHORT   = 3;
 	static final int CAP_V   = 4;
-	boolean used[];
+	boolean visited[];
 	int dest;
 	CircuitElm firstElm;
 	int type;
-	FindPathInfo(int t, CircuitElm e, int d) {
-	    dest = d;
-	    type = t;
-	    firstElm = e;
-	    used = new boolean[nodeList.size()];
+
+	// State object to help find loops in circuit subject to various conditions (depending on type_)
+	// elm_ = source and destination element.  dest_ = destination node.
+	FindPathInfo(int type_, CircuitElm elm_, int dest_) {
+	    dest = dest_;
+	    type = type_;
+	    firstElm = elm_;
+	    visited  = new boolean[nodeList.size()];
 	}
-	boolean findPath(int n1) { return findPath(n1, -1); }
-	boolean findPath(int n1, int depth) {
+
+	// look through circuit for loop starting at node n1 of firstElm, for a path back to
+	// dest node of firstElm
+	boolean findPath(int n1) {
 	    if (n1 == dest)
 		return true;
-	    if (depth-- == 0)
+
+	    // depth first search, don't need to revisit already visited nodes!
+	    if (visited[n1])
 		return false;
-	    if (used[n1]) {
-		//System.out.println("used " + n1);
-		return false;
-	    }
-	    used[n1] = true;
+
+	    visited[n1] = true;
 	    int i;
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
@@ -2184,23 +2213,17 @@ MouseOutHandler, MouseWheelHandler {
 		    // our path can go through ground
 		    int j;
 		    for (j = 0; j != ce.getConnectionNodeCount(); j++)
-			if (ce.hasGroundConnection(j) &&
-			    findPath(ce.getConnectionNode(j), depth)) {
-			    used[n1] = false;
+			if (ce.hasGroundConnection(j) && findPath(ce.getConnectionNode(j)))
 			    return true;
-			}
 		}
 		int j;
 		for (j = 0; j != ce.getConnectionNodeCount(); j++) {
-		    //System.out.println(ce + " " + ce.getNode(j));
 		    if (ce.getConnectionNode(j) == n1)
 			break;
 		}
 		if (j == ce.getConnectionNodeCount())
 		    continue;
-		if (ce.hasGroundConnection(j) && findPath(0, depth)) {
-		    //System.out.println(ce + " has ground");
-		    used[n1] = false;
+		if (ce.hasGroundConnection(j) && findPath(0)) {
 		    return true;
 		}
 		if (type == INDUCT && ce instanceof InductorElm) {
@@ -2208,8 +2231,6 @@ MouseOutHandler, MouseWheelHandler {
 		    double c = ce.getCurrent();
 		    if (j == 0)
 			c = -c;
-		    //System.out.println("matching " + c + " to " + firstElm.getCurrent());
-		    //System.out.println(ce + " " + firstElm);
 		    if (Math.abs(c-firstElm.getCurrent()) > 1e-10)
 			continue;
 		}
@@ -2217,17 +2238,12 @@ MouseOutHandler, MouseWheelHandler {
 		for (k = 0; k != ce.getConnectionNodeCount(); k++) {
 		    if (j == k)
 			continue;
-//		    console(ce + " " + ce.getNode(j) + "-" + ce.getNode(k));
-		    if (ce.getConnection(j, k) && findPath(ce.getConnectionNode(k), depth)) {
+		    if (ce.getConnection(j, k) && findPath(ce.getConnectionNode(k))) {
 			//System.out.println("got findpath " + n1);
-			used[n1] = false;
 			return true;
 		    }
-		    //System.out.println("back on findpath " + n1);
 		}
 	    }
-	    used[n1] = false;
-	    //System.out.println(n1 + " failed");
 	    return false;
 	}
     }
@@ -2668,6 +2684,8 @@ MouseOutHandler, MouseWheelHandler {
     		unstackAll();
     	if (item=="combineAll")
 		combineAll();
+    	if (item=="separateAll")
+		separateAll();
     	if (item=="zoomin")
     	    zoomCircuit(20);
     	if (item=="zoomout")
@@ -2872,6 +2890,15 @@ MouseOutHandler, MouseWheelHandler {
     	}
     }
     
+    void separateAll() {
+    	int i;
+	Scope newscopes[] = new Scope[20];
+	int ct = 0;
+    	for (i = 0; i < scopeCount; i++)
+    	    ct = scopes[i].separate(newscopes, ct);
+	scopes = newscopes;
+	scopeCount = ct;
+    }
 
     void doEdit(Editable eable) {
     	clearSelection();

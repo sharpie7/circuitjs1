@@ -1,0 +1,48 @@
+<h1>Diode/LED Model Calculator</h1>
+
+Forward voltage: <input type="text" id="forward" value=".6" oninput="calc()"><p>
+Current at above voltage: <input type="text" id="current" value="18m" oninput="calc()"><p>
+Saturation current (reverse current): <input type="text" id="reverse" value="171n" oninput="calc()"><p>
+Model name: <input type="text" id="modelname" value="model" oninput="calc()"><p>
+
+<div id="values"> </div><p>
+Series resistance: 0<p>
+<div id="link"> </div><p>
+
+<script>
+function convertValue(s) {
+                   s = s.trim();
+                var len = s.length;
+                var uc = s.charAt(len-1);
+                var mult = 1;
+                switch (uc) {
+                case 'p': case 'P': mult = 1e-12; break;
+                case 'n': case 'N': mult = 1e-9; break;
+                case 'u': case 'U': mult = 1e-6; break;
+                case 'm': mult = 1e-3; break;
+                case 'k': case 'K': mult = 1e3; break;
+                case 'M': mult = 1e6; break;
+                case 'G': case 'g': mult = 1e9; break;
+                }
+                if (mult != 1)
+                        s = s.substring(0, len-1).trim();
+		return s * mult;
+}
+
+function calc() {
+    var fwd = document.getElementById("forward").value.trim();
+    var cur = document.getElementById("current").value.trim();
+    var rev = document.getElementById("reverse").value.trim();
+    var modelname = document.getElementById("modelname").value.trim();
+    modelname = modelname.replace(" ", "");
+    var vt = 0.025865;
+    fwd = convertValue(fwd);
+    cur = convertValue(cur);
+    rev = convertValue(rev);
+    var ecoef = (fwd/Math.log(cur/rev+1)) / vt;
+    document.getElementById("values").innerHTML = "Emission coefficient: " + ecoef;
+    document.getElementById("link").innerHTML = "<a href=\"http://www.falstad.com/circuit/circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A34+" + modelname + "+0+" + rev + "+0+" + ecoef + "+0%0Ad+352+112+352+224+2+" + modelname + "%0AR+352+112+352+64+0+0+40+" + fwd + "+0+0+0.5%0Ag+352+224+352+272+0%0A\">link to example circuit</a>";
+}
+
+</script>
+

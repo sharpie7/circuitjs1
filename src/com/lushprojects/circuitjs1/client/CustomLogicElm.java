@@ -81,29 +81,18 @@ public class CustomLogicElm extends ChipElm {
 	int i;
 	for (i = 0; i != inputCount; i++) {
 	    pins[i] = new Pin(i, SIDE_W, model.inputs[i]);
-	    fixPinName(pins[i]);
+	    pins[i].fixName();
 	}
 	for (i = 0; i != outputCount; i++) {
 	    pins[i+inputCount] = new Pin(i, SIDE_E, model.outputs[i]);
 	    pins[i+inputCount].output = true;
-	    fixPinName(pins[i+inputCount]);
+	    pins[i+inputCount].fixName();
 	}
 	lastValues = new boolean[postCount];
 	patternValues = new boolean[26];
 	highImpedance = new boolean[postCount];
     }
 
-    void fixPinName(Pin p) {
-	if (p.text.startsWith("/")) {
-	    p.text = p.text.substring(1);
-	    p.lineOver = true;
-	}
-	if (p.text.compareToIgnoreCase("clk") == 0) {
-	    p.text = "";
-	    p.clock = true;
-	}
-    }
-    
     int getPostCount() { return postCount; }
     
     @Override

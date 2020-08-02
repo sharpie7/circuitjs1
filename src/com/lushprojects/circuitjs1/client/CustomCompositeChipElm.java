@@ -37,6 +37,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void setPin(int n, int p, int s, String t) {
 	    pins[n] = new Pin(p, s, t);
+	    pins[n].fixName();
 	}
 	int getPostCount() { return pins == null ? 1 : pins.length; }
     }

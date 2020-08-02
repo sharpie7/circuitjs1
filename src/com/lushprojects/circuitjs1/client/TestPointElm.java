@@ -106,31 +106,31 @@ class TestPointElm extends CircuitElm {
         //draw selected value
         switch (meter) {
             case TP_VOL:
-                s = myGetUnitText(volts[0],"V",false);
+                s = getUnitText(volts[0],"V");
                 break;
             case TP_RMS:
-                s = myGetUnitText(rmsV,"V(rms)",false);
+                s = getUnitText(rmsV,"V(rms)");
                 break;
             case TP_MAX:
-                s = myGetUnitText(lastMaxV,"Vpk",false);
+                s = getUnitText(lastMaxV,"Vpk");
                 break;
             case TP_MIN:
-                s = myGetUnitText(lastMinV,"Vmin",false);
+                s = getUnitText(lastMinV,"Vmin");
                 break;
             case TP_P2P:
-                s = myGetUnitText(lastMaxV-lastMinV,"Vp2p",false);
+                s = getUnitText(lastMaxV-lastMinV,"Vp2p");
                 break;
             case TP_BIN:
                 s= binaryLevel + "";
                 break;
             case TP_FRQ:
-                s = myGetUnitText(frequency, "Hz", false);
+                s = getUnitText(frequency, "Hz");
                 break;
             case TP_PER:
 //                s = "percent:"+period + " " + sim.timeStep + " " + sim.simTime + " " + sim.getIterCount();
                 break;
             case TP_PWI:
-                s = myGetUnitText(pulseWidth, "S", false);
+                s = getUnitText(pulseWidth, "S");
                 break;
             case TP_DUT:
                 s = showFormat.format(dutyCycle);
@@ -268,31 +268,31 @@ class TestPointElm extends CircuitElm {
         arr[0] = "Test Point";
         switch (meter) {
             case TP_VOL:
-                arr[1] = "V = " + myGetUnitText(volts[0], "V", false);
+                arr[1] = "V = " + getUnitText(volts[0], "V");
                 break;
             case TP_RMS:
-                arr[1] = "V(rms) = " + myGetUnitText(rmsV, "V", false);
+                arr[1] = "V(rms) = " + getUnitText(rmsV, "V");
                 break;
             case TP_MAX:
-                arr[1] = "Vmax = " + myGetUnitText(lastMaxV, "Vpk", false);
+                arr[1] = "Vmax = " + getUnitText(lastMaxV, "Vpk");
                 break;
             case TP_MIN:
-                arr[1] = "Vmin = " + myGetUnitText(lastMinV, "Vmin", false);
+                arr[1] = "Vmin = " + getUnitText(lastMinV, "Vmin");
                 break;
             case TP_P2P:
-                arr[1] = "Vp2p = " + myGetUnitText(lastMaxV-lastMinV, "Vp2p", false);
+                arr[1] = "Vp2p = " + getUnitText(lastMaxV-lastMinV, "Vp2p");
                 break;
             case TP_BIN:
                 arr[1] = "Binary:" + binaryLevel + "";
                 break;
             case TP_FRQ:
-                arr[1] = "Freq = " + myGetUnitText(frequency, "Hz", false);
+                arr[1] = "Freq = " + getUnitText(frequency, "Hz");
                 break;
             case TP_PER:
-                arr[1] = "Period = " + myGetUnitText(period*sim.timeStep/sim.getIterCount(), "S", false);
+                arr[1] = "Period = " + getUnitText(period*sim.timeStep/sim.getIterCount(), "S");
                 break;
             case TP_PWI:
-                arr[1] = "Pulse width = " + myGetUnitText(pulseWidth*sim.timeStep*sim.getIterCount(), "S", false);
+                arr[1] = "Pulse width = " + getUnitText(pulseWidth*sim.timeStep*sim.getIterCount(), "S");
                 break;
             case TP_DUT:
                 arr[1] = "Duty cycle = " + showFormat.format(dutyCycle);
