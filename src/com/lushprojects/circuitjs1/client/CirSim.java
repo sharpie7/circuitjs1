@@ -849,6 +849,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Spark Gap"), "SparkGapElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Custom Transformer"), "CustomTransformerElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Crystal"), "CrystalElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -4782,6 +4783,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 409: return new OpAmpRealElm(x1, y1, x2, y2, f, st);
     	case 410: return new CustomCompositeElm(x1, y1, x2, y2, f, st);
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
+    	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5016,6 +5018,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CustomCompositeElm(x1, y1);
     	if (n=="AudioInputElm")
 		return (CircuitElm) new AudioInputElm(x1, y1);
+    	if (n=="CrystalElm")
+		return (CircuitElm) new CrystalElm(x1, y1);
     	return null;
     }
     
