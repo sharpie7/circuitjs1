@@ -132,10 +132,12 @@ class ScopePlot {
 
 class Scope {
     final int FLAG_YELM = 32;
+    
     // bunch of other flags go here, see dump()
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
     // other flags go here too, see dump()
+    
     static final int VAL_POWER = 7;
     static final int VAL_POWER_OLD = 1;
     static final int VAL_CURRENT = 3;
@@ -159,7 +161,7 @@ class Scope {
     int stackCount; // number of scopes in this column
     String text;
     Rectangle rect;
-    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale;
+    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale, logSpectrum;
     boolean showFFT, showNegative, showRMS, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
@@ -569,7 +571,6 @@ class Scope {
     void drawFFT(Graphics g) {
     	if (fft == null || fft.getSize() != scopePointCount)
     		fft = new FFT(scopePointCount);
-      int y = (rect.height - 1) - 12;
       double[] real = new double[scopePointCount];
       double[] imag = new double[scopePointCount];
       ScopePlot plot = (visiblePlots.size() == 0) ? plots.firstElement() : visiblePlots.firstElement();
@@ -590,19 +591,38 @@ class Scope {
     	  if (m > maxM)
     		  maxM = m;
       }
-      int prevHeight = 0;
       int prevX = 0;
       g.setColor("#FF0000");
-      for (int i = 0; i < scopePointCount / 2; i++) {
-        int x = 2 * i * rect.width / scopePointCount;
-        // rect.width may be greater than or less than scopePointCount/2,
-        // so x may be greater than or equal to prevX.
-        double magnitude = fft.magnitude(real[i], imag[i]);
-        int height = (int) ((magnitude * y) / maxM);
-        if (x != prevX)
-            g.drawLine(prevX, y - prevHeight, x, y - height);
-        prevHeight = height;
-        prevX = x;
+      if (!logSpectrum) {
+	  int prevHeight = 0;
+	  int y = (rect.height - 1) - 12;
+	  for (int i = 0; i < scopePointCount / 2; i++) {
+	      int x = 2 * i * rect.width / scopePointCount;
+	      // rect.width may be greater than or less than scopePointCount/2,
+	      // so x may be greater than or equal to prevX.
+	      double magnitude = fft.magnitude(real[i], imag[i]);
+	      int height = (int) ((magnitude * y) / maxM);
+	      if (x != prevX)
+		  g.drawLine(prevX, y - prevHeight, x, y - height);
+	      prevHeight = height;
+	      prevX = x;
+	  }
+      } else {
+	  int y0 = 5;
+	  int prevY = 0;
+	  double ymult = rect.height/10;
+	  double val0 = Math.log(scale[plot.units])*ymult;
+	  for (int i = 0; i < scopePointCount / 2; i++) {
+	      int x = 2 * i * rect.width / scopePointCount;
+	      // rect.width may be greater than or less than scopePointCount/2,
+	      // so x may be greater than or equal to prevX.
+	      double val = Math.log(fft.magnitude(real[i], imag[i]));
+	      int y = y0-(int) (val*ymult-val0);
+	      if (x != prevX)
+		  g.drawLine(prevX, prevY, x, y);
+	      prevY = y;
+	      prevX = x;
+	  }
       }
     }
     
@@ -706,7 +726,8 @@ class Scope {
     	drawSettingsWheel(g);
     	g.context.save();
     	g.setColor(Color.red);
-    	g.context.translate(rect.x, rect.y);
+    	g.context.translate(rect.x, rect.y);    	
+    	g.clipRect(0, 0, rect.width, rect.height);
 
         if (showFFT) {
             drawFFTVerticalGridLines(g);
@@ -744,8 +765,6 @@ class Scope {
     	
     	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
     	    calcMaxAndMin(visiblePlots.firstElement().units);
-    	
-    	g.clipRect(0, 0, rect.width, rect.height);
     	
     	// draw volts on top (last), then current underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
@@ -1435,7 +1454,7 @@ class Scope {
 			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
-			(showDutyCycle ? 32768 : 0);
+			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0);
 	flags |= FLAG_PLOTS;
 	return flags;
     }
@@ -1573,6 +1592,7 @@ class Scope {
     	maxScale = (flags & 8192) != 0;
     	showRMS = (flags & 16384) != 0;
     	showDutyCycle = (flags & 32768) != 0;
+    	logSpectrum = (flags & 65536) != 0;
     }
     
     void saveAsDefault() {
@@ -1628,6 +1648,8 @@ class Scope {
     		showFreq(state);
     	if (mi == "showfft")
     		showFFT(state);
+    	if (mi == "logspectrum")
+    	    	logSpectrum = state;
     	if (mi == "showrms")
     	    	showRMS = state;
     	if (mi == "showduty")

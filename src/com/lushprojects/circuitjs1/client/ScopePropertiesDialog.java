@@ -43,7 +43,7 @@ CirSim sim;
 //RichTextArea textBox;
 TextArea textArea;
 CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox, manualScaleBox;
-CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox;
+CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox, logSpectrumBox;
 TextBox labelTextBox, manualScaleTextBox;
 Scrollbar speedBar;
 Scope scope;
@@ -87,15 +87,14 @@ Label scopeSpeedLabel, manualScaleLabel;
 				
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
+		grid = new Grid(12, 3);
 		if (!transistor) {
-		    grid = new Grid(10, 3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
 		} else {
-		    grid = new Grid(11, 3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
@@ -116,9 +115,11 @@ Label scopeSpeedLabel, manualScaleLabel;
 		resistanceBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(CirSim.LS("Show Spectrum"), "showfft"));
 		spectrumBox.addValueChangeHandler(this);
+		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(CirSim.LS("Log Spectrum"), "logspectrum"));
+		logSpectrumBox.addValueChangeHandler(this);
 		addItemToGrid(grid, manualScaleBox = new ScopeCheckBox(CirSim.LS("Manual Scale"), "manualscale"));
 		manualScaleBox.addValueChangeHandler(this);
-
+		
 		addLabelToGrid(grid,"X-Y Plots");
 		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
 		viBox.addValueChangeHandler(this); 
@@ -249,7 +250,10 @@ Label scopeSpeedLabel, manualScaleLabel;
 	    manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
 	    manualScaleBox.setValue(scope.lockScale);
 	    manualScaleTextBox.setEnabled(scope.lockScale);
+	    logSpectrumBox.setValue(scope.logSpectrum);
 	    setScopeSpeedLabel();
+	    
+	    // if you add more here, make sure it still works with transistor scopes
 	}
 	
 	protected void closeDialog()
