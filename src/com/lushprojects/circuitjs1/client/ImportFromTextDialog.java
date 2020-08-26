@@ -40,6 +40,7 @@ TextArea textArea;
 		super();
 		sim=asim;
 		Button okButton, cancelButton;
+		final Checkbox subCheck;
 		vp=new VerticalPanel();
 		setWidget(vp);
 		setText(sim.LS("Import from Text"));
@@ -48,6 +49,7 @@ TextArea textArea;
 		vp.add(textArea = new TextArea());
 		textArea.setWidth("300px");
 		textArea.setHeight("200px");
+		vp.add(subCheck = new Checkbox(CirSim.LS("Load Subcircuits Only")));
 		hp = new HorizontalPanel();
 		vp.add(hp);
 		hp.add(okButton = new Button(sim.LS("OK")));
@@ -59,8 +61,11 @@ TextArea textArea;
 //				s=textBox.getHTML();
 //				s=s.replace("<br>", "\r");
 				s=textArea.getText();
+				int flags = 0;
+				if (subCheck.getState())
+				    flags |= CirSim.RC_SUBCIRCUITS | CirSim.RC_RETAIN;
 				if (s!=null)
-					sim.readSetup(s, true);
+					sim.readCircuit(s, flags);
 			}
 		});
 		hp.add(cancelButton = new Button(sim.LS("Cancel")));
