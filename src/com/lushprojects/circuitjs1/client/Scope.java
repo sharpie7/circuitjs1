@@ -173,8 +173,8 @@ class Scope {
     int alphadiv =0;
     double scopeTimeStep;
     double scale[];
-    boolean expandRange[];
-    double scaleX, scaleY;
+    boolean reduceRange[];
+    double scaleX, scaleY;  // for X-Y plots
     int wheelDeltaY;
     int selectedPlot;
     ScopePropertiesDialog properties;
@@ -182,13 +182,13 @@ class Scope {
     Scope(CirSim s) {
     	sim = s;
     	scale = new double[UNITS_COUNT];
-    	expandRange = new boolean[UNITS_COUNT];
+    	reduceRange = new boolean[UNITS_COUNT];
     	
     	rect = new Rectangle(0, 0, 1, 1);
    	imageCanvas=Canvas.createIfSupported();
    	imageContext=imageCanvas.getContext2d();
 	allocImage();
-    	reset();
+    	initialize();
     }
     
     void showCurrent(boolean b) {
@@ -213,6 +213,7 @@ class Scope {
       if (!showFFT)
     	  fft = null;
     }
+    void setManualScale(boolean b) { lockScale = b; }
     
     void resetGraph() { resetGraph(false); }
     
@@ -231,10 +232,35 @@ class Scope {
     	allocImage();
     }
     
+    void setManualScaleValue(double d) {
+	if (visiblePlots.size() == 0)
+	    return;
+	ScopePlot p = visiblePlots.get(0);
+	scale[p.units]= d; 
+    }
+    
+    double getScaleValue() {
+	if (visiblePlots.size() == 0)
+	    return 0;
+	ScopePlot p = visiblePlots.get(0);
+	return scale[p.units];
+    }
+    
+    String getScaleUnitsText() {
+	if (visiblePlots.size() == 0)
+	    return "V";
+	ScopePlot p = visiblePlots.get(0);
+	switch (p.units) {
+	case UNITS_A: return "A";
+	case UNITS_OHMS: return sim.ohmString;
+	case UNITS_W: return "W";
+	default: return "V";
+	}
+    }
     
     boolean active() { return plots.size() > 0 && plots.get(0).elm != null; }
     
-    void reset() {
+    void initialize() {
     	resetGraph();
     	scale[UNITS_W] = scale[UNITS_OHMS] = scale[UNITS_V] = 5;
     	scale[UNITS_A] = .1;
@@ -299,7 +325,7 @@ class Scope {
     	    setValue(VAL_VCE, ce);
     	else
     	    setValue(0, ce);
-    	reset();
+    	initialize();
     }
 
     void setValue(int val) {
@@ -333,7 +359,7 @@ class Scope {
 	}
 	calcVisiblePlots();
 	resetGraph();
-//    	reset();
+//    	initialize();
     }
 
     void setValues(int val, int ival, CircuitElm ce, CircuitElm yelm) {
@@ -400,10 +426,10 @@ class Scope {
 	s.plots.removeAllElements();
 	calcVisiblePlots();
     }
-    
+
+    // separate this scope's plots into separate scopes and return them in arr[pos], arr[pos+1], etc.  return new length of array.
     int separate(Scope arr[], int pos) {
 	int i;
-	sim.console("Separate " + this);
 	ScopePlot lastPlot = null;
 	for (i = 0; i != visiblePlots.size(); i++) {
 	    if (pos >= arr.length)
@@ -412,8 +438,6 @@ class Scope {
 	    ScopePlot sp = visiblePlots.get(i);
 	    if (lastPlot != null && lastPlot.elm == sp.elm && lastPlot.value == 0 && sp.value == VAL_CURRENT)
 		continue;
-	    if (lastPlot != null)
-	        sim.console("sep " + lastPlot.elm + " " + sp.elm + " " + lastPlot.value + " " + sp.value);
 	    s.setValue(sp.value, sp.elm);
 	    s.position = pos;
 	    arr[pos++] = s;
@@ -432,6 +456,7 @@ class Scope {
 	}
     }
     
+    // called for each timestep
     void timeStep() {
 	int i;
 	for (i = 0; i != plots.size(); i++)
@@ -512,7 +537,7 @@ class Scope {
 	    scaleY *= x;
 	    return;
 	}
-	// toggle max scale.  Why isn't this on by default?  For the examples, we sometimes want two plots
+	// toggle max scale.  This isn't on by default because, for the examples, we sometimes want two plots
 	// matched to the same scale so we can show one is larger.  Also, for some fast-moving scopes
 	// (like for AM detector), the amplitude varies over time but you can't see that if the scale is
 	// constantly adjusting.  It's also nice to set the default scale to hide noise and to avoid
@@ -690,7 +715,7 @@ class Scope {
 
     	int i;
     	for (i = 0; i != UNITS_COUNT; i++) {
-    	    expandRange[i] = false;
+    	    reduceRange[i] = false;
     	    if (maxScale)
     		scale[i] = 1e-4;
     	}
@@ -703,7 +728,7 @@ class Scope {
     	    calcPlotScale(plot);
     	    if (sim.scopeSelected == -1 && plot.elm !=null && plot.elm.isMouseElm())
     		somethingSelected = true;
-    	    expandRange[plot.units] = true;
+    	    reduceRange[plot.units] = true;
     	}
     	
     	checkForSelection();
@@ -720,6 +745,8 @@ class Scope {
     	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
     	    calcMaxAndMin(visiblePlots.firstElement().units);
     	
+    	g.clipRect(0, 0, rect.width, rect.height);
+    	
     	// draw volts on top (last), then current underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
@@ -734,20 +761,19 @@ class Scope {
     		drawPlot(g, visiblePlots.get(i), hGridLines, false);
     	}
     	// draw selection on top.  only works if selection chosen from scope
-    	if (selectedPlot >= 0)
+    	if (selectedPlot >= 0 && selectedPlot < visiblePlots.size())
     	    drawPlot(g, visiblePlots.get(selectedPlot), hGridLines, true);
     	
         if (visiblePlots.size() > 0)
             drawInfoTexts(g);
     	
-    	g.context.restore();
+    	g.restore();
     	
     	drawCrosshairs(g);
     	
-    	// there is no UI for setting lockScale but it's used in some of the example circuits (like crossover)
     	if (plots.get(0).ptr > 5 && !lockScale) {
     	    for (i = 0; i != UNITS_COUNT; i++)
-    		if (scale[i] > 1e-4 && expandRange[i])
+    		if (scale[i] > 1e-4 && reduceRange[i])
     		    scale[i] /= 2;
     	}
 
@@ -782,6 +808,8 @@ class Scope {
     
     // adjust scale of a plot
     void calcPlotScale(ScopePlot plot) {
+	if (lockScale)
+	    return;
     	int i;
     	int ipa = plot.startIndex(rect.width);
     	double maxV[] = plot.maxValues;
@@ -938,7 +966,7 @@ class Scope {
             if (minvy <= maxy) {
         	if (minvy < minRangeLo || maxvy > minRangeHi) {
         	    // we got a value outside min range, so we don't need to rescale later
-        	    expandRange[plot.units] = false;
+        	    reduceRange[plot.units] = false;
         	    minRangeLo = -1000;
         	    minRangeHi = 1000; // avoid triggering this test again
         	}
@@ -1046,6 +1074,7 @@ class Scope {
 	return (plot.units == Scope.UNITS_V || plot.units == Scope.UNITS_A);
     }
     
+    // calc RMS and display it
     void drawRMS(Graphics g) {
 	if (!canShowRMS()) {
 	    drawAverage(g);
@@ -1232,6 +1261,7 @@ class Scope {
 	}
     }
 
+    // calc frequency if possible and display it
     void drawFrequency(Graphics g) {
 	// try to get frequency
 	// get average
@@ -1362,12 +1392,12 @@ class Scope {
     }
     
     void speedUp() {
-	    	if (speed > 1) {
-    	    speed /= 2;
-    	    resetGraph();
-    	}
+	if (speed > 1) {
+	    speed /= 2;
+	    resetGraph();
+	}
     }
-    
+
     void slowDown() {
 	if (speed < 1024)
 	    speed *= 2;
@@ -1439,7 +1469,7 @@ class Scope {
     }
     
     void undump(StringTokenizer st) {
-    	reset();
+    	initialize();
     	int e = new Integer(st.nextToken()).intValue();
     	if (e == -1)
     		return;
@@ -1628,6 +1658,8 @@ class Scope {
     		plotXY = false;
     		resetGraph();
     	}
+    	if (mi == "manualscale")
+		setManualScale(state);
     	if (mi == "plotxy") {
     		plotXY = plot2d = state;
     		if (plot2d)

@@ -42,37 +42,47 @@ HorizontalPanel hp;
 CirSim sim;
 //RichTextArea textBox;
 TextArea textArea;
-CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox;
+CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox, manualScaleBox;
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox;
-TextBox labelTextBox;
+TextBox labelTextBox, manualScaleTextBox;
 Scrollbar speedBar;
 Scope scope;
 Grid grid, speedGrid;
 int nx, ny;
-Label scopeSpeedLabel;
+Label scopeSpeedLabel, manualScaleLabel;
 	
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
 		sim=asim;
 		scope = s;
-		Button okButton;
+		Button okButton, applyButton;
 		fp=new FlowPanel();
 		setWidget(fp);
 		setText(CirSim.LS("Scope Properties"));
-		Label l = new Label(CirSim.LS("Scroll Speed"));
-		l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-		fp.add(l);
+//		fp.add(l);
 		Command cmd = new Command() {
 		    public void execute() {
 			scrollbarChanged();
 		    }
 		};
-		speedGrid = new Grid(1,2);
+		speedGrid = new Grid(2, 4);
+		Label l = new Label(CirSim.LS("Scroll Speed"));
+		l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+		speedGrid.setWidget(0, 0, l);
 		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd);
-		speedGrid.setWidget(0,0, speedBar);
+		speedGrid.setWidget(1,0, speedBar);
 		scopeSpeedLabel = new Label("");
-		speedGrid.setWidget(0, 1, scopeSpeedLabel);
+		speedGrid.setWidget(1, 1, scopeSpeedLabel);
+		
+		manualScaleLabel = new Label("Scale");
+		manualScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+		speedGrid.setWidget(0, 3, manualScaleLabel);
+		manualScaleTextBox = new TextBox();  
+		speedGrid.setWidget(1, 3, manualScaleTextBox);
+		
 		fp.add(speedGrid);
+		
+		
 
 				
 		CircuitElm elm = scope.getSingleElm();
@@ -106,6 +116,8 @@ Label scopeSpeedLabel;
 		resistanceBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(CirSim.LS("Show Spectrum"), "showfft"));
 		spectrumBox.addValueChangeHandler(this);
+		addItemToGrid(grid, manualScaleBox = new ScopeCheckBox(CirSim.LS("Manual Scale"), "manualscale"));
+		manualScaleBox.addValueChangeHandler(this);
 
 		addLabelToGrid(grid,"X-Y Plots");
 		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
@@ -151,6 +163,14 @@ Label scopeSpeedLabel;
 			}
 		});
 
+//		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		hp.add(applyButton = new Button(CirSim.LS("Apply")));
+		applyButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				apply();
+			}
+		});
+		
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		Button saveAsDefaultButton;
 		hp.add(saveAsDefaultButton = new Button(CirSim.LS("Save as Default")));
@@ -225,16 +245,29 @@ Label scopeSpeedLabel;
                 vceBox.setValue(scope.showingValue(Scope.VAL_VCE));
                 vceIcBox.setValue(scope.isShowingVceAndIc());
 	    }
+	    manualScaleLabel.setText(CirSim.LS("Scale (Max Value)") + " (" + scope.getScaleUnitsText() + ")");
+	    manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
+	    manualScaleBox.setValue(scope.lockScale);
+	    manualScaleTextBox.setEnabled(scope.lockScale);
 	    setScopeSpeedLabel();
 	}
 	
 	protected void closeDialog()
 	{
-	    	String label = labelTextBox.getText();
-	    	if (label.length() == 0)
-	    	    label = null;
-	    	scope.setText(label);
-		this.hide();
+	    apply();
+	    this.hide();
+	}
+	
+	void apply() {
+	    String label = labelTextBox.getText();
+	    if (label.length() == 0)
+		label = null;
+	    scope.setText(label);
+
+	    try {
+		double d = EditDialog.parseUnits(manualScaleTextBox.getText());
+		scope.setManualScaleValue(d);
+	    } catch (Exception e) {}
 	}
 
 	public void onValueChange(ValueChangeEvent<Boolean> event) {
