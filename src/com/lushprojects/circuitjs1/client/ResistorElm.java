@@ -114,4 +114,6 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	        resistance = ei.value;
 	}
 	int getShortcut() { return 'r'; }
+	double getResistance() { return resistance; }
+	void setResistance(double r) { resistance = r; }
     }

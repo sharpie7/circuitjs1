@@ -146,9 +146,9 @@ class SliderDialog extends DialogBox  {
 		    try {
 			adj.sliderText = ei.labelBox.getText();
 			adj.label.setText(adj.sliderText);
-			double d = EditDialog.parseUnits(ei, ei.minBox.getText());
+			double d = EditDialog.parseUnits(ei.minBox.getText());
 			adj.minValue = d;
-			d = EditDialog.parseUnits(ei, ei.maxBox.getText());
+			d = EditDialog.parseUnits(ei.maxBox.getText());
 			adj.maxValue = d;
 			adj.setSliderValue(ei.value);
 		    } catch (Exception e) { }

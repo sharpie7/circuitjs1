@@ -54,6 +54,7 @@ package com.lushprojects.circuitjs1.client;
 	    return super.dump() + " " + capacitance + " " + voltdiff;
 	}
 	
+	// used for PolarCapacitorElm
 	Point platePoints[];
 	
 	void setPoints() {
@@ -182,4 +183,6 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	int getShortcut() { return 'c'; }
+	public double getCapacitance() { return capacitance; }
+	public void setCapacitance(double c) { capacitance = c; }
     }

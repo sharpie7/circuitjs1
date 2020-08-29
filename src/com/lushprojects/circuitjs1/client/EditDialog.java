@@ -168,7 +168,7 @@ class EditDialog extends DialogBox  {
 
 	static String unitString(EditInfo ei, double v) {
 		double va = Math.abs(v);
-		if (ei.dimensionless)
+		if (ei != null && ei.dimensionless)
 			return noCommaFormat.format(v);
 		if (v == 0) return "0";
 		if (va < 1e-9)
@@ -190,10 +190,10 @@ class EditDialog extends DialogBox  {
 
 	double parseUnits(EditInfo ei) throws java.text.ParseException {
 		String s = ei.textf.getText();
-		return parseUnits(ei, s);
+		return parseUnits(s);
 	}
 	
-	static double parseUnits(EditInfo ei, String s) throws java.text.ParseException {
+	static double parseUnits(String s) throws java.text.ParseException {
 		s = s.trim();
 		double rmsMult = 1;
 		if (s.endsWith("rms")) {

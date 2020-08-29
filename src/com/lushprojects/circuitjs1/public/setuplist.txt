@@ -335,6 +335,13 @@ swtreedac.txt Switch-Tree DAC
 digsine.txt Digital Sine Wave
 qam-256.txt QAM-256 Modulator/Demodulator
 -
++Power Converters
+conv-boost.txt Boost Converter
+conv-buck.txt Buck Converter
+conv-buckboost.txt Buck-Boost Converter
+conv-cuk.txt Ćuk Converter
+conv-sepic.txt SEPIC Converter
+-
 +Phase-Locked Loops
 xorphasedet.txt XOR Phase Detector
 pll.txt Type I PLL

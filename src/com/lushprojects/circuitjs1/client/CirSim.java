@@ -643,18 +643,18 @@ MouseOutHandler, MouseWheelHandler {
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
-		readSetup(startCircuitText, true);
+		readCircuit(startCircuitText);
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
-			readSetup(new byte[] {}, false, true);
+			readCircuit("");
 			getSetupList(false);
 			ImportFromDropboxDialog.setSim(this);
 			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
 		} else {
-			readSetup(new byte[] {}, false, true);
+			readCircuit("");
 			if (stopMessage == null && startCircuit != null) {
 				getSetupList(false);
-				readSetupFile(startCircuit, startLabel, true);
+				readSetupFile(startCircuit, startLabel);
 			}
 			else
 				getSetupList(true);
@@ -849,6 +849,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Spark Gap"), "SparkGapElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Custom Transformer"), "CustomTransformerElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Crystal"), "CrystalElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -2784,7 +2785,7 @@ MouseOutHandler, MouseWheelHandler {
     	if (menu=="circuits" && item.indexOf("setup ") ==0) {
     		pushUndo();
     		int sp = item.indexOf(' ', 6);
-    		readSetupFile(item.substring(6, sp), item.substring(sp+1), true);
+    		readSetupFile(item.substring(6, sp), item.substring(sp+1));
     	}
     		
     	//	if (ac.indexOf("setup ") == 0) {
@@ -3072,7 +3073,7 @@ MouseOutHandler, MouseWheelHandler {
     					startCircuit = file;
     					startLabel = title;
     					if (openDefault && stopMessage == null)
-    						readSetupFile(startCircuit, startLabel, true);
+    						readSetupFile(startCircuit, startLabel);
     				}
     			}
     		}
@@ -3080,37 +3081,32 @@ MouseOutHandler, MouseWheelHandler {
     	}
 }
 
-    
-    
-    
-
-    void readSetup(String text, boolean centre) {
-	readSetup(text, false, centre);
-	titleLabel.setText(null);
-    }
-    
-    void readSetup(String text, boolean retain, boolean centre) {
-	readSetup(text.getBytes(), retain, centre);
+    void readCircuit(String text, int flags) {
+	readCircuit(text.getBytes(), flags);
 	titleLabel.setText(null);
     }
 
+    void readCircuit(String text) {
+	readCircuit(text.getBytes(), 0);
+	titleLabel.setText(null);
+    }
 
     void setCircuitTitle(String s) {
 	if (s != null)
 	    titleLabel.setText(s);
     }
     
-	void readSetupFile(String str, String title, boolean centre) {
+	void readSetupFile(String str, String title) {
 		t = 0;
 		System.out.println(str);
 		// TODO: Maybe think about some better approach to cache management!
 		String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
-		loadFileFromURL(url, centre);
+		loadFileFromURL(url);
 		if (title != null)
 		    titleLabel.setText(title);
 	}
 	
-	void loadFileFromURL(String url, final boolean centre) {
+	void loadFileFromURL(String url) {
 	    RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 	    
 	    try {
@@ -3122,7 +3118,7 @@ MouseOutHandler, MouseWheelHandler {
 		    public void onResponseReceived(Request request, Response response) {
 			if (response.getStatusCode()==Response.SC_OK) {
 			    String text = response.getText();
-			    readSetup(text.getBytes(), false, centre);
+			    readCircuit(text);
 			}
 			else 
 			    GWT.log("Bad file server response:"+response.getStatusText() );
@@ -3134,10 +3130,14 @@ MouseOutHandler, MouseWheelHandler {
 
 	}
 
-    void readSetup(byte b[], boolean retain, boolean centre) {
+    static final int RC_RETAIN = 1;
+    static final int RC_NO_CENTER = 2;
+    static final int RC_SUBCIRCUITS = 4;
+
+    void readCircuit(byte b[], int flags) {
 	int i;
 	int len = b.length;
-	if (!retain) {
+	if ((flags & RC_RETAIN) == 0) {
 	    clearMouseElm();
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
@@ -3159,6 +3159,7 @@ MouseOutHandler, MouseWheelHandler {
 	    scopeCount = 0;
 	    lastIterTime = 0;
 	}
+	boolean subs = (flags & RC_SUBCIRCUITS) != 0;
 	//cv.repaint();
 	int p;
 	for (p = 0; p < len; ) {
@@ -3177,6 +3178,8 @@ MouseOutHandler, MouseWheelHandler {
 		String type = st.nextToken();
 		int tint = type.charAt(0);
 		try {
+		    if (subs && tint != '.')
+			continue;
 		    if (tint == 'o') {
 			Scope sc = new Scope(this);
 			sc.position = scopeCount;
@@ -3244,7 +3247,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	setPowerBarEnable();
 	enableItems();
-	if (!retain) {
+	if ((flags & RC_RETAIN) == 0) {
 	    // create sliders as needed
 	    for (i = 0; i != adjustables.size(); i++)
 		adjustables.get(i).createSlider(this);
@@ -3252,8 +3255,10 @@ MouseOutHandler, MouseWheelHandler {
 //	if (!retain)
 	//    handleResize(); // for scopes
 	needAnalyze();
-	if (centre)
+	if ((flags & RC_NO_CENTER) == 0)
 		centreCircuit();
+	if ((flags & RC_SUBCIRCUITS) != 0)
+	    updateModels();
 	
 	AudioInputElm.clearCache();  // to save memory
     }
@@ -4114,7 +4119,7 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	redoStack.add(dumpCircuit());
     	String s = undoStack.remove(undoStack.size()-1);
-    	readSetup(s, false);
+    	readCircuit(s, RC_NO_CENTER);
     	enableUndoRedo();
     }
 
@@ -4123,13 +4128,13 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	undoStack.add(dumpCircuit());
     	String s = redoStack.remove(redoStack.size()-1);
-    	readSetup(s, false);
+    	readCircuit(s, RC_NO_CENTER);
     	enableUndoRedo();
     }
 
     void doRecover() {
 	pushUndo();
-	readSetup(recovery, false);
+	readCircuit(recovery);
 	recoverItem.setEnabled(false);
     }
     
@@ -4325,10 +4330,10 @@ MouseOutHandler, MouseWheelHandler {
     	// add new items
     	int oldsz = elmList.size();
     	if (dump != null)
-    	    readSetup(dump, true, false);
+    	    readCircuit(dump, RC_RETAIN);
     	else {
     	    readClipboardFromStorage();
-    	    readSetup(clipboard, true, false);
+    	    readCircuit(clipboard, RC_RETAIN);
     	}
 
     	// select new items and get their bounding box
@@ -4782,6 +4787,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 409: return new OpAmpRealElm(x1, y1, x2, y2, f, st);
     	case 410: return new CustomCompositeElm(x1, y1, x2, y2, f, st);
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
+    	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5016,6 +5022,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CustomCompositeElm(x1, y1);
     	if (n=="AudioInputElm")
 		return (CircuitElm) new AudioInputElm(x1, y1);
+    	if (n=="CrystalElm")
+		return (CircuitElm) new CrystalElm(x1, y1);
     	return null;
     }
     

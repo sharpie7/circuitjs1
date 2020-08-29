@@ -108,5 +108,9 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	int getShortcut() { return 'L'; }
-	
+	public double getInductance() { return inductance; }
+	void setInductance(double l) {
+	    inductance = l;
+	    ind.setup(inductance, current, flags);
+	}
     }
