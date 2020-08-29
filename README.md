@@ -65,9 +65,9 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
 .../circuitjs1.html?whiteBackground=<true|false>
 .../circuitjs1.html?conventionalCurrent=<true|false>
-.../circuitjs1.html?hideSidebar=<true|false>
-.../circuitjs1.html?hideMenu=<true|false>
-.../circuitjs1.html?running=<true|false> // Set to false to keep the simulation from starting automatically.
+.../circuitjs1.html?running=<true|false> // Start the app without the simulation running, default true
+.../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
+.../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
 ```
 ## Building an Electron application (experimental)
 
@@ -77,7 +77,7 @@ The general approach to building an Electron application for a particular platfo
 
 To build the Electron application:
 * Compile the application using GWT, as above.
-* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 1.8.7 for the target platform.
+* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 9.1.0 for the target platform.
 * Copy the "app" directory from this repository to the location specified [here](https://electronjs.org/docs/tutorial/application-distribution) in the Electron binary directory structure.
 * Copy the "war" directory, containing the compiled CircuitJS1 application, in to the "app" directory the Electron binary directory structure.
 * Run the "Electron" executable file. It should automatically load CircuitJS1.

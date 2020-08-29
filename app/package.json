@@ -15,6 +15,6 @@
   ],
   "author": "Iain Sharp, Paul Falstad",
   "devDependencies": {
-    "electron": "~1.8.7"
+    "electron": "~9.1.0"
   }
 }
