@@ -126,7 +126,7 @@
 "Add Logic Input"="Aggiungi Ingresso Logico"
 "Add Logic Output"="Aggiungi Uscita Logica"
 "Add MOSFET (N-Channel)"="Aggiungi MOSFET canale N"
-"Add MOSFET (P-Channel)"="Aggiungi MOSFET canale N"
+"Add MOSFET (P-Channel)"="Aggiungi MOSFET canale P"
 "Add Memristor"="Aggiungi Memristor"
 "Add Monostable"="Aggiungi Monostabile"
 "Add Multiplexer"="Aggiungi Multiplexer"
