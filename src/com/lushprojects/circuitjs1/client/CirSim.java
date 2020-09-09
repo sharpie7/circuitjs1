@@ -58,6 +58,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -88,8 +89,9 @@ import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Navigator;
-
+import com.google.gwt.event.logical.shared.CloseHandler;
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
 ClickHandler, DoubleClickHandler, ContextMenuHandler, NativePreviewHandler,
@@ -228,6 +230,7 @@ MouseOutHandler, MouseWheelHandler {
     Rectangle circuitArea;
     Vector<String> undoStack, redoStack;
     double transform[];
+    boolean unsavedChanges;
 
 	DockLayoutPanel layoutPanel;
 	MenuBar menuBar;
@@ -644,6 +647,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (startCircuitText != null) {
 		getSetupList(false);
 		readCircuit(startCircuitText);
+		unsavedChanges = false;
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
 			readCircuit("");
@@ -682,6 +686,15 @@ MouseOutHandler, MouseWheelHandler {
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
+		
+		    Window.addWindowClosingHandler(new Window.ClosingHandler() {
+		        public void onWindowClosing(ClosingEvent event) {
+		            if (unsavedChanges)
+		        	event.setMessage(LS("Are you sure?  There are unsaved changes."));
+		        }
+		    });
+
+
 		setSimRunning(running);
     }
 
@@ -2613,11 +2626,16 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasurl") {
     		doExportAsUrl();
+    		unsavedChanges = false;
     	}
-    	if (item=="exportaslocalfile")
+    	if (item=="exportaslocalfile") {
     		doExportAsLocalFile();
-    	if (item=="exportastext")
+    		unsavedChanges = false;
+    	}
+    	if (item=="exportastext") {
     		doExportAsText();
+    		unsavedChanges = false;
+    	}
     	if (item=="exportasimage")
 		doExportAsImage();
     	if (item=="createsubcircuit")
@@ -3105,6 +3123,7 @@ MouseOutHandler, MouseWheelHandler {
 		loadFileFromURL(url);
 		if (title != null)
 		    titleLabel.setText(title);
+		unsavedChanges = false;
 	}
 	
 	void loadFileFromURL(String url) {
@@ -3120,6 +3139,7 @@ MouseOutHandler, MouseWheelHandler {
 			if (response.getStatusCode()==Response.SC_OK) {
 			    String text = response.getText();
 			    readCircuit(text);
+			    unsavedChanges = false;
 			}
 			else 
 			    GWT.log("Bad file server response:"+response.getStatusText() );
@@ -4027,6 +4047,8 @@ MouseOutHandler, MouseWheelHandler {
     			dragElm.draggingDone();
     			circuitChanged = true;
     			writeRecoveryToStorage();
+    			unsavedChanges = true;
+    			debugger();
     		}
     		dragElm = null;
     	}
