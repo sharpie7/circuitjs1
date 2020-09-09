@@ -959,6 +959,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm")); // don't change this, it will break people's saved shortcuts
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Static RAM"), "SRAMElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Digital Chips")), chipMenuBar);
     	
     	MenuBar achipMenuBar = new MenuBar(true);
@@ -2472,7 +2473,7 @@ MouseOutHandler, MouseWheelHandler {
 			x += "\n";
 			console(x);
 		    }
-		    console("");
+		    console("done");
 		}
 		if (circuitNonLinear) {
 		    if (converged && subiter > 0)
@@ -4451,10 +4452,8 @@ MouseOutHandler, MouseWheelHandler {
     				(t & Event.ONKEYDOWN)!=0) {
     			if (code==KEY_ESCAPE)
     				editDialog.closeDialog();
-    			if (code==KEY_ENTER) {
-    				editDialog.apply();
-    				editDialog.closeDialog();
-    			}  			
+    			if (code==KEY_ENTER)
+    			    	editDialog.enterPressed();
     		}
     		return;
     	}
@@ -4788,6 +4787,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 410: return new CustomCompositeElm(x1, y1, x2, y2, f, st);
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
+    	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5024,6 +5024,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new AudioInputElm(x1, y1);
     	if (n=="CrystalElm")
 		return (CircuitElm) new CrystalElm(x1, y1);
+    	if (n=="SRAMElm")
+		return (CircuitElm) new SRAMElm(x1, y1);
     	return null;
     }
     

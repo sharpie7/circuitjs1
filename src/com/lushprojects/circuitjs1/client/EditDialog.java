@@ -52,6 +52,7 @@ class EditDialog extends DialogBox  {
 	final int barmax = 1000;
 	VerticalPanel vp;
 	HorizontalPanel hp;
+	boolean closeOnEnter = true;
 	static NumberFormat noCommaFormat = NumberFormat.getFormat("####.##########");
 
 	EditDialog(Editable ce, CirSim f) {
@@ -137,6 +138,7 @@ class EditDialog extends DialogBox  {
 			    });
 			} else if (ei.textArea != null) {
 			    vp.insert(ei.textArea, idx);
+			    closeOnEnter = false;
 			} else if (ei.widget != null) {
 			    vp.insert(ei.widget, idx);
 			} else {
@@ -287,6 +289,13 @@ class EditDialog extends DialogBox  {
 	{
 		EditDialog.this.hide();
 		cframe.editDialog = null;
+	}
+	
+	public void enterPressed() {
+	    if (closeOnEnter) {
+		apply();
+		closeDialog();
+	    }
 	}
 }
 
