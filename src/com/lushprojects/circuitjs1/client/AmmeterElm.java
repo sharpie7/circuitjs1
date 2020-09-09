@@ -25,6 +25,7 @@ package com.lushprojects.circuitjs1.client;
     class AmmeterElm extends CircuitElm {
         
         int meter;
+	int scale;
         final int AM_VOL = 0;
         final int AM_RMS = 1;
         int zerocount=0;
@@ -39,15 +40,19 @@ package com.lushprojects.circuitjs1.client;
     public AmmeterElm(int xx, int yy) { 
         super(xx, yy); 
         flags = FLAG_SHOWCURRENT;
-        }
+        scale = SCALE_AUTO;
+    }
     public AmmeterElm(int xa, int ya, int xb, int yb, int f,
                StringTokenizer st) {
         super(xa, ya, xb, yb, f);
-        meter = new Integer(st.nextToken()).intValue(); //get meter type from saved dump
-
+        scale = SCALE_AUTO;
+        meter = Integer.parseInt(st.nextToken());
+        try {
+            scale = Integer.parseInt(st.nextToken());
+        } catch (Exception e) {}
     }
     String dump() {
-            return super.dump() + " " + meter;
+            return super.dump() + " " + meter + " " + scale;
     }
     String getMeter(){
         switch (meter) {
@@ -145,16 +150,14 @@ package com.lushprojects.circuitjs1.client;
         String s = "A";
         switch (meter) {
         case AM_VOL:
-            s = myGetUnitText(getCurrent(), "A",false);
+            s = getUnitTextWithScale(getCurrent(), "A", scale);
             break;
         case AM_RMS:
-            s = myGetUnitText(rmsI, "A(rms)",false);
+            s = getUnitTextWithScale(rmsI, "A(rms)", scale);
             break;
         }
 
-            drawValues(g, s, 4);
-
-
+        drawValues(g, s, 4);
         drawPosts(g);
     }
     int getDumpType() { return 370; }
@@ -169,10 +172,10 @@ package com.lushprojects.circuitjs1.client;
         arr[0] = "Ammeter";
         switch (meter) {
             case AM_VOL:
-                arr[1] = "I = " + myGetUnitText(current, "A", false);
+                arr[1] = "I = " + getUnitText(current, "A");
                 break;
             case AM_RMS:
-                arr[1] = "Irms = " + myGetUnitText(rmsI, "A", false);
+                arr[1] = "Irms = " + getUnitText(rmsI, "A");
                 break;
         }    
     }
@@ -189,14 +192,24 @@ package com.lushprojects.circuitjs1.client;
             ei.choice.select(meter);
             return ei;
         }
+        if (n == 1) {
+            EditInfo ei =  new EditInfo("Scale", 0);
+            ei.choice = new Choice();
+            ei.choice.add("Auto");
+            ei.choice.add("A");
+            ei.choice.add("mA");
+            ei.choice.add(CirSim.muString + "A");
+            ei.choice.select(scale);
+            return ei;
+        }
         return null;
     }
     public void setEditValue(int n, EditInfo ei) {
-        if (n==0){
+        if (n==0)
             meter = ei.choice.getSelectedIndex();
-        }
-
+        if (n==1)
+            scale = ei.choice.getSelectedIndex();
     }
-    }
 
+}
 

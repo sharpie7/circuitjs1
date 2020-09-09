@@ -92,11 +92,16 @@ package com.lushprojects.circuitjs1.client;
 	void stamp() {
 	    sim.stampVoltageSource(0, nodes[1], voltSource);
 	}
+	
+	double lastOutputVoltage;
+	
+	void startIteration() {
+	    lastOutputVoltage = volts[1];
+	}
 	void doStep() {
-	    double v0 = volts[1];
 	    double out = volts[0] > highVoltage*.5 ? 0 : highVoltage;
 	    double maxStep = slewRate * sim.timeStep * 1e9;
-	    out = Math.max(Math.min(v0+maxStep, out), v0-maxStep);
+	    out = Math.max(Math.min(lastOutputVoltage+maxStep, out), lastOutputVoltage-maxStep);
 	    sim.updateVoltageSource(0, nodes[1], voltSource, out);
 	}
 	double getVoltageDiff() { return volts[0]; }

@@ -41,6 +41,11 @@ public abstract class CircuitElm implements Editable {
     static final double pi = 3.14159265358979323846;
     static CircuitElm mouseElmRef = null;
 
+    static final int SCALE_AUTO = 0;
+    static final int SCALE_1 = 1;
+    static final int SCALE_M = 2;
+    static final int SCALE_MU = 3;
+ 
     // initial point where user created element.  For simple two-terminal elements, this is the first node/post.
     int x, y;
     
@@ -723,16 +728,18 @@ public abstract class CircuitElm implements Editable {
     }
     static String getVoltageText(double v) {
 	return getUnitText(v, "V");
-	
-	
     }
-    
-    // IES - hacking
-    static String getUnitText(double v, String u) {
-    	return myGetUnitText(v,u, false);
-    }
-    static String getShortUnitText(double v, String u) {
-    	return myGetUnitText(v,u, true);
+    static String getTimeText(double v) {
+	if (v >= 60) {
+	    double h = Math.floor(v/3600);
+	    v -= 3600*h;
+	    double m = Math.floor(v/60);
+	    v -= 60*m;
+	    if (h == 0)
+		return m + ":" + ((v >= 10) ? "" : "0") + showFormat.format(v);
+	    return h + ":" + ((m >= 10) ? "" : "0") + m + ":" + ((v >= 10) ? "" : "0") + showFormat.format(v); 
+	}
+	return getUnitText(v, "s");
     }
     
     static String format(double v, boolean sf) {
@@ -741,7 +748,15 @@ public abstract class CircuitElm implements Editable {
 	return (sf ? shortFormat : showFormat).format(v);
     }
     
-    static String myGetUnitText(double v, String u, boolean sf) {
+    static String getUnitText(double v, String u) {
+    	return getUnitText(v,u, false);
+    }
+
+    static String getShortUnitText(double v, String u) {
+    	return getUnitText(v,u, true);
+    }
+    
+    private static String getUnitText(double v, String u, boolean sf) {
 	String sp = sf ? "" : " ";
 	double va = Math.abs(v);
 	if (va < 1e-14)
@@ -769,6 +784,16 @@ public abstract class CircuitElm implements Editable {
     }
     static String getCurrentDText(double i) {
 	return getUnitText(Math.abs(i), "A");
+    }
+
+    static String getUnitTextWithScale(double val, String utext, int scale) {
+	if (scale == SCALE_1)
+	    return showFormat.format(val) + " " + utext;
+	if (scale == SCALE_M)
+	    return showFormat.format(1e3*val) + " m" + utext;
+	if (scale == SCALE_MU)
+	    return showFormat.format(1e6*val) + " " + CirSim.muString + utext;
+	return getUnitText(val, utext);
     }
 
     // update dot positions (curcount) for drawing current (simple case for single current)
@@ -837,6 +862,7 @@ public abstract class CircuitElm implements Editable {
     	g.setColor(getVoltageColor(g, volts));
     }
     
+    // yellow argument is unused, can't remember why it was there
     void setPowerColor(Graphics g, boolean yellow) {
 
 	/*if (conductanceCheckItem.getState()) {

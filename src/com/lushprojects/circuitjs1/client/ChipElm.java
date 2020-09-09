@@ -19,7 +19,7 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    abstract class ChipElm extends CircuitElm {
+abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;
 	final int FLAG_SMALL = 1;
@@ -385,6 +385,19 @@ package com.lushprojects.circuitjs1.client;
 		    return true;
 		return toGrid(pos, side) == g;
 	    }
+	    
+	    void fixName() {
+		if (text.startsWith("/")) {
+		    text = text.substring(1);
+		    lineOver = true;
+		}
+		if (text.compareToIgnoreCase("clk") == 0) {
+		    text = "";
+		    clock = true;
+		}
+	    }
+	    
+
 	}
     }
 

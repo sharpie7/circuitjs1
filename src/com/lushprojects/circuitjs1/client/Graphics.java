@@ -50,7 +50,7 @@ public class Graphics {
 	  }
 	  
 	  public void clipRect(int x, int y, int width, int height) {
-		  context.save();
+		  context.beginPath();
 		  context.rect(x, y, width, height);
 		  context.clip();
 	  }

@@ -8,8 +8,10 @@
 	$s=parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 	$path= str_replace('shortrelay.php','circuitjs.html',$s);
 	$ch = curl_init();
-	$v=$_GET["v"]; // Note this removes one layer of URL encoding from the param. This works for tinyurl.com but may not for all!
-	curl_setopt($ch, CURLOPT_URL, 'http://tinyurl.com/api-create.php?url='. $serveraddr . $path . $v);
+	// encode entire url.  tinyurl won't decode the url unless the entire thing is urlencoded.
+	// we need to encode it because otherwise tinyurl gives us an error if the url includes %0A's (which it always does)
+	$v=urlencode($serveraddr . $path . $_GET["v"]);
+	curl_setopt($ch, CURLOPT_URL, 'http://tinyurl.com/api-create.php?url='. $v);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	echo curl_exec($ch);
 //    echo $serveraddr . $path .$v;

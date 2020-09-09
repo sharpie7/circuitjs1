@@ -211,5 +211,6 @@ class SweepElm extends CircuitElm {
 	}
 	setParams();
     }
+    double getPower() { return -getVoltageDiff()*current; }
 }
     

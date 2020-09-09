@@ -1,0 +1,63 @@
+In this simulator, crystals are modeled using
+<a href="circuitjs.html?ctz=CQAgjCCsCmC0YTAJgHQAZJqWgzADmSQBYw8BOSKS6tAKAGMRi0nIA2JvPVjlslMgHYkcMERBp0aMLQA2nbknYgcODkt4SpSiQyZEWSYirzij4wyjxtBZO-Yd28oiJLTTaAJxVqeJs8osbChEtADu-kzG+AG84fqGxsx+dBHJ5uCC6sapkRlERIo5tEA">this equivalent circuit</a>.
+<p>
+To change the crystal parameters, you need to know the values of all
+these components.  You can use the values below as a starting point
+to get a crystal with a desired frequency.
+<p>
+
+<script>
+
+
+function units(x) {
+	 x = x.trim();
+   if (x.match(/m$/)) {
+       x = x.replace(/m$/, "");
+  	return .001 * x;
+   }
+   if (x.match(/u$/)) {
+       x = x.replace(/u$/, "");
+       return 1e-6 * x;
+   }
+   if (x.match(/n$/)) {
+       x = x.replace(/n$/, "");
+       return 1e-9 * x;
+   }
+   if (x.match(/p$/)) {
+       x = x.replace(/p$/, "");
+       return 1e-12 * x;
+   }
+   
+   return x;
+}
+
+function calc() {
+   var cp = units(document.getElementById('cp').value);
+   var cs = units(document.getElementById('cs').value);
+   var L = units(document.getElementById('L').value);
+   var r = units(document.getElementById('r').value);
+   var fs = 1/(2*Math.PI*Math.sqrt(L*cs));
+   //if (cl > 0)
+   //  fs = Math.sqrt((cs+cp+cl)/(L*(cs*cp+cs*cl)))/(Math.PI*2);
+   var fp = 1/(2*Math.PI*Math.sqrt(L*(cp*cs)/(cp+cs)));
+   document.getElementById('result').innerHTML = "Series resonant frequency = " + Math.round(fs) +
+     " Hz <br>Parallel resonant frequency = " + Math.round(fp) +
+     " Hz <br>Q = " + Math.round(2*Math.PI*fp*L/r) +
+     "<br><a href=\"circuitjs.html?cct=$+1+5e-11+12.050203812241895+55+5+50%0A412+112+144+192+144+1+0\\s" +
+       cp + "\\s0+0\\s" + cs + "\\s0+0\\s" + L + "\\s0+0\\s" + r + "\" target=\"_blank\">crystal with these parameters</a>";
+}
+
+</script>
+<form action="/action_page.php">
+  Parallel Capacitor, F: <input type="text" id="cp" oninput="calc()" value="29p"><br>
+  Series Capacitor, F: <input type="text" id="cs" oninput="calc()" value="0.1p"><br>
+  Inductor, H: <input type="text" id="L" oninput="calc()" value="2.5m"><br>
+  Resistor, &ohm;: <input type="text" id="r" oninput="calc()" value="6.4"><br>
+</form>
+<div id="result">
+
+</div>
+
+<script>calc(); </script>
+
+</body></html>

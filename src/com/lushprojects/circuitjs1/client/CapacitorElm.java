@@ -45,11 +45,16 @@ package com.lushprojects.circuitjs1.client;
 	    // put small charge on caps when reset to start oscillators
 	    voltdiff = 1e-3;
 	}
+	void shorted() {
+	    super.reset();
+	    voltdiff = current = curcount = curSourceValue = 0;
+	}
 	int getDumpType() { return 'c'; }
 	String dump() {
 	    return super.dump() + " " + capacitance + " " + voltdiff;
 	}
 	
+	// used for PolarCapacitorElm
 	Point platePoints[];
 	
 	void setPoints() {
@@ -178,4 +183,6 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	int getShortcut() { return 'c'; }
+	public double getCapacitance() { return capacitance; }
+	public void setCapacitance(double c) { capacitance = c; }
     }

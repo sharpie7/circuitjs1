@@ -77,15 +77,19 @@ public class CustomLogicModel implements Editable {
 	rulesRight = copy.rulesRight;
     }
     
-    CustomLogicModel(StringTokenizer st) {
-	name = unescape(st.nextToken());
+    static void undumpModel(StringTokenizer st) {
+	String name = unescape(st.nextToken());
+	CustomLogicModel model = getModelWithName(name);
+	model.undump(st);
+    }
+    
+    void undump(StringTokenizer st) {
 	flags = new Integer(st.nextToken()).intValue();
 	inputs = listToArray(unescape(st.nextToken()));
 	outputs = listToArray(unescape(st.nextToken()));
 	infoText = unescape(st.nextToken());
 	rules = unescape(st.nextToken());
 	parseRules();
-	modelMap.put(name, this);
     }
     
     String arrayToList(String arr[]) {

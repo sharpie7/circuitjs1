@@ -86,12 +86,15 @@ public class ExportAsUrlDialog extends DialogBox {
 		}
     }
 	
+	native String compress(String dump) /*-{
+	    return $wnd.LZString.compressToEncodedURIComponent(dump);
+	}-*/;
+	
 	public ExportAsUrlDialog( String dump) {
 		super();
-    	String start[] = Location.getHref().split("\\?");
-    	dump=dump.replace(' ', '+');
-    	String query="?cct=" + URL.encode(dump);
-	    dump = start[0] + query;
+		String start[] = Location.getHref().split("\\?");
+		String query="?ctz=" + compress(dump);
+		dump = start[0] + query;
 		requrl = URL.encodeQueryString(query);
 		Button okButton;
 	

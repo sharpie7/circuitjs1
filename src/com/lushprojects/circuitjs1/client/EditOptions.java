@@ -37,10 +37,14 @@ class EditOptions implements Editable {
 	            EditInfo ei =  new EditInfo("Change Language", 0, -1, -1);
 	            ei.choice = new Choice();
 	            ei.choice.add("(no change)");
-	            ei.choice.add("English");
 	            ei.choice.add("Dansk");
 	            ei.choice.add("Deutsch");
+	            ei.choice.add("English");
+	            ei.choice.add("Español");
+	            ei.choice.add("Français");
+	            ei.choice.add("Italiano");
 	            ei.choice.add("Polski");
+	            ei.choice.add("Português");
 	            ei.choice.add("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"); // Russian 
 	            return ei;
 		}
@@ -63,11 +67,15 @@ class EditOptions implements Editable {
 		    	    return;
 		    	String langString = null;
 		    	switch (lang) {
-		    	case 1: langString = "en"; break;
-		    	case 2: langString = "da"; break;
-		    	case 3: langString = "de"; break;
-		    	case 4: langString = "pl"; break;
-		    	case 5: langString = "ru"; break;
+		    	case 1: langString = "da"; break;
+		    	case 2: langString = "de"; break;
+		    	case 3: langString = "en"; break;
+		    	case 4: langString = "es"; break;
+		    	case 5: langString = "fr"; break;
+		    	case 6: langString = "it"; break;
+		    	case 7: langString = "pl"; break;
+			case 8: langString = "pt"; break;
+		    	case 9: langString = "ru"; break;
 		    	}
 		    	if (langString == null)
 		    	    return;

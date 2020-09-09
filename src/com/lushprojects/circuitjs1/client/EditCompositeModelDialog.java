@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import com.google.gwt.user.client.ui.DialogBox;
@@ -62,6 +64,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	void setModel(CustomCompositeModel m) { model = m; }
 	
         boolean createModel() {
+            HashSet<Integer> nodeSet = new HashSet<Integer>();
             model = CirSim.theSim.getCircuitAsComposite();
             if (model == null)
         	return false;
@@ -85,6 +88,11 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
         	ExtListEntry pin = model.extList.get(i);
         	pin.pos = left ? i : i-model.sizeY;
         	pin.side = side;
+        	if (nodeSet.contains(pin.node)) {
+        	    Window.alert(CirSim.LS("Can't have two input/output nodes connected!"));
+        	    return false;
+        	}
+        	nodeSet.add(pin.node);
             }
             return true;
         }

@@ -57,6 +57,10 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	DiodeModel lm = modelMap.get(name);
 	if (lm != null)
 	    return lm;
+	if (oldmodel == null) {
+	    CirSim.console("model not found: " + name);
+	    return getDefaultModel();
+	}
 //	CirSim.console("copying to " + name);
 	lm = new DiodeModel(oldmodel);
 	lm.name = name;
@@ -86,7 +90,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 //	addDefaultModel("1N3891", new DiodeModel(63e-9, 9.6e-3, 2, 0));  // doesn't match datasheet very well
 	
 	// http://users.skynet.be/hugocoolens/spice/diodes/1n4148.htm
-	addDefaultModel("1N4148", new DiodeModel(4.35e-9, .6458, 1, 75, "switching"));
+	addDefaultModel("1N4148", new DiodeModel(4.352e-9, .6458, 1.906, 75, "switching"));
     }
 
     static void addDefaultModel(String name, DiodeModel dm) {
@@ -237,21 +241,20 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	breakdownVoltage = copy.breakdownVoltage;
 	updateModel();
     }
+
+    static void undumpModel(StringTokenizer st) {
+	String name = CustomLogicModel.unescape(st.nextToken());
+	DiodeModel dm = DiodeModel.getModelWithName(name);
+	dm.undump(st);
+    }
     
-    DiodeModel(StringTokenizer st) {
-	name = CustomLogicModel.unescape(st.nextToken());
+    void undump(StringTokenizer st) {
 	flags = new Integer(st.nextToken()).intValue();
 	saturationCurrent = Double.parseDouble(st.nextToken());
 	seriesResistance = Double.parseDouble(st.nextToken());
 	emissionCoefficient = Double.parseDouble(st.nextToken());
 	breakdownVoltage = Double.parseDouble(st.nextToken());
 	updateModel();
-	DiodeModel dm = DiodeModel.getModelWithName(name);
-	
-	// make sure we don't overwrite a default model
-	if (dm == null || !dm.builtIn)
-	    modelMap.put(name, this);
-//	CirSim.console("parsed model " + name);
     }
     
     public EditInfo getEditInfo(int n) {
@@ -260,7 +263,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
         if (n == 1)
             return new EditInfo("Series Resistance", seriesResistance, -1, -1);
         if (n == 2)
-            return new EditInfo("Emission Coefficient", emissionCoefficient, -1, -1);
+            return new EditInfo("<a href=\"diodecalc.html\">Emission Coefficient</a>", emissionCoefficient, -1, -1);
         if (n == 3)
             return new EditInfo("Breakdown Voltage", breakdownVoltage, -1, -1);
 	return null;
