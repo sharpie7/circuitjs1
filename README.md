@@ -59,6 +59,7 @@ If you want to embed the application in another page then use an iframe with the
 You can add query parameters to link to change the applications startup behaviour. The following are supported:
 ```
 .../circuitjs1.html?cct=<string> // Load the circuit from the URL (like the # in the Java version)
+.../circuitjs1.html?ctz=<string> // Load the circuit from compressed data in the URL
 .../circuitjs1.html?startCircuit=<filename> // Loads the circuit named "filename" from the "Circuits" directory
 .../circuitjs1.html?startCircuitLink=<URL> // Loads the circuit from the specified URL. CURRENTLY THE URL MUST BE A DROPBOX SHARED FILE OR ANOTHER URL THAT SUPPORTS CORS ACCESS FROM THE CLIENT
 .../circuitjs1.html?euroResistors=true // Set to true to force "Euro" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
