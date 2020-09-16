@@ -743,8 +743,8 @@ public abstract class CircuitElm implements Editable {
     }
     
     static String format(double v, boolean sf) {
-	if (sf && Math.abs(v) > 10)
-	    return shortFormat.format(Math.round(v));
+//	if (sf && Math.abs(v) > 10)
+//	    return shortFormat.format(Math.round(v));
 	return (sf ? shortFormat : showFormat).format(v);
     }
     
