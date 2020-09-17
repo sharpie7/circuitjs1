@@ -66,5 +66,8 @@ class EditInfo {
 	    return choice == null && checkbox == null && button == null && textArea == null &&
 			widget == null && !noSliders;
 	}
+
+	static String makeLink(String file, String text) {
+            return "<a href=\"" + file + "\" target=\"_blank\">" + CirSim.LS(text) + "</a>";
+	}
 }
-    

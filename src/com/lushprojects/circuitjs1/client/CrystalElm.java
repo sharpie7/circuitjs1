@@ -134,7 +134,7 @@ package com.lushprojects.circuitjs1.client;
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
-		return new EditInfo("<a href=\"crystal.html\" target=\"_blank\">Parallel Capacitance</a> (F)", parallelCapacitance);
+		return new EditInfo(EditInfo.makeLink("crystal.html", "Parallel Capacitance"), parallelCapacitance);
 	    if (n == 1)
 		return new EditInfo("Series Capacitance (F)", seriesCapacitance);
 	    if (n == 2)
