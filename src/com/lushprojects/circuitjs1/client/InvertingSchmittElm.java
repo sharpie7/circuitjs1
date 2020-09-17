@@ -136,7 +136,7 @@ package com.lushprojects.circuitjs1.client;
 	double getVoltageDiff() { return volts[0]; }
 
 	void getInfo(String arr[]) {
-	    arr[0] = "InvertingSchmitt";
+	    arr[0] = "inverting Schmitt trigger";
 	    arr[1] = "Vi = " + getVoltageText(volts[0]);
 	    arr[2] = "Vo = " + getVoltageText(volts[1]);
 	}
