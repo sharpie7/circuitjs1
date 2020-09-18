@@ -1395,6 +1395,11 @@ MouseOutHandler, MouseWheelHandler {
 	myframes++;
     }
 
+    Color getBackgroundColor() {
+	if (printableCheckItem.getState())
+	    return Color.white;
+	return Color.black;
+    }
     
     void setupScopes() {
     	int i;
