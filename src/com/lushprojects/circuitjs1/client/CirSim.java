@@ -375,30 +375,30 @@ MouseOutHandler, MouseWheelHandler {
 	layoutPanel = new DockLayoutPanel(Unit.PX);
 	
 	  fileMenuBar = new MenuBar(true);
-	  importFromLocalFileItem = new MenuItem(LS("Open File..."), new MyCommand("file","importfromlocalfile"));
+	  importFromLocalFileItem = new MenuItem(icoLS("folder", "Open File..."), new MyCommand("file","importfromlocalfile"));
 	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	  fileMenuBar.addItem(importFromLocalFileItem);
-	  importFromTextItem = new MenuItem(LS("Import From Text..."), new MyCommand("file","importfromtext"));
+	  importFromTextItem = new MenuItem(icoLS("doc-text", "Import From Text..."), new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
-	  importFromDropboxItem = new MenuItem(LS("Import From Dropbox..."), new MyCommand("file", "importfromdropbox"));
+	  importFromDropboxItem = new MenuItem(icoLS("dropbox", "Import From Dropbox..."), new MyCommand("file", "importfromdropbox"));
 	  fileMenuBar.addItem(importFromDropboxItem); 
-	  exportAsLocalFileItem = new MenuItem(LS("Save As..."), new MyCommand("file","exportaslocalfile"));
+	  exportAsLocalFileItem = new MenuItem(icoLS("floppy", "Save As..."), new MyCommand("file","exportaslocalfile"));
 	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	  fileMenuBar.addItem(exportAsLocalFileItem);
-	  exportAsUrlItem = new MenuItem(LS("Export As Link..."), new MyCommand("file","exportasurl"));
+	  exportAsUrlItem = new MenuItem(icoLS("export", "Export As Link..."), new MyCommand("file","exportasurl"));
 	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsTextItem = new MenuItem(LS("Export As Text..."), new MyCommand("file","exportastext"));
+	  exportAsTextItem = new MenuItem(icoLS("export", "Export As Text..."), new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
-	  fileMenuBar.addItem(new MenuItem(LS("Export As Image..."), new MyCommand("file","exportasimage")));
-	  fileMenuBar.addItem(new MenuItem(LS("Create Subcircuit..."), new MyCommand("file","createsubcircuit")));
-	  fileMenuBar.addItem(new MenuItem(LS("Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
-	  recoverItem = new MenuItem(LS("Recover Auto-Save"), new MyCommand("file","recover"));
+	  fileMenuBar.addItem(new MenuItem(icoLS("export", "Export As Image..."), new MyCommand("file","exportasimage")));
+	  fileMenuBar.addItem(new MenuItem(icoLS("microchip", "Create Subcircuit..."), new MyCommand("file","createsubcircuit")));
+	  fileMenuBar.addItem(new MenuItem(icoLS("magic", "Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
+	  recoverItem = new MenuItem(icoLS("back-in-time", "Recover Auto-Save"), new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
 	  fileMenuBar.addItem(recoverItem);
-	  printItem = new MenuItem(LS("Print..."), new MyCommand("file","print"));
+	  printItem = new MenuItem(icoLS("print", "Print..."), new MyCommand("file","print"));
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
-	  aboutItem=new MenuItem(LS("About..."),(Command)null);
+	  aboutItem=new MenuItem(icoLS("info-circled", "About..."),(Command)null);
 	  fileMenuBar.addItem(aboutItem);
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
@@ -417,23 +417,23 @@ MouseOutHandler, MouseWheelHandler {
 	  buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 	  
 	m = new MenuBar(true);
-	m.addItem(undoItem = menuItemWithShortcut(LS("Undo"), LS("Ctrl-Z"), new MyCommand("edit","undo")));
-	m.addItem(redoItem = menuItemWithShortcut(LS("Redo"), LS("Ctrl-Y"), new MyCommand("edit","redo")));
+	m.addItem(undoItem = menuItemWithShortcut("ccw", LS("Undo"), LS("Ctrl-Z"), new MyCommand("edit","undo")));
+	m.addItem(redoItem = menuItemWithShortcut("cw", LS("Redo"), LS("Ctrl-Y"), new MyCommand("edit","redo")));
 	m.addSeparator();
-	m.addItem(cutItem = menuItemWithShortcut(LS("Cut"), LS("Ctrl-X"), new MyCommand("edit","cut")));
-	m.addItem(copyItem = menuItemWithShortcut(LS("Copy"), LS("Ctrl-C"), new MyCommand("edit","copy")));
-	m.addItem(pasteItem = menuItemWithShortcut(LS("Paste"), LS("Ctrl-V"), new MyCommand("edit","paste")));
+	m.addItem(cutItem = menuItemWithShortcut("scissors", LS("Cut"), LS("Ctrl-X"), new MyCommand("edit","cut")));
+	m.addItem(copyItem = menuItemWithShortcut("copy", LS("Copy"), LS("Ctrl-C"), new MyCommand("edit","copy")));
+	m.addItem(pasteItem = menuItemWithShortcut("paste", LS("Paste"), LS("Ctrl-V"), new MyCommand("edit","paste")));
 	pasteItem.setEnabled(false);
 	
-	m.addItem(menuItemWithShortcut(LS("Duplicate"), LS("Ctrl-D"), new MyCommand("edit","duplicate")));
+	m.addItem(menuItemWithShortcut("clone", LS("Duplicate"), LS("Ctrl-D"), new MyCommand("edit","duplicate")));
 	
 	m.addSeparator();
-	m.addItem(selectAllItem = menuItemWithShortcut(LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
+	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
-	m.addItem(new MenuItem(weAreInUS() ? LS("Center Circuit") : LS("Centre Circuit"), new MyCommand("edit", "centrecircuit")));
-	m.addItem(menuItemWithShortcut(LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
-	m.addItem(menuItemWithShortcut(LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
-	m.addItem(menuItemWithShortcut(LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
+	m.addItem(new MenuItem(weAreInUS() ? icoLS("target","Center Circuit") : icoLS("target","Centre Circuit"), new MyCommand("edit", "centrecircuit")));
+	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
+	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
+	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
 	menuBar.addItem(LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -442,10 +442,10 @@ MouseOutHandler, MouseWheelHandler {
 	menuBar.addItem(LS("Draw"), drawMenuBar);
 	
 	m = new MenuBar(true);
-	m.addItem(new MenuItem(LS("Stack All"), new MyCommand("scopes", "stackAll")));
-	m.addItem(new MenuItem(LS("Unstack All"),new MyCommand("scopes", "unstackAll")));
-	m.addItem(new MenuItem(LS("Combine All"),new MyCommand("scopes", "combineAll")));
-	m.addItem(new MenuItem(LS("Separate All"),new MyCommand("scopes", "separateAll")));
+	m.addItem(new MenuItem(icoLS("lines", "Stack All"), new MyCommand("scopes", "stackAll")));
+	m.addItem(new MenuItem(icoLS("columns", "Unstack All"),new MyCommand("scopes", "unstackAll")));
+	m.addItem(new MenuItem(icoLS("object-group", "Combine All"),new MyCommand("scopes", "combineAll")));
+	m.addItem(new MenuItem(icoLS("object-ungroup", "Separate All"),new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 		
 	optionsMenuBar = m = new MenuBar(true );
@@ -634,7 +634,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
-	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut(LS("Split Wire"), LS(ctrlMetaKey + "-click"), new MyCommand("elm","split")));
+	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", LS("Split Wire"), LS(ctrlMetaKey + "-click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
 	
 	scopePopupMenu = new ScopePopupMenu();
