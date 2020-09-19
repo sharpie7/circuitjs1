@@ -706,7 +706,7 @@
 "Unity-Gain Phase Splitter"="Расщепитель фаз"
 "Universal Shift Register"="Универсальный сдвиговый регистр"
 "Unstack"="Расположить осцилограммы друг рядом с другом"
-"Unstack All"="Расположить все рядом друг с другом"
+"Unstack All"="Расположить все друг рядом с другом"
 "Upper threshold (V)"="Верхний порог [В]"
 "Variable V/I"="Переменная U/I"
 "VCVS High-Pass Filter"="VCVS фильтр высоких частот"
