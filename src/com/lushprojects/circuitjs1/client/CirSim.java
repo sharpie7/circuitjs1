@@ -685,10 +685,15 @@ MouseOutHandler, MouseWheelHandler {
 		setSimRunning(running);
     }
 
-    MenuItem menuItemWithShortcut(String text, String shortcut, MyCommand cmd) {
-	final String edithtml="<div style=\"display:inline-block;width:80px;\">";
-	String sn=edithtml + text + "</div>" + shortcut;
+    MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
+	final String edithtml="<div style=\"display:inline-block;width:100px;\"><i class=\"cirjsicon-";
+	String sn=edithtml + icon + "\"></i>&nbsp;" + text + "</div>" + shortcut;
 	return new MenuItem(SafeHtmlUtils.fromTrustedString(sn), cmd);
+    }
+    
+    SafeHtml icoLS(String icon, String text) {
+        String icoStr = "<i class=\"cirjsicon-" + icon + "\"></i>&nbsp;" + LS(text); //<i class="cirjsicon-"></i>&nbsp;
+        return SafeHtmlUtils.fromTrustedString(icoStr);
     }
     
     boolean getOptionFromStorage(String key, boolean val) {
