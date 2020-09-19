@@ -5243,7 +5243,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 	public CustomCompositeModel getCircuitAsComposite() {
 	    int i;
-	    String nodeList = "";
+	    String nodeDump = "";
 	    String dump = "";
 //	    String models = "";
 	    CustomLogicModel.clearDumpedFlags();
@@ -5256,6 +5256,8 @@ MouseOutHandler, MouseWheelHandler {
 	    
 	    // mapping of node numbers -> equivalent node numbers (if they both have the same label)
 	    HashMap<Integer, Integer> nodeNumberHash = new HashMap<Integer, Integer>();
+	    
+	    boolean used[] = new boolean[nodeList.size()];
 	    
 	    // find all the labeled nodes, get a list of them, and create a node number map
 	    for (i = 0; i != elmList.size(); i++) {
@@ -5299,14 +5301,15 @@ MouseOutHandler, MouseWheelHandler {
 		if (ce instanceof GraphicElm)
 		    continue;
 		int j;
-		if (nodeList.length() > 0)
-		    nodeList += "\r";
-		nodeList += ce.getClass().getSimpleName();
+		if (nodeDump.length() > 0)
+		    nodeDump += "\r";
+		nodeDump += ce.getClass().getSimpleName();
 		for (j = 0; j != ce.getPostCount(); j++) {
 		    int n = ce.getNode(j);
 		    Integer nobj = nodeNumberHash.get(n);
 		    int n0 = (nobj == null) ? n : nobj;
-		    nodeList += " " + n0;
+		    used[n0] = true;
+		    nodeDump += " " + n0;
 		}
 		
 	        // save positions
@@ -5325,8 +5328,17 @@ MouseOutHandler, MouseWheelHandler {
                     dump += " ";
                 dump += CustomLogicModel.escape(tstring);
 	    }
+	    
+	    for (i = 0; i != extList.size(); i++) {
+		ExtListEntry ent = extList.get(i);
+		if (!used[ent.node]) {
+		    Window.alert("Node \"" + ent.name + "\" is not used!");
+		    return null;
+		}
+	    }
+		    
 	    CustomCompositeModel ccm = new CustomCompositeModel();
-	    ccm.nodeList = nodeList;
+	    ccm.nodeList = nodeDump;
 	    ccm.elmDump = dump;
 	    ccm.extList = extList;
 	    return ccm;
