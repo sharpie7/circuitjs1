@@ -687,7 +687,9 @@ MouseOutHandler, MouseWheelHandler {
 
     MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
 	final String edithtml="<div style=\"display:inline-block;width:100px;\"><i class=\"cirjsicon-";
-	String sn=edithtml + icon + "\"></i>&nbsp;" + text + "</div>" + shortcut;
+	String nbsp = "&nbsp;";
+	if (icon=="") nbsp="";
+	String sn=edithtml + icon + "\"></i>" + nbsp + text + "</div>" + shortcut;
 	return new MenuItem(SafeHtmlUtils.fromTrustedString(sn), cmd);
     }
     
