@@ -6,7 +6,7 @@ Font license info
    Copyright (C) 2016 by Dave Gandy
 
    Author:    Dave Gandy
-   License:   SIL ()
+   License:   SIL (http://scripts.sil.org/OFL)
    Homepage:  http://fortawesome.github.com/Font-Awesome/
 
 
@@ -35,5 +35,21 @@ Font license info
    Author:    Aristeides Stathopoulos
    License:   SIL (http://scripts.sil.org/OFL)
    Homepage:  http://aristeides.com/
+
+
+
+Icon license info
+
+
+## Flaticon License (https://www.freepikcompany.com/legal#nav-flaticon).
+
+Icons made by Creaticca Creative Agency (https://www.flaticon.com/authors/creaticca-creative-agency) from www.flaticon.com
+Icons made by Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) from www.flaticon.com
+Icons made by Freepik (https://www.flaticon.com/authors/freepik) from www.flaticon.com
+
+
+## License CC 3.0 BY (https://creativecommons.org/licenses/by/3.0/).
+
+Icons made by Google (https://www.flaticon.com/authors/google) from www.flaticon.com
 
 
