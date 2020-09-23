@@ -40,16 +40,12 @@ Font license info
 
 Icon license info
 
+   Authors:
+   Creaticca Creative Agency (https://www.flaticon.com/authors/creaticca-creative-agency) from www.flaticon.com
+   Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) from www.flaticon.com
+   Freepik (https://www.flaticon.com/authors/freepik) from www.flaticon.com
+   License: Flaticon License (https://www.freepikcompany.com/legal#nav-flaticon).
 
-## Flaticon License (https://www.freepikcompany.com/legal#nav-flaticon).
-
-Icons made by Creaticca Creative Agency (https://www.flaticon.com/authors/creaticca-creative-agency) from www.flaticon.com
-Icons made by Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) from www.flaticon.com
-Icons made by Freepik (https://www.flaticon.com/authors/freepik) from www.flaticon.com
-
-
-## License CC 3.0 BY (https://creativecommons.org/licenses/by/3.0/).
-
-Icons made by Google (https://www.flaticon.com/authors/google) from www.flaticon.com
-
+   Author: Google (https://www.flaticon.com/authors/google) from www.flaticon.com
+   License: CC 3.0 BY (https://creativecommons.org/licenses/by/3.0/).
 
