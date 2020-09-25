@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -33,6 +34,11 @@ public class AboutBox extends PopupPanel {
 	
 	AboutBox(String version) {
 		super();
+		
+		// Add versionString variable to SessionStorage for iFrame in AboutBox
+		Storage sstor = Storage.getSessionStorageIfSupported();
+		sstor.setItem("versionString", version);
+		
 		vp = new VerticalPanel();
 		setWidget(vp);
 		vp.setWidth("400px");

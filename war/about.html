@@ -5,7 +5,7 @@ body {
 }
 </style>
 <div>
-  <p>Circuit Simulator version 2.2.15js.</p>
+  <p>Circuit Simulator version <span class="ver"></span>.</p>
   <p>Original by Paul Falstad.<br><a href="http://www.falstad.com/" target="_blank">http://www.falstad.com/</a></p>
   <p>JavaScript conversion by Iain Sharp.<br><a href="http://lushprojects.com/" target="_blank">http://lushprojects.com/</a></p>
   <p>Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo Hausen for file import/export and many other UI improvements; J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; Thomas Reitinger, Krystian Sławiński, Usevalad Khatkevich, Lucio Sciamanna, Mauro Hemerly Gazzani, J. Miguel Silva, and Franck Viard for translations; Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; Colin Howell for code improvements. LZString (c) 2013 pieroxy.</p>
@@ -16,3 +16,13 @@ body {
   <p style="font-size:9px">Source code (Paul):<a href="https://github.com/pfalstad/circuitjs1" target="_blank">https://github.com/pfalstad/circuitjs1</a></p>
   <p style="font-size:9px">Source code (Iain):<a href="https://github.com/sharpie7/circuitjs1" target="_blank">https://github.com/sharpie7/circuitjs1</a></p>
 </div>
+<script>
+  // Add version from versionString variable
+  let versionString = document.querySelector('.ver');
+  let verStr = sessionStorage.getItem('versionString');
+  if (verStr == null) {
+    versionString.textContent = "... ";
+  } else {
+    versionString.textContent = verStr;
+  }
+</script>
