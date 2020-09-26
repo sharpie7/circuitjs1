@@ -31,8 +31,6 @@
 "Note the difference in gain by a factor of approx. 2 between the switch settings."="Observar a diferença de ganho por um fator de aproximadamente 2 entre as configurações da chave."
 "Switch in upper position - normal configuration for LM13700"="Chave na posição superior - configuração normal para o AO LM13700"
 "Switch in lower position - configuration used on LM13700 data sheet"="Chave na posição inferior - configuração usada no manual do AO LM13700"
-"<a href="customlogic.html" target="_blank">Definition</a>"="<a href="customlogic.html" target="_blank">Definição</a>"
-"<a href="customfunction.html" target="_blank">Output Function</a>"="<a href="customfunction.html" target="_blank">Função de Saída</a>"
 "CCCS~"="CCCS~"
 "CCII+~"="CCII+~"
 "CCII-~"="CCII-~"

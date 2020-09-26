@@ -408,7 +408,7 @@ class CustomTransformerElm extends CircuitElm {
 	    if (n == 0)
 		return new EditInfo("Base Inductance (H)", inductance, .01, 5);
 	    if (n == 1) {
-		EditInfo ei = new EditInfo("<a href=\"customtransformer.html\" target=\"_blank\">Description</a>", 0, -1, -1);
+		EditInfo ei = new EditInfo(EditInfo.makeLink("customtransformer.html", "Description"), 0, -1, -1);
 		ei.text = description;
 		ei.disallowSliders();
 		return ei;

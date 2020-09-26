@@ -58,6 +58,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -88,8 +89,9 @@ import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Navigator;
-
+import com.google.gwt.event.logical.shared.CloseHandler;
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
 ClickHandler, DoubleClickHandler, ContextMenuHandler, NativePreviewHandler,
@@ -228,6 +230,7 @@ MouseOutHandler, MouseWheelHandler {
     Rectangle circuitArea;
     Vector<String> undoStack, redoStack;
     double transform[];
+    boolean unsavedChanges;
 
 	DockLayoutPanel layoutPanel;
 	MenuBar menuBar;
@@ -644,6 +647,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (startCircuitText != null) {
 		getSetupList(false);
 		readCircuit(startCircuitText);
+		unsavedChanges = false;
 	} else {
 		if (stopMessage == null && startCircuitLink!=null) {
 			readCircuit("");
@@ -682,6 +686,15 @@ MouseOutHandler, MouseWheelHandler {
 		    }, ClickEvent.getType());	
 		Event.addNativePreviewHandler(this);
 		cv.addMouseWheelHandler(this);
+		
+		    Window.addWindowClosingHandler(new Window.ClosingHandler() {
+		        public void onWindowClosing(ClosingEvent event) {
+		            if (unsavedChanges)
+		        	event.setMessage(LS("Are you sure?  There are unsaved changes."));
+		        }
+		    });
+
+
 		setSimRunning(running);
     }
 
@@ -959,6 +972,7 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm")); // don't change this, it will break people's saved shortcuts
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Static RAM"), "SRAMElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Digital Chips")), chipMenuBar);
     	
     	MenuBar achipMenuBar = new MenuBar(true);
@@ -1381,6 +1395,11 @@ MouseOutHandler, MouseWheelHandler {
 	myframes++;
     }
 
+    Color getBackgroundColor() {
+	if (printableCheckItem.getState())
+	    return Color.white;
+	return Color.black;
+    }
     
     void setupScopes() {
     	int i;
@@ -2472,7 +2491,7 @@ MouseOutHandler, MouseWheelHandler {
 			x += "\n";
 			console(x);
 		    }
-		    console("");
+		    console("done");
 		}
 		if (circuitNonLinear) {
 		    if (converged && subiter > 0)
@@ -2612,11 +2631,16 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasurl") {
     		doExportAsUrl();
+    		unsavedChanges = false;
     	}
-    	if (item=="exportaslocalfile")
+    	if (item=="exportaslocalfile") {
     		doExportAsLocalFile();
-    	if (item=="exportastext")
+    		unsavedChanges = false;
+    	}
+    	if (item=="exportastext") {
     		doExportAsText();
+    		unsavedChanges = false;
+    	}
     	if (item=="exportasimage")
 		doExportAsImage();
     	if (item=="createsubcircuit")
@@ -3104,6 +3128,7 @@ MouseOutHandler, MouseWheelHandler {
 		loadFileFromURL(url);
 		if (title != null)
 		    titleLabel.setText(title);
+		unsavedChanges = false;
 	}
 	
 	void loadFileFromURL(String url) {
@@ -3119,6 +3144,7 @@ MouseOutHandler, MouseWheelHandler {
 			if (response.getStatusCode()==Response.SC_OK) {
 			    String text = response.getText();
 			    readCircuit(text);
+			    unsavedChanges = false;
 			}
 			else 
 			    GWT.log("Bad file server response:"+response.getStatusText() );
@@ -4026,6 +4052,8 @@ MouseOutHandler, MouseWheelHandler {
     			dragElm.draggingDone();
     			circuitChanged = true;
     			writeRecoveryToStorage();
+    			unsavedChanges = true;
+    			debugger();
     		}
     		dragElm = null;
     	}
@@ -4451,10 +4479,8 @@ MouseOutHandler, MouseWheelHandler {
     				(t & Event.ONKEYDOWN)!=0) {
     			if (code==KEY_ESCAPE)
     				editDialog.closeDialog();
-    			if (code==KEY_ENTER) {
-    				editDialog.apply();
-    				editDialog.closeDialog();
-    			}  			
+    			if (code==KEY_ENTER)
+    			    	editDialog.enterPressed();
     		}
     		return;
     	}
@@ -4788,6 +4814,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 410: return new CustomCompositeElm(x1, y1, x2, y2, f, st);
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
+    	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5024,6 +5051,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new AudioInputElm(x1, y1);
     	if (n=="CrystalElm")
 		return (CircuitElm) new CrystalElm(x1, y1);
+    	if (n=="SRAMElm")
+		return (CircuitElm) new SRAMElm(x1, y1);
     	return null;
     }
     
@@ -5214,7 +5243,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 	public CustomCompositeModel getCircuitAsComposite() {
 	    int i;
-	    String nodeList = "";
+	    String nodeDump = "";
 	    String dump = "";
 //	    String models = "";
 	    CustomLogicModel.clearDumpedFlags();
@@ -5227,6 +5256,8 @@ MouseOutHandler, MouseWheelHandler {
 	    
 	    // mapping of node numbers -> equivalent node numbers (if they both have the same label)
 	    HashMap<Integer, Integer> nodeNumberHash = new HashMap<Integer, Integer>();
+	    
+	    boolean used[] = new boolean[nodeList.size()];
 	    
 	    // find all the labeled nodes, get a list of them, and create a node number map
 	    for (i = 0; i != elmList.size(); i++) {
@@ -5270,14 +5301,15 @@ MouseOutHandler, MouseWheelHandler {
 		if (ce instanceof GraphicElm)
 		    continue;
 		int j;
-		if (nodeList.length() > 0)
-		    nodeList += "\r";
-		nodeList += ce.getClass().getSimpleName();
+		if (nodeDump.length() > 0)
+		    nodeDump += "\r";
+		nodeDump += ce.getClass().getSimpleName();
 		for (j = 0; j != ce.getPostCount(); j++) {
 		    int n = ce.getNode(j);
 		    Integer nobj = nodeNumberHash.get(n);
 		    int n0 = (nobj == null) ? n : nobj;
-		    nodeList += " " + n0;
+		    used[n0] = true;
+		    nodeDump += " " + n0;
 		}
 		
 	        // save positions
@@ -5296,8 +5328,17 @@ MouseOutHandler, MouseWheelHandler {
                     dump += " ";
                 dump += CustomLogicModel.escape(tstring);
 	    }
+	    
+	    for (i = 0; i != extList.size(); i++) {
+		ExtListEntry ent = extList.get(i);
+		if (!used[ent.node]) {
+		    Window.alert("Node \"" + ent.name + "\" is not used!");
+		    return null;
+		}
+	    }
+		    
 	    CustomCompositeModel ccm = new CustomCompositeModel();
-	    ccm.nodeList = nodeList;
+	    ccm.nodeList = nodeDump;
 	    ccm.elmDump = dump;
 	    ccm.extList = extList;
 	    return ccm;

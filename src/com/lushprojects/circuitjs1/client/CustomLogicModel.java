@@ -125,7 +125,7 @@ public class CustomLogicModel implements Editable {
             return ei;
         }
         if (n == 3) {
-            EditInfo ei = new EditInfo("<a href=\"customlogic.html\" target=\"_blank\">Definition</a>", 0, -1, -1);
+            EditInfo ei = new EditInfo(EditInfo.makeLink("customlogic.html", "Definition"), 0, -1, -1);
             ei.textArea = new TextArea();
             ei.textArea.setVisibleLines(5);
             ei.textArea.setText(rules);

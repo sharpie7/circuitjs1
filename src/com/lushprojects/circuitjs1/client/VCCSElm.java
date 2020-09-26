@@ -173,7 +173,7 @@ package com.lushprojects.circuitjs1.client;
 
         public EditInfo getEditInfo(int n) {
             if (n == 0) {
-                EditInfo ei = new EditInfo("<a href=\"customfunction.html\" target=\"_blank\">Output Function</a>", 0, -1, -1);
+                EditInfo ei = new EditInfo(EditInfo.makeLink("customfunction.html", "Output Function"), 0, -1, -1);
                 ei.text = exprString;
 		ei.disallowSliders();
                 return ei;

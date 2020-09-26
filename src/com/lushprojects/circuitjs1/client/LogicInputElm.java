@@ -110,6 +110,11 @@ package com.lushprojects.circuitjs1.client;
 		ei.checkbox = new Checkbox("Numeric", isNumeric());
 		return ei;
 	    }
+	    if (n == 4) {
+		EditInfo ei = new EditInfo("", 0, 0, 0);
+		ei.checkbox = new Checkbox("Ternary", isTernary());
+		return ei;
+	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -124,6 +129,13 @@ package com.lushprojects.circuitjs1.client;
 		    flags |= FLAG_NUMERIC;
 		else
 		    flags &= ~FLAG_NUMERIC;
+	    }
+	    if (n == 4) {
+		if (ei.checkbox.getState())
+		    flags |= FLAG_TERNARY;
+		else
+		    flags &= ~FLAG_TERNARY;
+		posCount = (isTernary()) ? 3 : 2;
 	    }
 	}
 	int getShortcut() { return 'i'; }
