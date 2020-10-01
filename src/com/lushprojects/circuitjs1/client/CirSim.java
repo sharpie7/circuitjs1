@@ -375,30 +375,30 @@ MouseOutHandler, MouseWheelHandler {
 	layoutPanel = new DockLayoutPanel(Unit.PX);
 	
 	  fileMenuBar = new MenuBar(true);
-	  importFromLocalFileItem = new MenuItem(icoLS("folder", "Open File..."), new MyCommand("file","importfromlocalfile"));
+	  importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
 	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	  fileMenuBar.addItem(importFromLocalFileItem);
-	  importFromTextItem = new MenuItem(icoLS("doc-text", "Import From Text..."), new MyCommand("file","importfromtext"));
+	  importFromTextItem = iconMenuItem("doc-text", "Import From Text...", new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
-	  importFromDropboxItem = new MenuItem(icoLS("dropbox", "Import From Dropbox..."), new MyCommand("file", "importfromdropbox"));
+	  importFromDropboxItem = iconMenuItem("dropbox", "Import From Dropbox...", new MyCommand("file", "importfromdropbox"));
 	  fileMenuBar.addItem(importFromDropboxItem); 
-	  exportAsLocalFileItem = new MenuItem(icoLS("floppy", "Save As..."), new MyCommand("file","exportaslocalfile"));
+	  exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
 	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	  fileMenuBar.addItem(exportAsLocalFileItem);
-	  exportAsUrlItem = new MenuItem(icoLS("export", "Export As Link..."), new MyCommand("file","exportasurl"));
+	  exportAsUrlItem = iconMenuItem("export", "Export As Link...", new MyCommand("file","exportasurl"));
 	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsTextItem = new MenuItem(icoLS("export", "Export As Text..."), new MyCommand("file","exportastext"));
+	  exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	  fileMenuBar.addItem(exportAsTextItem);
-	  fileMenuBar.addItem(new MenuItem(icoLS("export", "Export As Image..."), new MyCommand("file","exportasimage")));
-	  fileMenuBar.addItem(new MenuItem(icoLS("microchip", "Create Subcircuit..."), new MyCommand("file","createsubcircuit")));
-	  fileMenuBar.addItem(new MenuItem(icoLS("magic", "Find DC Operating Point"), new MyCommand("file", "dcanalysis")));
-	  recoverItem = new MenuItem(icoLS("back-in-time", "Recover Auto-Save"), new MyCommand("file","recover"));
+	  fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
+	  fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
+	  fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
+	  recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
 	  recoverItem.setEnabled(recovery != null);
 	  fileMenuBar.addItem(recoverItem);
-	  printItem = new MenuItem(icoLS("print", "Print..."), new MyCommand("file","print"));
+	  printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
 	  fileMenuBar.addItem(printItem);
 	  fileMenuBar.addSeparator();
-	  aboutItem=new MenuItem(icoLS("info-circled", "About..."),(Command)null);
+	  aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
 	  fileMenuBar.addItem(aboutItem);
 	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
 	  
@@ -430,7 +430,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
-	m.addItem(new MenuItem(weAreInUS() ? icoLS("target","Center Circuit") : icoLS("target","Centre Circuit"), new MyCommand("edit", "centrecircuit")));
+	m.addItem(iconMenuItem("target", weAreInUS() ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
@@ -442,10 +442,10 @@ MouseOutHandler, MouseWheelHandler {
 	menuBar.addItem(LS("Draw"), drawMenuBar);
 	
 	m = new MenuBar(true);
-	m.addItem(new MenuItem(icoLS("lines", "Stack All"), new MyCommand("scopes", "stackAll")));
-	m.addItem(new MenuItem(icoLS("columns", "Unstack All"),new MyCommand("scopes", "unstackAll")));
-	m.addItem(new MenuItem(icoLS("object-group", "Combine All"),new MyCommand("scopes", "combineAll")));
-	m.addItem(new MenuItem(icoLS("object-ungroup", "Separate All"),new MyCommand("scopes", "separateAll")));
+	m.addItem(iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
+	m.addItem(iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
+	m.addItem(iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
+	m.addItem(iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 		
 	optionsMenuBar = m = new MenuBar(true );
@@ -693,9 +693,9 @@ MouseOutHandler, MouseWheelHandler {
 	return new MenuItem(SafeHtmlUtils.fromTrustedString(sn), cmd);
     }
     
-    SafeHtml icoLS(String icon, String text) {
+    MenuItem iconMenuItem(String icon, String text, Command cmd) {
         String icoStr = "<i class=\"cirjsicon-" + icon + "\"></i>&nbsp;" + LS(text); //<i class="cirjsicon-"></i>&nbsp;
-        return SafeHtmlUtils.fromTrustedString(icoStr);
+        return new MenuItem(SafeHtmlUtils.fromTrustedString(icoStr), cmd);
     }
     
     boolean getOptionFromStorage(String key, boolean val) {
