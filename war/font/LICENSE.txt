@@ -1,0 +1,51 @@
+Font license info
+
+
+## Font Awesome
+
+   Copyright (C) 2016 by Dave Gandy
+
+   Author:    Dave Gandy
+   License:   SIL (http://scripts.sil.org/OFL)
+   Homepage:  http://fortawesome.github.com/Font-Awesome/
+
+
+## Entypo
+
+   Copyright (C) 2012 by Daniel Bruce
+
+   Author:    Daniel Bruce
+   License:   SIL (http://scripts.sil.org/OFL)
+   Homepage:  http://www.entypo.com
+
+
+## Modern Pictograms
+
+   Copyright (c) 2012 by John Caserta. All rights reserved.
+
+   Author:    John Caserta
+   License:   SIL (http://scripts.sil.org/OFL)
+   Homepage:  http://thedesignoffice.org/project/modern-pictograms/
+
+
+## Elusive
+
+   Copyright (C) 2013 by Aristeides Stathopoulos
+
+   Author:    Aristeides Stathopoulos
+   License:   SIL (http://scripts.sil.org/OFL)
+   Homepage:  http://aristeides.com/
+
+
+
+Icon license info
+
+   Authors:
+   Creaticca Creative Agency (https://www.flaticon.com/authors/creaticca-creative-agency) from www.flaticon.com
+   Pixel perfect (https://www.flaticon.com/authors/pixel-perfect) from www.flaticon.com
+   Freepik (https://www.flaticon.com/authors/freepik) from www.flaticon.com
+   License: Flaticon License (https://www.freepikcompany.com/legal#nav-flaticon).
+
+   Author: Google (https://www.flaticon.com/authors/google) from www.flaticon.com
+   License: CC 3.0 BY (https://creativecommons.org/licenses/by/3.0/).
+
