@@ -80,8 +80,10 @@ public class ExportAsTextDialog extends DialogBox {
 //				s=textBox.getHTML();
 //				s=s.replace("<br>", "\r");
 				s=textArea.getText();
-				if (s!=null)
+				if (s!=null) {
 					sim.readCircuit(s);
+					sim.allowSave(false);
+				}
 			}
 		});
 		this.center();
