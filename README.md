@@ -70,21 +70,20 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?hideMenu=<true|false>
 .../circuitjs1.html?running=<true|false> // Set to false to keep the simulation from starting automatically.
 ```
-## Building an Electron application (experimental)
+## Building an Electron application
 
-The [Electron](https://electronjs.org/) project allows web applications to be distributed as local executables for a variety of platforms. This repository contains the additional files needed to build circuitJS1 as an Electron application. Use of electron is experimental at this stage.
+The [Electron](https://electronjs.org/) project allows web applications to be distributed as local executables for a variety of platforms. This repository contains the additional files needed to build circuitJS1 as an Electron application.
 
 The general approach to building an Electron application for a particular platform is documented [here](https://electronjs.org/docs/tutorial/application-distribution). The following instructions apply this approach to circuit JS.
 
 To build the Electron application:
 * Compile the application using GWT, as above.
-* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 1.8.7 for the target platform.
+* Download and unpack a [pre-built Electron binary directory](https://github.com/electron/electron/releases) version 9.3.2 for the target platform.
 * Copy the "app" directory from this repository to the location specified [here](https://electronjs.org/docs/tutorial/application-distribution) in the Electron binary directory structure.
 * Copy the "war" directory, containing the compiled CircuitJS1 application, in to the "app" directory the Electron binary directory structure.
 * Run the "Electron" executable file. It should automatically load CircuitJS1.
 
 Known limitations of the Electron application:
-* The languge is hard-coded to en-US due to [this Electron issue](https://github.com/electron/electron/issues/11053).
 * "Create short URL" on "Export as URL" doesn't work as it relies on server support.
 * For diodes, "Create Simple Model" doesn't work as it relies on a javascript feature that is not supported.
 
