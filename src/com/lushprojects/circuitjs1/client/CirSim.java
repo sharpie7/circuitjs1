@@ -79,6 +79,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.CanvasElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -103,7 +104,7 @@ MouseOutHandler, MouseWheelHandler {
     Button dumpMatrixButton;
     MenuItem aboutItem;
     MenuItem importFromLocalFileItem, importFromTextItem,
-    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem, printItem, recoverItem;
+    	exportAsUrlItem, exportAsLocalFileItem, exportAsTextItem, printItem, recoverItem, saveFileItem;
     MenuItem importFromDropboxItem;
     MenuItem undoItem, redoItem,
 	cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
@@ -378,16 +379,23 @@ MouseOutHandler, MouseWheelHandler {
 	layoutPanel = new DockLayoutPanel(Unit.PX);
 	
 	  fileMenuBar = new MenuBar(true);
+	  if (isElectron())
+	      fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
 	  importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
 	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	  fileMenuBar.addItem(importFromLocalFileItem);
 	  importFromTextItem = iconMenuItem("doc-text", "Import From Text...", new MyCommand("file","importfromtext"));
 	  fileMenuBar.addItem(importFromTextItem);
 	  importFromDropboxItem = iconMenuItem("dropbox", "Import From Dropbox...", new MyCommand("file", "importfromdropbox"));
-	  fileMenuBar.addItem(importFromDropboxItem); 
-	  exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
-	  exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
-	  fileMenuBar.addItem(exportAsLocalFileItem);
+	  fileMenuBar.addItem(importFromDropboxItem);
+	  if (isElectron()) {
+	      saveFileItem = fileMenuBar.addItem(iconMenuItem("floppy", "Save", new MyCommand("file", "save")));
+	      fileMenuBar.addItem(iconMenuItem("floppy", "Save As...", new MyCommand("file", "saveas")));
+	  } else {
+	      exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
+	      exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
+	      fileMenuBar.addItem(exportAsLocalFileItem);
+	  }
 	  exportAsUrlItem = iconMenuItem("export", "Export As Link...", new MyCommand("file","exportasurl"));
 	  fileMenuBar.addItem(exportAsUrlItem);
 	  exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
@@ -526,6 +534,8 @@ MouseOutHandler, MouseWheelHandler {
 	
 	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
+	if (isElectron())
+	    m.addItem(new CheckboxAlignedMenuItem(LS("Toggle Dev Tools"), new MyCommand("options","devtools")));
 
 	mainMenuBar = new MenuBar(true);
 	mainMenuBar.setAutoOpen(true);
@@ -2621,15 +2631,67 @@ MouseOutHandler, MouseWheelHandler {
     	    t=0;
     }
     
+    static void electronSaveAsCallback(String s) {
+	s = s.substring(s.lastIndexOf('/')+1);
+	s = s.substring(s.lastIndexOf('\\')+1);
+	theSim.setCircuitTitle(s);
+	theSim.allowSave(true);
+    }
     
+    static native void electronSaveAs(String dump) /*-{
+        $wnd.showSaveDialog().then(function (file) {
+            if (file.canceled)
+            	return;
+            $wnd.saveFile(file, dump);
+            @com.lushprojects.circuitjs1.client.CirSim::electronSaveAsCallback(Ljava/lang/String;)(file.filePath.toString());
+        });
+    }-*/;
+
+    static native void electronSave(String dump) /*-{
+        $wnd.saveFile(null, dump);
+    }-*/;
+    
+    static void electronOpenFileCallback(String text, String name) {
+	LoadFile.doLoadCallback(text, name);
+	theSim.allowSave(true);
+    }
+    
+    static native void electronOpenFile() /*-{
+        $wnd.openFile(function (text, name) {
+            @com.lushprojects.circuitjs1.client.CirSim::electronOpenFileCallback(Ljava/lang/String;Ljava/lang/String;)(text, name);
+        });
+    }-*/;
+    
+    static native void toggleDevTools() /*-{
+        $wnd.toggleDevTools();
+    }-*/;
+    
+    static native boolean isElectron() /*-{
+        return ($wnd.openFile != undefined);
+    }-*/;    
+    
+    void allowSave(boolean b) {
+	if (saveFileItem != null)
+	    saveFileItem.setEnabled(b);
+    }
     
     public void menuPerformed(String menu, String item) {
     	if (item=="about")
     		aboutBox = new AboutBox(circuitjs1.versionString);
     	if (item=="importfromlocalfile") {
     		pushUndo();
-    		loadFileInput.click();
+    		if (isElectron())
+    		    electronOpenFile();
+    		else
+    		    loadFileInput.click();
     	}
+    	if (item=="newwindow") {
+    	    Window.open(Document.get().getURL(), "_blank", "");
+    	}
+    	if (item=="save")
+    	    electronSave(dumpCircuit());
+    	if (item=="saveas")
+    	    electronSaveAs(dumpCircuit());
     	if (item=="importfromtext") {
     		dialogShowing = new ImportFromTextDialog(this);
     	}
@@ -2667,6 +2729,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (menu=="options" && item=="other")
     		doEdit(new EditOptions(this));
+    	if (item=="devtools")
+    	    toggleDevTools();
     	if (item=="undo")
     		doUndo();
     	if (item=="redo")
@@ -3114,7 +3178,8 @@ MouseOutHandler, MouseWheelHandler {
 
     void readCircuit(String text, int flags) {
 	readCircuit(text.getBytes(), flags);
-	titleLabel.setText(null);
+	if ((flags & RC_KEEP_TITLE) == 0)
+	    titleLabel.setText(null);
     }
 
     void readCircuit(String text) {
@@ -3150,7 +3215,8 @@ MouseOutHandler, MouseWheelHandler {
 		    public void onResponseReceived(Request request, Response response) {
 			if (response.getStatusCode()==Response.SC_OK) {
 			    String text = response.getText();
-			    readCircuit(text);
+			    readCircuit(text, RC_KEEP_TITLE);
+			    allowSave(false);
 			    unsavedChanges = false;
 			}
 			else 
@@ -3166,6 +3232,7 @@ MouseOutHandler, MouseWheelHandler {
     static final int RC_RETAIN = 1;
     static final int RC_NO_CENTER = 2;
     static final int RC_SUBCIRCUITS = 4;
+    static final int RC_KEEP_TITLE = 8;
 
     void readCircuit(byte b[], int flags) {
 	int i;
@@ -4170,6 +4237,7 @@ MouseOutHandler, MouseWheelHandler {
     void doRecover() {
 	pushUndo();
 	readCircuit(recovery);
+	allowSave(false);
 	recoverItem.setEnabled(false);
     }
     
