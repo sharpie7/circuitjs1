@@ -31,8 +31,6 @@
 "Note the difference in gain by a factor of approx. 2 between the switch settings."="Nota la differenza di amplificazione di un fattore di circa 2 rispetto le impostazioni selezionabili."
 "Switch in upper position - normal configuration for LM13700"="Porta in posizione alta - configurazione normale per LM13700"
 "Switch in lower position - configuration used on LM13700 data sheet"="Porta in posizione bassa - configurazione usata nel datasheet del LM13700"
-"<a href="customlogic.html" target="_blank">Definition</a>"="<a href="customlogic.html" target="_blank">Definizioni</a>"
-"<a href="customfunction.html" target="_blank">Output Function</a>"="<a href="customfunction.html" target="_blank">Funzioni di Uscita</a>"
 "CCCS~"="CCCS"
 "CCII+~"="CCII+"
 "CCII-~"="CCII-"

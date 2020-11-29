@@ -460,7 +460,7 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 0)
 			return new EditInfo("Threshold Voltage", pnp*vt, .01, 5);
 		if (n == 1)
-			return new EditInfo("<a href=\"mosfet-beta.html\" target=\"_blank\">Beta</a>", beta, .01, 5);
+			return new EditInfo(EditInfo.makeLink("mosfet-beta.html", "Beta"), beta, .01, 5);
 		if (n == 2) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Show Bulk", showBulk());

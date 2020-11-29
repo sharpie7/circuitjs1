@@ -64,8 +64,10 @@ TextArea textArea;
 				int flags = 0;
 				if (subCheck.getState())
 				    flags |= CirSim.RC_SUBCIRCUITS | CirSim.RC_RETAIN;
-				if (s!=null)
+				if (s!=null) {
 					sim.readCircuit(s, flags);
+					sim.allowSave(false);
+				}
 			}
 		});
 		hp.add(cancelButton = new Button(sim.LS("Cancel")));

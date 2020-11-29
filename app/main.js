@@ -3,22 +3,26 @@ const electron = require('electron')
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
+const Menu = electron.Menu
 
 const path = require('path')
 const url = require('url')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+var windows = [];
+
+Menu.setApplicationMenu(false);
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, 
+  var mainWindow = new BrowserWindow({width: 800, 
     height: 600,
-    // webPreferences: {
-    //   preload: path.join(__dirname, 'preload.js'),
-    // }
-})
+    webPreferences: { nativeWindowOpen: true,
+                      preload: path.join(__dirname, 'preload.js')
+    }
+  })
+  windows.push(mainWindow);
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -37,8 +41,21 @@ function createWindow () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null
+    var i = windows.indexOf(mainWindow);
+    if (i >= 0)
+      windows.splice(i, 1);
   })
+
+  mainWindow.webContents.on('new-window', (evt, url, frameName, disposition, options) => {
+	if (disposition == 'save-to-disk')
+		return;
+	if (!url.endsWith("circuitjs.html"))
+		return;
+        // app is opening a new window.  override it by creating a BrowserWindow to work around an electron bug (11128)
+	evt.preventDefault();
+	createWindow();
+  });
+
 }
 
 // This method will be called when Electron has finished
@@ -58,7 +75,7 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
+  if (windows.length == 0) {
     createWindow()
   }
 })

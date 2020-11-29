@@ -216,11 +216,11 @@ class TransLineElm extends CircuitElm {
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
-	if (n == 0) {
+	if (n == 0 && ei.value > 0) {
 	    delay = ei.value;
 	    reset();
 	}
-	if (n == 1) {
+	if (n == 1 && ei.value > 0) {
 	    imped = ei.value;
 	    reset();
 	}

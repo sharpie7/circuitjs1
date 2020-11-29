@@ -37,6 +37,7 @@ public class LoadFile extends FileUpload implements  ChangeHandler {
 		sim.readCircuit(s);
 		sim.createNewLoadFile();
 		sim.setCircuitTitle(t);
+		sim.unsavedChanges = false;
 	}
 	
 	LoadFile(CirSim s) {

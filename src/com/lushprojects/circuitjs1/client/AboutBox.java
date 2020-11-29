@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -33,30 +34,15 @@ public class AboutBox extends PopupPanel {
 	
 	AboutBox(String version) {
 		super();
+		
+		// Add versionString variable to SessionStorage for iFrame in AboutBox
+		Storage sstor = Storage.getSessionStorageIfSupported();
+		sstor.setItem("versionString", version);
+		
 		vp = new VerticalPanel();
 		setWidget(vp);
 		vp.setWidth("400px");
-		vp.add(new HTML("<p>Circuit Simulator version "+version+".</p>"+
-		"<p>Original by Paul Falstad.<br><a href=\"http://www.falstad.com/\" target=\"_blank\">http://www.falstad.com/</a></p>"+
-		"<p>JavaScript conversion by Iain Sharp.<br><a href=\"http://lushprojects.com/\" target=\"_blank\">http://lushprojects.com/</a></p>"+
-		"<p>Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo Hausen for file import/export and many other UI improvements; "+  
-		"J. Mike Rollins for the Zener diode code; Julius Schmidt for the spark gap code and some examples; Dustin Soodak for help with the user interface improvements; "+
-		"Jacob Calvert for the T Flip Flop; Ben Hayden for scope spectrum; " +
-		"Thomas Reitinger, Krystian Sławiński, Usevalad Khatkevich, Lucio Sciamanna, " +
-		"Mauro Hemerly Gazzani, J. Miguel Silva, and Franck Viard for translations; " +
-		"Andre Adrian for improved emitter coupled oscillator; Felthry for many examples; " +
-		"Colin Howell for code improvements.  LZString (c) 2013 pieroxy.</p>"+
-		"<p style=\"font-size:9px\">This program is free software: you can redistribute it and/or modify it "+
-		"under the terms of the GNU General Public License as published by "+
-		"the Free Software Foundation, either version 2 of the License, or "+
-		"(at your option) any later version.</p>"+
-		"<p style=\"font-size:9px\">This program is distributed in the hope that it will be useful,"+
-		"but WITHOUT ANY WARRANTY; without even the implied warranty of "+
-		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "+
-		"GNU General Public License for more details.</p>"+
-		"<p style=\"font-size:9px\">For details of licensing see <A href=\"http://www.gnu.org/licenses/\" target=\"_blank\">http://www.gnu.org/licenses/</A>.</p>"+
-		"<p style=\"font-size:9px\">Source code (Paul):<A href=\"https://github.com/pfalstad/circuitjs1\" target=\"_blank\">https://github.com/pfalstad/circuitjs1</A></p>"+
-	    "<p style=\"font-size:9px\">Source code (Iain):<A href=\"https://github.com/sharpie7/circuitjs1\" target=\"_blank\">https://github.com/sharpie7/circuitjs1</A></p>"));
+		vp.add(new HTML("<iframe src=\"about.html\" width=\"400\" height=\"430\" scrolling=\"auto\" frameborder=\"0\"></iframe><br>"));
 		
 		
 		vp.add(okButton = new Button("OK"));

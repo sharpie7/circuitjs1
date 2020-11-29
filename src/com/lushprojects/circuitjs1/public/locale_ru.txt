@@ -31,8 +31,6 @@
 "Note the difference in gain by a factor of approx. 2 between the switch settings."="Обратите внимание, что более чем в два раза разница в усилении сигнала в обеих конфигурациях."
 "Switch in upper position - normal configuration for LM13700"="Переключатель в верхнем положении - обычная конфигурация для LM13700"
 "Switch in lower position - configuration used on LM13700 data sheet"="Переключение в нижнем положении - конфигурация, используемая в даташите LM13700"
-"<a href="customlogic.html" target="_blank">Definition</a>"="<a href="customlogic.html" target="_blank">Системная функция</a>"
-"<a href="customfunction.html" target="_blank">Output Function</a>"="<a href="customfunction.html" target="_blank">Выходная функция</a>"
 "CCCS~"="CCCS"
 "CCII+~"="CCII+"
 "CCII-~"="CCII-"
