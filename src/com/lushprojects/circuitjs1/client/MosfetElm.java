@@ -89,12 +89,14 @@ package com.lushprojects.circuitjs1.client;
 	boolean nonLinear() { return true; }
 	boolean drawDigital() { return (flags & FLAG_DIGITAL) != 0; }
 	boolean showBulk() { return (flags & (FLAG_DIGITAL|FLAG_HIDE_BULK)) == 0; }
-	boolean hasBodyTerminal() { return (flags & FLAG_BODY_TERMINAL) != 0; }
+	boolean hasBodyTerminal() { return (flags & FLAG_BODY_TERMINAL) != 0 && doBodyDiode(); }
 	boolean doBodyDiode() { return (flags & FLAG_BODY_DIODE) != 0 && showBulk(); }
 	void reset() {
 	    lastv1 = lastv2 = volts[0] = volts[1] = volts[2] = curcount = 0;
 	    diodeB1.reset();
 	    diodeB2.reset();
+	    if (doBodyDiode())
+		volts[bodyTerminal] = 0;
 	}
 	String dump() {
 	    return super.dump() + " " + vt + " " + beta;
@@ -497,18 +499,18 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 2) {
 		    globalFlags = (!ei.checkbox.getState()) ? (globalFlags|FLAG_HIDE_BULK) :
 				(globalFlags & ~(FLAG_HIDE_BULK|FLAG_DIGITAL));
-		    setPoints();
+//		    setPoints();
 		    ei.newDialog = true;
 		}
 		if (n == 3) {
 			flags = (ei.checkbox.getState()) ? (flags | FLAG_FLIP) :
 				(flags & ~FLAG_FLIP);
-			setPoints();
+//			setPoints();
 		}
 		if (n == 4 && !showBulk()) {
 		    globalFlags = (ei.checkbox.getState()) ? (globalFlags|FLAG_DIGITAL) :
 				(globalFlags & ~FLAG_DIGITAL);
-		    setPoints();
+//		    setPoints();
 		}
 		if (n == 4 && showBulk()) {
 		    flags = ei.changeFlag(flags, FLAG_BODY_DIODE);
@@ -516,9 +518,11 @@ package com.lushprojects.circuitjs1.client;
 		}
 		if (n == 5) {
 		    flags = ei.changeFlag(flags, FLAG_BODY_TERMINAL);
-		    allocNodes();
-		    setPoints();
 		}
+
+		// lots of different cases where the body terminal might have gotten removed/added so just do this all the time
+		allocNodes();
+		setPoints();
 	}
 	double getCurrentIntoNode(int n) {
 	    if (n == 0)
