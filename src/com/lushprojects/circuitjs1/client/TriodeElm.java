@@ -127,7 +127,12 @@ class TriodeElm extends CircuitElm {
 	return (n == 0) ? plate[0] : (n == 1) ? grid[0] : cath[0];
     }
     int getPostCount() { return 3; }
-    double getPower() { return (volts[0]-volts[2])*current; }
+    double getPower() { return (volts[0]-volts[2])*currentc + (volts[gridN]-volts[cathN])*currentg; }
+    double getCurrent() { return currentc; } // for scope
+
+    final int gridN = 1;
+    final int cathN = 2;
+    final int plateN = 0;
 
     double lastv0, lastv1, lastv2;
     void doStep() {
@@ -143,11 +148,8 @@ class TriodeElm extends CircuitElm {
 	    vs[2] = lastv2 + .5;
 	if (vs[2] < lastv2 - .5)
 	    vs[2] = lastv2 - .5;
-	int grid = 1;
-	int cath = 2;
-	int plate = 0;
-	double vgk = vs[grid] -vs[cath];
-	double vpk = vs[plate]-vs[cath];
+	double vgk = vs[gridN] -vs[cathN];
+	double vpk = vs[plateN]-vs[cathN];
 	if (Math.abs(lastv0-vs[0]) > .01 ||
 	    Math.abs(lastv1-vs[1]) > .01 ||
 	    Math.abs(lastv2-vs[2]) > .01)
@@ -161,10 +163,10 @@ class TriodeElm extends CircuitElm {
 	double ival = vgk+vpk/mu;
 	currentg = 0;
 	if (vgk > .01) {
-	    sim.stampResistor(nodes[grid], nodes[cath], gridCurrentR);
+	    sim.stampResistor(nodes[gridN], nodes[cathN], gridCurrentR);
 	    currentg = vgk/gridCurrentR;
 	} else
-	    sim.stampResistor(nodes[grid], nodes[cath], 1e8); // avoid singular matrix 
+	    sim.stampResistor(nodes[gridN], nodes[cathN], 1e8); // avoid singular matrix 
 	if (ival < 0) {
 	    // should be all zero, but that causes a singular matrix,
 	    // so instead we treat it as a large resistor
@@ -181,16 +183,16 @@ class TriodeElm extends CircuitElm {
 	currentp = ids;
 	currentc = ids+currentg;
 	double rs = -ids + Gds*vpk + gm*vgk;
-	sim.stampMatrix(nodes[plate],  nodes[plate],  Gds);
-	sim.stampMatrix(nodes[plate],  nodes[cath],  -Gds-gm); 
-	sim.stampMatrix(nodes[plate],  nodes[grid],   gm);
+	sim.stampMatrix(nodes[plateN],  nodes[plateN],  Gds);
+	sim.stampMatrix(nodes[plateN],  nodes[cathN],  -Gds-gm); 
+	sim.stampMatrix(nodes[plateN],  nodes[gridN],   gm);
 	    
-	sim.stampMatrix(nodes[cath],   nodes[plate],  -Gds);
-	sim.stampMatrix(nodes[cath],   nodes[cath],    Gds+gm); 
-	sim.stampMatrix(nodes[cath],   nodes[grid],   -gm);
+	sim.stampMatrix(nodes[cathN],   nodes[plateN],  -Gds);
+	sim.stampMatrix(nodes[cathN],   nodes[cathN],    Gds+gm); 
+	sim.stampMatrix(nodes[cathN],   nodes[gridN],   -gm);
 	    
-	sim.stampRightSide(nodes[plate],  rs);
-	sim.stampRightSide(nodes[cath ], -rs);
+	sim.stampRightSide(nodes[plateN],  rs);
+	sim.stampRightSide(nodes[cathN ], -rs);
     }
 
     void stamp() {
@@ -200,12 +202,14 @@ class TriodeElm extends CircuitElm {
     }
     void getInfo(String arr[]) {
 	arr[0] = "triode";
-	double vbc = volts[0]-volts[1];
-	double vbe = volts[0]-volts[2];
-	double vce = volts[1]-volts[2];
-	arr[1] = "Vbe = " + getVoltageText(vbe);
-	arr[2] = "Vbc = " + getVoltageText(vbc);
-	arr[3] = "Vce = " + getVoltageText(vce);
+	double vac = volts[plateN]-volts[cathN];
+	double vgc = volts[gridN ]-volts[cathN];
+	double vag = volts[plateN]-volts[gridN];
+	arr[1] = "Vac = " + getVoltageText(vac);
+	arr[2] = "Vgc = " + getVoltageText(vgc);
+	arr[3] = "Vag = " + getVoltageText(vag);
+	arr[4] = "Ic = " + getUnitText(currentc, "A");
+	arr[5] = "Ig = " + getUnitText(currentg, "A");
     }
     // grid not connected to other terminals
     boolean getConnection(int n1, int n2) { return !(n1 == 1 || n2 == 1); }
@@ -222,5 +226,7 @@ class TriodeElm extends CircuitElm {
 	if (n == 1 && ei.value > 0)
 	    kg1 = ei.value;
     }
+    boolean canViewInScope() { return true; }
+    double getVoltageDiff() { return volts[plateN] - volts[cathN]; }    
 }
 

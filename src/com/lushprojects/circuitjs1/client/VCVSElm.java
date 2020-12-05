@@ -48,6 +48,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[inputCount].output = true;
             pins[inputCount+1] = new Pin(1, SIDE_E, "V-");
 	    lastVolts = new double[inputCount];
+	    origVolts = new double[inputCount];
 	    exprState = new ExprState(inputCount);
 	}
 	String getChipName() { return "VCVS"; } 
@@ -63,8 +64,11 @@ package com.lushprojects.circuitjs1.client;
             double limitStep = getLimitStep();
             double convergeLimit = getConvergeLimit();
             for (i = 0; i != inputCount; i++) {
-        	if (Math.abs(volts[i]-lastVolts[i]) > convergeLimit)
+        	origVolts[i] = volts[i];
+        	if (Math.abs(volts[i]-lastVolts[i]) > convergeLimit) {
         	    sim.converged = false;
+        	    sim.console("cf 2 " + volts[i] + " " + lastVolts[i] + " " + convergeLimit);
+        	}
         	if (Double.isNaN(volts[i]))
         	    volts[i] = 0;
         	if (Math.abs(volts[i]-lastVolts[i]) > limitStep)
@@ -77,8 +81,10 @@ package com.lushprojects.circuitjs1.client;
         	    exprState.values[i] = volts[i];
         	exprState.t = sim.t;
         	double v0 = expr.eval(exprState);
-        	if (Math.abs(volts[inputCount]-volts[inputCount+1]-v0) > Math.abs(v0)*.01 && sim.subIterations < 100)
+        	if (Math.abs(volts[inputCount]-volts[inputCount+1]-v0) > Math.abs(v0)*.01 && sim.subIterations < 100) {
         	    sim.converged = false;
+        	    sim.console("cf 1");
+        	}
         	double rs = v0;
         	
         	// calculate and stamp output derivatives
@@ -101,7 +107,7 @@ package com.lushprojects.circuitjs1.client;
             }
 
             for (i = 0; i != inputCount; i++)
-        	lastVolts[i] = volts[i];
+        	lastVolts[i] = origVolts[i];
         }
 	int getPostCount() { return inputCount+2; }
 	int getVoltageSourceCount() { return 1; }

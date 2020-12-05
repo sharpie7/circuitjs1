@@ -252,5 +252,8 @@ class TriacElm extends CircuitElm {
         if (n == 2 && ei.value > 0)
             cresistance = ei.value;
     }
+    boolean canViewInScope() { return true; }
+    double getVoltageDiff() { return volts[mt2node] - volts[mt1node]; }
+    double getCurrent() { return i2; } // for scope
 }
 
