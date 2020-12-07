@@ -3113,6 +3113,7 @@ MouseOutHandler, MouseWheelHandler {
 		try {
 			requestBuilder.sendRequest(null, new RequestCallback() {
 				public void onError(Request request, Throwable exception) {
+					Window.alert(LS("Can't load circuit list!"));
 					GWT.log("File Error Response", exception);
 				}
 
@@ -3123,8 +3124,10 @@ MouseOutHandler, MouseWheelHandler {
 					processSetupList(text.getBytes(), openDefault);
 					// end or processing
 					}
-					else 
+					else { 
+						Window.alert(LS("Can't load circuit list!"));
 						GWT.log("Bad file server response:"+response.getStatusText() );
+					}
 				}
 			});
 		} catch (RequestException e) {
@@ -3219,6 +3222,7 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		requestBuilder.sendRequest(null, new RequestCallback() {
 		    public void onError(Request request, Throwable exception) {
+			Window.alert(LS("Can't load circuit!"));
 			GWT.log("File Error Response", exception);
 		    }
 
@@ -3229,8 +3233,10 @@ MouseOutHandler, MouseWheelHandler {
 			    allowSave(false);
 			    unsavedChanges = false;
 			}
-			else 
+			else { 
+			    Window.alert(LS("Can't load circuit!"));
 			    GWT.log("Bad file server response:"+response.getStatusText() );
+			}
 		    }
 		});
 	    } catch (RequestException e) {
