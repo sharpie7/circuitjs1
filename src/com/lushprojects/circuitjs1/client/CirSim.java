@@ -4149,7 +4149,6 @@ MouseOutHandler, MouseWheelHandler {
     			circuitChanged = true;
     			writeRecoveryToStorage();
     			unsavedChanges = true;
-    			debugger();
     		}
     		dragElm = null;
     	}
