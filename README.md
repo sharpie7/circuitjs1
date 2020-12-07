@@ -69,6 +69,7 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?running=<true|false> // Start the app without the simulation running, default true
 .../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
 .../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
+.../circuitjs1.html?editable=<true|false> // Allow circuit editing, default true
 ```
 ## Building an Electron application
 
