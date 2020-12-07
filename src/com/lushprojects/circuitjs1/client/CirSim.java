@@ -3883,7 +3883,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void doPopupMenu() {
-	if (noEditCheckItem.getState())
+	if (noEditCheckItem.getState() || dialogIsShowing())
 	    return;
     	menuElm = mouseElm;
     	menuScope=-1;
