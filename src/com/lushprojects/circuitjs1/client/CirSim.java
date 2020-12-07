@@ -4162,12 +4162,15 @@ MouseOutHandler, MouseWheelHandler {
     	// so we don't accidentally edit a resistor value while zooming
     	boolean zoomOnly = System.currentTimeMillis() < zoomTime+1000;
     	
+    	if (noEditCheckItem.getState())
+    	    zoomOnly = true;
+    	
     	if (!zoomOnly)
     	    scrollValues(e.getNativeEvent().getClientX(), e.getNativeEvent().getClientY(), e.getDeltaY());
     	
     	if (mouseElm instanceof MouseWheelHandler && !zoomOnly)
     		((MouseWheelHandler) mouseElm).onMouseWheel(e);
-    	else if (scopeSelected != -1)
+    	else if (scopeSelected != -1 && !zoomOnly)
     	    scopes[scopeSelected].onMouseWheel(e);
     	else if (!dialogIsShowing()) {
     	    zoomCircuit(-e.getDeltaY());
