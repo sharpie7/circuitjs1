@@ -963,6 +963,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Voltage Source"), "CCVSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source"), "CCCSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Optocoupler"), "OptocouplerElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Time Delay Relay"), "TimeDelayRelayElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
@@ -990,7 +991,6 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter"), "CounterElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Ring Counter"), "DecadeElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Latch"), "LatchElm"));
-    	//chipMenuBar.addItem(getClassCheckItem("Add Static RAM", "SRAMElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
@@ -4921,6 +4921,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
     	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
+    	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5159,6 +5160,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CrystalElm(x1, y1);
     	if (n=="SRAMElm")
 		return (CircuitElm) new SRAMElm(x1, y1);
+    	if (n=="TimeDelayRelayElm")
+		return (CircuitElm) new TimeDelayRelayElm(x1, y1);
     	return null;
     }
     
