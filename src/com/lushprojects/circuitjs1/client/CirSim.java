@@ -4574,12 +4574,20 @@ MouseOutHandler, MouseWheelHandler {
     			if (code==KEY_ENTER)
     				scrollValuePopup.close(true);
     		}
-    		if (editDialog!=null && editDialog.isShowing() &&
+    		
+    		// process escape/enter for edit dialogs
+    		// multiple edit dialogs could be displayed at once, pick the one in front
+    		EditDialog dlg = editDialog;
+    		if (diodeModelEditDialog != null)
+    		    dlg = diodeModelEditDialog;
+    		if (customLogicEditDialog != null)
+    		    dlg = customLogicEditDialog;
+    		if (dlg!=null && dlg.isShowing() &&
     				(t & Event.ONKEYDOWN)!=0) {
     			if (code==KEY_ESCAPE)
-    				editDialog.closeDialog();
+    			    dlg.closeDialog();
     			if (code==KEY_ENTER)
-    			    	editDialog.enterPressed();
+    			    dlg.enterPressed();
     		}
     		return;
     	}

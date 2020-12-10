@@ -73,7 +73,8 @@ class EditDialog extends DialogBox  {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(applyButton = new Button(CirSim.LS("Apply")));
+		applyButton = new Button(CirSim.LS("Apply"));
+		hp.add(applyButton);
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -280,6 +281,11 @@ class EditDialog extends DialogBox  {
 	    }
 	}
 	
+	public void resetDialog() {
+	    clearDialog();
+	    buildDialog();
+	}
+	
 	public void clearDialog() {
 		while (vp.getWidget(0)!=hp)
 			vp.remove(0);
@@ -288,7 +294,8 @@ class EditDialog extends DialogBox  {
 	protected void closeDialog()
 	{
 		EditDialog.this.hide();
-		cframe.editDialog = null;
+		if (cframe.editDialog == this)
+		    cframe.editDialog = null;
 	}
 	
 	public void enterPressed() {
