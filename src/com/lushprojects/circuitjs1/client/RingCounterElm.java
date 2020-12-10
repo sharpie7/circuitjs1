@@ -21,8 +21,13 @@ package com.lushprojects.circuitjs1.client;
 
     class RingCounterElm extends ChipElm {
 	boolean justLoaded;
+	final int FLAG_CLOCK_INHIBIT = 2;
 	
-	public RingCounterElm(int xx, int yy) { super(xx, yy); }
+	public RingCounterElm(int xx, int yy) {
+	    super(xx, yy);
+	    flags |= FLAG_CLOCK_INHIBIT;
+	    setupPins();
+	}
 	public RingCounterElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
@@ -30,6 +35,10 @@ package com.lushprojects.circuitjs1.client;
 	}
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
+	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
+	
+	int clockInhibit;
+	
 	void setupPins() {
 	    sizeX = bits > 2 ? bits : 2;
 	    sizeY = 2;
@@ -44,9 +53,15 @@ package com.lushprojects.circuitjs1.client;
 		pins[ii] = new Pin(i, SIDE_N, "Q" + i);
 		pins[ii].output = pins[ii].state = true;
 	    }
+	    if (hasClockInhibit()) {
+		clockInhibit = pins.length-1;
+		pins[clockInhibit] = new Pin(1, SIDE_S, "CE");
+		pins[clockInhibit].lineOver = true;
+	    } else
+		clockInhibit = -1;
 	    allocNodes();
 	}
-	int getPostCount() { return bits+2; }
+	int getPostCount() { return hasClockInhibit() ? bits+3 : bits+2; }
 	int getVoltageSourceCount() { return bits; }
 	void execute() {
 	    int i;
@@ -57,7 +72,11 @@ package com.lushprojects.circuitjs1.client;
 		return;
 	    }
 	    
-	    if (pins[0].value && !lastClock) {
+	    boolean running = true;
+	    if (hasClockInhibit() && pins[clockInhibit].value)
+		running = false;
+	    
+	    if (pins[0].value && !lastClock && running) {
 		for (i = 0; i != bits; i++)
 		    if (pins[i+2].value)
 			break;
@@ -73,24 +92,24 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    lastClock = pins[0].value;
 	}
-        public EditInfo getEditInfo(int n) {
-            if (n < 2)
-        		return super.getEditInfo(n);
-            if (n == 2)
-                return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
-            return null;
-        }
-        public void setEditValue(int n, EditInfo ei) {
-            if (n < 2) {
-        		super.setEditValue(n,  ei);
-        		return;
-            }
-            if (n == 2 && ei.value >= 2) {
-                bits = (int)ei.value;
-                setupPins();
-                setPoints();
-            }
-        }
+	public EditInfo getEditInfo(int n) {
+	    if (n < 2)
+		return super.getEditInfo(n);
+	    if (n == 2)
+		return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
+	    return null;
+	}
+	public void setEditValue(int n, EditInfo ei) {
+	    if (n < 2) {
+		super.setEditValue(n,  ei);
+		return;
+	    }
+	    if (n == 2 && ei.value >= 2) {
+		bits = (int)ei.value;
+		setupPins();
+		setPoints();
+	    }
+	}
 	
 	int getDumpType() { return 163; }
     }
