@@ -3867,9 +3867,11 @@ MouseOutHandler, MouseWheelHandler {
 
     public void onContextMenu(ContextMenuEvent e) {
     	e.preventDefault();
-    	menuClientX = e.getNativeEvent().getClientX();
-    	menuClientY = e.getNativeEvent().getClientY();
-    	doPopupMenu();
+    	if (!dialogIsShowing()) {
+        	menuClientX = e.getNativeEvent().getClientX();
+        	menuClientY = e.getNativeEvent().getClientY();
+        	doPopupMenu();
+    	}
     }
     
     void doPopupMenu() {
@@ -4031,9 +4033,8 @@ MouseOutHandler, MouseWheelHandler {
 	} else
 	    tempMouseMode = MODE_DRAG_ALL;
 	
-	if ((scopeSelected != -1 && scopes[scopeSelected].cursorInSettingsWheel()) ||
-		( scopeSelected == -1 && mouseElm instanceof ScopeElm && ((ScopeElm)mouseElm).elmScope.cursorInSettingsWheel())){
-	    console("Doing something");
+	if (!(dialogIsShowing()) && ((scopeSelected != -1 && scopes[scopeSelected].cursorInSettingsWheel()) ||
+		( scopeSelected == -1 && mouseElm instanceof ScopeElm && ((ScopeElm)mouseElm).elmScope.cursorInSettingsWheel()))){
 	    Scope s;
 	    if (scopeSelected != -1)
 		s=scopes[scopeSelected];

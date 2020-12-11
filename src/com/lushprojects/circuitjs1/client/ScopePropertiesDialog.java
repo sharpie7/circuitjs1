@@ -1,5 +1,6 @@
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,12 +13,14 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.RadioButton;
 
 class ScopeCheckBox extends CheckBox {
     String menuCmd;
@@ -42,52 +45,90 @@ HorizontalPanel hp;
 CirSim sim;
 //RichTextArea textBox;
 TextArea textArea;
-CheckBox scaleBox, maxScaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox, manualScaleBox;
+CheckBox scaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox;
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox, logSpectrumBox;
+RadioButton autoButton, maxButton, manualButton;
 TextBox labelTextBox, manualScaleTextBox;
 Scrollbar speedBar;
 Scope scope;
-Grid grid, speedGrid;
+Grid grid, vScaleGrid, hScaleGrid;
 int nx, ny;
-Label scopeSpeedLabel, manualScaleLabel;
+Label scopeSpeedLabel, manualScaleLabel, hScaleLabel;
 	
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
+		HorizontalPanel vModeP, vValueP;
 		sim=asim;
 		scope = s;
 		Button okButton, applyButton;
 		fp=new FlowPanel();
 		setWidget(fp);
 		setText(CirSim.LS("Scope Properties"));
-//		fp.add(l);
 		Command cmd = new Command() {
 		    public void execute() {
 			scrollbarChanged();
 		    }
 		};
-		speedGrid = new Grid(2, 4);
-		Label l = new Label(CirSim.LS("Scroll Speed"));
+		hScaleLabel = new Label (CirSim.LS("Vertical Scale"));
+		hScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+		fp.add(hScaleLabel);
+		vModeP = new HorizontalPanel();
+		vModeP.setStyleName("radioPanel");
+		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
+		autoButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+	            public void onValueChange(ValueChangeEvent<Boolean> e) {
+	        	scope.setManualScale(false);
+	        	scope.setMaxScale(false);
+	        	updateUI();
+	            }
+	        });
+		maxButton = new RadioButton("vMode", CirSim.LS("Auto (Max Scale)"));
+		maxButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+	            public void onValueChange(ValueChangeEvent<Boolean> e) {
+	        	scope.setManualScale(false);
+	        	scope.setMaxScale(true);
+	        	updateUI();
+	            }
+	        });
+		manualButton = new RadioButton("vMode", CirSim.LS("Manual"));
+		manualButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+	            public void onValueChange(ValueChangeEvent<Boolean> e) {
+	        	scope.setManualScale(true);
+	        	updateUI();
+	            }
+	        });
+		vModeP.add(autoButton);
+		vModeP.add(maxButton);
+		vModeP.add(manualButton);
+		fp.add(vModeP);
+		vScaleGrid = new Grid(1,3);
+		manualScaleTextBox = new TextBox(); 
+		vScaleGrid.setWidget(0,0, manualScaleTextBox);
+		manualScaleLabel = new Label("");
+		vScaleGrid.setWidget(0,1, manualScaleLabel);
+		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
+		fp.add(vScaleGrid);
+
+		
+		hScaleGrid = new Grid(2,4);
+		Label l = new Label(CirSim.LS("Horizontal Scale"));
 		l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-		speedGrid.setWidget(0, 0, l);
+		hScaleGrid.setWidget(0, 0, l);
 		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, cmd);
-		speedGrid.setWidget(1,0, speedBar);
+		hScaleGrid.setWidget(1,0, speedBar);
 		scopeSpeedLabel = new Label("");
-		speedGrid.setWidget(1, 1, scopeSpeedLabel);
-		
-		manualScaleLabel = new Label("Scale");
-		manualScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-		speedGrid.setWidget(0, 3, manualScaleLabel);
-		manualScaleTextBox = new TextBox();  
-		speedGrid.setWidget(1, 3, manualScaleTextBox);
-		
-		fp.add(speedGrid);
-		
+		scopeSpeedLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		hScaleGrid.setWidget(1, 1, scopeSpeedLabel);
+		hScaleGrid.getCellFormatter().setVerticalAlignment(1, 1, HasVerticalAlignment.ALIGN_MIDDLE);
+
+	//	speedGrid.getColumnFormatter().setWidth(0, "40%");
+		fp.add(hScaleGrid);
 		
 
 				
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
-		grid = new Grid(12, 3);
+		grid = new Grid(11, 3);
 		if (!transistor) {
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
@@ -117,8 +158,6 @@ Label scopeSpeedLabel, manualScaleLabel;
 		spectrumBox.addValueChangeHandler(this);
 		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(CirSim.LS("Log Spectrum"), "logspectrum"));
 		logSpectrumBox.addValueChangeHandler(this);
-		addItemToGrid(grid, manualScaleBox = new ScopeCheckBox(CirSim.LS("Manual Scale"), "manualscale"));
-		manualScaleBox.addValueChangeHandler(this);
 		
 		addLabelToGrid(grid,"X-Y Plots");
 		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
@@ -230,6 +269,7 @@ Label scopeSpeedLabel, manualScaleLabel;
 	    negPeakBox.setValue(scope.showMin);
 	    freqBox.setValue(scope.showFreq);
 	    spectrumBox.setValue(scope.showFFT);
+	    logSpectrumBox.setValue(scope.logSpectrum);
 	    rmsBox.setValue(scope.showRMS);
 	    rmsBox.setText(scope.canShowRMS() ? CirSim.LS("Show RMS Average") :
                 					CirSim.LS("Show Average"));
@@ -246,14 +286,33 @@ Label scopeSpeedLabel, manualScaleLabel;
                 vceBox.setValue(scope.showingValue(Scope.VAL_VCE));
                 vceIcBox.setValue(scope.isShowingVceAndIc());
 	    }
-	    manualScaleLabel.setText(CirSim.LS("Scale (Max Value)") + " (" + scope.getScaleUnitsText() + ")");
-	    manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
-	    manualScaleBox.setValue(scope.lockScale);
-	    manualScaleTextBox.setEnabled(scope.lockScale);
-	    logSpectrumBox.setValue(scope.logSpectrum);
-	    setScopeSpeedLabel();
+	    if (scope.lockScale) {
+		manualButton.setValue(true);
+		autoButton.setValue(false);
+		maxButton.setValue(false);
+	    }
+	    else {
+		manualButton.setValue(false);
+		autoButton.setValue(! scope.maxScale);
+		maxButton.setValue(scope.maxScale);
+	    }
+	    updateScaleTextBox();
 	    
 	    // if you add more here, make sure it still works with transistor scopes
+	}
+	
+	void updateScaleTextBox() {
+	    manualScaleTextBox.setEnabled(scope.lockScale);
+	    manualScaleLabel.setText(CirSim.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
+	    manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
+	    setScopeSpeedLabel();
+	}
+	
+	void refreshDraw() {
+	    // Redraw for every step of the simulation (the simulation may run in the background of this
+	    // dialog and the scope may automatically rescale
+	    if (! scope.lockScale )
+		updateScaleTextBox();
 	}
 	
 	protected void closeDialog()

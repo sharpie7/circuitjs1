@@ -528,6 +528,14 @@ class Scope {
 	scaleY *= x;
     }
     */
+    
+    void setMaxScale(boolean s) {
+	// This procedure is added to set maxscale to an explicit value instead of just having a toggle
+	// We call the toggle procedure first because it has useful side-effects and then set the value explicitly.
+	maxScale();
+	maxScale = s;
+    }
+    
     void maxScale() {
 	if (plot2d) {
 	    double x = 1e-8;
@@ -737,7 +745,7 @@ class Scope {
     	int i;
     	for (i = 0; i != UNITS_COUNT; i++) {
     	    reduceRange[i] = false;
-    	    if (maxScale)
+    	    if (maxScale && !lockScale)
     		scale[i] = 1e-4;
     	}
     	
@@ -795,6 +803,9 @@ class Scope {
     		if (scale[i] > 1e-4 && reduceRange[i])
     		    scale[i] /= 2;
     	}
+    	
+    	if ( (properties != null ) && properties.isShowing() )
+    	    properties.refreshDraw();
 
     }
     
@@ -1359,10 +1370,10 @@ class Scope {
 //    	if (showMax || showMin)
 //    	    calcMaxAndMin(plot.units);
     	if (showMax)
-    	    drawInfoText(g, plot.getUnitText(maxValue));
+    	    drawInfoText(g, "Max="+plot.getUnitText(maxValue));
     	if (showMin) {
     	    int ym=rect.height-5;
-    	    g.drawString(plot.getUnitText(minValue), 0, ym);
+    	    g.drawString("Min="+plot.getUnitText(minValue), 0, ym);
     	}
     	if (showRMS)
     	    drawRMS(g);
