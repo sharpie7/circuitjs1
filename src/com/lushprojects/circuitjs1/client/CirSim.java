@@ -705,7 +705,8 @@ MouseOutHandler, MouseWheelHandler {
 		
 		    Window.addWindowClosingHandler(new Window.ClosingHandler() {
 		        public void onWindowClosing(ClosingEvent event) {
-		            if (unsavedChanges)
+		            // there is a bug in electron that makes it impossible to close the app if this warning is given
+		            if (unsavedChanges && !isElectron())
 		        	event.setMessage(LS("Are you sure?  There are unsaved changes."));
 		        }
 		    });
