@@ -128,14 +128,15 @@ Label scopeSpeedLabel, manualScaleLabel, hScaleLabel;
 				
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
-		grid = new Grid(11, 3);
 		if (!transistor) {
+		    grid = new Grid(11, 3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
 		} else {
+		    grid = new Grid(12,3);
 		    addLabelToGrid(grid,"Plots");
 		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
