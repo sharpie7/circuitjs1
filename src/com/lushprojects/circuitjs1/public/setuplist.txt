@@ -312,6 +312,7 @@ updownctr.txt Up/Down Counter
 deccounter.txt Decimal Counter
 graycode.txt Gray Code Counter
 johnsonctr.txt Johnson Counter
+ringcascade.txt Cascading Ring Counters
 -
 +Shift Registers
 sipo-sr.txt Serial-In Parallel-Out
