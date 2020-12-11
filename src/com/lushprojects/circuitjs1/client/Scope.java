@@ -162,7 +162,7 @@ class Scope {
     String text;
     Rectangle rect;
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale, logSpectrum;
-    boolean showFFT, showNegative, showRMS, showDutyCycle;
+    boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
 //    MemoryImageSource imageSource;
 //    Image image;
@@ -1096,6 +1096,9 @@ class Scope {
     // calc RMS and display it
     void drawRMS(Graphics g) {
 	if (!canShowRMS()) {
+	    // needed for backward compatibility
+	    showRMS = false;
+	    showAverage = true;
 	    drawAverage(g);
 	    return;
 	}
@@ -1366,6 +1369,8 @@ class Scope {
     	}
     	if (showRMS)
     	    drawRMS(g);
+    	if (showAverage)
+    	    drawAverage(g);
     	if (showDutyCycle)
     	    drawDutyCycle(g);
     	String t = text;
@@ -1454,7 +1459,8 @@ class Scope {
 			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
-			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0);
+			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0) |
+			(showAverage ? (1<<17) : 0);
 	flags |= FLAG_PLOTS;
 	return flags;
     }
@@ -1593,6 +1599,7 @@ class Scope {
     	showRMS = (flags & 16384) != 0;
     	showDutyCycle = (flags & 32768) != 0;
     	logSpectrum = (flags & 65536) != 0;
+    	showAverage = (flags & (1<<17)) != 0;
     }
     
     void saveAsDefault() {
@@ -1652,6 +1659,8 @@ class Scope {
     	    	logSpectrum = state;
     	if (mi == "showrms")
     	    	showRMS = state;
+    	if (mi == "showaverage")
+	    	showAverage = state;
     	if (mi == "showduty")
     	    	showDutyCycle = state;
     	if (mi == "showpower")
