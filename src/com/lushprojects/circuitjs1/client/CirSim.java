@@ -121,6 +121,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem printableCheckItem;
     CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
+    CheckboxMenuItem noEditCheckItem;
     private Label powerLabel;
     private Label titleLabel;
     private Scrollbar speedBar;
@@ -330,6 +331,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean running = true;
 	boolean hideSidebar = false;
 	boolean hideMenu = false;
+	boolean noEditing = false;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -358,6 +360,7 @@ MouseOutHandler, MouseWheelHandler {
 		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
+		noEditing = !qp.getBooleanValue("editable", true);
 	} catch (Exception e) { }
 	
 	boolean euroSetting = false;
@@ -442,9 +445,9 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
 	m.addItem(iconMenuItem("target", weAreInUS() ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
-	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("edit", "zoom100")));
-	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("edit", "zoomin")));
-	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("edit", "zoomout")));
+	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("zoom", "zoom100")));
+	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("zoom", "zoomin")));
+	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("zoom", "zoomout")));
 	menuBar.addItem(LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -531,6 +534,9 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	}));
 	conventionCheckItem.setState(convention);
+	m.addItem(noEditCheckItem = new CheckboxMenuItem(LS("Disable Editing")));
+	noEditCheckItem.setState(noEditing);
+	
 	
 	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
@@ -699,7 +705,8 @@ MouseOutHandler, MouseWheelHandler {
 		
 		    Window.addWindowClosingHandler(new Window.ClosingHandler() {
 		        public void onWindowClosing(ClosingEvent event) {
-		            if (unsavedChanges)
+		            // there is a bug in electron that makes it impossible to close the app if this warning is given
+		            if (unsavedChanges && !isElectron())
 		        	event.setMessage(LS("Are you sure?  There are unsaved changes."));
 		        }
 		    });
@@ -957,6 +964,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Voltage Source"), "CCVSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source"), "CCCSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Optocoupler"), "OptocouplerElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Time Delay Relay"), "TimeDelayRelayElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
     	
@@ -984,7 +992,6 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter"), "CounterElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Ring Counter"), "DecadeElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Latch"), "LatchElm"));
-    	//chipMenuBar.addItem(getClassCheckItem("Add Static RAM", "SRAMElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
@@ -2676,6 +2683,10 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     public void menuPerformed(String menu, String item) {
+	if (menu=="edit" && noEditCheckItem.getState()) {
+	    Window.alert(LS("Editing disabled.  Re-enable from the Options menu."));
+	    return;
+	}
     	if (item=="about")
     		aboutBox = new AboutBox(circuitjs1.versionString);
     	if (item=="importfromlocalfile") {
@@ -3103,6 +3114,7 @@ MouseOutHandler, MouseWheelHandler {
 		try {
 			requestBuilder.sendRequest(null, new RequestCallback() {
 				public void onError(Request request, Throwable exception) {
+					Window.alert(LS("Can't load circuit list!"));
 					GWT.log("File Error Response", exception);
 				}
 
@@ -3113,8 +3125,10 @@ MouseOutHandler, MouseWheelHandler {
 					processSetupList(text.getBytes(), openDefault);
 					// end or processing
 					}
-					else 
+					else { 
+						Window.alert(LS("Can't load circuit list!"));
 						GWT.log("Bad file server response:"+response.getStatusText() );
+					}
 				}
 			});
 		} catch (RequestException e) {
@@ -3209,6 +3223,7 @@ MouseOutHandler, MouseWheelHandler {
 	    try {
 		requestBuilder.sendRequest(null, new RequestCallback() {
 		    public void onError(Request request, Throwable exception) {
+			Window.alert(LS("Can't load circuit!"));
 			GWT.log("File Error Response", exception);
 		    }
 
@@ -3219,8 +3234,10 @@ MouseOutHandler, MouseWheelHandler {
 			    allowSave(false);
 			    unsavedChanges = false;
 			}
-			else 
+			else { 
+			    Window.alert(LS("Can't load circuit!"));
 			    GWT.log("Bad file server response:"+response.getStatusText() );
+			}
 		    }
 		});
 	    } catch (RequestException e) {
@@ -3473,7 +3490,7 @@ MouseOutHandler, MouseWheelHandler {
     	case MODE_SELECT:
     		if (mouseElm == null)
     		    selectArea(gx, gy);
-    		else {
+    		else if (!noEditCheckItem.getState()) {
     		    // wait short delay before dragging.  This is to fix problem where switches were accidentally getting
     		    // dragged when tapped on mobile devices
     		    if (System.currentTimeMillis()-mouseDownTime < 150)
@@ -3875,6 +3892,8 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void doPopupMenu() {
+	if (noEditCheckItem.getState() || dialogIsShowing())
+	    return;
     	menuElm = mouseElm;
     	menuScope=-1;
     	menuPlot=-1;
@@ -3971,7 +3990,7 @@ MouseOutHandler, MouseWheelHandler {
     public void onDoubleClick(DoubleClickEvent e){
     	e.preventDefault();
  //   	if (!didSwitch && mouseElm != null)
-    	if (mouseElm != null && !(mouseElm instanceof SwitchElm))
+    	if (mouseElm != null && !(mouseElm instanceof SwitchElm) && !noEditCheckItem.getState())
     		doEdit(mouseElm);
     }
     
@@ -4033,8 +4052,14 @@ MouseOutHandler, MouseWheelHandler {
 	} else
 	    tempMouseMode = MODE_DRAG_ALL;
 	
+
+	if (noEditCheckItem.getState())
+	    tempMouseMode = MODE_SELECT;
+	
 	if (!(dialogIsShowing()) && ((scopeSelected != -1 && scopes[scopeSelected].cursorInSettingsWheel()) ||
 		( scopeSelected == -1 && mouseElm instanceof ScopeElm && ((ScopeElm)mouseElm).elmScope.cursorInSettingsWheel()))){
+	    if (noEditCheckItem.getState())
+		return;
 	    Scope s;
 	    if (scopeSelected != -1)
 		s=scopes[scopeSelected];
@@ -4056,7 +4081,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
-	if (tempMouseMode == MODE_SELECT && mouseElm!=null && 
+	if (tempMouseMode == MODE_SELECT && mouseElm!=null && !noEditCheckItem.getState() &&
 			mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
 		    !anySelectedButMouse() )
 		tempMouseMode = MODE_DRAG_POST;
@@ -4128,7 +4153,6 @@ MouseOutHandler, MouseWheelHandler {
     			circuitChanged = true;
     			writeRecoveryToStorage();
     			unsavedChanges = true;
-    			debugger();
     		}
     		dragElm = null;
     	}
@@ -4147,12 +4171,15 @@ MouseOutHandler, MouseWheelHandler {
     	// so we don't accidentally edit a resistor value while zooming
     	boolean zoomOnly = System.currentTimeMillis() < zoomTime+1000;
     	
+    	if (noEditCheckItem.getState())
+    	    zoomOnly = true;
+    	
     	if (!zoomOnly)
     	    scrollValues(e.getNativeEvent().getClientX(), e.getNativeEvent().getClientY(), e.getDeltaY());
     	
     	if (mouseElm instanceof MouseWheelHandler && !zoomOnly)
     		((MouseWheelHandler) mouseElm).onMouseWheel(e);
-    	else if (scopeSelected != -1)
+    	else if (scopeSelected != -1 && !zoomOnly)
     	    scopes[scopeSelected].onMouseWheel(e);
     	else if (!dialogIsShowing()) {
     	    zoomCircuit(-e.getDeltaY());
@@ -4551,15 +4578,43 @@ MouseOutHandler, MouseWheelHandler {
     			if (code==KEY_ENTER)
     				scrollValuePopup.close(true);
     		}
-    		if (editDialog!=null && editDialog.isShowing() &&
+    		
+    		// process escape/enter for edit dialogs
+    		// multiple edit dialogs could be displayed at once, pick the one in front
+    		EditDialog dlg = editDialog;
+    		if (diodeModelEditDialog != null)
+    		    dlg = diodeModelEditDialog;
+    		if (customLogicEditDialog != null)
+    		    dlg = customLogicEditDialog;
+    		if (dlg!=null && dlg.isShowing() &&
     				(t & Event.ONKEYDOWN)!=0) {
     			if (code==KEY_ESCAPE)
-    				editDialog.closeDialog();
+    			    dlg.closeDialog();
     			if (code==KEY_ENTER)
-    			    	editDialog.enterPressed();
+    			    dlg.enterPressed();
     		}
     		return;
     	}
+    	
+    	if ((t&Event.ONKEYPRESS)!=0) {
+		if (cc=='-') {
+    		    menuPerformed("key", "zoomout");
+    		    e.cancel();
+    		}
+    		if (cc=='+' || cc == '=') {
+    		    menuPerformed("key", "zoomin");
+    		    e.cancel();
+    		}
+		if (cc=='0') {
+    		    menuPerformed("key", "zoom100");
+    		    e.cancel();
+		}
+    	}
+    	
+    	// all other shortcuts are ignored when editing disabled
+    	if (noEditCheckItem.getState())
+    	    return;
+
     	if ((t & Event.ONKEYDOWN)!=0) {
     		if (code==KEY_BACKSPACE || code==KEY_DELETE) {
     		    if (scopeSelected != -1) {
@@ -4612,19 +4667,6 @@ MouseOutHandler, MouseWheelHandler {
     		}
     	}
     	if ((t&Event.ONKEYPRESS)!=0) {
-		if (cc=='-') {
-    		    menuPerformed("key", "zoomout");
-    		    e.cancel();
-    		}
-    		if (cc=='+' || cc == '=') {
-    		    menuPerformed("key", "zoomin");
-    		    e.cancel();
-    		}
-		if (cc=='0') {
-    		    menuPerformed("key", "zoom100");
-    		    e.cancel();
-		}
-
     		if (cc>32 && cc<127){
     			String c=shortcuts[cc];
     			e.cancel();
@@ -4891,6 +4933,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 411: return new AudioInputElm(x1, y1, x2, y2, f, st);
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
     	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
+    	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5129,6 +5172,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new CrystalElm(x1, y1);
     	if (n=="SRAMElm")
 		return (CircuitElm) new SRAMElm(x1, y1);
+    	if (n=="TimeDelayRelayElm")
+		return (CircuitElm) new TimeDelayRelayElm(x1, y1);
     	return null;
     }
     
