@@ -923,6 +923,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Stop Trigger"), "StopTriggerElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add DC Motor"), "DCMotorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -4934,6 +4935,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
     	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
     	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
+	case 415: return new DCMotorElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5174,6 +5176,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new SRAMElm(x1, y1);
     	if (n=="TimeDelayRelayElm")
 		return (CircuitElm) new TimeDelayRelayElm(x1, y1);
+    	if (n=="DCMotorElm")
+		return (CircuitElm) new DCMotorElm(x1, y1);
     	return null;
     }
     
