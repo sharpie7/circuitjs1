@@ -943,8 +943,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "PhotoResistorElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorElm"));
+    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "LDRElm"));
+    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorNTCElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
@@ -4918,8 +4918,10 @@ MouseOutHandler, MouseWheelHandler {
     	case 214: return new CCVSElm(x1, y1, x2, y2, f, st);
     	case 215: return new CCCSElm(x1, y1, x2, y2, f, st);
     	case 216: return new OhmMeterElm(x1, y1, x2, y2, f, st);
+	case 350: return new ThermistorNTCElm(x1, y1, x2, y2, f, st);
     	case 368: return new TestPointElm(x1, y1, x2, y2, f, st);
     	case 370: return new AmmeterElm(x1, y1, x2, y2, f, st);
+	case 374: return new LDRElm(x1, y1, x2, y2, f, st);
     	case 400: return new DarlingtonElm(x1, y1, x2, y2, f, st);
     	case 401: return new ComparatorElm(x1, y1, x2, y2, f, st);
     	case 402: return new OTAElm(x1, y1, x2, y2, f, st);
@@ -5178,6 +5180,10 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new TimeDelayRelayElm(x1, y1);
     	if (n=="DCMotorElm")
 		return (CircuitElm) new DCMotorElm(x1, y1);
+    	if (n=="LDRElm")
+		return (CircuitElm) new LDRElm(x1, y1);
+    	if (n=="ThermistorNTCElm")
+		return (CircuitElm) new ThermistorNTCElm(x1, y1);
     	return null;
     }
     
