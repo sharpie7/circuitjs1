@@ -154,7 +154,7 @@ class LDRElm extends CircuitElm implements Command, MouseWheelHandler {
     }
 
     void getInfo(String arr[]) {
-	arr[0] = "Photoresistor";
+	arr[0] = "photoresistor";
 	arr[1] = "I = "+ getCurrentDText(current); //getBasicInfo(arr);
 	arr[2] = "Vd = "+ getVoltageDText(getVoltageDiff());
 	arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
