@@ -58,7 +58,6 @@ public abstract class CircuitElm implements Editable {
     int dx, dy, dsign;
 
     int lastHandleGrabbed=-1;
-    int numHandles=2;
     
     // length of element
     double dn;
@@ -469,7 +468,7 @@ public abstract class CircuitElm implements Editable {
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (numHandles==2) {
+    	if (getPostCount() > 1) {
     		if (lastHandleGrabbed==-1)
     			g.fillRect(x2-3, y2-3, 7, 7);
     		else if (lastHandleGrabbed==1)

@@ -25,7 +25,6 @@ package com.lushprojects.circuitjs1.client;
 	double hiV, loV;
 	public LogicInputElm(int xx, int yy) {
 	    super(xx, yy, false);
-	    numHandles=1;
 	    hiV = 5;
 	    loV = 0;
 	    
@@ -33,7 +32,6 @@ package com.lushprojects.circuitjs1.client;
 	public LogicInputElm(int xa, int ya, int xb, int yb, int f,
 			     StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	    numHandles=1;
 	    try {
 		hiV = new Double(st.nextToken()).doubleValue();
 		loV = new Double(st.nextToken()).doubleValue();

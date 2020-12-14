@@ -4097,11 +4097,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && !noEditCheckItem.getState() &&
-			mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
-		    !anySelectedButMouse() )
-		tempMouseMode = MODE_DRAG_POST;
-
-
+		mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
+		!anySelectedButMouse() && mouseElm.getPostCount() > 1)
+	    tempMouseMode = MODE_DRAG_POST;
 	
 	if (tempMouseMode != MODE_SELECT && tempMouseMode != MODE_DRAG_SELECTED)
 	    clearSelection();
