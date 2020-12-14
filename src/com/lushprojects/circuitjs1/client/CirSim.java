@@ -901,6 +901,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Custom Transformer"), "CustomTransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Crystal"), "CrystalElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Make-Before-Break Switch"), "MBBSwitchElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -4950,6 +4951,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
     	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
 	case 415: return new DCMotorElm(x1, y1, x2, y2, f, st);
+	case 416: return new MBBSwitchElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -4965,6 +4967,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new SwitchElm(x1, y1);
     	if (n=="Switch2Elm")
     		return (CircuitElm) new Switch2Elm(x1, y1);
+    	if (n=="MBBSwitchElm")
+    		return (CircuitElm) new MBBSwitchElm(x1, y1);
     	if (n=="NTransistorElm" || n == "TransistorElm")
     		return (CircuitElm) new NTransistorElm(x1, y1);
     	if (n=="PTransistorElm")
