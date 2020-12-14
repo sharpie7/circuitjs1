@@ -65,6 +65,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -119,7 +120,6 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem euroResistorCheckItem;
     CheckboxMenuItem euroGatesCheckItem;
     CheckboxMenuItem printableCheckItem;
-    CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
     CheckboxMenuItem noEditCheckItem;
     private Label powerLabel;
@@ -338,6 +338,8 @@ MouseOutHandler, MouseWheelHandler {
 	readRecovery();
 
 	QueryParameters qp = new QueryParameters();
+	String positiveColor = null;
+	String negativeColor = null;
 			
 	try {
 		//baseURL = applet.getDocumentBase().getFile();
@@ -361,6 +363,8 @@ MouseOutHandler, MouseWheelHandler {
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
 		noEditing = !qp.getBooleanValue("editable", true);
+		positiveColor = qp.getValue("positiveColor");
+		negativeColor = qp.getValue("negativeColor");
 	} catch (Exception e) { }
 	
 	boolean euroSetting = false;
@@ -519,14 +523,6 @@ MouseOutHandler, MouseWheelHandler {
 			}
 	}));
 	printableCheckItem.setState(printable);
-	m.addItem(alternativeColorCheckItem = new CheckboxMenuItem(LS("Alt Color for Volts & Pwr"),
-		new Command() { public void execute(){
-
-			setOptionInStorage("alternativeColor", alternativeColorCheckItem.getState());
-			CircuitElm.setColorScale();
-		}
-	}));
-	alternativeColorCheckItem.setState(getOptionFromStorage("alternativeColor", false));
 	
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
@@ -658,7 +654,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 	scopePopupMenu = new ScopePopupMenu();
 
-	CircuitElm.setColorScale();
+	setColors(positiveColor, negativeColor);
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
@@ -715,6 +711,24 @@ MouseOutHandler, MouseWheelHandler {
 		setSimRunning(running);
     }
 
+    void setColors(String positiveColor, String negativeColor) {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor != null) {
+            if (positiveColor == null)
+        	positiveColor = stor.getItem("positiveColor");
+            if (negativeColor == null)
+        	negativeColor = stor.getItem("negativeColor");
+        }
+	if (positiveColor != null)
+	    CircuitElm.positiveColor = new Color(URL.decodeQueryString(positiveColor));
+	else if (getOptionFromStorage("alternativeColor", false))
+	    CircuitElm.positiveColor = Color.blue;
+	if (negativeColor != null)
+	    CircuitElm.negativeColor = new Color(URL.decodeQueryString(negativeColor));
+	    
+	CircuitElm.setColorScale();
+    }
+    
     MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
 	final String edithtml="<div style=\"white-space:nowrap\"><div style=\"display:inline-block;width:110px;\"><i class=\"cirjsicon-";
 	String nbsp = "&nbsp;";
