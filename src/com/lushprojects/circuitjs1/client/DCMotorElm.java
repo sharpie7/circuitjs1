@@ -75,6 +75,9 @@ class DCMotorElm extends CircuitElm {
     }
 
     void stamp() {
+	// stamp a bunch of internal parts to help us simulate the motor.  It would be better to simulate this mini-circuit in code to reduce
+	// the size of the matrix.
+	
 	//nodes[0] nodes [1] are the external nodes
 	//Electrical part:
 	// inductor from motor nodes[0] to internal nodes[2]
