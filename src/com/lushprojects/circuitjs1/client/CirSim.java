@@ -804,7 +804,7 @@ MouseOutHandler, MouseWheelHandler {
         for (i = 1; i < keys.length; i++) {
             String arr[] = keys[i].split("=");
             if (arr.length != 2)
-        		continue;
+        	continue;
             int c = Integer.parseInt(arr[0]);
             String className = arr[1];
             shortcuts[c] = className;
@@ -2519,6 +2519,7 @@ MouseOutHandler, MouseWheelHandler {
 			double x = circuitMatrix[i][j];
 			if (Double.isNaN(x) || Double.isInfinite(x)) {
 			    stop("nan/infinite matrix!", null);
+			    console("circuitMatrix " + i + " " + j + " is " + x);
 			    return;
 			}
 		    }
@@ -2652,6 +2653,7 @@ MouseOutHandler, MouseWheelHandler {
     	    setSimRunning(true);
     	else
     	    t=0;
+    	repaint();
     }
     
     static void electronSaveAsCallback(String s) {
@@ -4117,7 +4119,11 @@ MouseOutHandler, MouseWheelHandler {
 	if (!circuitArea.contains(e.getX(), e.getY()))
 	    return;
 
-	dragElm = constructElement(mouseModeStr, x0, y0);
+	try {
+	    dragElm = constructElement(mouseModeStr, x0, y0);
+	} catch (Exception ex) {
+	    debugger();
+	}
     }
 
  
