@@ -73,7 +73,7 @@ package com.lushprojects.circuitjs1.client;
         }
 
         double getLimitStep() {
-            // get limit on changes in voltage per step.  be more lenient the more iterations we do
+            // get limit on changes in voltage per step.  be less lenient the more iterations we do
             if (sim.subIterations < 4)
         	return 10;
             if (sim.subIterations < 10)
