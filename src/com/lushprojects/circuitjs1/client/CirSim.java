@@ -1745,25 +1745,14 @@ MouseOutHandler, MouseWheelHandler {
 	
 	return true;
     }
-    
-    void analyzeCircuit() {
-	if (elmList.isEmpty()) {
-	    postDrawList = new Vector<Point>();
-	    badConnectionList = new Vector<Point>();
-	    return;
-	}
-	stopMessage = null;
-	stopElm = null;
-	int i, j;
-	int vscount = 0;
-	nodeList = new Vector<CircuitNode>();
-	postCountMap = new HashMap<Point,Integer>();
+
+    // find or allocate ground node
+    void setGroundNode() {
+	int i;
 	boolean gotGround = false;
 	boolean gotRail = false;
 	CircuitElm volt = null;
-
-	calculateWireClosure();
-	
+	    
 	//System.out.println("ac1");
 	// look for voltage or ground element
 	for (i = 0; i != elmList.size(); i++) {
@@ -1796,10 +1785,12 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitNode cn = new CircuitNode();
 	    nodeList.addElement(cn);
 	}
-	//System.out.println("ac2");
+    }
 
-	// allocate nodes and voltage sources
-	LabeledNodeElm.resetNodeList();
+    // make list of nodes
+    void makeNodeList() {
+	int i, j;
+	int vscount = 0;
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
 	    int inodes = ce.getInternalNodeCount();
@@ -1852,54 +1843,23 @@ MouseOutHandler, MouseWheelHandler {
 		ce.setNode(cnl.num, nodeList.size());
 		nodeList.addElement(cn);
 	    }
+	    
+	    // also count voltage sources so we can allocate array
 	    vscount += ivs;
 	}
 	
-	makePostDrawList();
-	if (!calcWireInfo())
-	    return;
-	nodeMap = null; // done with this
+        voltageSources = new CircuitElm[vscount];
+    }
+    
+    Vector<Integer> unconnectedNodes;
+    
+    void findUnconnectedNodes() {
+	int i, j;
 	
-	voltageSources = new CircuitElm[vscount];
-	vscount = 0;
-	circuitNonLinear = false;
-	//System.out.println("ac3");
-
-	// determine if circuit is nonlinear
-	for (i = 0; i != elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    if (ce.nonLinear())
-		circuitNonLinear = true;
-	    int ivs = ce.getVoltageSourceCount();
-	    for (j = 0; j != ivs; j++) {
-		voltageSources[vscount] = ce;
-		ce.setVoltageSource(j, vscount++);
-	    }
-	}
-	voltageSourceCount = vscount;
-
-	int matrixSize = nodeList.size()-1 + vscount;
-	circuitMatrix = new double[matrixSize][matrixSize];
-	circuitRightSide = new double[matrixSize];
-	origMatrix = new double[matrixSize][matrixSize];
-	origRightSide = new double[matrixSize];
-	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
-	circuitRowInfo = new RowInfo[matrixSize];
-	circuitPermute = new int[matrixSize];
-	for (i = 0; i != matrixSize; i++)
-	    circuitRowInfo[i] = new RowInfo();
-	circuitNeedsMap = false;
-	
-	// stamp linear circuit elements
-	for (i = 0; i != elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    ce.stamp();
-	}
-	//System.out.println("ac4");
-
 	// determine nodes that are not connected indirectly to ground
 	boolean closure[] = new boolean[nodeList.size()];
 	boolean changed = true;
+	unconnectedNodes = new Vector<Integer>();
 	closure[0] = true;
 	while (changed) {
 	    changed = false;
@@ -1933,15 +1893,27 @@ MouseOutHandler, MouseWheelHandler {
 	    // connect one of the unconnected nodes to ground with a big resistor, then try again
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
+		    unconnectedNodes.add(i);
 		    console("node " + i + " unconnected");
-		    stampResistor(0, i, 1e8);
+//		    stampResistor(0, i, 1e8);
 		    closure[i] = true;
 		    changed = true;
 		    break;
 		}
 	}
-	//System.out.println("ac5");
-
+    }
+    
+    void connectUnconnectedNodes() {
+	int i;
+	for (i = 0; i != unconnectedNodes.size(); i++) {
+	    int n = unconnectedNodes.get(i);
+	    stampResistor(0, n, 1e8);
+	}
+    }
+    
+    boolean validateCircuit() {
+	int i, j;
+	
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
 	    // look for inductors with no current path
@@ -1958,10 +1930,7 @@ MouseOutHandler, MouseWheelHandler {
 		CurrentElm cur = (CurrentElm) ce;
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
-		if (!fpi.findPath(ce.getNode(0))) {
-		    cur.stampCurrentSource(true);
-		} else
-		    cur.stampCurrentSource(false);
+		cur.setBroken(!fpi.findPath(ce.getNode(0)));
 	    }
 	    if (ce instanceof VCCSElm) {
 		VCCSElm cur = (VCCSElm) ce;
@@ -1981,7 +1950,7 @@ MouseOutHandler, MouseWheelHandler {
 						    ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
 			stop("Voltage source/wire loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 		}
 	    } else if (ce instanceof Switch2Elm) {
@@ -1990,7 +1959,7 @@ MouseOutHandler, MouseWheelHandler {
 		for (j = 1; j < ce.getPostCount(); j++)
 		    if (ce.getConnection(0, j) && fpi.findPath(ce.getNode(j))) {
 			stop("Voltage source/wire loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 	    }
 
@@ -2000,7 +1969,7 @@ MouseOutHandler, MouseWheelHandler {
 			    ce.getNode(0));
 		if (fpi.findPath(0)) {
 		    stop("Path to ground with no resistance!", ce);
-		    return;
+		    return false;
 		}
 	    }
 	    
@@ -2020,39 +1989,57 @@ MouseOutHandler, MouseWheelHandler {
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
 			stop("Capacitor loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 		}
 	    }
 	}
-	//System.out.println("ac6");
-
-	if (!simplifyMatrix(matrixSize))
+	return true;
+    }
+    
+    // analyze the circuit when something changes, so it can be simulated
+    void analyzeCircuit() {
+	if (elmList.isEmpty()) {
+	    postDrawList = new Vector<Point>();
+	    badConnectionList = new Vector<Point>();
 	    return;
-	
-	/*
-	System.out.println("matrixSize = " + matrixSize + " " + circuitNonLinear);
-	for (j = 0; j != circuitMatrixSize; j++) {
-	    for (i = 0; i != circuitMatrixSize; i++)
-		System.out.print(circuitMatrix[j][i] + " ");
-	    System.out.print("  " + circuitRightSide[j] + "\n");
 	}
-	System.out.print("\n");*/
+	stopMessage = null;
+	stopElm = null;
+	int i, j;
+	nodeList = new Vector<CircuitNode>();
+	postCountMap = new HashMap<Point,Integer>();
 
-	// check if we called stop()
-	if (circuitMatrix == null)
-	    return;
+	calculateWireClosure();
+	setGroundNode();
+
+	// allocate nodes and voltage sources
+	LabeledNodeElm.resetNodeList();
+	makeNodeList();
 	
-	// if a matrix is linear, we can do the lu_factor here instead of
-	// needing to do it every frame
-	if (!circuitNonLinear) {
-	    if (!lu_factor(circuitMatrix, circuitMatrixSize, circuitPermute)) {
-		stop("Singular matrix!", null);
-		return;
+	makePostDrawList();
+	if (!calcWireInfo())
+	    return;
+	nodeMap = null; // done with this
+	
+	int vscount = 0;
+	circuitNonLinear = false;
+
+	// determine if circuit is nonlinear.  also set voltage sources
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce.nonLinear())
+		circuitNonLinear = true;
+	    int ivs = ce.getVoltageSourceCount();
+	    for (j = 0; j != ivs; j++) {
+		voltageSources[vscount] = ce;
+		ce.setVoltageSource(j, vscount++);
 	    }
 	}
-	
-	// show resistance in voltage sources if there's only one
+	voltageSourceCount = vscount;
+
+	// show resistance in voltage sources if there's only one.
+	// can't use voltageSourceCount here since that counts internal voltage sources, like the one in GroundElm
 	boolean gotVoltageSource = false;
 	showResistanceInVoltageSources = true;
 	for (i = 0; i != elmList.size(); i++) {
@@ -2065,6 +2052,50 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	}
 
+	findUnconnectedNodes();
+	if (!validateCircuit())
+	    return;
+
+	stampCircuit();
+    }
+    
+    void stampCircuit() {
+	int i;
+	int matrixSize = nodeList.size()-1 + voltageSourceCount;
+	circuitMatrix = new double[matrixSize][matrixSize];
+	circuitRightSide = new double[matrixSize];
+	origMatrix = new double[matrixSize][matrixSize];
+	origRightSide = new double[matrixSize];
+	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
+	circuitRowInfo = new RowInfo[matrixSize];
+	circuitPermute = new int[matrixSize];
+	for (i = 0; i != matrixSize; i++)
+	    circuitRowInfo[i] = new RowInfo();
+	circuitNeedsMap = false;
+	
+	connectUnconnectedNodes();
+
+	// stamp linear circuit elements
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    ce.stamp();
+	}
+
+	if (!simplifyMatrix(matrixSize))
+	    return;
+	
+	// check if we called stop()
+	if (circuitMatrix == null)
+	    return;
+	
+	// if a matrix is linear, we can do the lu_factor here instead of
+	// needing to do it every frame
+	if (!circuitNonLinear) {
+	    if (!lu_factor(circuitMatrix, circuitMatrixSize, circuitPermute)) {
+		stop("Singular matrix!", null);
+		return;
+	    }
+	}
     }
 
     // simplify the matrix; this speeds things up quite a bit, especially for
