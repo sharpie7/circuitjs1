@@ -38,6 +38,11 @@ class EditInfo {
 		value = val;
 		dimensionless = false;
 	}
+	
+	EditInfo(String n, String txt) {
+	    name = n;
+	    text = txt;
+	}
 		
 	EditInfo setDimensionless() { dimensionless = true; return this; }
 	EditInfo disallowSliders() { noSliders = true; return this; }

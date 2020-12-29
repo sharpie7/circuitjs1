@@ -49,6 +49,11 @@ class EditOptions implements Editable {
 	            ei.choice.add("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"); // Russian 
 	            return ei;
 		}
+		
+		if (n == 3)
+		    return new EditInfo("Positive Color", CircuitElm.positiveColor.getHexValue());
+		if (n == 4)
+		    return new EditInfo("Negative Color", CircuitElm.negativeColor.getHexValue());
 
 		return null;
 	}
@@ -89,6 +94,22 @@ class EditOptions implements Editable {
 		        stor.setItem("language", langString);
 		        if (Window.confirm(sim.LS("Must restart to set language.  Restart now?")))
 		            Window.Location.reload();
+		}
+		if (n == 3) {
+		    String txt = ei.textf.getText();
+		    Storage stor = Storage.getLocalStorageIfSupported();
+		    if (stor != null)
+			stor.setItem("positiveColor", txt);
+		    CircuitElm.positiveColor = new Color(txt);
+		    CircuitElm.setColorScale();
+		}
+		if (n == 4) {
+		    String txt = ei.textf.getText();
+		    Storage stor = Storage.getLocalStorageIfSupported();
+		    if (stor != null)
+			stor.setItem("negativeColor", txt);
+		    CircuitElm.negativeColor = new Color(txt);
+		    CircuitElm.setColorScale();
 		}
 	}
 };

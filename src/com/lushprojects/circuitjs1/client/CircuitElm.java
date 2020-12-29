@@ -58,7 +58,6 @@ public abstract class CircuitElm implements Editable {
     int dx, dy, dsign;
 
     int lastHandleGrabbed=-1;
-    int numHandles=2;
     
     // length of element
     double dn;
@@ -109,23 +108,26 @@ public abstract class CircuitElm implements Editable {
 
 	shortFormat=NumberFormat.getFormat("####.#");
     }
+
+    static public Color positiveColor, negativeColor, neutralColor;
     
     static void setColorScale() {
 
 	int i;
+
+	if (positiveColor == null)
+	    positiveColor = Color.green;
+	if (negativeColor == null)
+	    negativeColor = Color.red;
+	if (neutralColor == null)
+	    neutralColor = Color.gray;
+	
 	for (i = 0; i != colorScaleCount; i++) {
 	    double v = i * 2. / colorScaleCount - 1;
 	    if (v < 0) {
-		int n1 = (int) (128 * -v) + 127;
-		int n2 = (int) (127 * (1 + v));
-		colorScale[i] = new Color(n1, n2, n2);
+		colorScale[i] = new Color(neutralColor, negativeColor, -v);
 	    } else {
-		int n1 = (int) (128 * v) + 127;
-		int n2 = (int) (127 * (1 - v));
-		if (sim.alternativeColorCheckItem.getState())
-		    colorScale[i] = new Color(n2, n2, n1);
-		else
-		    colorScale[i] = new Color(n2, n1, n2);
+		colorScale[i] = new Color(neutralColor, positiveColor, v);
 	    }
 	}
 
@@ -466,7 +468,7 @@ public abstract class CircuitElm implements Editable {
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (numHandles==2) {
+    	if (getPostCount() > 1) {
     		if (lastHandleGrabbed==-1)
     			g.fillRect(x2-3, y2-3, 7, 7);
     		else if (lastHandleGrabbed==1)

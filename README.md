@@ -70,6 +70,8 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
 .../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
 .../circuitjs1.html?editable=<true|false> // Allow circuit editing, default true
+.../circuitjs1.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
+.../circuitjs1.html?negativeColor=%23ff0000 // change negative voltage color
 ```
 ## Building an Electron application
 

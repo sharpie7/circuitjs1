@@ -65,6 +65,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -119,7 +120,6 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem euroResistorCheckItem;
     CheckboxMenuItem euroGatesCheckItem;
     CheckboxMenuItem printableCheckItem;
-    CheckboxMenuItem alternativeColorCheckItem;
     CheckboxMenuItem conventionCheckItem;
     CheckboxMenuItem noEditCheckItem;
     private Label powerLabel;
@@ -338,6 +338,8 @@ MouseOutHandler, MouseWheelHandler {
 	readRecovery();
 
 	QueryParameters qp = new QueryParameters();
+	String positiveColor = null;
+	String negativeColor = null;
 			
 	try {
 		//baseURL = applet.getDocumentBase().getFile();
@@ -361,6 +363,8 @@ MouseOutHandler, MouseWheelHandler {
 		convention = qp.getBooleanValue("conventionalCurrent",
 			getOptionFromStorage("conventionalCurrent", true));
 		noEditing = !qp.getBooleanValue("editable", true);
+		positiveColor = qp.getValue("positiveColor");
+		negativeColor = qp.getValue("negativeColor");
 	} catch (Exception e) { }
 	
 	boolean euroSetting = false;
@@ -519,14 +523,6 @@ MouseOutHandler, MouseWheelHandler {
 			}
 	}));
 	printableCheckItem.setState(printable);
-	m.addItem(alternativeColorCheckItem = new CheckboxMenuItem(LS("Alt Color for Volts & Pwr"),
-		new Command() { public void execute(){
-
-			setOptionInStorage("alternativeColor", alternativeColorCheckItem.getState());
-			CircuitElm.setColorScale();
-		}
-	}));
-	alternativeColorCheckItem.setState(getOptionFromStorage("alternativeColor", false));
 	
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
@@ -658,7 +654,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 	scopePopupMenu = new ScopePopupMenu();
 
-	CircuitElm.setColorScale();
+	setColors(positiveColor, negativeColor);
 	
 	if (startCircuitText != null) {
 		getSetupList(false);
@@ -715,11 +711,29 @@ MouseOutHandler, MouseWheelHandler {
 		setSimRunning(running);
     }
 
+    void setColors(String positiveColor, String negativeColor) {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor != null) {
+            if (positiveColor == null)
+        	positiveColor = stor.getItem("positiveColor");
+            if (negativeColor == null)
+        	negativeColor = stor.getItem("negativeColor");
+        }
+	if (positiveColor != null)
+	    CircuitElm.positiveColor = new Color(URL.decodeQueryString(positiveColor));
+	else if (getOptionFromStorage("alternativeColor", false))
+	    CircuitElm.positiveColor = Color.blue;
+	if (negativeColor != null)
+	    CircuitElm.negativeColor = new Color(URL.decodeQueryString(negativeColor));
+	    
+	CircuitElm.setColorScale();
+    }
+    
     MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
-	final String edithtml="<div style=\"display:inline-block;width:100px;\"><i class=\"cirjsicon-";
+	final String edithtml="<div style=\"white-space:nowrap\"><div style=\"display:inline-block;width:110px;\"><i class=\"cirjsicon-";
 	String nbsp = "&nbsp;";
 	if (icon=="") nbsp="";
-	String sn=edithtml + icon + "\"></i>" + nbsp + text + "</div>" + shortcut;
+	String sn=edithtml + icon + "\"></i>" + nbsp + text + "</div>" + shortcut + "</div>";
 	return new MenuItem(SafeHtmlUtils.fromTrustedString(sn), cmd);
     }
     
@@ -790,7 +804,7 @@ MouseOutHandler, MouseWheelHandler {
         for (i = 1; i < keys.length; i++) {
             String arr[] = keys[i].split("=");
             if (arr.length != 2)
-        		continue;
+        	continue;
             int c = Integer.parseInt(arr[0]);
             String className = arr[1];
             shortcuts[c] = className;
@@ -877,6 +891,7 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Switch"), "SwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Push Switch"), "PushSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add SPDT Switch"), "Switch2Elm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Make-Before-Break Switch"), "MBBSwitchElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Potentiometer"), "PotElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Transformer"), "TransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Tapped Transformer"), "TappedTransformerElm"));
@@ -923,6 +938,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Stop Trigger"), "StopTriggerElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add DC Motor"), "DCMotorElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -942,8 +958,8 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "PhotoResistorElm"));
-    	//    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorElm"));
+    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "LDRElm"));
+    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorNTCElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
@@ -2503,6 +2519,7 @@ MouseOutHandler, MouseWheelHandler {
 			double x = circuitMatrix[i][j];
 			if (Double.isNaN(x) || Double.isInfinite(x)) {
 			    stop("nan/infinite matrix!", null);
+			    console("circuitMatrix " + i + " " + j + " is " + x);
 			    return;
 			}
 		    }
@@ -2636,6 +2653,7 @@ MouseOutHandler, MouseWheelHandler {
     	    setSimRunning(true);
     	else
     	    t=0;
+    	repaint();
     }
     
     static void electronSaveAsCallback(String s) {
@@ -4082,11 +4100,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	// IES - Grab resize handles in select mode if they are far enough apart and you are on top of them
 	if (tempMouseMode == MODE_SELECT && mouseElm!=null && !noEditCheckItem.getState() &&
-			mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
-		    !anySelectedButMouse() )
-		tempMouseMode = MODE_DRAG_POST;
-
-
+		mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE) >=0 &&
+		!anySelectedButMouse() && mouseElm.getPostCount() > 1)
+	    tempMouseMode = MODE_DRAG_POST;
 	
 	if (tempMouseMode != MODE_SELECT && tempMouseMode != MODE_DRAG_SELECTED)
 	    clearSelection();
@@ -4103,7 +4119,11 @@ MouseOutHandler, MouseWheelHandler {
 	if (!circuitArea.contains(e.getX(), e.getY()))
 	    return;
 
-	dragElm = constructElement(mouseModeStr, x0, y0);
+	try {
+	    dragElm = constructElement(mouseModeStr, x0, y0);
+	} catch (Exception ex) {
+	    debugger();
+	}
     }
 
  
@@ -4917,8 +4937,10 @@ MouseOutHandler, MouseWheelHandler {
     	case 214: return new CCVSElm(x1, y1, x2, y2, f, st);
     	case 215: return new CCCSElm(x1, y1, x2, y2, f, st);
     	case 216: return new OhmMeterElm(x1, y1, x2, y2, f, st);
+	case 350: return new ThermistorNTCElm(x1, y1, x2, y2, f, st);
     	case 368: return new TestPointElm(x1, y1, x2, y2, f, st);
     	case 370: return new AmmeterElm(x1, y1, x2, y2, f, st);
+	case 374: return new LDRElm(x1, y1, x2, y2, f, st);
     	case 400: return new DarlingtonElm(x1, y1, x2, y2, f, st);
     	case 401: return new ComparatorElm(x1, y1, x2, y2, f, st);
     	case 402: return new OTAElm(x1, y1, x2, y2, f, st);
@@ -4934,6 +4956,8 @@ MouseOutHandler, MouseWheelHandler {
     	case 412: return new CrystalElm(x1, y1, x2, y2, f, st);
     	case 413: return new SRAMElm(x1, y1, x2, y2, f, st);
     	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
+	case 415: return new DCMotorElm(x1, y1, x2, y2, f, st);
+	case 416: return new MBBSwitchElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -4949,6 +4973,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new SwitchElm(x1, y1);
     	if (n=="Switch2Elm")
     		return (CircuitElm) new Switch2Elm(x1, y1);
+    	if (n=="MBBSwitchElm")
+    		return (CircuitElm) new MBBSwitchElm(x1, y1);
     	if (n=="NTransistorElm" || n == "TransistorElm")
     		return (CircuitElm) new NTransistorElm(x1, y1);
     	if (n=="PTransistorElm")
@@ -5174,6 +5200,12 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new SRAMElm(x1, y1);
     	if (n=="TimeDelayRelayElm")
 		return (CircuitElm) new TimeDelayRelayElm(x1, y1);
+    	if (n=="DCMotorElm")
+		return (CircuitElm) new DCMotorElm(x1, y1);
+    	if (n=="LDRElm")
+		return (CircuitElm) new LDRElm(x1, y1);
+    	if (n=="ThermistorNTCElm")
+		return (CircuitElm) new ThermistorNTCElm(x1, y1);
     	return null;
     }
     

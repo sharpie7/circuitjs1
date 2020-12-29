@@ -118,10 +118,10 @@ class ScopePlot {
 	}
 	switch (units) {
 	case Scope.UNITS_V:
-	    color = "#00FF00";
+	    color = CircuitElm.positiveColor.getHexValue();
 	    break;
 	case Scope.UNITS_A:
-	    color = "#FFFF00";
+	    color = (CirSim.theSim.printableCheckItem.getState()) ? "#A0A000" : "#FFFF00";
 	    break;
 	default:
 	    color = (CirSim.theSim.printableCheckItem.getState()) ? "#000000" : "#FFFFFF";
@@ -689,7 +689,7 @@ class Scope {
     		g.drawString(text, x, yt);
     		yt += 15;
     	}
-    	g.setColor(Color.green);
+    	g.setColor(CircuitElm.positiveColor);
     	g.drawLine(0, rect.height/2, rect.width-1, rect.height/2);
     	if (!plotXY)
     		g.setColor(Color.yellow);

@@ -196,6 +196,7 @@ crystalosc2.txt Crystal Oscillator
 gilbertcell.txt Gilbert Cell Multiplier
 rmsconverter.txt True RMS Converter
 joule-thief.txt Joule Thief
+transrectifier.txt Full-Wave Rectifier
 -
 +MOSFETs
 nmosfet.txt n-MOSFET

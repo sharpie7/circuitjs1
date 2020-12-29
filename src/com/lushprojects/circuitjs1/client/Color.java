@@ -43,10 +43,26 @@ public class Color
     // only for special cases, like no color, or maybe named colors
     private String colorText = null;
 
-    private Color (String colorText) {
+    public Color (String colorText) {
         this.colorText = colorText;
+        if (colorText.startsWith("#") && colorText.length() == 7) {
+            String rs = colorText.substring(1, 3);
+            String gs = colorText.substring(3, 5);
+            String bs = colorText.substring(5, 7);
+            r = Integer.parseInt(rs, 16);
+            g = Integer.parseInt(gs, 16);
+            b = Integer.parseInt(bs, 16);
+        }
     }
 
+    // create mixture of c1 and c2
+    public Color (Color c1, Color c2, double mix) {
+	double m0 = 1-mix;
+	this.r = (int) (c1.r*m0 + c2.r*mix);
+	this.g = (int) (c1.g*m0 + c2.g*mix);
+	this.b = (int) (c1.b*m0 + c2.b*mix);
+    }
+    
     public Color (int r, int g, int b)
     {
         this.r = r;
