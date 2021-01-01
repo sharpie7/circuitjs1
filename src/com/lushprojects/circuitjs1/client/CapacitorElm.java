@@ -125,9 +125,9 @@ package com.lushprojects.circuitjs1.client;
 	    // than backward euler but can cause oscillatory behavior
 	    // if RC is small relative to the timestep.
 	    if (isTrapezoidal())
-		compResistance = sim.timeStep/(2*capacitance);
+		compResistance = sim.iterStep/(2*capacitance);
 	    else
-		compResistance = sim.timeStep/capacitance;
+		compResistance = sim.iterStep/capacitance;
 	    sim.stampResistor(nodes[0], nodes[1], compResistance);
 	    sim.stampRightSide(nodes[0]);
 	    sim.stampRightSide(nodes[1]);

@@ -186,7 +186,7 @@ MouseOutHandler, MouseWheelHandler {
     int menuPlot = -1;
     int hintType = -1, hintItem1, hintItem2;
     String stopMessage;
-    double timeStep;
+    double timeStep, iterStep;
     static final int HINT_LC = 1;
     static final int HINT_RC = 2;
     static final int HINT_3DB_C = 3;
@@ -2056,6 +2056,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (!validateCircuit())
 	    return;
 
+	iterStep = timeStep;
 	stampCircuit();
     }
     
@@ -2426,6 +2427,8 @@ MouseOutHandler, MouseWheelHandler {
     // of dv in node j will increase the current into node i by x dv.
     // (Unless i or j is a voltage source node.)
     void stampMatrix(int i, int j, double x) {
+	if (Double.isInfinite(x))
+	    debugger();
 	if (i > 0 && j > 0) {
 	    if (circuitNeedsMap) {
 		i = circuitRowInfo[i-1].mapRow;
@@ -2518,6 +2521,11 @@ MouseOutHandler, MouseWheelHandler {
 	    return;
 	
 	boolean delayWireProcessing = canDelayWireProcessing();
+	if (iterStep < timeStep) {
+	    iterStep = Math.min(iterStep*2, timeStep);
+	    console("iterstep up = " + iterStep);
+	    stampCircuit();
+	}
 	
 	for (iter = 1; ; iter++) {
 	    int i, j, k, subiter;
@@ -2526,7 +2534,9 @@ MouseOutHandler, MouseWheelHandler {
 		ce.startIteration();
 	    }
 	    steps++;
-	    final int subiterCount = 5000;
+	    int subiterCount = 100;
+	    if (iterStep < 5e-7)
+		subiterCount = 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
 		converged = true;
 		subIterations = subiter;
@@ -2607,13 +2617,20 @@ MouseOutHandler, MouseWheelHandler {
 		if (!circuitNonLinear)
 		    break;
 	    }
-	    if (subiter > 5)
-		console("converged after " + subiter + " iterations\n");
 	    if (subiter == subiterCount) {
-		stop("Convergence failed!", null);
-		break;
+		iterStep /= 2;
+		console("iterstep down to " + iterStep);
+		if (iterStep < timeStep/1024) {
+		    console("convergence failed after " + subiter + " iterations");
+		    stop("Convergence failed!", null);
+		    break;
+		}
+		stampCircuit();
+		continue;
 	    }
-	    t += timeStep;
+	    if (subiter > 5 || iterStep < timeStep)
+		console("converged after " + subiter + " iterations, iterStep = " + iterStep);
+	    t += iterStep;
 	    for (i = 0; i != elmList.size(); i++)
 		getElm(i).stepFinished();
 	    if (!delayWireProcessing)
