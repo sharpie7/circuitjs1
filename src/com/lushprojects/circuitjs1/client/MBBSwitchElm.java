@@ -184,4 +184,5 @@ package com.lushprojects.circuitjs1.client;
 	    } else
 	    	super.setEditValue(n, ei);
 	}
+	int getShortcut() { return 0; }
     }

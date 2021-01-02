@@ -1075,6 +1075,8 @@ MouseOutHandler, MouseWheelHandler {
     	if ( elm!=null ) {
     		if (elm.needsShortcut() ) {
     			shortcut += (char)elm.getShortcut();
+    			if (shortcuts[elm.getShortcut()] != null && !shortcuts[elm.getShortcut()].equals(t))
+    			    console("already have shortcut for " + (char)elm.getShortcut() + " " + elm);
     			shortcuts[elm.getShortcut()]=t;
     		}
     		elm.delete();
