@@ -202,7 +202,7 @@ MouseOutHandler, MouseWheelHandler {
     CircuitElm plotXElm, plotYElm;
     int draggingPost;
     SwitchElm heldSwitchElm;
-    double circuitMatrix[][], circuitRightSide[],
+    double circuitMatrix[][], circuitRightSide[], lastNodeVoltages[], nodeVoltages[],
 	origRightSide[], origMatrix[][];
     RowInfo circuitRowInfo[];
     int circuitPermute[];
@@ -2065,6 +2065,9 @@ MouseOutHandler, MouseWheelHandler {
 	int matrixSize = nodeList.size()-1 + voltageSourceCount;
 	circuitMatrix = new double[matrixSize][matrixSize];
 	circuitRightSide = new double[matrixSize];
+	nodeVoltages = new double[nodeList.size()-1];
+	if (lastNodeVoltages == null || lastNodeVoltages.length != nodeVoltages.length)
+	    lastNodeVoltages = new double[nodeList.size()-1];
 	origMatrix = new double[matrixSize][matrixSize];
 	origRightSide = new double[matrixSize];
 	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
@@ -2523,7 +2526,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean delayWireProcessing = canDelayWireProcessing();
 	if (iterStep < timeStep) {
 	    iterStep = Math.min(iterStep*2, timeStep);
-	    console("iterstep up = " + iterStep);
+	    console("iterstep up = " + iterStep + " at " + t);
 	    stampCircuit();
 	}
 	
@@ -2535,8 +2538,6 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    steps++;
 	    int subiterCount = 100;
-	    if (iterStep < 5e-7)
-		subiterCount = 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
 		converged = true;
 		subIterations = subiter;
@@ -2576,6 +2577,7 @@ MouseOutHandler, MouseWheelHandler {
 		    console("done");
 		}
 		if (circuitNonLinear) {
+		    // stop if converged (elements check for convergence in doStep())
 		    if (converged && subiter > 0)
 			break;
 		    if (!lu_factor(circuitMatrix, circuitMatrixSize,
@@ -2586,45 +2588,20 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		lu_solve(circuitMatrix, circuitMatrixSize, circuitPermute,
 			 circuitRightSide);
-		
-		for (j = 0; j != circuitMatrixFullSize; j++) {
-		    RowInfo ri = circuitRowInfo[j];
-		    double res = 0;
-		    if (ri.type == RowInfo.ROW_CONST)
-			res = ri.value;
-		    else
-			res = circuitRightSide[ri.mapCol];
-		    /*System.out.println(j + " " + res + " " +
-		      ri.type + " " + ri.mapCol);*/
-		    if (Double.isNaN(res)) {
-			converged = false;
-			//debugprint = true;
-			break;
-		    }
-		    if (j < nodeList.size()-1) {
-			CircuitNode cn = getCircuitNode(j+1);
-			for (k = 0; k != cn.links.size(); k++) {
-			    CircuitNodeLink cnl = (CircuitNodeLink)
-				cn.links.elementAt(k);
-			    cnl.elm.setNodeVoltage(cnl.num, res);
-			}
-		    } else {
-			int ji = j-(nodeList.size()-1);
-			//System.out.println("setting vsrc " + ji + " to " + res);
-			voltageSources[ji].setCurrent(ji, res);
-		    }
-		}
+		applySolvedRightSide(circuitRightSide);
 		if (!circuitNonLinear)
 		    break;
 	    }
 	    if (subiter == subiterCount) {
 		iterStep /= 2;
-		console("iterstep down to " + iterStep);
-		if (iterStep < timeStep/1024) {
+		console("iterstep down to " + iterStep + " at " + t);
+		if (iterStep < 50e-12) {
 		    console("convergence failed after " + subiter + " iterations");
 		    stop("Convergence failed!", null);
 		    break;
 		}
+		// reset circuit state to the way it was at start of iteration
+		setNodeVoltages(lastNodeVoltages);
 		stampCircuit();
 		continue;
 	    }
@@ -2638,8 +2615,12 @@ MouseOutHandler, MouseWheelHandler {
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
 	    for (i=0; i != elmList.size(); i++)
-		if (getElm(i) instanceof ScopeElm )
+		if (getElm(i) instanceof ScopeElm)
 		    ((ScopeElm)getElm(i)).stepScope();
+	    // save last node voltages so we can restart the next iteration if necessary
+	    for (i = 0; i != lastNodeVoltages.length; i++)
+		lastNodeVoltages[i] = nodeVoltages[i];
+//	    console("set lastrightside at " + t + " " + lastNodeVoltages);
 		
 	    tm = System.currentTimeMillis();
 	    lit = tm;
@@ -2656,6 +2637,46 @@ MouseOutHandler, MouseWheelHandler {
 //	System.out.println((System.currentTimeMillis()-lastFrameTime)/(double) iter);
     }
 
+    // set node voltages given right side found by solving matrix
+    void applySolvedRightSide(double rs[]) {
+//	console("setvoltages " + rs);
+	int j;
+	for (j = 0; j != circuitMatrixFullSize; j++) {
+	    RowInfo ri = circuitRowInfo[j];
+	    double res = 0;
+	    if (ri.type == RowInfo.ROW_CONST)
+		res = ri.value;
+	    else
+		res = rs[ri.mapCol];
+	    if (Double.isNaN(res)) {
+		converged = false;
+		break;
+	    }
+	    if (j < nodeList.size()-1) {
+		nodeVoltages[j] = res;
+	    } else {
+		int ji = j-(nodeList.size()-1);
+		voltageSources[ji].setCurrent(ji, res);
+	    }
+	}
+	
+	setNodeVoltages(nodeVoltages);
+    }
+    
+    // set node voltages in each element given an array of node voltages
+    void setNodeVoltages(double nv[]) {
+	int j, k;
+	for (j = 0; j != nv.length; j++) {
+	    double res = nv[j];
+	    CircuitNode cn = getCircuitNode(j+1);
+	    for (k = 0; k != cn.links.size(); k++) {
+		CircuitNodeLink cnl = (CircuitNodeLink)
+			cn.links.elementAt(k);
+		cnl.elm.setNodeVoltage(cnl.num, res);
+	    }
+	}
+    }
+    
     // we removed wires from the matrix to speed things up.  in order to display wire currents,
     // we need to calculate them now.
     void calcWireCurrents() {
