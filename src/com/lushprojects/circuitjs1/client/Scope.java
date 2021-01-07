@@ -31,7 +31,8 @@ import com.google.gwt.canvas.dom.client.Context2d;
 class ScopePlot {
     double minValues[], maxValues[];
     int scopePointCount;
-    int ptr, ctr, value, speed, units;
+    int ptr, value, speed, units;
+    double lastUpdateTime;
     double lastValue;
     String color;
     CircuitElm elm;
@@ -71,7 +72,7 @@ class ScopePlot {
     		maxValues[i1] = oldMax[i2];
     	    }
     	} else
-    	    ctr = 0;
+    	    lastUpdateTime = CirSim.theSim.t;
     	ptr = 0;
     }
 
@@ -84,11 +85,10 @@ class ScopePlot {
 	if (v > maxValues[ptr])
 		maxValues[ptr] = v;
 	lastValue = v;
-	ctr++;
-	if (ctr >= speed) {
+	if (CirSim.theSim.t-lastUpdateTime >= CirSim.theSim.timeStep * speed) {
 	    ptr = (ptr+1) & (scopePointCount-1);
 	    minValues[ptr] = maxValues[ptr] = v;
-	    ctr = 0;
+	    lastUpdateTime += CirSim.theSim.timeStep * speed;
 	}
     }
     
