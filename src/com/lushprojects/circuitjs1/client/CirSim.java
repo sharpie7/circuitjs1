@@ -2717,16 +2717,15 @@ MouseOutHandler, MouseWheelHandler {
     
     public void resetAction(){
     	int i;
-    	for (i = 0; i != elmList.size(); i++)
-    		getElm(i).reset();
-    	for (i = 0; i != scopeCount; i++)
-    		scopes[i].resetGraph(true);
-    	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
     	if (t == 0)
     	    setSimRunning(true);
     	else
     	    t=0;
+    	for (i = 0; i != elmList.size(); i++)
+		getElm(i).reset();
+	for (i = 0; i != scopeCount; i++)
+		scopes[i].resetGraph(true);
     	repaint();
     }
     
