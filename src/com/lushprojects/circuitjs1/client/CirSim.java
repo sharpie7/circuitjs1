@@ -187,6 +187,7 @@ MouseOutHandler, MouseWheelHandler {
     int hintType = -1, hintItem1, hintItem2;
     String stopMessage;
     double timeStep, iterStep;
+    boolean adjustTimeStep;
     static final int HINT_LC = 1;
     static final int HINT_RC = 2;
     static final int HINT_3DB_C = 3;
@@ -2501,6 +2502,8 @@ MouseOutHandler, MouseWheelHandler {
     
     boolean converged;
     int subIterations;
+    final double iterStepLowerLimit = 50e-12;
+    
     void runCircuit(boolean didAnalyze) {
 	if (circuitMatrix == null || elmList.size() == 0) {
 	    circuitMatrix = null;
@@ -2531,13 +2534,13 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	for (iter = 1; ; iter++) {
-	    int i, j, k, subiter;
+	    int i, j, subiter;
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
 		ce.startIteration();
 	    }
 	    steps++;
-	    int subiterCount = 100;
+	    int subiterCount = (adjustTimeStep && iterStep/2 > iterStepLowerLimit) ? 100 : 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
 		converged = true;
 		subIterations = subiter;
@@ -2593,9 +2596,11 @@ MouseOutHandler, MouseWheelHandler {
 		    break;
 	    }
 	    if (subiter == subiterCount) {
-		iterStep /= 2;
-		console("iterstep down to " + iterStep + " at " + t);
-		if (iterStep < 50e-12) {
+		if (adjustTimeStep) {
+		    iterStep /= 2;
+		    console("iterstep down to " + iterStep + " at " + t);
+		}
+		if (iterStep < iterStepLowerLimit || !adjustTimeStep) {
 		    console("convergence failed after " + subiter + " iterations");
 		    stop("Convergence failed!", null);
 		    break;
@@ -3166,6 +3171,7 @@ MouseOutHandler, MouseWheelHandler {
 	f |= (powerCheckItem.getState()) ? 8 : 0;
 	f |= (showValuesCheckItem.getState()) ? 0 : 16;
 	// 32 = linear scale in afilter
+	f |= adjustTimeStep ? 64 : 0;
 	String dump = "$ " + f + " " +
 	    timeStep + " " + getIterCount() + " " +
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
@@ -3494,6 +3500,7 @@ MouseOutHandler, MouseWheelHandler {
 	voltsCheckItem.setState((flags & 4) == 0);
 	powerCheckItem.setState((flags & 8) == 8);
 	showValuesCheckItem.setState((flags & 16) == 0);
+	adjustTimeStep = (flags & 64) != 0;
 	timeStep = new Double (st.nextToken()).doubleValue();
 	double sp = new Double(st.nextToken()).doubleValue();
 	int sp2 = (int) (Math.log(10*sp)*24+61.5);

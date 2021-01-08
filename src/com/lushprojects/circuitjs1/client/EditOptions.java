@@ -54,6 +54,11 @@ class EditOptions implements Editable {
 		    return new EditInfo("Positive Color", CircuitElm.positiveColor.getHexValue());
 		if (n == 4)
 		    return new EditInfo("Negative Color", CircuitElm.negativeColor.getHexValue());
+		if (n == 5) {
+		    EditInfo ei = new EditInfo("", 0, -1, -1);
+		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
+		    return ei;
+		}
 
 		return null;
 	}
@@ -111,5 +116,7 @@ class EditOptions implements Editable {
 		    CircuitElm.negativeColor = new Color(txt);
 		    CircuitElm.setColorScale();
 		}
+		if (n == 5)
+		    sim.adjustTimeStep = ei.checkbox.getState();
 	}
 };
