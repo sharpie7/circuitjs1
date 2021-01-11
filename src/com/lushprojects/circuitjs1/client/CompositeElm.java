@@ -200,6 +200,8 @@ public abstract class CompositeElm extends CircuitElm {
 	Vector<CircuitNodeLink> cnLinks2 = compNodeList.get(n2).links;
 	
 	// see if any elements are connected to both n1 and n2, then call getConnection() on those
+	// TODO this is not good enough.  element A could be connected to n1 and n3, element B
+        // connected to n3 and n2
 	for (int i = 0; i < cnLinks1.size(); i++) {
 	    CircuitNodeLink link1 = cnLinks1.get(i);
 	    for (int j = 0; j < cnLinks2.size(); j++) {
