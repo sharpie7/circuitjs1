@@ -31,7 +31,10 @@ import com.google.gwt.canvas.dom.client.Context2d;
 class ScopePlot {
     double minValues[], maxValues[];
     int scopePointCount;
-    int ptr, ctr, value, speed, units;
+    // ptr is pointer to the current sample
+    // ctr is counts each timestep going in to a sample
+    // ScopePlotSpeed it sim timestep units per pixel
+    int ptr, ctr, value, scopePlotSpeed, units;
     double lastValue;
     String color;
     CircuitElm elm;
@@ -54,9 +57,9 @@ class ScopePlot {
     void reset(int spc, int sp, boolean full) {
 	int oldSpc = scopePointCount;
 	scopePointCount = spc;
-	if (speed != sp)
+	if (scopePlotSpeed != sp)
 	    oldSpc = 0; // throw away old data
-	speed = sp;
+	scopePlotSpeed = sp;
 	double oldMin[] = minValues;
 	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
@@ -85,7 +88,7 @@ class ScopePlot {
 		maxValues[ptr] = v;
 	lastValue = v;
 	ctr++;
-	if (ctr >= speed) {
+	if (ctr >= scopePlotSpeed) {
 	    ptr = (ptr+1) & (scopePointCount-1);
 	    minValues[ptr] = maxValues[ptr] = v;
 	    ctr = 0;
@@ -157,6 +160,7 @@ class Scope {
     int scopePointCount = 128;
     FFT fft;
     int position;
+    // speed is sim timestep units per pixel
     int speed;
     int stackCount; // number of scopes in this column
     String text;
@@ -164,8 +168,6 @@ class Scope {
     boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale, logSpectrum;
     boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
-//    MemoryImageSource imageSource;
-//    Image image;
     int pixels[];
     int draw_ox, draw_oy;
     float dpixels[];
@@ -173,6 +175,7 @@ class Scope {
     Canvas imageCanvas;
     Context2d imageContext;
     int alphadiv =0;
+    // scopeTimeStep to check if sim timestep has changed from previous value when redrawing
     double scopeTimeStep;
     double scale[];
     boolean reduceRange[];
@@ -329,6 +332,13 @@ class Scope {
     	    setValue(0, ce);
     	initialize();
     }
+    
+    void addElm(CircuitElm ce) {
+    	if (ce instanceof TransistorElm)
+    	    addValue(VAL_VCE, ce);
+    	else
+    	    addValue(0, ce);
+    }
 
     void setValue(int val) {
 	if (plots.size() > 2 || plots.size() == 0)
@@ -340,8 +350,7 @@ class Scope {
 	setValue(val, ce);
     }
     
-    void setValue(int val, CircuitElm ce) {
-	plots = new Vector<ScopePlot>();
+    void addValue(int val, CircuitElm ce) {
 	if (val == 0) {
 	    plots.add(new ScopePlot(ce, UNITS_V, 0));
 	    
@@ -361,6 +370,11 @@ class Scope {
 	}
 	calcVisiblePlots();
 	resetGraph();
+    }
+    
+    void setValue(int val, CircuitElm ce) {
+	plots = new Vector<ScopePlot>();
+	addValue(val, ce);
 //    	initialize();
     }
 
@@ -1362,6 +1376,20 @@ class Scope {
     void drawInfoTexts(Graphics g) {
     	g.setColor(CircuitElm.whiteColor);
     	textY = 10;
+    	/*
+    	String x = plots.size()+" ";
+	int i;
+    	for (i = 0; i < plots.size(); i++) {
+    	    x+=",";
+    	    ScopePlot p = plots.get(i);
+    	  //  if (i > 0)
+    		x += " " + sim.locateElm(p.elm) + " " + p.value;
+    	    // dump scale if units are not V or A
+    	    if (p.units > UNITS_A)
+    		x += " " + scale[p.units];
+    	}
+    	drawInfoText(g, x);
+    	*/
     	ScopePlot plot = visiblePlots.firstElement();
     	if (showScale) {
     	    String vScaleText="";
@@ -1487,7 +1515,7 @@ class Scope {
     	if (eno < 0)
     		return null;
     	String x = "o " + eno + " " +
-    			vPlot.speed + " " + vPlot.value + " " + flags + " " +
+    			vPlot.scopePlotSpeed + " " + vPlot.value + " " + flags + " " +
     			scale[UNITS_V] + " " + scale[UNITS_A] + " " + position + " " +
     			plots.size();
     	int i;
@@ -1621,7 +1649,7 @@ class Scope {
     	int flags = getFlags();
     	
     	// store current scope settings as default.  1 is a version code
-    	stor.setItem("scopeDefaults", "1 " + flags + " " + vPlot.speed);
+    	stor.setItem("scopeDefaults", "1 " + flags + " " + vPlot.scopePlotSpeed);
     	CirSim.console("saved defaults " + flags);
     }
 

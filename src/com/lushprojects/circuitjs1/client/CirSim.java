@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.lang.Math;
+
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
@@ -134,10 +136,12 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmDeleteMenuItem;
     MenuItem elmScopeMenuItem;
     MenuItem elmFloatScopeMenuItem;
+    MenuItem elmAddScopeMenuItem;
     MenuItem elmFlipMenuItem;
     MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
     MenuBar mainMenuBar;
+    MenuBar selectScopeMenuBar;
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     ScopePopupMenu scopePopupMenu;
@@ -340,33 +344,33 @@ MouseOutHandler, MouseWheelHandler {
 	QueryParameters qp = new QueryParameters();
 	String positiveColor = null;
 	String negativeColor = null;
-			
+
 	try {
-		//baseURL = applet.getDocumentBase().getFile();
-		// look for circuit embedded in URL
-//		String doc = applet.getDocumentBase().toString();
-		String cct=qp.getValue("cct");
-		if (cct!=null)
-			startCircuitText = cct.replace("%24", "$");
-		String ctz=qp.getValue("ctz");
-		if (ctz!= null)
-		    startCircuitText = decompress(ctz);
-		startCircuit = qp.getValue("startCircuit");
-		startLabel   = qp.getValue("startLabel");
-		startCircuitLink = qp.getValue("startCircuitLink");
-		euroRes = qp.getBooleanValue("euroResistors", false);
-		usRes = qp.getBooleanValue("usResistors",  false);
-		running = qp.getBooleanValue("running", true);
-		hideSidebar = qp.getBooleanValue("hideSidebar", false);
-		hideMenu = qp.getBooleanValue("hideMenu", false);
-		printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
-		convention = qp.getBooleanValue("conventionalCurrent",
-			getOptionFromStorage("conventionalCurrent", true));
-		noEditing = !qp.getBooleanValue("editable", true);
-		positiveColor = qp.getValue("positiveColor");
-		negativeColor = qp.getValue("negativeColor");
+	    //baseURL = applet.getDocumentBase().getFile();
+	    // look for circuit embedded in URL
+	    //		String doc = applet.getDocumentBase().toString();
+	    String cct=qp.getValue("cct");
+	    if (cct!=null)
+		startCircuitText = cct.replace("%24", "$");
+	    String ctz=qp.getValue("ctz");
+	    if (ctz!= null)
+		startCircuitText = decompress(ctz);
+	    startCircuit = qp.getValue("startCircuit");
+	    startLabel   = qp.getValue("startLabel");
+	    startCircuitLink = qp.getValue("startCircuitLink");
+	    euroRes = qp.getBooleanValue("euroResistors", false);
+	    usRes = qp.getBooleanValue("usResistors",  false);
+	    running = qp.getBooleanValue("running", true);
+	    hideSidebar = qp.getBooleanValue("hideSidebar", false);
+	    hideMenu = qp.getBooleanValue("hideMenu", false);
+	    printable = qp.getBooleanValue("whiteBackground", getOptionFromStorage("whiteBackground", false));
+	    convention = qp.getBooleanValue("conventionalCurrent",
+		    getOptionFromStorage("conventionalCurrent", true));
+	    noEditing = !qp.getBooleanValue("editable", true);
+	    positiveColor = qp.getValue("positiveColor");
+	    negativeColor = qp.getValue("negativeColor");
 	} catch (Exception e) { }
-	
+
 	boolean euroSetting = false;
 	if (euroRes)
 	    euroSetting = true;
@@ -375,7 +379,7 @@ MouseOutHandler, MouseWheelHandler {
 	else
 	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
 	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
-	
+
 	transform = new double[6];
 	String os = Navigator.getPlatform();
 	isMac = (os.toLowerCase().contains("mac"));
@@ -384,56 +388,56 @@ MouseOutHandler, MouseWheelHandler {
 	shortcuts = new String[127];
 
 	layoutPanel = new DockLayoutPanel(Unit.PX);
-	
-	  fileMenuBar = new MenuBar(true);
-	  if (isElectron())
-	      fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
-	  importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
-	  importFromLocalFileItem.setEnabled(LoadFile.isSupported());
-	  fileMenuBar.addItem(importFromLocalFileItem);
-	  importFromTextItem = iconMenuItem("doc-text", "Import From Text...", new MyCommand("file","importfromtext"));
-	  fileMenuBar.addItem(importFromTextItem);
-	  importFromDropboxItem = iconMenuItem("dropbox", "Import From Dropbox...", new MyCommand("file", "importfromdropbox"));
-	  fileMenuBar.addItem(importFromDropboxItem);
-	  if (isElectron()) {
-	      saveFileItem = fileMenuBar.addItem(iconMenuItem("floppy", "Save", new MyCommand("file", "save")));
-	      fileMenuBar.addItem(iconMenuItem("floppy", "Save As...", new MyCommand("file", "saveas")));
-	  } else {
-	      exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
-	      exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
-	      fileMenuBar.addItem(exportAsLocalFileItem);
-	  }
-	  exportAsUrlItem = iconMenuItem("export", "Export As Link...", new MyCommand("file","exportasurl"));
-	  fileMenuBar.addItem(exportAsUrlItem);
-	  exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
-	  fileMenuBar.addItem(exportAsTextItem);
-	  fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
-	  fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
-	  fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
-	  recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
-	  recoverItem.setEnabled(recovery != null);
-	  fileMenuBar.addItem(recoverItem);
-	  printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
-	  fileMenuBar.addItem(printItem);
-	  fileMenuBar.addSeparator();
-	  aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
-	  fileMenuBar.addItem(aboutItem);
-	  aboutItem.setScheduledCommand(new MyCommand("file","about"));
-	  
-	  int width=(int)RootLayoutPanel.get().getOffsetWidth();
-	  VERTICALPANELWIDTH = width/5;
-	  if (VERTICALPANELWIDTH > 166)
-	      VERTICALPANELWIDTH = 166;
-	  if (VERTICALPANELWIDTH < 128)
-	      VERTICALPANELWIDTH = 128;
 
-	  menuBar = new MenuBar();
-	  menuBar.addItem(LS("File"), fileMenuBar);
-	  verticalPanel=new VerticalPanel();
-	  
-	  // make buttons side by side if there's room
-	  buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
-	  
+	fileMenuBar = new MenuBar(true);
+	if (isElectron())
+	    fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
+	importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
+	importFromLocalFileItem.setEnabled(LoadFile.isSupported());
+	fileMenuBar.addItem(importFromLocalFileItem);
+	importFromTextItem = iconMenuItem("doc-text", "Import From Text...", new MyCommand("file","importfromtext"));
+	fileMenuBar.addItem(importFromTextItem);
+	importFromDropboxItem = iconMenuItem("dropbox", "Import From Dropbox...", new MyCommand("file", "importfromdropbox"));
+	fileMenuBar.addItem(importFromDropboxItem);
+	if (isElectron()) {
+	    saveFileItem = fileMenuBar.addItem(iconMenuItem("floppy", "Save", new MyCommand("file", "save")));
+	    fileMenuBar.addItem(iconMenuItem("floppy", "Save As...", new MyCommand("file", "saveas")));
+	} else {
+	    exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
+	    exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
+	    fileMenuBar.addItem(exportAsLocalFileItem);
+	}
+	exportAsUrlItem = iconMenuItem("export", "Export As Link...", new MyCommand("file","exportasurl"));
+	fileMenuBar.addItem(exportAsUrlItem);
+	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
+	fileMenuBar.addItem(exportAsTextItem);
+	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
+	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
+	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
+	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
+	recoverItem.setEnabled(recovery != null);
+	fileMenuBar.addItem(recoverItem);
+	printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
+	fileMenuBar.addItem(printItem);
+	fileMenuBar.addSeparator();
+	aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
+	fileMenuBar.addItem(aboutItem);
+	aboutItem.setScheduledCommand(new MyCommand("file","about"));
+
+	int width=(int)RootLayoutPanel.get().getOffsetWidth();
+	VERTICALPANELWIDTH = width/5;
+	if (VERTICALPANELWIDTH > 166)
+	    VERTICALPANELWIDTH = 166;
+	if (VERTICALPANELWIDTH < 128)
+	    VERTICALPANELWIDTH = 128;
+
+	menuBar = new MenuBar();
+	menuBar.addItem(LS("File"), fileMenuBar);
+	verticalPanel=new VerticalPanel();
+
+	// make buttons side by side if there's room
+	buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
+
 	m = new MenuBar(true);
 	m.addItem(undoItem = menuItemWithShortcut("ccw", LS("Undo"), LS("Ctrl-Z"), new MyCommand("edit","undo")));
 	m.addItem(redoItem = menuItemWithShortcut("cw", LS("Redo"), LS("Ctrl-Y"), new MyCommand("edit","redo")));
@@ -442,9 +446,9 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(copyItem = menuItemWithShortcut("copy", LS("Copy"), LS("Ctrl-C"), new MyCommand("edit","copy")));
 	m.addItem(pasteItem = menuItemWithShortcut("paste", LS("Paste"), LS("Ctrl-V"), new MyCommand("edit","paste")));
 	pasteItem.setEnabled(false);
-	
+
 	m.addItem(menuItemWithShortcut("clone", LS("Duplicate"), LS("Ctrl-D"), new MyCommand("edit","duplicate")));
-	
+
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
@@ -458,40 +462,40 @@ MouseOutHandler, MouseWheelHandler {
 	drawMenuBar.setAutoOpen(true);
 
 	menuBar.addItem(LS("Draw"), drawMenuBar);
-	
+
 	m = new MenuBar(true);
 	m.addItem(iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
 	m.addItem(iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
 	m.addItem(iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
 	m.addItem(iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
-		
+
 	optionsMenuBar = m = new MenuBar(true );
 	menuBar.addItem(LS("Options"), optionsMenuBar);
 	m.addItem(dotsCheckItem = new CheckboxMenuItem(LS("Show Current")));
 	dotsCheckItem.setState(true);
 	m.addItem(voltsCheckItem = new CheckboxMenuItem(LS("Show Voltage"),
-			new Command() { public void execute(){
-				if (voltsCheckItem.getState())
-					powerCheckItem.setState(false);
-				setPowerBarEnable();
-			}
-			}));
+		new Command() { public void execute(){
+		    if (voltsCheckItem.getState())
+			powerCheckItem.setState(false);
+		    setPowerBarEnable();
+		}
+	}));
 	voltsCheckItem.setState(true);
 	m.addItem(powerCheckItem = new CheckboxMenuItem(LS("Show Power"),
-			new Command() { public void execute(){
-				if (powerCheckItem.getState())
-					voltsCheckItem.setState(false);
-				setPowerBarEnable();
-			}
+		new Command() { public void execute(){
+		    if (powerCheckItem.getState())
+			voltsCheckItem.setState(false);
+		    setPowerBarEnable();
+		}
 	}));
 	m.addItem(showValuesCheckItem = new CheckboxMenuItem(LS("Show Values")));
 	showValuesCheckItem.setState(true);
 	//m.add(conductanceCheckItem = getCheckItem(LS("Show Conductance")));
 	m.addItem(smallGridCheckItem = new CheckboxMenuItem(LS("Small Grid"),
-			new Command() { public void execute(){
-				setGrid();
-			}
+		new Command() { public void execute(){
+		    setGrid();
+		}
 	}));
 	m.addItem(crossHairCheckItem = new CheckboxMenuItem(LS("Show Cursor Cross Hairs"),
 		new Command() { public void execute(){
@@ -515,15 +519,15 @@ MouseOutHandler, MouseWheelHandler {
 	}));
 	euroGatesCheckItem.setState(euroGates);
 	m.addItem(printableCheckItem = new CheckboxMenuItem(LS("White Background"),
-			new Command() { public void execute(){
-				int i;
-				for (i=0;i<scopeCount;i++)
-					scopes[i].setRect(scopes[i].rect);
-				setOptionInStorage("whiteBackground", printableCheckItem.getState());
-			}
+		new Command() { public void execute(){
+		    int i;
+		    for (i=0;i<scopeCount;i++)
+			scopes[i].setRect(scopes[i].rect);
+		    setOptionInStorage("whiteBackground", printableCheckItem.getState());
+		}
 	}));
 	printableCheckItem.setState(printable);
-	
+
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
 		    setOptionInStorage("conventionalCurrent", conventionCheckItem.getState());
@@ -532,8 +536,8 @@ MouseOutHandler, MouseWheelHandler {
 	conventionCheckItem.setState(convention);
 	m.addItem(noEditCheckItem = new CheckboxMenuItem(LS("Disable Editing")));
 	noEditCheckItem.setState(noEditing);
-	
-	
+
+
 	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
 	if (isElectron())
@@ -552,46 +556,46 @@ MouseOutHandler, MouseWheelHandler {
 	    VERTICALPANELWIDTH = 0;
 	else
 	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
-	  RootLayoutPanel.get().add(layoutPanel);
-	
+	RootLayoutPanel.get().add(layoutPanel);
+
 	cv =Canvas.createIfSupported();
-	  if (cv==null) {
-		  RootPanel.get().add(new Label("Not working. You need a browser that supports the CANVAS element."));
-		  return;
-	  }
-	  
-	  
-	  
-	    cvcontext=cv.getContext2d();
-	 backcv=Canvas.createIfSupported();
-	    backcontext=backcv.getContext2d();
-	    setCanvasSize();
-		layoutPanel.add(cv);
-		verticalPanel.add(buttonPanel);
-		 buttonPanel.add(resetButton = new Button(LS("Reset")));
-		 resetButton.addClickHandler(new ClickHandler() {
-			    public void onClick(ClickEvent event) {
-			      resetAction();
-			    }
-			  });
-		 resetButton.setStylePrimaryName("topButton");
-		 buttonPanel.add(runStopButton = new Button(LSHTML("<Strong>RUN</Strong>&nbsp;/&nbsp;Stop")));
-		 runStopButton.addClickHandler(new ClickHandler() {
-			    public void onClick(ClickEvent event) {
-			      setSimRunning(!simIsRunning());
-			    }
-			  });
-		 
-		 /*
+	if (cv==null) {
+	    RootPanel.get().add(new Label("Not working. You need a browser that supports the CANVAS element."));
+	    return;
+	}
+
+
+
+	cvcontext=cv.getContext2d();
+	backcv=Canvas.createIfSupported();
+	backcontext=backcv.getContext2d();
+	setCanvasSize();
+	layoutPanel.add(cv);
+	verticalPanel.add(buttonPanel);
+	buttonPanel.add(resetButton = new Button(LS("Reset")));
+	resetButton.addClickHandler(new ClickHandler() {
+	    public void onClick(ClickEvent event) {
+		resetAction();
+	    }
+	});
+	resetButton.setStylePrimaryName("topButton");
+	buttonPanel.add(runStopButton = new Button(LSHTML("<Strong>RUN</Strong>&nbsp;/&nbsp;Stop")));
+	runStopButton.addClickHandler(new ClickHandler() {
+	    public void onClick(ClickEvent event) {
+		setSimRunning(!simIsRunning());
+	    }
+	});
+
+	/*
 	dumpMatrixButton = new Button("Dump Matrix");
 	dumpMatrixButton.addClickHandler(new ClickHandler() {
 	    public void onClick(ClickEvent event) { dumpMatrix = true; }});
 	verticalPanel.add(dumpMatrixButton);// IES for debugging
-*/
-	
+	 */
+
 	if (LoadFile.isSupported())
-		verticalPanel.add(loadFileInput = new LoadFile(this));
-	
+	    verticalPanel.add(loadFileInput = new LoadFile(this));
+
 	Label l;
 	verticalPanel.add(l = new Label(LS("Simulation Speed")));
 	l.addStyleName("topSpace");
@@ -606,28 +610,28 @@ MouseOutHandler, MouseWheelHandler {
 	verticalPanel.add(powerLabel = new Label (LS("Power Brightness")));
 	powerLabel.addStyleName("topSpace");
 	verticalPanel.add(powerBar = new Scrollbar(Scrollbar.HORIZONTAL,
-		    50, 1, 1, 100));
+		50, 1, 1, 100));
 	setPowerBarEnable();
-	
-//	verticalPanel.add(new Label(""));
-//        Font f = new Font("SansSerif", 0, 10);
-        l = new Label(LS("Current Circuit:"));
+
+	//	verticalPanel.add(new Label(""));
+	//        Font f = new Font("SansSerif", 0, 10);
+	l = new Label(LS("Current Circuit:"));
 	l.addStyleName("topSpace");
-//        l.setFont(f);
-        titleLabel = new Label("Label");
-//        titleLabel.setFont(f);
-        verticalPanel.add(l);
-        verticalPanel.add(titleLabel);
+	//        l.setFont(f);
+	titleLabel = new Label("Label");
+	//        titleLabel.setFont(f);
+	verticalPanel.add(l);
+	verticalPanel.add(titleLabel);
 
 	verticalPanel.add(iFrame = new Frame("iframe.html"));
 	iFrame.setWidth(VERTICALPANELWIDTH+"px");
 	iFrame.setHeight("100 px");
 	iFrame.getElement().setAttribute("scrolling", "no");
-	
+
 	setGrid();
 	elmList = new Vector<CircuitElm>();
 	adjustables = new Vector<Adjustable>();
-//	setupList = new Vector();
+	//	setupList = new Vector();
 	undoStack = new Vector<String>();
 	redoStack = new Vector<String>();
 
@@ -635,15 +639,18 @@ MouseOutHandler, MouseWheelHandler {
 	scopes = new Scope[20];
 	scopeColCount = new int[20];
 	scopeCount = 0;
-	
+
 	random = new Random();
-//	cv.setBackground(Color.black);
-//	cv.setForeground(Color.lightGray);
-	
+	//	cv.setBackground(Color.black);
+	//	cv.setForeground(Color.lightGray);
+
 	elmMenuBar = new MenuBar(true);
+	elmMenuBar.setAutoOpen(true);
+	selectScopeMenuBar = new MenuBar(true);
 	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(LS("Edit..."),new MyCommand("elm","edit")));
-	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in Scope"), new MyCommand("elm","viewInScope")));
-	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(LS("View in Undocked Scope"), new MyCommand("elm","viewInFloatScope")));
+	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(LS("View in New Scope"), new MyCommand("elm","viewInScope")));
+	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(LS("View in New Undocked Scope"), new MyCommand("elm","viewInFloatScope")));
+	elmMenuBar.addItem(elmAddScopeMenuItem = new MenuItem(LS("Add to Existing Scope"), new MyCommand("elm", "addToScope0")));
 	elmMenuBar.addItem(elmCutMenuItem = new MenuItem(LS("Cut"),new MyCommand("elm","cut")));
 	elmMenuBar.addItem(elmCopyMenuItem = new MenuItem(LS("Copy"),new MyCommand("elm","copy")));
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
@@ -651,64 +658,66 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
 	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", LS("Split Wire"), LS(ctrlMetaKey + "-click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
-	
+
 	scopePopupMenu = new ScopePopupMenu();
 
 	setColors(positiveColor, negativeColor);
-	
+
 	if (startCircuitText != null) {
-		getSetupList(false);
-		readCircuit(startCircuitText);
-		unsavedChanges = false;
+	    getSetupList(false);
+	    readCircuit(startCircuitText);
+	    unsavedChanges = false;
 	} else {
-		if (stopMessage == null && startCircuitLink!=null) {
-			readCircuit("");
-			getSetupList(false);
-			ImportFromDropboxDialog.setSim(this);
-			ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
-		} else {
-			readCircuit("");
-			if (stopMessage == null && startCircuit != null) {
-				getSetupList(false);
-				readSetupFile(startCircuit, startLabel);
-			}
-			else
-				getSetupList(true);
+	    if (stopMessage == null && startCircuitLink!=null) {
+		readCircuit("");
+		getSetupList(false);
+		ImportFromDropboxDialog.setSim(this);
+		ImportFromDropboxDialog.doImportDropboxLink(startCircuitLink, false);
+	    } else {
+		readCircuit("");
+		if (stopMessage == null && startCircuit != null) {
+		    getSetupList(false);
+		    readSetupFile(startCircuit, startLabel);
 		}
+		else
+		    getSetupList(true);
+	    }
 	}
 
-		
+
+
+
+	enableUndoRedo();
+	enablePaste();
+	setiFrameHeight();
+	cv.addMouseDownHandler(this);
+	cv.addMouseMoveHandler(this);
+	cv.addMouseOutHandler(this);
+	cv.addMouseUpHandler(this);
+	cv.addClickHandler(this);
+	cv.addDoubleClickHandler(this);
+	doTouchHandlers(cv.getCanvasElement());
+	cv.addDomHandler(this, ContextMenuEvent.getType());	
+	menuBar.addDomHandler(new ClickHandler() {
+	    public void onClick(ClickEvent event) {
+		doMainMenuChecks();
+	    }
+	}, ClickEvent.getType());	
+	Event.addNativePreviewHandler(this);
+	cv.addMouseWheelHandler(this);
+
+	Window.addWindowClosingHandler(new Window.ClosingHandler() {
+	    public void onWindowClosing(ClosingEvent event) {
+		// there is a bug in electron that makes it impossible to close the app if this warning is given
+		if (unsavedChanges && !isElectron())
+		    event.setMessage(LS("Are you sure?  There are unsaved changes."));
+	    }
+	});
+
 
 	
-		enableUndoRedo();
-		enablePaste();
-		setiFrameHeight();
-		cv.addMouseDownHandler(this);
-		cv.addMouseMoveHandler(this);
-		cv.addMouseOutHandler(this);
-		cv.addMouseUpHandler(this);
-		cv.addClickHandler(this);
-		cv.addDoubleClickHandler(this);
-		doTouchHandlers(cv.getCanvasElement());
-		cv.addDomHandler(this, ContextMenuEvent.getType());	
-		menuBar.addDomHandler(new ClickHandler() {
-		    public void onClick(ClickEvent event) {
-		        doMainMenuChecks();
-		      }
-		    }, ClickEvent.getType());	
-		Event.addNativePreviewHandler(this);
-		cv.addMouseWheelHandler(this);
-		
-		    Window.addWindowClosingHandler(new Window.ClosingHandler() {
-		        public void onWindowClosing(ClosingEvent event) {
-		            // there is a bug in electron that makes it impossible to close the app if this warning is given
-		            if (unsavedChanges && !isElectron())
-		        	event.setMessage(LS("Are you sure?  There are unsaved changes."));
-		        }
-		    });
-
-
-		setSimRunning(running);
+	
+	setSimRunning(running);
     }
 
     void setColors(String positiveColor, String negativeColor) {
@@ -1040,6 +1049,15 @@ MouseOutHandler, MouseWheelHandler {
 
     	mainMenuBar.addItem(mi=getClassCheckItem(LS("Select/Drag Sel"), "Select"));
     	mi.setShortcut(LS("(space or Shift-drag)"));
+    }
+    
+    public void composeSelectScopeMenu(MenuBar sb) {
+	sb.clearItems();
+	for( int i = 0; i < scopeCount; i++)
+	    sb.addItem(new MenuItem(LS("Scope")+" "+ Integer.toString(i+1) ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
+	int c = countScopeElms();
+	for (int j = 0; j < c; j++)
+	    sb.addItem(new MenuItem(LS("Undocked Scope")+" "+Integer.toString(j+1), new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
     }
     
     public void setiFrameHeight() {
@@ -2854,6 +2872,17 @@ MouseOutHandler, MouseWheelHandler {
     	    newScope.setScopeElm(menuElm);
 	}
     	
+    	if (item.substring(0,10)=="addToScope" && menuElm != null) {
+    	    int n;
+    	    n = Integer.parseInt(item.substring(10));
+    	    if (n < scopeCount + countScopeElms()) {
+    		if (n < scopeCount )
+    		    scopes[n].addElm(menuElm);
+    		else
+    		    getNthScopeElm(n-scopeCount).elmScope.addElm(menuElm);
+    	    }
+    	}
+    	
     	if (menu=="scopepop") {
     		pushUndo();
     		Scope s;
@@ -2954,6 +2983,26 @@ MouseOutHandler, MouseWheelHandler {
     		tempMouseMode = mouseMode;
     	}
 	repaint();
+    }
+    
+    int countScopeElms() {
+	int c = 0;
+	for (int i = 0; i != elmList.size(); i++) {
+	    if ( elmList.get(i) instanceof ScopeElm)
+		c++;
+	}
+	return c;
+    }
+    
+    ScopeElm getNthScopeElm(int n) {
+	for (int i = 0; i != elmList.size(); i++) {
+	    if ( elmList.get(i) instanceof ScopeElm) {
+		n--;
+		if (n<0)
+		    return (ScopeElm) elmList.get(i);
+	    }
+	}
+	return (ScopeElm) null;
     }
     
 
@@ -3911,6 +3960,7 @@ MouseOutHandler, MouseWheelHandler {
     	}
     }
     
+    @SuppressWarnings("deprecation")
     void doPopupMenu() {
 	if (noEditCheckItem.getState() || dialogIsShowing())
 	    return;
@@ -3933,6 +3983,17 @@ MouseOutHandler, MouseWheelHandler {
     	    	if (! (mouseElm instanceof ScopeElm)) {
     	    	    elmScopeMenuItem.setEnabled(mouseElm.canViewInScope());
     	    	    elmFloatScopeMenuItem.setEnabled(mouseElm.canViewInScope());
+    	    	    if ((scopeCount + countScopeElms()) <= 1) {
+    	    		elmAddScopeMenuItem.setCommand(new MyCommand("elm", "addToScope0"));
+    	    		elmAddScopeMenuItem.setSubMenu(null);
+    	    	    	elmAddScopeMenuItem.setEnabled(mouseElm.canViewInScope() && (scopeCount + countScopeElms())> 0);
+    	    	    }
+    	    	    else {
+    	    		composeSelectScopeMenu(selectScopeMenuBar);
+    	    		elmAddScopeMenuItem.setCommand(null);
+    	    		elmAddScopeMenuItem.setSubMenu(selectScopeMenuBar);
+    	    	    	elmAddScopeMenuItem.setEnabled(mouseElm.canViewInScope() );
+    	    	    }
     	    	    elmEditMenuItem .setEnabled(mouseElm.getEditInfo(0) != null);
     	    	    elmFlipMenuItem .setEnabled(mouseElm.getPostCount() == 2);
     	    	    elmSplitMenuItem.setEnabled(canSplit(mouseElm));

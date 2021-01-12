@@ -53,11 +53,11 @@ Scrollbar speedBar;
 Scope scope;
 Grid grid, vScaleGrid, hScaleGrid;
 int nx, ny;
-Label scopeSpeedLabel, manualScaleLabel, hScaleLabel;
+Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
 	
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
-		HorizontalPanel vModeP, vValueP;
+		HorizontalPanel vModeP;
 		sim=asim;
 		scope = s;
 		Button okButton, applyButton;
@@ -69,9 +69,12 @@ Label scopeSpeedLabel, manualScaleLabel, hScaleLabel;
 			scrollbarChanged();
 		    }
 		};
-		hScaleLabel = new Label (CirSim.LS("Vertical Scale"));
-		hScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-		fp.add(hScaleLabel);
+		vScaleLabel = new Label (CirSim.LS("Vertical Scale"));
+		vScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+
+		fp.add(vScaleLabel);
+		vScaleList = new Label("");
+		fp.add(vScaleList);
 		vModeP = new HorizontalPanel();
 		vModeP.setStyleName("radioPanel");
 		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
@@ -300,6 +303,18 @@ Label scopeSpeedLabel, manualScaleLabel, hScaleLabel;
 		maxButton.setValue(scope.maxScale);
 	    }
 	    updateScaleTextBox();
+	    int theseUnits;
+	    String plotIDs ="";
+	    if (scope.visiblePlots.size() == 0)
+		theseUnits = Scope.UNITS_V;
+	    else
+		theseUnits = scope.visiblePlots.get(0).units;
+	    for (int i = 0; i < scope.plots.size(); i++) {
+		if (scope.plots.get(i).units == theseUnits) {
+		    plotIDs += i + " ";
+		}
+		vScaleList.setText(plotIDs);
+	    }
 	    
 	    // if you add more here, make sure it still works with transistor scopes
 	}
