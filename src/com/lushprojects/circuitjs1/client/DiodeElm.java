@@ -218,6 +218,7 @@ class DiodeElm extends CircuitElm {
 	    model = models.get(ei.choice.getSelectedIndex());
 	    modelName = model.name;
 	    setup();
+	    ei.newDialog = true;
 	    return;
 	}
         if (n == 1 || n == 2) {
