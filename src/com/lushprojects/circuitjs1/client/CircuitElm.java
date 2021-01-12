@@ -468,7 +468,7 @@ public abstract class CircuitElm implements Editable {
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (getPostCount() > 1) {
+    	if (getPostCount() > 1 || this instanceof ScopeElm) {
     		if (lastHandleGrabbed==-1)
     			g.fillRect(x2-3, y2-3, 7, 7);
     		else if (lastHandleGrabbed==1)

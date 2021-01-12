@@ -29,9 +29,11 @@ package com.lushprojects.circuitjs1.client;
 	public GroundElm(int xa, int ya, int xb, int yb, int f,
 			 StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
-	    try {
-		symbolType = Integer.parseInt(st.nextToken());
-	    } catch (Exception e) {}
+	    if (st.hasMoreTokens()) {
+		try {
+		    symbolType = Integer.parseInt(st.nextToken());
+		} catch (Exception e) {}
+	    }
 	}
 	String dump() {
 	    return super.dump() + " " + symbolType;
