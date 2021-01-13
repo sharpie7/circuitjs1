@@ -3005,36 +3005,62 @@ MouseOutHandler, MouseWheelHandler {
 	return (ScopeElm) null;
     }
     
+    
+    boolean canStackScope(int s) {
+	if (scopeCount < 2) 
+	    return false;
+	if (s==0)
+	    s=1;
+    	if (scopes[s].position == scopes[s-1].position)
+    	    return false;
+	return true;
+    }
+    
+    boolean canCombineScope(int s) {
+	return scopeCount >=2;
+    }
+    
+    boolean canUnstackScope(int s) {
+	if (scopeCount < 2) 
+	    return false;
+	if (s==0)
+	    s=1;
+    	if (scopes[s].position != scopes[s-1].position) {
+        	if ( s + 1 < scopeCount && scopes[s+1].position == scopes[s].position) // Allow you to unstack by selecting the top scope in the stack
+        	    return true;
+        	else
+        	    return false;
+    	}
+	return true;
+    }
 
     void stackScope(int s) {
+	if (! canStackScope(s) )
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
-    	if (scopes[s].position == scopes[s-1].position)
-    		return;
     	scopes[s].position = scopes[s-1].position;
     	for (s++; s < scopeCount; s++)
     		scopes[s].position--;
     }
 
     void unstackScope(int s) {
+	if (! canUnstackScope(s) )
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
-    	if (scopes[s].position != scopes[s-1].position)
-    		return;
+    	if (scopes[s].position != scopes[s-1].position) // Allow you to unstack by selecting the top scope in the stack
+    	    s++;
     	for (; s < scopeCount; s++)
     		scopes[s].position++;
     }
 
     void combineScope(int s) {
+	if (! canCombineScope(s))
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
     	scopes[s-1].combine(scopes[s]);
@@ -3972,7 +3998,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	if (scopes[scopeSelected].canMenu()) {
     	    	    menuScope=scopeSelected;
     	    	    menuPlot=scopes[scopeSelected].selectedPlot;
-    	    	    scopePopupMenu.doScopePopupChecks(false, scopes[scopeSelected]);
+    	    	    scopePopupMenu.doScopePopupChecks(false, canStackScope(scopeSelected), canCombineScope(scopeSelected), 
+    	    		    canUnstackScope(scopeSelected), scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(scopePopupMenu.getMenuBar());
     	    	    y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-160));
@@ -4006,7 +4033,7 @@ MouseOutHandler, MouseWheelHandler {
     	    	    ScopeElm s = (ScopeElm) mouseElm;
     	    	    if (s.elmScope.canMenu()) {
     	    		menuPlot = s.elmScope.selectedPlot;
-    	    		scopePopupMenu.doScopePopupChecks(true, s.elmScope);
+    	    		scopePopupMenu.doScopePopupChecks(true, false, false, false, s.elmScope);
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(scopePopupMenu.getMenuBar());
     			contextPanel.setPopupPosition(menuClientX, menuClientY);
