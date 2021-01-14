@@ -1376,8 +1376,7 @@ class Scope {
     void drawInfoTexts(Graphics g) {
     	g.setColor(CircuitElm.whiteColor);
     	textY = 10;
-    	/*
-    	String x = plots.size()+" ";
+    	String x = position +" " + plots.size()+" ";
 	int i;
     	for (i = 0; i < plots.size(); i++) {
     	    x+=",";
@@ -1389,7 +1388,7 @@ class Scope {
     		x += " " + scale[p.units];
     	}
     	drawInfoText(g, x);
-    	*/
+    	/*
     	ScopePlot plot = visiblePlots.firstElement();
     	if (showScale) {
     	    String vScaleText="";
@@ -1438,6 +1437,7 @@ class Scope {
 		return "";
 	else
 	    	return plot.elm.getScopeText(plot.value);
+	*/
     }
     
     void setSpeed(int sp) {

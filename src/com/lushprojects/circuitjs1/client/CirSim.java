@@ -140,6 +140,9 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmFlipMenuItem;
     MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
+    MenuItem stackAllItem;
+    MenuItem unstackAllItem;
+    MenuItem combineAllItem;
     MenuBar mainMenuBar;
     MenuBar selectScopeMenuBar;
     MenuItem scopeRemovePlotMenuItem;
@@ -464,9 +467,9 @@ MouseOutHandler, MouseWheelHandler {
 	menuBar.addItem(LS("Draw"), drawMenuBar);
 
 	m = new MenuBar(true);
-	m.addItem(iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
-	m.addItem(iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
-	m.addItem(iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
+	m.addItem(stackAllItem = iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
+	m.addItem(unstackAllItem = iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
+	m.addItem(combineAllItem = iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
 	m.addItem(iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 
@@ -4225,6 +4228,9 @@ MouseOutHandler, MouseWheelHandler {
     	int i;
     	for (i=0; i<c ; i++)
     		mainMenuItems.get(i).setState(mainMenuItemNames.get(i)==mouseModeStr);
+    	stackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position > 0);
+    	unstackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position != scopeCount -1);
+    	combineAllItem.setEnabled(scopeCount > 1);
     }
     
  
