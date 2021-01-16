@@ -143,6 +143,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem stackAllItem;
     MenuItem unstackAllItem;
     MenuItem combineAllItem;
+    MenuItem separateAllItem;
     MenuBar mainMenuBar;
     MenuBar selectScopeMenuBar;
     MenuItem scopeRemovePlotMenuItem;
@@ -470,7 +471,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(stackAllItem = iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
 	m.addItem(unstackAllItem = iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
 	m.addItem(combineAllItem = iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
-	m.addItem(iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
+	m.addItem(separateAllItem = iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 
 	optionsMenuBar = m = new MenuBar(true );
@@ -2724,7 +2725,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     public void menuPerformed(String menu, String item) {
-	if (menu=="edit" && noEditCheckItem.getState()) {
+	if ((menu=="edit" || menu=="main") && noEditCheckItem.getState()) {
 	    Window.alert(LS("Editing disabled.  Re-enable from the Options menu."));
 	    return;
 	}
@@ -4224,17 +4225,20 @@ MouseOutHandler, MouseWheelHandler {
     
     
     void doMainMenuChecks() {
-    	int c = mainMenuItems.size();
-    	int i;
-    	for (i=0; i<c ; i++) {
-    	    	String s = mainMenuItemNames.get(i);
-    		mainMenuItems.get(i).setState(s==mouseModeStr);
-    		if (s.length() > 3 && s.substring(s.length()-3)=="Elm")
-    		    mainMenuItems.get(i).setEnabled(!noEditCheckItem.getState());
-    	}
+	// Code to disable draw menu items when cct is not editable, but no used in this version as it
+	// puts up a dialog box instead (see menuPerformed).
+//    	int c = mainMenuItems.size();
+//    	int i;
+//    	for (i=0; i<c ; i++) {
+//    	    	String s = mainMenuItemNames.get(i);
+//    		mainMenuItems.get(i).setState(s==mouseModeStr);
+//    		if (s.length() > 3 && s.substring(s.length()-3)=="Elm")
+//    		    mainMenuItems.get(i).setEnabled(!noEditCheckItem.getState());
+//    	}
     	stackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position > 0);
     	unstackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position != scopeCount -1);
     	combineAllItem.setEnabled(scopeCount > 1);
+    	separateAllItem.setEnabled(scopeCount > 0);
     }
     
  
