@@ -1289,6 +1289,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	g.context.setLineCap(LineCap.ROUND);
 
+	if (noEditCheckItem.getState())
+	    g.drawLock(20, 30);
+	g.setColor(Color.white);
 	// draw elements
 	backcontext.setTransform(transform[0], transform[1], transform[2],
 				 transform[3], transform[4], transform[5]);
