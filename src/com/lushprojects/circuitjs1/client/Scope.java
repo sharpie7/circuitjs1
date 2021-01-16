@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.MouseWheelEvent;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
 
 import java.util.Vector;
@@ -1412,11 +1413,8 @@ class Scope {
     	    drawAverage(g);
     	if (showDutyCycle)
     	    drawDutyCycle(g);
-    	String t = text;
-    	if (t == null)
-    	    t = getScopeText();
-    	t = CirSim.LS(t);
-    	if (t != null)
+    	String t = getScopeLabelOrText();
+    	if (t != null) 
     	    drawInfoText(g, t);
     	if (showFreq)
     	    drawFrequency(g);
@@ -1438,6 +1436,14 @@ class Scope {
 		return "";
 	else
 	    	return plot.elm.getScopeText(plot.value);
+    }
+    
+    String getScopeLabelOrText() {
+    	String t = text;
+    	if (t == null)
+    	    t = getScopeText();
+    	t = CirSim.LS(t);
+    	return t;
     }
     
     void setSpeed(int sp) {
