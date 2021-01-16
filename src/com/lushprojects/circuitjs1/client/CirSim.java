@@ -2725,7 +2725,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     public void menuPerformed(String menu, String item) {
-	if ((menu=="edit" || menu=="main") && noEditCheckItem.getState()) {
+	if ((menu=="edit" || menu=="main" || menu=="scopes") && noEditCheckItem.getState()) {
 	    Window.alert(LS("Editing disabled.  Re-enable from the Options menu."));
 	    return;
 	}
