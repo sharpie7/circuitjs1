@@ -190,7 +190,7 @@ MouseOutHandler, MouseWheelHandler {
     int menuPlot = -1;
     int hintType = -1, hintItem1, hintItem2;
     String stopMessage;
-    double timeStep, iterStep;
+    double timeStep, maxTimeStep;
     boolean adjustTimeStep;
     static final int HINT_LC = 1;
     static final int HINT_RC = 2;
@@ -2077,7 +2077,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (!validateCircuit())
 	    return;
 
-	iterStep = timeStep;
+	timeStep = maxTimeStep;
 	stampCircuit();
     }
     
@@ -2522,7 +2522,7 @@ MouseOutHandler, MouseWheelHandler {
     
     boolean converged;
     int subIterations;
-    final double iterStepLowerLimit = 50e-12;
+    final double timeStepLowerLimit = 50e-12;
     
     void runCircuit(boolean didAnalyze) {
 	if (circuitMatrix == null || elmList.size() == 0) {
@@ -2547,9 +2547,9 @@ MouseOutHandler, MouseWheelHandler {
 	    return;
 	
 	boolean delayWireProcessing = canDelayWireProcessing();
-	if (iterStep < timeStep) {
-	    iterStep = Math.min(iterStep*2, timeStep);
-	    console("iterstep up = " + iterStep + " at " + t);
+	if (timeStep < maxTimeStep) {
+	    timeStep = Math.min(timeStep*2, maxTimeStep);
+	    console("timestep up = " + timeStep + " at " + t);
 	    stampCircuit();
 	}
 	
@@ -2560,10 +2560,12 @@ MouseOutHandler, MouseWheelHandler {
 		ce.startIteration();
 	    }
 	    steps++;
-	    int subiterCount = (adjustTimeStep && iterStep/2 > iterStepLowerLimit) ? 100 : 5000;
+	    int subiterCount = (adjustTimeStep && timeStep/2 > timeStepLowerLimit) ? 100 : 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
 		converged = true;
 		subIterations = subiter;
+//		if (t % .030 < .002 && timeStep > 1e-6)
+//		    converged = false;
 		for (i = 0; i != circuitMatrixSize; i++)
 		    circuitRightSide[i] = origRightSide[i];
 		if (circuitNonLinear) {
@@ -2617,10 +2619,10 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    if (subiter == subiterCount) {
 		if (adjustTimeStep) {
-		    iterStep /= 2;
-		    console("iterstep down to " + iterStep + " at " + t);
+		    timeStep /= 2;
+		    console("timestep down to " + timeStep + " at " + t);
 		}
-		if (iterStep < iterStepLowerLimit || !adjustTimeStep) {
+		if (timeStep < timeStepLowerLimit || !adjustTimeStep) {
 		    console("convergence failed after " + subiter + " iterations");
 		    stop("Convergence failed!", null);
 		    break;
@@ -2630,9 +2632,9 @@ MouseOutHandler, MouseWheelHandler {
 		stampCircuit();
 		continue;
 	    }
-	    if (subiter > 5 || iterStep < timeStep)
-		console("converged after " + subiter + " iterations, iterStep = " + iterStep);
-	    t += iterStep;
+	    if (subiter > 5 || timeStep < timeStep)
+		console("converged after " + subiter + " iterations, timeStep = " + timeStep);
+	    t += timeStep;
 	    for (i = 0; i != elmList.size(); i++)
 		getElm(i).stepFinished();
 	    if (!delayWireProcessing)
@@ -3223,7 +3225,7 @@ MouseOutHandler, MouseWheelHandler {
 	// 32 = linear scale in afilter
 	f |= adjustTimeStep ? 64 : 0;
 	String dump = "$ " + f + " " +
-	    timeStep + " " + getIterCount() + " " +
+	    maxTimeStep + " " + getIterCount() + " " +
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
 	    powerBar.getValue() + "\n";
 		
@@ -3350,7 +3352,6 @@ MouseOutHandler, MouseWheelHandler {
     }
     
 	void readSetupFile(String str, String title) {
-		t = 0;
 		System.out.println(str);
 		// TODO: Maybe think about some better approach to cache management!
 		String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
@@ -3403,9 +3404,10 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		ce.delete();
 	    }
+	    t = 0;
 	    elmList.removeAllElements();
 	    hintType = -1;
-	    timeStep = 5e-6;
+	    maxTimeStep = 5e-6;
 	    dotsCheckItem.setState(false);
 	    smallGridCheckItem.setState(false);
 	    powerCheckItem.setState(false);
@@ -3551,7 +3553,7 @@ MouseOutHandler, MouseWheelHandler {
 	powerCheckItem.setState((flags & 8) == 8);
 	showValuesCheckItem.setState((flags & 16) == 0);
 	adjustTimeStep = (flags & 64) != 0;
-	timeStep = new Double (st.nextToken()).doubleValue();
+	maxTimeStep = timeStep = new Double (st.nextToken()).doubleValue();
 	double sp = new Double(st.nextToken()).doubleValue();
 	int sp2 = (int) (Math.log(10*sp)*24+61.5);
 	//int sp2 = (int) (Math.log(sp)*24+1.5);
