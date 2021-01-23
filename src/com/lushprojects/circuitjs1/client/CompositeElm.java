@@ -88,6 +88,14 @@ public abstract class CompositeElm extends CircuitElm {
 	    int thisPost = 0;
 	    while (stModel.hasMoreTokens()) {
 		int nodeOfThisPost = new Integer(stModel.nextToken()).intValue();
+
+		// node = 0 means ground
+		if (nodeOfThisPost == 0) {
+		    newce.setNode(thisPost, 0);
+		    newce.setNodeVoltage(thisPost, 0);
+		    thisPost++;
+		    continue;
+		}
 		cnLink = new CircuitNodeLink();
 		cnLink.num = thisPost;
 		cnLink.elm = newce;
@@ -323,11 +331,14 @@ public abstract class CompositeElm extends CircuitElm {
 	    compElmList.get(i).stepFinished();
     }
 
+    // called to set node p (local to this element) to equal n (global)
     public void setNode(int p, int n) {
 	// nodes[p] = n
 	Vector<CircuitNodeLink> cnLinks;
 	super.setNode(p, n);
 	cnLinks = compNodeList.get(p).links;
+
+        // call setNode() for all elements that use that node
 	for (int i = 0; i < cnLinks.size(); i++) {
 	    cnLinks.get(i).elm.setNode(cnLinks.get(i).num, n);
 	}

@@ -13,8 +13,8 @@ public class DarlingtonElm extends CompositeElm {
 
     private int pnp; // +1 for NPN, -1 for PNP;
     private double curcount_c, curcount_e, curcount_b;
-    private static String modelString = "NTransistorElm 0 1 3\rNTransistorElm 3 1 2";
-    private static int[] modelExternalNodes = {0, 1, 2};
+    private static String modelString = "NTransistorElm 1 2 4\rNTransistorElm 4 2 3";
+    private static int[] modelExternalNodes = {1, 2, 3};
     
     DarlingtonElm(int xx, int yy, boolean pnpflag) {
 	super(xx, yy, modelString, modelExternalNodes);
