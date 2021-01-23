@@ -925,6 +925,8 @@ MouseOutHandler, MouseWheelHandler {
     	passMenuBar.addItem(getClassCheckItem(LS("Add Fuse"), "FuseElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Custom Transformer"), "CustomTransformerElm"));
     	passMenuBar.addItem(getClassCheckItem(LS("Add Crystal"), "CrystalElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Photoresistor"), "LDRElm"));
+    	passMenuBar.addItem(getClassCheckItem(LS("Add Thermistor"), "ThermistorNTCElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Passive Components")), passMenuBar);
 
     	MenuBar inputMenuBar = new MenuBar(true);
@@ -981,8 +983,6 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
-    	activeMenuBar.addItem(getClassCheckItem("Add Photoresistor", "LDRElm"));
-    	activeMenuBar.addItem(getClassCheckItem("Add Thermistor", "ThermistorNTCElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
