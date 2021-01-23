@@ -59,6 +59,8 @@ class EditOptions implements Editable {
 		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
 		    return ei;
 		}
+		if (n == 6 && sim.adjustTimeStep)
+		    return new EditInfo("Minimum time step size (s)", sim.minTimeStep, 0, 0);
 
 		return null;
 	}
@@ -116,7 +118,11 @@ class EditOptions implements Editable {
 		    CircuitElm.negativeColor = new Color(txt);
 		    CircuitElm.setColorScale();
 		}
-		if (n == 5)
+		if (n == 5) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
+		    ei.newDialog = true;
+		}
+		if (n == 6 && ei.value > 0)
+			sim.minTimeStep = ei.value;
 	}
 };
