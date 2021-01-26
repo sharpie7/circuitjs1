@@ -25,7 +25,7 @@ package com.lushprojects.circuitjs1.client;
 	// node 2 = emitter
 	int pnp;
 	double beta;
-	double fgain, inv_fgain;
+//	double fgain, inv_fgain;
 	double gmin;
 	final int FLAG_FLIP = 1;
 	TransistorElm(int xx, int yy, boolean pnpflag) {
@@ -51,8 +51,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void setup() {
 	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*leakage));
-	    fgain = beta/(beta+1);
-	    inv_fgain = 1 / fgain;
+//	    fgain = beta/(beta+1);
+//	    inv_fgain = 1 / fgain;
 	    noDiagonal = true;
 	}
 	boolean nonLinear() { return true; }
@@ -153,9 +153,9 @@ package com.lushprojects.circuitjs1.client;
 	static final double leakage = 1e-13; // 1e-6;
 	// Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
 	static final double vt = 0.025865;
-	static final double vdcoef = 1/vt;
-	static final double rgain = .5;
-	static final double inv_rgain = 1 / rgain;
+//	static final double vdcoef = 1/vt;
+//	static final double rgain = .5;
+//	static final double inv_rgain = 1 / rgain;
 	double vcrit;
 	double lastvbc, lastvbe;
 	double limitStep(double vnew, double vold) {
@@ -184,11 +184,12 @@ package com.lushprojects.circuitjs1.client;
 	    sim.stampNonLinear(nodes[2]);
 	}
 	void doStep() {
-	    double vbc = volts[0]-volts[1]; // typically negative
-	    double vbe = volts[0]-volts[2]; // typically positive
+	    double vbc = pnp*(volts[0]-volts[1]); // typically negative
+	    double vbe = pnp*(volts[0]-volts[2]); // typically positive
 	    if (Math.abs(vbc-lastvbc) > .01 || // .01
 		Math.abs(vbe-lastvbe) > .01)
 		sim.converged = false;
+
 	    // To prevent a possible singular matrix, put a tiny conductance in parallel
 	    // with each P-N junction.
 	    gmin = leakage * 0.01;
@@ -201,50 +202,138 @@ package com.lushprojects.circuitjs1.client;
 //		sim.console("gmin " + gmin + " vbc " + vbc + " vbe " + vbe);
 	    }
 	    
+	    TransistorModel model = new TransistorModel("default");
+	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*model.satCur));
+
 	    //System.out.print("T " + vbc + " " + vbe + "\n");
-	    vbc = pnp*limitStep(pnp*vbc, pnp*lastvbc);
-	    vbe = pnp*limitStep(pnp*vbe, pnp*lastvbe);
+	    vbc = limitStep(vbc, lastvbc);
+	    vbe = limitStep(vbe, lastvbe);
 	    lastvbc = vbc;
 	    lastvbe = vbe;
-	    double pcoef = vdcoef*pnp;
-	    double expbc = Math.exp(vbc*pcoef);
-	    /*if (expbc > 1e13 || Double.isInfinite(expbc))
-	      expbc = 1e13;*/
-	    double expbe = Math.exp(vbe*pcoef);
-	    /*if (expbe > 1e13 || Double.isInfinite(expbe))
-	      expbe = 1e13;*/
-	    ie = pnp*leakage*(-inv_fgain*(expbe-1)+(expbc-1));
-	    ic = pnp*leakage*((expbe-1)-inv_rgain*(expbc-1));
-	    ib = -(ie+ic);
-	    //System.out.println("gain " + ic/ib);
-	    //System.out.print("T " + vbc + " " + vbe + " " + ie + " " + ic + "\n");
-	    double gee = -leakage*vdcoef*expbe*inv_fgain;
-	    double gec = leakage*vdcoef*expbc;
-	    double gce = -gee*fgain;
-	    double gcc = -gec*inv_rgain;
 
-	    // add minimum conductance (gmin) between b,e and b,c
-	    gcc -= gmin;
-	    gee -= gmin;
 	    
-	    // stamps from page 302 of Pillage.  Node 0 is the base,
-	    // node 1 the collector, node 2 the emitter.
-	    sim.stampMatrix(nodes[0], nodes[0], -gee-gec-gce-gcc);
-	    sim.stampMatrix(nodes[0], nodes[1], gec+gcc);
-	    sim.stampMatrix(nodes[0], nodes[2], gee+gce);
-	    sim.stampMatrix(nodes[1], nodes[0], gce+gcc);
-	    sim.stampMatrix(nodes[1], nodes[1], -gcc);
-	    sim.stampMatrix(nodes[1], nodes[2], -gce);
-	    sim.stampMatrix(nodes[2], nodes[0], gee+gec);
-	    sim.stampMatrix(nodes[2], nodes[1], -gec);
-	    sim.stampMatrix(nodes[2], nodes[2], -gee);
+            /*
+             *   dc model paramters (from Spice 3f5, bjtload.c)
+             */
+            double csat=model.satCur;
+            double rbpr=model.minBaseResist;
+            double rbpi=model.baseResist-rbpr;
+            double oik=model.invRollOffF;
+            double c2=model.BEleakCur;
+            double vte=model.leakBEemissionCoeff*vt;
+            double oikr=model.invRollOffR;
+            double c4=model.BCleakCur;
+            double vtc=model.leakBCemissionCoeff*vt;
+            double xjrb=model.baseCurrentHalfResist;
 
-	    // we are solving for v(k+1), not delta v, so we use formula
-	    // 10.5.13 (from Pillage), multiplying J by v(k)
-	    
-	    sim.stampRightSide(nodes[0], -ib - (gec+gcc)*vbc - (gee+gce)*vbe);
-	    sim.stampRightSide(nodes[1], -ic + gce*vbe + gcc*vbc);
-	    sim.stampRightSide(nodes[2], -ie + gee*vbe + gec*vbc);
+            
+            double vtn=vt*model.emissionCoeffF;
+            double evbe, cbe, gbe, cben, gben, evben, evbc, cbc, gbc, cbcn, gbcn, evbcn;
+            double q1, qb, dqbdve, dqbdvc, q2, sqarg, arg;
+            if(vbe > -5*vtn){
+                evbe=Math.exp(vbe/vtn);
+                cbe=csat*(evbe-1)+gmin*vbe;
+                gbe=csat*evbe/vtn+gmin;
+                if (c2 == 0) {
+                    cben=0;
+                    gben=0;
+                } else {
+                    evben=Math.exp(vbe/vte);
+                    cben=c2*(evben-1);
+                    gben=c2*evben/vte;
+                }
+            } else {
+                gbe = -csat/vbe+gmin;
+                cbe=gbe*vbe;
+                gben = -c2/vbe;
+                cben=gben*vbe;
+            }
+            vtn=vt*model.emissionCoeffR;
+            if(vbc > -5*vtn) {
+                evbc=Math.exp(vbc/vtn);
+                cbc=csat*(evbc-1)+gmin*vbc;
+                gbc=csat*evbc/vtn+gmin;
+                if (c4 == 0) {
+                    cbcn=0;
+                    gbcn=0;
+                } else {
+                    evbcn=Math.exp(vbc/vtc);
+                    cbcn=c4*(evbcn-1);
+                    gbcn=c4*evbcn/vtc;
+                }
+            } else {
+                gbc = -csat/vbc+gmin;
+                cbc = gbc*vbc;
+                gbcn = -c4/vbc;
+                cbcn=gbcn*vbc;
+            }
+            /*
+             *   determine base charge terms
+             */
+            q1=1/(1-model.invEarlyVoltF*vbc-model.invEarlyVoltR*vbe);
+            if(oik == 0 && oikr == 0) {
+                qb=q1;
+                dqbdve=q1*qb*model.invEarlyVoltR;
+                dqbdvc=q1*qb*model.invEarlyVoltF;
+            } else {
+                q2=oik*cbe+oikr*cbc;
+                arg=Math.max(0,1+4*q2);
+                sqarg=1;
+                if(arg != 0) sqarg=Math.sqrt(arg);
+                qb=q1*(1+sqarg)/2;
+                dqbdve=q1*(qb*model.invEarlyVoltR+oik*gbe/sqarg);
+                dqbdvc=q1*(qb*model.invEarlyVoltF+oikr*gbc/sqarg);
+            }
+
+            double cc=0;
+            double cex=cbe;
+            double gex=gbe;
+            /*
+             *   determine dc incremental conductances
+             */
+            cc=cc+(cex-cbc)/qb-cbc/model.betaR-cbcn;
+            double cb=cbe/beta+cben+cbc/model.betaR+cbcn;
+	    ic = pnp*cc;
+	    ib = pnp*cb;
+	    ie = pnp*(-cc-cb);
+            double gx=rbpr+rbpi/qb;
+            if(xjrb != 0) {
+                double arg1=Math.max(cb/xjrb,1e-9);
+                double arg2=(-1+Math.sqrt(1+14.59025*arg1))/2.4317/Math.sqrt(arg1);
+                arg1=Math.tan(arg2);
+                gx=rbpr+3*rbpi*(arg1-arg2)/arg2/arg1/arg1;
+            }
+            if(gx != 0) gx=1/gx;
+            double gpi=gbe/beta+gben;
+            double gmu=gbc/model.betaR+gbcn;
+            double go=(gbc+(cex-cbc)*dqbdvc/qb)/qb;
+            double gm=(gex-(cex-cbc)*dqbdve/qb)/qb-go;
+
+            double ceqbe=pnp * (cc + cb - vbe * (gm + go + gpi) + vbc * go);
+            double ceqbc=pnp * (-cc + vbe * (gm + go) - vbc * (gmu + go));
+
+            /*
+             *  load y matrix
+             */
+
+	    // Node 0 is the base, node 1 the collector, node 2 the emitter.
+	    sim.stampMatrix(nodes[1], nodes[1], gmu+go);
+	    sim.stampMatrix(nodes[1], nodes[0], -gmu+gm);
+	    sim.stampMatrix(nodes[1], nodes[2], -gm-go);
+	    sim.stampMatrix(nodes[0], nodes[0], gpi+gmu);
+	    sim.stampMatrix(nodes[0], nodes[2], -gpi);
+	    sim.stampMatrix(nodes[0], nodes[1], -gmu);
+	    sim.stampMatrix(nodes[2], nodes[0], -gpi-gm);
+	    sim.stampMatrix(nodes[2], nodes[1], -go);
+	    sim.stampMatrix(nodes[2], nodes[2], gpi+gm+go);
+
+            /*
+             *  load current excitation vector
+             */
+	    sim.stampRightSide(nodes[0], -ceqbe-ceqbc);
+	    sim.stampRightSide(nodes[1], ceqbc);
+	    sim.stampRightSide(nodes[2], ceqbe);
+
 	}
 	
 	@Override String getScopeText(int x) {
