@@ -19,9 +19,9 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
     boolean readOnly;
     boolean builtIn;
 
-    TransistorModel(String d) {
+    TransistorModel(String d, double sc) {
 	description = d;
-	satCur = 1e-13;
+	satCur = sc;
 	emissionCoeffF = emissionCoeffR = 1;
 	leakBEemissionCoeff = 1.5;
 	leakBCemissionCoeff = 2;
@@ -59,7 +59,8 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	if (modelMap != null)
 	    return;
 	modelMap = new HashMap<String,TransistorModel>();
-	addDefaultModel("default", new TransistorModel("default"));
+	addDefaultModel("default",      new TransistorModel("default",        1e-13));
+	addDefaultModel("spice-default", new TransistorModel("spice-default", 1e-16));
     }
 
     static void addDefaultModel(String name, TransistorModel dm) {
