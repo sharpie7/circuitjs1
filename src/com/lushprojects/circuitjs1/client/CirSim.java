@@ -3142,6 +3142,7 @@ MouseOutHandler, MouseWheelHandler {
 	CustomLogicModel.clearDumpedFlags();
 	CustomCompositeModel.clearDumpedFlags();
 	DiodeModel.clearDumpedFlags();
+	TransistorModel.clearDumpedFlags();
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
 	f |= (voltsCheckItem.getState()) ? 0 : 4;
@@ -3397,6 +3398,10 @@ MouseOutHandler, MouseWheelHandler {
 		    
 		    if (tint == 34) {
 			DiodeModel.undumpModel(st);
+			break;
+		    }
+		    if (tint == 32) {
+			TransistorModel.undumpModel(st);
 			break;
 		    }
 		    if (tint == 38) {
@@ -4486,6 +4491,7 @@ MouseOutHandler, MouseWheelHandler {
 	CustomLogicModel.clearDumpedFlags();
 	CustomCompositeModel.clearDumpedFlags();
 	DiodeModel.clearDumpedFlags();
+	TransistorModel.clearDumpedFlags();
 	for (int i = elmList.size()-1; i >= 0; i--) {
 	    CircuitElm ce = getElm(i);
 	    String m = ce.dumpModel();
@@ -5464,6 +5470,7 @@ MouseOutHandler, MouseWheelHandler {
 //	    String models = "";
 	    CustomLogicModel.clearDumpedFlags();
 	    DiodeModel.clearDumpedFlags();
+	    TransistorModel.clearDumpedFlags();
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
 	    boolean sel = isSelection();
 	    

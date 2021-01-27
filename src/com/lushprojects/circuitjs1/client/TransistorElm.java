@@ -19,7 +19,12 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class TransistorElm extends CircuitElm {
+import java.util.Vector;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+
+class TransistorElm extends CircuitElm {
 	// node 0 = base
 	// node 1 = collector
 	// node 2 = emitter
@@ -27,11 +32,15 @@ package com.lushprojects.circuitjs1.client;
 	double beta;
 //	double fgain, inv_fgain;
 	double gmin;
+	    String modelName;
+	TransistorModel model;
+	static String lastModelName = "default";
 	final int FLAG_FLIP = 1;
 	TransistorElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
 	    pnp = (pnpflag) ? -1 : 1;
 	    beta = 100;
+	    modelName = lastModelName;
 	    setup();
 	}
 	public TransistorElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
@@ -45,14 +54,16 @@ package com.lushprojects.circuitjs1.client;
 		volts[1] = -lastvbe;
 		volts[2] = -lastvbc;
 		beta = new Double(st.nextToken()).doubleValue();
+		modelName = CustomLogicModel.unescape(st.nextToken());
 	    } catch (Exception e) {
+		modelName = "default";
 	    }
 	    setup();
 	}
 	void setup() {
-	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*leakage));
-//	    fgain = beta/(beta+1);
-//	    inv_fgain = 1 / fgain;
+	    model = TransistorModel.getModelWithNameOrCopy(modelName, model);
+	    modelName = model.name;   // in case we couldn't find that model    
+	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*model.satCur));
 	    noDiagonal = true;
 	}
 	boolean nonLinear() { return true; }
@@ -63,8 +74,20 @@ package com.lushprojects.circuitjs1.client;
 	int getDumpType() { return 't'; }
 	String dump() {
 	    return super.dump() + " " + pnp + " " + (volts[0]-volts[1]) + " " +
-		(volts[0]-volts[2]) + " " + beta;
+		(volts[0]-volts[2]) + " " + beta + " " + CustomLogicModel.escape(modelName);
 	}
+	
+	    public void updateModels() {
+	        setup();
+	    }
+
+	    String dumpModel() {
+	        if (model.builtIn || model.dumped)
+	            return null;
+	        return model.dump();
+	    }
+	    
+	
 	double ic, ie, ib, curcount_c, curcount_e, curcount_b;
 	
 		Polygon rectPoly, arrowPoly;
@@ -153,9 +176,6 @@ package com.lushprojects.circuitjs1.client;
 	static final double leakage = 1e-13; // 1e-6;
 	// Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
 	static final double vt = 0.025865;
-//	static final double vdcoef = 1/vt;
-//	static final double rgain = .5;
-//	static final double inv_rgain = 1 / rgain;
 	double vcrit;
 	double lastvbc, lastvbe;
 	double limitStep(double vnew, double vold) {
@@ -192,44 +212,41 @@ package com.lushprojects.circuitjs1.client;
 
 	    // To prevent a possible singular matrix, put a tiny conductance in parallel
 	    // with each P-N junction.
-	    gmin = leakage * 0.01;
+//	    gmin = leakage * 0.01;
+	    gmin = 1e-12;
+	    
 	    if (sim.subIterations > 100) {
 		// if we have trouble converging, put a conductance in parallel with all P-N junctions.
 		// Gradually increase the conductance value for each iteration.
 		gmin = Math.exp(-9*Math.log(10)*(1-sim.subIterations/300.));
 		if (gmin > .1)
 		    gmin = .1;
-//		sim.console("gmin " + gmin + " vbc " + vbc + " vbe " + vbe);
 	    }
 	    
-	    TransistorModel model = new TransistorModel("default");
-	    vcrit = vt * Math.log(vt/(Math.sqrt(2)*model.satCur));
-
 	    //System.out.print("T " + vbc + " " + vbe + "\n");
 	    vbc = limitStep(vbc, lastvbc);
 	    vbe = limitStep(vbe, lastvbe);
 	    lastvbc = vbc;
 	    lastvbe = vbe;
 
-	    
             /*
              *   dc model paramters (from Spice 3f5, bjtload.c)
              */
             double csat=model.satCur;
-            double rbpr=model.minBaseResist;
-            double rbpi=model.baseResist-rbpr;
             double oik=model.invRollOffF;
             double c2=model.BEleakCur;
             double vte=model.leakBEemissionCoeff*vt;
             double oikr=model.invRollOffR;
             double c4=model.BCleakCur;
             double vtc=model.leakBCemissionCoeff*vt;
-            double xjrb=model.baseCurrentHalfResist;
-
+            
+//          double rbpr=model.minBaseResist;
+//          double rbpi=model.baseResist-rbpr;
+//          double xjrb=model.baseCurrentHalfResist;
             
             double vtn=vt*model.emissionCoeffF;
             double evbe, cbe, gbe, cben, gben, evben, evbc, cbc, gbc, cbcn, gbcn, evbcn;
-            double q1, qb, dqbdve, dqbdvc, q2, sqarg, arg;
+            double qb, dqbdve, dqbdvc, q2, sqarg, arg;
             if(vbe > -5*vtn){
                 evbe=Math.exp(vbe/vtn);
                 cbe=csat*(evbe-1)+gmin*vbe;
@@ -270,7 +287,7 @@ package com.lushprojects.circuitjs1.client;
             /*
              *   determine base charge terms
              */
-            q1=1/(1-model.invEarlyVoltF*vbc-model.invEarlyVoltR*vbe);
+            double q1=1/(1-model.invEarlyVoltF*vbc-model.invEarlyVoltR*vbe);
             if(oik == 0 && oikr == 0) {
                 qb=q1;
                 dqbdve=q1*qb*model.invEarlyVoltR;
@@ -293,17 +310,20 @@ package com.lushprojects.circuitjs1.client;
              */
             cc=cc+(cex-cbc)/qb-cbc/model.betaR-cbcn;
             double cb=cbe/beta+cben+cbc/model.betaR+cbcn;
+            
+            // get currents
 	    ic = pnp*cc;
 	    ib = pnp*cb;
 	    ie = pnp*(-cc-cb);
-            double gx=rbpr+rbpi/qb;
+	    
+/*            double gx=rbpr+rbpi/qb;   // base resistance commented out for now
             if(xjrb != 0) {
                 double arg1=Math.max(cb/xjrb,1e-9);
                 double arg2=(-1+Math.sqrt(1+14.59025*arg1))/2.4317/Math.sqrt(arg1);
                 arg1=Math.tan(arg2);
                 gx=rbpr+3*rbpi*(arg1-arg2)/arg2/arg1/arg1;
             }
-            if(gx != 0) gx=1/gx;
+            if(gx != 0) gx=1/gx;*/
             double gpi=gbe/beta+gben;
             double gmu=gbc/model.betaR+gbcn;
             double go=(gbc+(cex-cbc)*dqbdvc/qb)/qb;
@@ -312,10 +332,7 @@ package com.lushprojects.circuitjs1.client;
             double ceqbe=pnp * (cc + cb - vbe * (gm + go + gpi) + vbc * go);
             double ceqbc=pnp * (-cc + vbe * (gm + go) - vbc * (gmu + go));
 
-            /*
-             *  load y matrix
-             */
-
+            // stamp matrix.
 	    // Node 0 is the base, node 1 the collector, node 2 the emitter.
 	    sim.stampMatrix(nodes[1], nodes[1], gmu+go);
 	    sim.stampMatrix(nodes[1], nodes[0], -gmu+gm);
@@ -328,7 +345,7 @@ package com.lushprojects.circuitjs1.client;
 	    sim.stampMatrix(nodes[2], nodes[2], gpi+gm+go);
 
             /*
-             *  load current excitation vector
+             *  load current excitation vector (right side)
              */
 	    sim.stampRightSide(nodes[0], -ceqbe-ceqbc);
 	    sim.stampRightSide(nodes[1], ceqbc);
@@ -389,6 +406,9 @@ package com.lushprojects.circuitjs1.client;
 	    default: return Scope.UNITS_V;
 	    }
 	}
+	
+	    Vector<TransistorModel> models;
+
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
 		return new EditInfo("Beta/hFE", beta, 10, 1000).
@@ -398,8 +418,41 @@ package com.lushprojects.circuitjs1.client;
 		ei.checkbox = new Checkbox("Swap E/C", (flags & FLAG_FLIP) != 0);
 		return ei;
 	    }
+	        if (n == 2) {
+	            EditInfo ei =  new EditInfo("Model", 0, -1, -1);
+	            models = TransistorModel.getModelList();
+	            ei.choice = new Choice();
+	            int i;
+	            for (i = 0; i != models.size(); i++) {
+	        	TransistorModel dm = models.get(i);
+	                ei.choice.add(dm.getDescription());
+	                if (dm == model)
+	                    ei.choice.select(i);
+	            }
+	            return ei;
+	        }
+	        if (n == 3) {
+	            EditInfo ei = new EditInfo("", 0, -1, -1);
+	            ei.button = new Button(sim.LS("Create New Model"));
+	            return ei;
+	        }
+	        if (n == 4) {
+	            if (model.readOnly)
+	                return null;
+	            EditInfo ei = new EditInfo("", 0, -1, -1);
+	            ei.button = new Button(sim.LS("Edit Model"));
+	            return ei;
+	        }
 	    return null;
 	}
+	
+	    public void newModelCreated(TransistorModel tm) {
+	        model = tm;
+	        modelName = model.name;
+	        setup();
+	    }
+	    
+
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
 		beta = ei.value;
@@ -412,6 +465,31 @@ package com.lushprojects.circuitjs1.client;
 		    flags &= ~FLAG_FLIP;
 		setPoints();
 	    }
+	        if (n == 2) {
+	            model = models.get(ei.choice.getSelectedIndex());
+	            modelName = model.name;
+	            setup();
+	            ei.newDialog = true;
+	            return;
+	        }
+	        if (n == 3) {
+	            TransistorModel newModel = new TransistorModel(model);
+	            EditDialog editDialog = new EditTransistorModelDialog(newModel, sim, this);
+	            CirSim.diodeModelEditDialog = editDialog;
+	            editDialog.show();
+	            return;
+	        }
+	        if (n == 4) {
+	            if (model.readOnly) {
+	                // probably never reached
+	                Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
+	                return;
+	            }
+	            EditDialog editDialog = new EditTransistorModelDialog(model, sim, null);
+	            CirSim.diodeModelEditDialog = editDialog;
+	            editDialog.show();
+	            return;
+	        }
 	}
 	
 	void setBeta(double b) {

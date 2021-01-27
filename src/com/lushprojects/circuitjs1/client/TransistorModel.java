@@ -9,26 +9,26 @@ import java.util.Vector;
 public class TransistorModel implements Editable, Comparable<TransistorModel> {
 
     static HashMap<String, TransistorModel> modelMap;
-    
+
     int flags;
     String name, description;
-    double satCur, minBaseResist, baseResist, invRollOffF, BEleakCur, leakBEemissionCoeff, invRollOffR, BCleakCur, leakBCemissionCoeff;
-    double baseCurrentHalfResist, emissionCoeffF, emissionCoeffR, invEarlyVoltF, invEarlyVoltR, betaR;
-    
+    double satCur, invRollOffF, BEleakCur, leakBEemissionCoeff, invRollOffR, BCleakCur, leakBCemissionCoeff;
+    double emissionCoeffF, emissionCoeffR, invEarlyVoltF, invEarlyVoltR, betaR;
+
     boolean dumped;
     boolean readOnly;
     boolean builtIn;
-    
-    /*protected*/ TransistorModel(String d) {
+
+    TransistorModel(String d) {
 	description = d;
 	satCur = 1e-13;
-        emissionCoeffF = emissionCoeffR = 1;
-        leakBEemissionCoeff = 1.5;
-        leakBCemissionCoeff = 2;
-        betaR = 1;
+	emissionCoeffF = emissionCoeffR = 1;
+	leakBEemissionCoeff = 1.5;
+	leakBCemissionCoeff = 2;
+	betaR = 1;
 	updateModel();
     }
-    
+
     static TransistorModel getModelWithName(String name) {
 	createModelMap();
 	TransistorModel lm = modelMap.get(name);
@@ -40,7 +40,6 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	return lm;
     }
 
-    /*
     static TransistorModel getModelWithNameOrCopy(String name, TransistorModel oldmodel) {
 	createModelMap();
 	TransistorModel lm = modelMap.get(name);
@@ -55,13 +54,12 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	modelMap.put(name, lm);
 	return lm;
     }
-    */
-    
+
     static void createModelMap() {
 	if (modelMap != null)
 	    return;
 	modelMap = new HashMap<String,TransistorModel>();
-	addDefaultModel("default", new TransistorModel(null));
+	addDefaultModel("default", new TransistorModel("default"));
     }
 
     static void addDefaultModel(String name, TransistorModel dm) {
@@ -69,11 +67,11 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	dm.readOnly = dm.builtIn = true;
 	dm.name = name;
     }
-    
+
     static TransistorModel getDefaultModel() {
 	return getModelWithName("default");
     }
-    
+
     static void clearDumpedFlags() {
 	if (modelMap == null)
 	    return;
@@ -83,7 +81,7 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	    pair.getValue().dumped = false;
 	}
     }
-    
+
     static Vector<TransistorModel> getModelList() {
 	Vector<TransistorModel> vector = new Vector<TransistorModel>();
 	Iterator it = modelMap.entrySet().iterator();
@@ -99,106 +97,109 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
     public int compareTo(TransistorModel dm) {
 	return name.compareTo(dm.name);
     }
-    
+
     String getDescription() {
 	if (description == null)
 	    return name;
 	return name + " (" + CirSim.LS(description) + ")";
     }
-    
+
     TransistorModel() {
 	updateModel();
     }
-    
-    /*
+
     TransistorModel(TransistorModel copy) {
 	flags = copy.flags;
+	satCur = copy.satCur;
+	invRollOffF = copy.invRollOffF;
+	BEleakCur = copy.BEleakCur;
+	leakBEemissionCoeff = copy.leakBEemissionCoeff;
+	invRollOffR = copy.invRollOffR;
+	BCleakCur = copy.BCleakCur;
+	leakBCemissionCoeff = copy.leakBCemissionCoeff;
+	emissionCoeffF = copy.emissionCoeffF;
+	emissionCoeffR = copy.emissionCoeffR;
+	invEarlyVoltF = copy.invEarlyVoltF;
+	invEarlyVoltR = copy.invEarlyVoltR;
+	betaR = copy.betaR;
 	updateModel();
     }
-    */
 
     static void undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
 	TransistorModel dm = TransistorModel.getModelWithName(name);
 	dm.undump(st);
     }
-    
+
     void undump(StringTokenizer st) {
 	flags = new Integer(st.nextToken()).intValue();
-/*
-	saturationCurrent = Double.parseDouble(st.nextToken());
-	seriesResistance = Double.parseDouble(st.nextToken());
-	emissionCoefficient = Double.parseDouble(st.nextToken());
-	breakdownVoltage = Double.parseDouble(st.nextToken());
-	try {
-	    forwardCurrent = Double.parseDouble(st.nextToken());
-	} catch (Exception e) {}
-*/
+
+	satCur = Double.parseDouble(st.nextToken());
+	invRollOffF = Double.parseDouble(st.nextToken());
+	BEleakCur = Double.parseDouble(st.nextToken());
+	leakBEemissionCoeff = Double.parseDouble(st.nextToken());
+	invRollOffR = Double.parseDouble(st.nextToken());
+	BCleakCur = Double.parseDouble(st.nextToken());
+	leakBCemissionCoeff = Double.parseDouble(st.nextToken());
+	emissionCoeffF = Double.parseDouble(st.nextToken());
+	emissionCoeffR = Double.parseDouble(st.nextToken());
+	invEarlyVoltF = Double.parseDouble(st.nextToken());
+	invEarlyVoltR = Double.parseDouble(st.nextToken());
+	betaR = Double.parseDouble(st.nextToken());
+
 	updateModel();
     }
-    
+
     public EditInfo getEditInfo(int n) {
-	/*
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("Model Name", 0);
 	    ei.text = name == null ? "" : name;
 	    return ei;
 	}
-	if (n == 1)
-	    return new EditInfo("Saturation Current", saturationCurrent, -1, -1);
-	if (isSimple()) {
-	    if (n == 2)
-		return new EditInfo("Forward Voltage", forwardVoltage, -1, -1);
-	    if (n == 3)
-		return new EditInfo("Current At Above Voltage (A)", forwardCurrent, -1, -1);
-	} else {
-	    if (n == 2)
-		return new EditInfo("Series Resistance", seriesResistance, -1, -1);
-	    if (n == 3)
-		return new EditInfo(EditInfo.makeLink("diodecalc.html", "Emission Coefficient"), emissionCoefficient, -1, -1);
-	}
-	if (n == 4)
-	    return new EditInfo("Breakdown Voltage", breakdownVoltage, -1, -1);
-	    */
+	if (n == 1) return new EditInfo("Transport Saturation Current (IS)", satCur);
+	if (n == 2) return new EditInfo("Reverse Beta (BR)", betaR);
+	if (n == 3) return new EditInfo("Forward Early Voltage (VAF)", 1/invEarlyVoltF);
+	if (n == 4) return new EditInfo("Reverse Early Voltage (VAR)", 1/invEarlyVoltR);
+	if (n == 5) return new EditInfo("Corner For Forward Beta High Current Roll-Off (IKF)", 1/invRollOffF);
+	if (n == 6) return new EditInfo("Corner For Reverse Beta High Current Roll-Off (IKR)", 1/invRollOffR);
+	if (n == 7) return new EditInfo("Forward Current Emission Coefficient (NF)", emissionCoeffF);
+	if (n == 8) return new EditInfo("Reverse Current Emission Coefficient (NR)", emissionCoeffR);
+	if (n == 9) return new EditInfo("B-E Leakage Saturation Current (ISE)", BEleakCur);
+	if (n == 10) return new EditInfo("B-E Leakage Emission Coefficient (NE)", leakBEemissionCoeff);
+	if (n == 11) return new EditInfo("B-C Leakage Saturation Current (ISC)", BCleakCur);
+	if (n == 12) return new EditInfo("B-C Leakage Emission Coefficient (NC)", leakBCemissionCoeff);
 	return null;
     }
 
     public void setEditValue(int n, EditInfo ei) {
-	/*
 	if (n == 0) {
 	    name = ei.textf.getText();
 	    if (name.length() > 0)
 		modelMap.put(name, this);
 	}
-	if (n == 1)
-	    saturationCurrent = ei.value;
-	if (isSimple()) {
-	    if (n == 2)
-		forwardVoltage = ei.value;
-	    if (n == 3)
-		forwardCurrent = ei.value;
-	    setEmissionCoefficient();
-	} else {
-	    if (n == 2)
-		seriesResistance = ei.value;
-	    if (n == 3)
-		emissionCoefficient = ei.value;
-	}
-	if (n == 4)
-	    breakdownVoltage = Math.abs(ei.value);
+	if (n == 1) satCur = ei.value;
+	if (n == 2) betaR = ei.value;
+	if (n == 3) invEarlyVoltF = 1/ei.value;
+	if (n == 4) invEarlyVoltR = 1/ei.value;
+	if (n == 5) invRollOffF = 1/ei.value;
+	if (n == 6) invRollOffR = 1/ei.value;
+	if (n == 7) emissionCoeffF = ei.value;
+	if (n == 8) emissionCoeffR = ei.value;
+	if (n == 9) BEleakCur = ei.value;
+	if (n == 10) leakBEemissionCoeff = ei.value;
+	if (n == 11) BCleakCur = ei.value;
+	if (n == 12) leakBCemissionCoeff = ei.value;
 	updateModel();
 	CirSim.theSim.updateModels();
-	*/
     }
 
     void updateModel() {
     }
-    
-/*
+
     String dump() {
 	dumped = true;
-	return "34 " + CustomLogicModel.escape(name) + " " + flags + " " + saturationCurrent + " " + seriesResistance + " " + emissionCoefficient + " " + breakdownVoltage + " " + forwardCurrent;
+	return "32 " + CustomLogicModel.escape(name) + " " + flags + " " +
+		satCur + " " + invRollOffF + " " + BEleakCur + " " + leakBEemissionCoeff + " " + invRollOffR + " " +
+		BCleakCur + " " + leakBCemissionCoeff + " " + emissionCoeffF + " " + emissionCoeffR + " " + invEarlyVoltF + " " + invEarlyVoltR + " " + betaR;
     }
-    
-*/
 }
