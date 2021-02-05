@@ -61,7 +61,6 @@ package com.lushprojects.circuitjs1.client;
         void doStep() {
             int i;
             // converged yet?
-            double limitStep = getLimitStep();
             double convergeLimit = getConvergeLimit();
             for (i = 0; i != inputCount; i++) {
         	origVolts[i] = volts[i];
@@ -69,8 +68,6 @@ package com.lushprojects.circuitjs1.client;
         	    sim.converged = false;
         	if (Double.isNaN(volts[i]))
         	    volts[i] = 0;
-        	if (Math.abs(volts[i]-lastVolts[i]) > limitStep)
-        	    volts[i] = lastVolts[i] + sign(volts[i]-lastVolts[i], limitStep);
             }
             int vn = pins[inputCount].voltSource + sim.nodeList.size();
             if (expr != null) {
@@ -85,15 +82,18 @@ package com.lushprojects.circuitjs1.client;
         	
         	// calculate and stamp output derivatives
         	for (i = 0; i != inputCount; i++) {
-        	    double dv = 1e-6;
-        	    exprState.values[i] = volts[i]+dv;
+        	    double dv = volts[i]-lastVolts[i];
+        	    if (Math.abs(dv) < 1e-6)
+        		dv = 1e-6;
+        	    exprState.values[i] = volts[i];
         	    double v = expr.eval(exprState);
         	    exprState.values[i] = volts[i]-dv;
         	    double v2 = expr.eval(exprState);
-        	    double dx = (v-v2)/(dv*2);
+        	    double dx = (v-v2)/dv;
         	    if (Math.abs(dx) < 1e-6)
         		dx = sign(dx, 1e-6);
-//        	    sim.console("cae_ " + i + " " + dx);
+        	    //if (sim.subIterations > 1)
+        		//sim.console("ccedx " + i + " " + dx + " " + sim.subIterations + " " + sim.t);
         	    sim.stampMatrix(vn,  nodes[i], -dx);
         	    // adjust right side
         	    rs -= dx*volts[i];

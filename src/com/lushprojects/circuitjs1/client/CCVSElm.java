@@ -63,15 +63,11 @@ package com.lushprojects.circuitjs1.client;
 	
         void doStep() {
             // converged yet?
-//            double limitStep = getLimitStep()*.1;
             double convergeLimit = getConvergeLimit()*.1;
             
             double cur = pins[1].current;
-            if (Math.abs(cur-lastCurrent) > convergeLimit) {
+            if (Math.abs(cur-lastCurrent) > convergeLimit)
         	sim.converged = false;
-//        	if (Math.abs(cur-lastCurrent) > limitStep)
-//        	    volts[i] = lastVolts[i] + sign(volts[i]-lastVolts[i], limitStep);
-            }
             int vn1 = pins[1].voltSource + sim.nodeList.size();
             int vn2 = pins[2].voltSource + sim.nodeList.size();
             if (expr != null) {
@@ -80,19 +76,21 @@ package com.lushprojects.circuitjs1.client;
         	exprState.t = sim.t;
         	double v0 = expr.eval(exprState);
         	double rs = v0;
-
-        	double dv = 1e-6;
-        	exprState.values[8] = cur+dv;
+        	double dv = cur-lastCurrent;
+        	if (Math.abs(dv) < 1e-6)
+        	    dv = 1e-6;
+        	exprState.values[8] = cur;
         	double v = expr.eval(exprState);
         	exprState.values[8] = cur-dv;
         	double v2 = expr.eval(exprState);
-        	double dx = (v-v2)/(dv*2);
+        	double dx = (v-v2)/dv;
         	if (Math.abs(dx) < 1e-6)
         	    dx = sign(dx, 1e-6);
         	sim.stampMatrix(vn2, vn1, -dx);
         	// adjust right side
         	rs -= dx*cur;
-        	//                	sim.console("ccedx " + cur + " " + dx + " " + rs);
+//        	if (sim.subIterations > 1)
+//        	    sim.console("ccedx " + cur + " " + dx + " " + rs + " " + sim.subIterations + " " + sim.t);
         	sim.stampRightSide(vn2, rs);
             }
 
