@@ -32,23 +32,29 @@ import com.google.gwt.canvas.dom.client.Context2d;
 class ScopePlot {
     double minValues[], maxValues[];
     int scopePointCount;
-    // ptr is pointer to the current sample
-    // ctr is counts each timestep going in to a sample
     // ScopePlotSpeed it sim timestep units per pixel
-    int ptr, ctr, value, scopePlotSpeed, units;
+    int ptr; // ptr is pointer to the current sample
+    int ctr; // ctr is counts each timestep going in to a sample
+    int value; // Value - the property being shown - e.g. VAL_CURRENT
+    int scopePlotSpeed, units;
     double lastValue;
     String color;
     CircuitElm elm;
+    boolean manScaleSet = false; // Has anything been put in manual scale? (though we will try and keep sensible value in the scale anyway)
+    double manScale = 1.0; // Units per division
+    double manZero = 0; // Fraction of screen (ie +1 would be top of screen)
     
     ScopePlot(CircuitElm e, int u) {
 	elm = e;
 	units = u;
     }
     
-    ScopePlot(CircuitElm e, int u, int v) {
+    ScopePlot(CircuitElm e, int u, int v, double manS) {
 	elm = e;
 	units = u;
 	value = v;
+	manScale = manS;
+	
     }
 
     int startIndex(int w) {
@@ -144,6 +150,7 @@ class Scope {
     
     static final int VAL_POWER = 7;
     static final int VAL_POWER_OLD = 1;
+    static final int VAL_VOLTAGE = 0;
     static final int VAL_CURRENT = 3;
     static final int VAL_IB = 1;
     static final int VAL_IC = 2;
@@ -166,7 +173,13 @@ class Scope {
     int stackCount; // number of scopes in this column
     String text;
     Rectangle rect;
-    boolean showI, showV, showScale, showMax, showMin, showFreq, lockScale, plot2d, plotXY, maxScale, logSpectrum;
+    private boolean manualScale;
+    boolean showI, showV, showScale, showMax, showMin, showFreq;
+    boolean plot2d;
+    boolean plotXY;
+    boolean maxScale;
+
+    boolean logSpectrum;
     boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
     int pixels[];
@@ -178,12 +191,16 @@ class Scope {
     int alphadiv =0;
     // scopeTimeStep to check if sim timestep has changed from previous value when redrawing
     double scopeTimeStep;
-    double scale[];
+    double scale[]; // Max value to scale the display to show - indexed for each value of UNITS - e.g. UNITS_V, UNITS_A etc.
     boolean reduceRange[];
     double scaleX, scaleY;  // for X-Y plots
     int wheelDeltaY;
     int selectedPlot;
     ScopePropertiesDialog properties;
+    String curColor, voltColor;
+    double gridStepX, gridStepY;
+    double maxValue, minValue;
+    int manDivisions = 8; // Number of vertical divisions when in manual mode
     
     Scope(CirSim s) {
     	sim = s;
@@ -219,7 +236,17 @@ class Scope {
       if (!showFFT)
     	  fft = null;
     }
-    void setManualScale(boolean b) { lockScale = b; }
+    
+    void setManualScale(boolean b) { 
+	manualScale = b; 
+	for (ScopePlot p : plots) {
+	    if (!p.manScaleSet) {
+		p.manScale=getManScaleFromMaxScale(scale[p.value]);
+		p.manZero=0;
+		p.manScaleSet = true;
+	    }
+	}
+    }
     
     void resetGraph() { resetGraph(false); }
     
@@ -256,9 +283,13 @@ class Scope {
 	if (visiblePlots.size() == 0)
 	    return "V";
 	ScopePlot p = visiblePlots.get(0);
-	switch (p.units) {
+	return getScaleUnitsText(p.units);
+    }
+    
+    static String getScaleUnitsText(int units) {
+	switch (units) {
 	case UNITS_A: return "A";
-	case UNITS_OHMS: return sim.ohmString;
+	case UNITS_OHMS: return CirSim.ohmString;
 	case UNITS_W: return "W";
 	default: return "V";
 	}
@@ -275,7 +306,7 @@ class Scope {
     	speed = 64;
     	showMax = true;
     	showV = showI = false;
-    	showScale = showFreq = lockScale = showMin = false;
+    	showScale = showFreq = manualScale = showMin = false;
     	showFFT = false;
     	plot2d = false;
     	if (!loadDefaults()) {
@@ -353,17 +384,17 @@ class Scope {
     
     void addValue(int val, CircuitElm ce) {
 	if (val == 0) {
-	    plots.add(new ScopePlot(ce, UNITS_V, 0));
+	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(scale[UNITS_V])));
 	    
 	    // create plot for current if applicable
 	    if (ce != null && !(ce instanceof OutputElm ||
 		    ce instanceof LogicOutputElm ||
 		    ce instanceof AudioOutputElm ||
 		    ce instanceof ProbeElm))
-		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT));
+		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT, getManScaleFromMaxScale(scale[UNITS_A])));
 	} else {
 	    int u = ce.getScopeUnits(val);
-	    plots.add(new ScopePlot(ce, u, val));
+	    plots.add(new ScopePlot(ce, u, val, getManScaleFromMaxScale(scale[u])));
 	    if (u == UNITS_V)
 		showV = true;
 	    if (u == UNITS_A)
@@ -382,14 +413,14 @@ class Scope {
     void setValues(int val, int ival, CircuitElm ce, CircuitElm yelm) {
 	if (ival > 0) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val));
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival, getManScaleFromMaxScale(scale[ce.getScopeUnits(ival)])));
 	    return;
 	}
 	if (yelm != null) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0));
-	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0));
+	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
+	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
 	    return;
 	}
 	setValue(val);
@@ -420,7 +451,7 @@ class Scope {
 	boolean gotv = false;
 	for (i = 0; i != plots.size(); i++) {
 	    ScopePlot sp = plots.get(i);
-	    if (sp.value == 0)
+	    if (sp.value == VAL_VOLTAGE)
 		gotv = true;
 	    else if (sp.value != VAL_CURRENT)
 		return false;
@@ -453,7 +484,7 @@ class Scope {
 		return pos;
 	    Scope s = new Scope(sim);
 	    ScopePlot sp = visiblePlots.get(i);
-	    if (lastPlot != null && lastPlot.elm == sp.elm && lastPlot.value == 0 && sp.value == VAL_CURRENT)
+	    if (lastPlot != null && lastPlot.elm == sp.elm && lastPlot.value == VAL_VOLTAGE && sp.value == VAL_CURRENT)
 		continue;
 	    s.setValue(sp.value, sp.elm);
 	    s.position = pos;
@@ -760,7 +791,7 @@ class Scope {
     	int i;
     	for (i = 0; i != UNITS_COUNT; i++) {
     	    reduceRange[i] = false;
-    	    if (maxScale && !lockScale)
+    	    if (maxScale && !manualScale)
     		scale[i] = 1e-4;
     	}
     	
@@ -783,13 +814,13 @@ class Scope {
     	boolean hGridLines = true;
     	for (i = 1; i < visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units != visiblePlots.get(0).units)
-    		hGridLines = false;
+    		hGridLines = false; // Don't draw horizontal grid lines unless all plots are in same units
     	}
     	
     	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
     	    calcMaxAndMin(visiblePlots.firstElement().units);
     	
-    	// draw volts on top (last), then current underneath, then everything else
+    	// draw volt plots on top (last), then current plots underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
     		drawPlot(g, visiblePlots.get(i), hGridLines, false);
@@ -813,7 +844,7 @@ class Scope {
     	
     	drawCrosshairs(g);
     	
-    	if (plots.get(0).ptr > 5 && !lockScale) {
+    	if (plots.get(0).ptr > 5 && !manualScale) {
     	    for (i = 0; i != UNITS_COUNT; i++)
     		if (scale[i] > 1e-4 && reduceRange[i])
     		    scale[i] /= 2;
@@ -823,10 +854,7 @@ class Scope {
     	    properties.refreshDraw();
 
     }
-    
-    String curColor, voltColor;
-    double gridStepX, gridStepY;
-    double maxValue, minValue;
+
     
     // calculate maximum and minimum values for all plots of given units
     void calcMaxAndMin(int units) {
@@ -853,7 +881,7 @@ class Scope {
     
     // adjust scale of a plot
     void calcPlotScale(ScopePlot plot) {
-	if (lockScale)
+	if (manualScale)
 	    return;
     	int i;
     	int ipa = plot.startIndex(rect.width);
@@ -1246,14 +1274,13 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    avg = (endAvg/(end-start));
-	    drawInfoText(g, plot.getUnitText(avg) + sim.LS(" average"));
+	    drawInfoText(g, plot.getUnitText(avg) + CirSim.LS(" average"));
 	}
     }
 
     void drawDutyCycle(Graphics g) {
 	ScopePlot plot = visiblePlots.firstElement();
 	int i;
-	double avg = 0;
     	int ipa = plot.ptr+scopePointCount-rect.width;
     	double maxV[] = plot.maxValues;
     	double minV[] = plot.minValues;
@@ -1305,7 +1332,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    int duty = 100*dutyLen/(end-start);
-	    drawInfoText(g, sim.LS("Duty cycle ") + duty + "%");
+	    drawInfoText(g, CirSim.LS("Duty cycle ") + duty + "%");
 	}
     }
 
@@ -1501,7 +1528,7 @@ class Scope {
     	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
 			(showMax ? 0 : 4) |   // showMax used to be always on
 			(showFreq ? 8 : 0) |
-			(lockScale ? 16 : 0) | (plot2d ? 64 : 0) |
+			(manualScale ? 16 : 0) | (plot2d ? 64 : 0) |
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
 			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0) |
@@ -1586,7 +1613,7 @@ class Scope {
     		    u = elm.getScopeUnits(val);
     		    if (u > UNITS_A)
     			scale[u] = Double.parseDouble(st.nextToken());
-    		    plots.add(new ScopePlot(elm, u, val));
+    		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u])));
     		}
     		while (st.hasMoreTokens()) {
     		    if (text == null)
@@ -1635,7 +1662,7 @@ class Scope {
     	showV = (flags & 2) != 0;
     	showMax = (flags & 4) == 0;
     	showFreq = (flags & 8) != 0;
-    	lockScale = (flags & 16) != 0;
+    	manualScale = (flags & 16) != 0;
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
@@ -1832,5 +1859,13 @@ class Scope {
 	if (removed)
 	    calcVisiblePlots();
 	return ret;
+    }
+
+    public boolean isManualScale() {
+	return manualScale;
+    }
+    
+    public double getManScaleFromMaxScale(double s) {
+	return (2*s)/Double.valueOf(manDivisions);
     }
 }

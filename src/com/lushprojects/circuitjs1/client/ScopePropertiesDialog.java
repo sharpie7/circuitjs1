@@ -21,6 +21,11 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.user.client.ui.ListBox;
+
+import java.util.Vector;
 
 class ScopeCheckBox extends CheckBox {
     String menuCmd;
@@ -37,10 +42,12 @@ class ScopeCheckBox extends CheckBox {
     }
 }
 
+
+
 public class ScopePropertiesDialog extends DialogBox implements ValueChangeHandler<Boolean> {
 
 	
-Panel fp;
+Panel fp, channelButtonsp;
 HorizontalPanel hp;
 CirSim sim;
 //RichTextArea textBox;
@@ -53,8 +60,81 @@ Scrollbar speedBar;
 Scope scope;
 Grid grid, vScaleGrid, hScaleGrid;
 int nx, ny;
-Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
+Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList, manualScaleId;
+Vector <Button> chanButtons = new Vector <Button>();
+// TODO Change value of plotSelection if plots are added or removed
+int plotSelection = 0;
 	
+    class PlotClickHandler implements ClickHandler {
+	int num;
+
+	public PlotClickHandler(int n) {
+	    num = n;
+	}
+
+	public void onClick(ClickEvent event) {
+	    plotSelection = num;
+	    for (int i =0; i < chanButtons.size(); i++) {
+		if (i==num)
+		    chanButtons.get(i).addStyleName("chsel");
+		else
+		    chanButtons.get(i).removeStyleName("chsel");
+	    }
+	    updateUI();
+	}
+    }
+
+    
+    String getChannelButtonLabel(int i) {
+	    ScopePlot p = scope.plots.get(i);
+	    String l = "<span style=\"color: "+p.color+";\">&#x25CF;</span>&nbsp;CH "+String.valueOf(i+1);
+	    switch (p.units) {
+	    	case Scope.UNITS_V: 
+	    	    l += " (V)";
+	    	    break;
+	    	case Scope.UNITS_A:
+	    	    l += " (I)";
+	    	    break;
+	    	case Scope.UNITS_OHMS:
+	    	    l += " (R)";
+	    	    break;
+	    	case Scope.UNITS_W:
+	    	    l += " (P)";
+	    	    break;
+	    }
+	    return l;
+	
+    }
+    
+    void updateChannelButtons() {
+	// More buttons than plots - remove extra buttons
+	for (int i = chanButtons.size()-1; i >= scope.plots.size();i--) {
+	    channelButtonsp.remove(chanButtons.get(i));
+	    chanButtons.remove(i);
+	}
+	// Now go though all the channels, adding new buttons if necessary
+	for (int i=0; i<scope.plots.size(); i++) {
+	    if (i>=chanButtons.size()) {
+		Button b = new Button();
+		chanButtons.add(b);
+		chanButtons.get(i).addClickHandler(new PlotClickHandler(i));
+		b.addStyleName("chbut");
+		if (CircuitElm.whiteColor == Color.white)
+			b.addStyleName("chbut-black");
+		    else
+			b.addStyleName("chbut-white");
+		channelButtonsp.add(b);
+	    }
+	    Button b = chanButtons.get(i);
+	    b.setHTML(getChannelButtonLabel(i));
+	    if (i==plotSelection)
+		b.addStyleName("chsel");
+	    else
+		b.removeStyleName("chsel");
+	}
+	
+    }
+
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
 		HorizontalPanel vModeP;
@@ -69,12 +149,15 @@ Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
 			scrollbarChanged();
 		    }
 		};
+// *************** VERTICAL SCALE ***********************************************************
 		vScaleLabel = new Label (CirSim.LS("Vertical Scale"));
 		vScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
 
 		fp.add(vScaleLabel);
 //		vScaleList = new Label("");
 //		fp.add(vScaleList);
+		
+				
 		vModeP = new HorizontalPanel();
 		vModeP.setStyleName("radioPanel");
 		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
@@ -104,11 +187,18 @@ Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
 		vModeP.add(maxButton);
 		vModeP.add(manualButton);
 		fp.add(vModeP);
-		vScaleGrid = new Grid(1,3);
+		channelButtonsp = new FlowPanel();
+		channelButtonsp.setVisible(scope.isManualScale());
+		updateChannelButtons();
+		
+		fp.add(channelButtonsp);
+		vScaleGrid = new Grid(1,4);
+		manualScaleId = new Label();
+		vScaleGrid.setWidget(0, 0, manualScaleId);
 		manualScaleTextBox = new TextBox(); 
-		vScaleGrid.setWidget(0,0, manualScaleTextBox);
+		vScaleGrid.setWidget(0,1, manualScaleTextBox);
 		manualScaleLabel = new Label("");
-		vScaleGrid.setWidget(0,1, manualScaleLabel);
+		vScaleGrid.setWidget(0,2, manualScaleLabel);
 		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
 		fp.add(vScaleGrid);
 
@@ -292,7 +382,7 @@ Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
                 vceBox.setValue(scope.showingValue(Scope.VAL_VCE));
                 vceIcBox.setValue(scope.isShowingVceAndIc());
 	    }
-	    if (scope.lockScale) {
+	    if (scope.isManualScale()) {
 		manualButton.setValue(true);
 		autoButton.setValue(false);
 		maxButton.setValue(false);
@@ -303,33 +393,30 @@ Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList;
 		maxButton.setValue(scope.maxScale);
 	    }
 	    updateScaleTextBox();
-	    int theseUnits;
-	    String plotIDs ="";
-	    if (scope.visiblePlots.size() == 0)
-		theseUnits = Scope.UNITS_V;
-	    else
-		theseUnits = scope.visiblePlots.get(0).units;
-//	    for (int i = 0; i < scope.plots.size(); i++) {
-//		if (scope.plots.get(i).units == theseUnits) {
-//		    plotIDs += i + " ";
-//		}
-//		vScaleList.setText(plotIDs);
-//	    }
-	    
+	    channelButtonsp.setVisible(scope.isManualScale());
+	    updateChannelButtons();
+
 	    // if you add more here, make sure it still works with transistor scopes
 	}
 	
 	void updateScaleTextBox() {
-	    manualScaleTextBox.setEnabled(scope.lockScale);
-	    manualScaleLabel.setText(CirSim.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
-	    manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
+	    manualScaleTextBox.setEnabled(scope.isManualScale());
+	    if (scope.isManualScale()) {
+		manualScaleId.setText("CH "+String.valueOf(plotSelection+1));
+		manualScaleLabel.setText(Scope.getScaleUnitsText(scope.plots.get(plotSelection).units)+CirSim.LS("/div"));
+		manualScaleTextBox.setText(EditDialog.unitString(null, scope.plots.get(plotSelection).manScale));
+	    } else {
+		manualScaleId.setText("");
+		manualScaleLabel.setText(CirSim.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
+		manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
+	    }
 	    setScopeSpeedLabel();
 	}
 	
 	void refreshDraw() {
 	    // Redraw for every step of the simulation (the simulation may run in the background of this
 	    // dialog and the scope may automatically rescale
-	    if (! scope.lockScale )
+	    if (! scope.isManualScale() )
 		updateScaleTextBox();
 	}
 	
