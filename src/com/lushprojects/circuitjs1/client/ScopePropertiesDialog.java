@@ -62,7 +62,6 @@ Grid grid, vScaleGrid, hScaleGrid;
 int nx, ny;
 Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList, manualScaleId;
 Vector <Button> chanButtons = new Vector <Button>();
-// TODO Change value of plotSelection if plots are added or removed
 int plotSelection = 0;
 	
     class PlotClickHandler implements ClickHandler {
@@ -86,7 +85,7 @@ int plotSelection = 0;
 
     
     String getChannelButtonLabel(int i) {
-	    ScopePlot p = scope.plots.get(i);
+	    ScopePlot p = scope.visiblePlots.get(i);
 	    String l = "<span style=\"color: "+p.color+";\">&#x25CF;</span>&nbsp;CH "+String.valueOf(i+1);
 	    switch (p.units) {
 	    	case Scope.UNITS_V: 
@@ -107,13 +106,15 @@ int plotSelection = 0;
     }
     
     void updateChannelButtons() {
+	if (plotSelection >= scope.visiblePlots.size())
+	    plotSelection = 0;
 	// More buttons than plots - remove extra buttons
-	for (int i = chanButtons.size()-1; i >= scope.plots.size();i--) {
+	for (int i = chanButtons.size()-1; i >= scope.visiblePlots.size(); i--) {
 	    channelButtonsp.remove(chanButtons.get(i));
 	    chanButtons.remove(i);
 	}
 	// Now go though all the channels, adding new buttons if necessary
-	for (int i=0; i<scope.plots.size(); i++) {
+	for (int i=0; i<scope.visiblePlots.size(); i++) {
 	    if (i>=chanButtons.size()) {
 		Button b = new Button();
 		chanButtons.add(b);
@@ -132,7 +133,6 @@ int plotSelection = 0;
 	    else
 		b.removeStyleName("chsel");
 	}
-	
     }
 
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
@@ -392,23 +392,33 @@ int plotSelection = 0;
 		autoButton.setValue(! scope.maxScale);
 		maxButton.setValue(scope.maxScale);
 	    }
-	    updateScaleTextBox();
-	    channelButtonsp.setVisible(scope.isManualScale());
 	    updateChannelButtons();
+	    channelButtonsp.setVisible(scope.isManualScale());
+	    updateScaleTextBox();
+	    
+	    
 
 	    // if you add more here, make sure it still works with transistor scopes
 	}
 	
 	void updateScaleTextBox() {
-	    manualScaleTextBox.setEnabled(scope.isManualScale());
 	    if (scope.isManualScale()) {
-		manualScaleId.setText("CH "+String.valueOf(plotSelection+1));
-		manualScaleLabel.setText(Scope.getScaleUnitsText(scope.plots.get(plotSelection).units)+CirSim.LS("/div"));
-		manualScaleTextBox.setText(EditDialog.unitString(null, scope.plots.get(plotSelection).manScale));
+		if (plotSelection<scope.visiblePlots.size()) {
+		    manualScaleId.setText("CH "+String.valueOf(plotSelection+1));
+		    manualScaleLabel.setText(Scope.getScaleUnitsText(scope.visiblePlots.get(plotSelection).units)+CirSim.LS("/div"));
+		    manualScaleTextBox.setText(EditDialog.unitString(null, scope.visiblePlots.get(plotSelection).manScale));
+		    manualScaleTextBox.setEnabled(true);
+		} else {
+		    manualScaleId.setText("");
+		    manualScaleLabel.setText("");
+		    manualScaleTextBox.setText("");
+		    manualScaleTextBox.setEnabled(false);
+		}
 	    } else {
 		manualScaleId.setText("");
 		manualScaleLabel.setText(CirSim.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
 		manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
+		manualScaleTextBox.setEnabled(false);
 	    }
 	    setScopeSpeedLabel();
 	}
