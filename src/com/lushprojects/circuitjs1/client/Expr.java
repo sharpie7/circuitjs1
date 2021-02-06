@@ -3,11 +3,11 @@ package com.lushprojects.circuitjs1.client;
 import java.util.Vector;
 
 class ExprState {
-    int n;
+    //int n;
     double values[];
     double t;
     ExprState(int xx) {
-	n = xx;
+	//n = xx;
 	values = new double[9];
 	values[4] = Math.E;
     }
