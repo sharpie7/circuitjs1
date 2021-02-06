@@ -53,6 +53,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[i*2+1] = new Pin(1, SIDE_E, "V-");
 	    exprState = new ExprState(inputPairCount);
 	    lastCurrents = new double[inputPairCount];
+	    allocNodes();
 	}
 	String getChipName() { return "CCVS"; } 
 	void stamp() {

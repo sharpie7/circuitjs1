@@ -46,7 +46,7 @@ package com.lushprojects.circuitjs1.client;
 	    return super.dump() + " " + inputCount + " " + CustomLogicModel.escape(exprString);
 	}
 	
-	double lastVolts[], origVolts[];
+	double lastVolts[];
 	
 	void setupPins() {
 	    sizeX = 2;
@@ -58,8 +58,8 @@ package com.lushprojects.circuitjs1.client;
 	    pins[inputCount] = new Pin(0, SIDE_E, "C+");
 	    pins[inputCount+1] = new Pin(1, SIDE_E, "C-");
 	    lastVolts = new double[inputCount];
-	    origVolts = new double[inputCount];
 	    exprState = new ExprState(inputCount);
+	    allocNodes();
 	}
 	String getChipName() { return "VCCS~"; } // ~ is for localization 
 	boolean nonLinear() { return true; }
@@ -105,8 +105,8 @@ package com.lushprojects.circuitjs1.client;
         	    sim.converged = false;
 //        	    sim.console("vcvs " + nodes + " " + i + " " + volts[i] + " " + lastVolts[i] + " " + sim.subIterations);
         	}
-        	if (Double.isNaN(volts[i]))
-        	    volts[i] = 0;
+//        	if (Double.isNaN(volts[i]))
+//        	    volts[i] = 0;
             }
             if (expr != null) {
         	// calculate output
