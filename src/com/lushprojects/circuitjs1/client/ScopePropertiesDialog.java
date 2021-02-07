@@ -56,6 +56,7 @@ RadioButton autoButton, maxButton, manualButton;
 CheckBox scaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox, manualScaleBox;
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox, logSpectrumBox, averageBox;
 TextBox labelTextBox, manualScaleTextBox;
+Button applyButton;
 Scrollbar speedBar;
 Scope scope;
 Grid grid, vScaleGrid, hScaleGrid;
@@ -149,7 +150,7 @@ int plotSelection = 0;
 		HorizontalPanel vModeP;
 		sim=asim;
 		scope = s;
-		Button okButton, applyButton, applyButton2;
+		Button okButton, applyButton2;
 		fp=new FlowPanel();
 		setWidget(fp);
 		setText(CirSim.LS("Scope Properties"));
@@ -403,11 +404,13 @@ int plotSelection = 0;
 		manualButton.setValue(true);
 		autoButton.setValue(false);
 		maxButton.setValue(false);
+		applyButton.setVisible(true);
 	    }
 	    else {
 		manualButton.setValue(false);
 		autoButton.setValue(! scope.maxScale);
 		maxButton.setValue(scope.maxScale);
+		applyButton.setVisible(false);
 	    }
 	    updateChannelButtons();
 	    channelButtonsp.setVisible(scope.isManualScale());
