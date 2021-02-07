@@ -201,6 +201,9 @@ class Scope {
     double gridStepX, gridStepY;
     double maxValue, minValue;
     int manDivisions = 8; // Number of vertical divisions when in manual mode
+    boolean drawGridLines;
+    boolean somethingSelected;
+    double mainGridMult, mainGridMid;
     
     Scope(CirSim s) {
     	sim = s;
@@ -265,11 +268,11 @@ class Scope {
     	allocImage();
     }
     
-    void setManualScaleValue(double d) {
-	if (visiblePlots.size() == 0)
-	    return;
-	ScopePlot p = visiblePlots.get(0);
-	scale[p.units]= d; 
+    void setManualScaleValue(int plotId, double d) {
+	if (plotId >= visiblePlots.size() )
+	    return; // Shouldn't happen, but just in case...
+	visiblePlots.get(plotId).manScale=d;
+	visiblePlots.get(plotId).manScaleSet=true;
     }
     
     double getScaleValue() {
@@ -744,8 +747,7 @@ class Scope {
     	drawSettingsWheel(g);
     }
 	
-    boolean drawGridLines;
-    boolean somethingSelected;
+
     
     boolean showSettingsWheel() {
 	return rect.height > 100 && rect.width > 100;
@@ -811,31 +813,31 @@ class Scope {
     	    somethingSelected = true;
 
     	drawGridLines = true;
-    	boolean hGridLines = true;
+    	boolean allPlotsSameUnits = true;
     	for (i = 1; i < visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units != visiblePlots.get(0).units)
-    		hGridLines = false; // Don't draw horizontal grid lines unless all plots are in same units
+    		allPlotsSameUnits = false; // Don't draw horizontal grid lines unless all plots are in same units
     	}
     	
-    	if ((hGridLines || showMax || showMin) && visiblePlots.size() > 0)
+    	if ((allPlotsSameUnits || showMax || showMin) && visiblePlots.size() > 0)
     	    calcMaxAndMin(visiblePlots.firstElement().units);
     	
     	// draw volt plots on top (last), then current plots underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
     	}
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units == UNITS_A && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
     	}
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units == UNITS_V && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), hGridLines, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
     	}
     	// draw selection on top.  only works if selection chosen from scope
     	if (selectedPlot >= 0 && selectedPlot < visiblePlots.size())
-    	    drawPlot(g, visiblePlots.get(selectedPlot), hGridLines, true);
+    	    drawPlot(g, visiblePlots.get(selectedPlot), allPlotsSameUnits, true);
     	
         if (visiblePlots.size() > 0)
             drawInfoTexts(g);
@@ -917,9 +919,9 @@ class Scope {
     	return gsx;
     }
 
-    double mainGridMult, mainGridMid;
+
     
-    void drawPlot(Graphics g, ScopePlot plot, boolean drawHGridLines, boolean selected) {
+    void drawPlot(Graphics g, ScopePlot plot, boolean allPlotsSameUnits, boolean selected) {
 	if (plot.elm == null)
 	    return;
     	int i;
@@ -942,40 +944,53 @@ class Scope {
     	int ipa = plot.startIndex(rect.width);
     	double maxV[] = plot.maxValues;
     	double minV[] = plot.minValues;
-    	double gridMax = scale[plot.units];
-    	double gridMid = 0;
-    	if (drawHGridLines) {
-    	    // if we don't have overlapping scopes of different units, we can move zero around.
-    	    // Put it at the bottom if the scope is never negative.
-    	    double mx = gridMax;
-    	    double mn = 0;
-    	    if (maxScale) {
-    		// scale is maxed out, so fix boundaries of scope at maximum and minimum. 
-    		mx = maxValue;
-    		mn = minValue;
-    	    } else if (showNegative || minValue < (mx+mn)*.5 - (mx-mn)*.55) {
-    		mn = -gridMax;
-    		showNegative = true;
-    	    }
-    	    gridMid = (mx+mn)*.5;
-    	    gridMax = (mx-mn)*.55;  // leave space at top and bottom
+    	double gridMax, gridMid;
+    	
+    	
+    	// Calculate the max value (positive) to show and the value at the mid point of the grid
+    	if (!isManualScale()) {
+    	    	gridMax = scale[plot.units];
+    	    	gridMid = 0;
+        	if (allPlotsSameUnits) {
+        	    // if we don't have overlapping scopes of different units, we can move zero around.
+        	    // Put it at the bottom if the scope is never negative.
+        	    double mx = gridMax;
+        	    double mn = 0;
+        	    if (maxScale) {
+        		// scale is maxed out, so fix boundaries of scope at maximum and minimum. 
+        		mx = maxValue;
+        		mn = minValue;
+        	    } else if (showNegative || minValue < (mx+mn)*.5 - (mx-mn)*.55) {
+        		mn = -gridMax;
+        		showNegative = true;
+        	    }
+        	    gridMid = (mx+mn)*.5;
+        	    gridMax = (mx-mn)*.55;  // leave space at top and bottom
+        	}
+    	} else {
+    	    // TODO - Support moving zero
+    	    gridMid =0;
+    	    gridMax =(Double.valueOf(manDivisions)/2+0.05)*plot.manScale;
     	}
+    	
     	double gridMult = maxy/gridMax;
     	if (selected) {
     	    mainGridMult = gridMult;
     	    mainGridMid  = gridMid;
     	}
+    	
     	int minRangeLo = -10-(int) (gridMid*gridMult);
     	int minRangeHi =  10-(int) (gridMid*gridMult);
-
-    	gridStepY = 1e-8;    	
-    	while (gridStepY < 20*gridMax/maxy) {
-  		gridStepY *=multa[(multptr++)%3];
+    	if (!isManualScale()) {
+    	    gridStepY = 1e-8;    	
+        	while (gridStepY < 20*gridMax/maxy) {
+      			gridStepY *=multa[(multptr++)%3];
+        	}
+    	} else {
+    	    gridStepY = plot.manScale;
     	}
 
-    	// Horizontal gridlines
-    	int ll;
-    	String minorDiv = "#303030";
+    	String minorDiv = "#404040";
     	String majorDiv = "#A0A0A0";
     	if (sim.printableCheckItem.getState()) {
     	    minorDiv = "#D0D0D0";
@@ -990,10 +1005,10 @@ class Scope {
     	if (drawGridLines) {
     	    // horizontal gridlines
     	    
-    	    // don't show gridlines if lines are too close together (except for center line)
-    	    boolean showGridLines = (gridStepY != 0) && drawHGridLines;
-    	    for (ll = -100; ll <= 100; ll++) {
-    		if (ll != 0 && !showGridLines)
+    	    // don't show hgridlines if lines are too close together (except for center line)
+    	    boolean showHGridLines = (gridStepY != 0) && (isManualScale() || allPlotsSameUnits); // Will only show center line if we have mixed units
+    	    for (int ll = -100; ll <= 100; ll++) {
+    		if (ll != 0 && !showHGridLines)
     		    continue;
     		int yl = maxy-(int) ((ll*gridStepY-gridMid)*gridMult);
     		if (yl < 0 || yl >= rect.height-1)
@@ -1007,7 +1022,7 @@ class Scope {
     	    double tstart = sim.t-sim.timeStep*speed*rect.width;
     	    double tx = sim.t-(sim.t % gridStepX);
 
-    	    for (ll = 0; ; ll++) {
+    	    for (int ll = 0; ; ll++) {
     		double tl = tx-gridStepX*ll;
     		int gx = (int) ((tl-tstart)/ts);
     		if (gx < 0)

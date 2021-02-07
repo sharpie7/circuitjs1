@@ -461,11 +461,12 @@ int plotSelection = 0;
 	    if (label.length() == 0)
 		label = null;
 	    scope.setText(label);
-
-	    try {
-		double d = EditDialog.parseUnits(manualScaleTextBox.getText());
-		scope.setManualScaleValue(d);
-	    } catch (Exception e) {}
+	    
+	    if (scope.isManualScale())
+        	    try {
+        		double d = EditDialog.parseUnits(manualScaleTextBox.getText());
+        		scope.setManualScaleValue(plotSelection, d);
+        	    } catch (Exception e) {}
 	}
 
 	public void onValueChange(ValueChangeEvent<Boolean> event) {
