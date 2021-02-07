@@ -82,6 +82,15 @@ int plotSelection = 0;
 	    updateUI();
 	}
     }
+    
+    class manualScaleTextHandler implements ValueChangeHandler<String> {
+	
+	public void onValueChange(ValueChangeEvent<String> event) {
+	    apply();
+	    updateUI();
+	}
+	
+    }
 
     
     String getChannelButtonLabel(int i) {
@@ -140,7 +149,7 @@ int plotSelection = 0;
 		HorizontalPanel vModeP;
 		sim=asim;
 		scope = s;
-		Button okButton, applyButton;
+		Button okButton, applyButton, applyButton2;
 		fp=new FlowPanel();
 		setWidget(fp);
 		setText(CirSim.LS("Scope Properties"));
@@ -192,13 +201,20 @@ int plotSelection = 0;
 		updateChannelButtons();
 		
 		fp.add(channelButtonsp);
-		vScaleGrid = new Grid(1,4);
+		vScaleGrid = new Grid(1,5);
 		manualScaleId = new Label();
 		vScaleGrid.setWidget(0, 0, manualScaleId);
 		manualScaleTextBox = new TextBox(); 
+		manualScaleTextBox.addValueChangeHandler(new manualScaleTextHandler());
 		vScaleGrid.setWidget(0,1, manualScaleTextBox);
 		manualScaleLabel = new Label("");
 		vScaleGrid.setWidget(0,2, manualScaleLabel);
+		vScaleGrid.setWidget(0,3, applyButton = new Button(CirSim.LS("Apply")));
+		applyButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				apply();
+			}
+		});
 		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 1, HasVerticalAlignment.ALIGN_MIDDLE);
 		fp.add(vScaleGrid);
 
@@ -285,6 +301,12 @@ int plotSelection = 0;
 		String labelText = scope.getText();
 		if (labelText != null)
 		    labelTextBox.setText(labelText);
+		addItemToGrid(grid, applyButton2= new Button(CirSim.LS("Apply")));
+		applyButton2.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				apply();
+			}
+		});
 		
 		updateUI();
 		hp = new HorizontalPanel();
@@ -300,12 +322,7 @@ int plotSelection = 0;
 		});
 
 //		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		hp.add(applyButton = new Button(CirSim.LS("Apply")));
-		applyButton.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				apply();
-			}
-		});
+
 		
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		Button saveAsDefaultButton;
