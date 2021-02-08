@@ -42,7 +42,9 @@ class ScopePlot {
     CircuitElm elm;
     boolean manScaleSet = false; // Has anything been put in manual scale? (though we will try and keep sensible value in the scale anyway)
     double manScale = 1.0; // Units per division
-    double manZero = 0; // Fraction of screen (ie +1 would be top of screen)
+    int manVPosition = 0; // 0 is center of screen. +V_POSITION_STEPS is top of screen
+    double gridMult;
+    double plotOffset;
     
     ScopePlot(CircuitElm e, int u) {
 	elm = e;
@@ -165,6 +167,8 @@ class Scope {
     static final int UNITS_OHMS = 3;
     static final int UNITS_COUNT = 4;
     static final double multa[] = {2.0, 2.5, 2.0};
+    static final int V_POSITION_STEPS=200;
+    static final double MIN_MAN_SCALE = 1e-9;
     int scopePointCount = 128;
     FFT fft;
     int position;
@@ -203,7 +207,6 @@ class Scope {
     int manDivisions = 8; // Number of vertical divisions when in manual mode
     boolean drawGridLines;
     boolean somethingSelected;
-    double mainGridMult, mainGridMid;
     
     Scope(CirSim s) {
     	sim = s;
@@ -245,7 +248,7 @@ class Scope {
 	for (ScopePlot p : plots) {
 	    if (!p.manScaleSet) {
 		p.manScale=getManScaleFromMaxScale(scale[p.value]);
-		p.manZero=0;
+		p.manVPosition=0;
 		p.manScaleSet = true;
 	    }
 	}
@@ -920,6 +923,9 @@ class Scope {
     }
 
 
+    double getGridMaxFromManScale(ScopePlot plot) {
+	return (Double.valueOf(manDivisions)/2+0.05)*plot.manScale;
+    }
     
     void drawPlot(Graphics g, ScopePlot plot, boolean allPlotsSameUnits, boolean selected) {
 	if (plot.elm == null)
@@ -930,7 +936,7 @@ class Scope {
 //    	for (i = 0; i != pixels.length; i++)
 //    		pixels[i] = col;
     	
-
+    	double gridMid, positionOffset;
     	int multptr=0;
     	int x = 0;
     	int maxy = (rect.height-1)/2;
@@ -944,13 +950,14 @@ class Scope {
     	int ipa = plot.startIndex(rect.width);
     	double maxV[] = plot.maxValues;
     	double minV[] = plot.minValues;
-    	double gridMax, gridMid;
+    	double gridMax;
     	
     	
     	// Calculate the max value (positive) to show and the value at the mid point of the grid
     	if (!isManualScale()) {
     	    	gridMax = scale[plot.units];
     	    	gridMid = 0;
+    	    	positionOffset = 0;
         	if (allPlotsSameUnits) {
         	    // if we don't have overlapping scopes of different units, we can move zero around.
         	    // Put it at the bottom if the scope is never negative.
@@ -968,19 +975,16 @@ class Scope {
         	    gridMax = (mx-mn)*.55;  // leave space at top and bottom
         	}
     	} else {
-    	    // TODO - Support moving zero
     	    gridMid =0;
-    	    gridMax =(Double.valueOf(manDivisions)/2+0.05)*plot.manScale;
+    	    gridMax = getGridMaxFromManScale(plot);
+    	    positionOffset = gridMax*2.0*Double.valueOf(plot.manVPosition)/Double.valueOf(V_POSITION_STEPS);
     	}
+    	plot.plotOffset = -gridMid+positionOffset;
     	
-    	double gridMult = maxy/gridMax;
-    	if (selected) {
-    	    mainGridMult = gridMult;
-    	    mainGridMid  = gridMid;
-    	}
+    	plot.gridMult = maxy/gridMax;
     	
-    	int minRangeLo = -10-(int) (gridMid*gridMult);
-    	int minRangeHi =  10-(int) (gridMid*gridMult);
+    	int minRangeLo = -10-(int) (gridMid*plot.gridMult);
+    	int minRangeHi =  10-(int) (gridMid*plot.gridMult);
     	if (!isManualScale()) {
     	    gridStepY = 1e-8;    	
         	while (gridStepY < 20*gridMax/maxy) {
@@ -1010,7 +1014,7 @@ class Scope {
     	    for (int ll = -100; ll <= 100; ll++) {
     		if (ll != 0 && !showHGridLines)
     		    continue;
-    		int yl = maxy-(int) ((ll*gridStepY-gridMid)*gridMult);
+    		int yl = maxy-(int) ((ll*gridStepY-gridMid)*plot.gridMult);
     		if (yl < 0 || yl >= rect.height-1)
     		    continue;
     		col = ll == 0 ? majorDiv : minorDiv;
@@ -1049,8 +1053,8 @@ class Scope {
         int ox = -1, oy = -1;
         for (i = 0; i != rect.width; i++) {
             int ip = (i+ipa) & (scopePointCount-1);
-            int minvy = (int) (gridMult*(minV[ip]-gridMid));
-            int maxvy = (int) (gridMult*(maxV[ip]-gridMid));
+            int minvy = (int) (plot.gridMult*(minV[ip]+plot.plotOffset));
+            int maxvy = (int) (plot.gridMult*(maxV[ip]+plot.plotOffset));
             if (minvy <= maxy) {
         	if (minvy < minRangeLo || maxvy > minRangeHi) {
         	    // we got a value outside min range, so we don't need to rescale later
@@ -1094,7 +1098,7 @@ class Scope {
     	int best = -1;
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    ScopePlot plot = visiblePlots.get(i);
-    	    int maxvy = (int) ((maxy/scale[plot.units])*plot.maxValues[ip]);
+    	    int maxvy = (int) (plot.gridMult*(plot.maxValues[ip]+plot.plotOffset));
     	    int dist = Math.abs(sim.mouseCursorY-(rect.y+y-maxvy));
     	    if (dist < bestdist) {
     		bestdist = dist;
@@ -1120,7 +1124,7 @@ class Scope {
     	if (selectedPlot >= 0) {
     	    ScopePlot plot = visiblePlots.get(selectedPlot);
     	    info[ct++] = plot.getUnitText(plot.maxValues[ip]);
-    	    int maxvy = (int) (mainGridMult*(plot.maxValues[ip]-mainGridMid));
+    	    int maxvy = (int) (plot.gridMult*(plot.maxValues[ip]+plot.plotOffset));
     	    g.setColor(plot.color);
     	    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
     	}
@@ -1513,6 +1517,10 @@ class Scope {
 	if (speed < 1024)
 	    speed *= 2;
     	resetGraph();
+    }
+    
+    void setPlotPosition(int plot, int v) {
+	visiblePlots.get(plot).manVPosition = v;
     }
 	
     // get scope element, returning null if there's more than one
