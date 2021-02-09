@@ -1241,6 +1241,24 @@ class Scope {
 	}
     }
     
+    void drawScale(ScopePlot plot, Graphics g) {
+    	    String vScaleText="";
+    	    if (!isManualScale()) {
+        	    if ( gridStepY!=0 && (!(showV && showI)))
+        		vScaleText=" V=" + plot.getUnitText(gridStepY)+"/div";
+    	    }  else {
+    		for (int i=0; i<visiblePlots.size(); i++) {
+    		    ScopePlot p=visiblePlots.get(i);
+    		    String s=p.getUnitText(p.manScale);
+    		    if (p!=null)
+    			vScaleText+=" CH"+String.valueOf(i+1)+"="+s+"/div";
+    		}
+    	    }
+    	    drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" +
+    		    vScaleText);
+	
+    }
+    
     void drawAverage(Graphics g) {
 	ScopePlot plot = visiblePlots.firstElement();
 	int i;
@@ -1443,13 +1461,8 @@ class Scope {
     	drawInfoText(g, x);
     	*/
     	ScopePlot plot = visiblePlots.firstElement();
-    	if (showScale) {
-    	    String vScaleText="";
-    	    if ( gridStepY!=0 && (!(showV && showI)))
-    		vScaleText=" V=" + plot.getUnitText(gridStepY)+"/div";
-    	    drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" +
-    		    vScaleText);
-    	}
+    	if (showScale) 
+    	    drawScale(plot, g);
 //    	if (showMax || showMin)
 //    	    calcMaxAndMin(plot.units);
     	if (showMax)
