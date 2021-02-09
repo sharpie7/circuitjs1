@@ -939,8 +939,7 @@ class Scope {
     	double gridMid, positionOffset;
     	int multptr=0;
     	int x = 0;
-    	int maxy = (rect.height-1)/2;
-    	int y = maxy;
+    	final int maxy = (rect.height-1)/2;
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
 	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
@@ -1050,6 +1049,12 @@ class Scope {
 
         g.setColor(color);
         
+        if (isManualScale()) {
+            int y0= maxy-(int) (plot.gridMult*plot.plotOffset);
+            g.drawLine(0, y0, 8, y0);
+            g.drawString("0", 0, y0-2);
+        }
+        
         int ox = -1, oy = -1;
         for (i = 0; i != rect.width; i++) {
             int ip = (i+ipa) & (scopePointCount-1);
@@ -1065,7 +1070,7 @@ class Scope {
         	if (ox != -1) {
         	    if (minvy == oy && maxvy == oy)
         		continue;
-        	    g.drawLine(ox, y-oy, x+i-1, y-oy);
+        	    g.drawLine(ox, maxy-oy, x+i-1, maxy-oy);
         	    ox = oy = -1;
         	}
         	if (minvy == maxvy) {
@@ -1073,11 +1078,11 @@ class Scope {
         	    oy = minvy;
         	    continue;
         	}
-        	g.drawLine(x+i, y-minvy, x+i, y-maxvy-1);
+        	g.drawLine(x+i, maxy-minvy, x+i, maxy-maxvy-1);
             }
         } // for (i=0...)
         if (ox != -1)
-            g.drawLine(ox, y-oy, x+i-1, y-oy); // Horizontal
+            g.drawLine(ox, maxy-oy, x+i-1, maxy-oy); // Horizontal
         
     }
 

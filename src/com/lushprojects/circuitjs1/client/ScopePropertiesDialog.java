@@ -262,7 +262,15 @@ int plotSelection = 0;
 		    }
 		});
 		vScaleGrid.setWidget(0,1,positionBar);
-
+		Button resetPosButton = new Button(CirSim.LS("Zero Position"));
+		resetPosButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+			    positionBar.setValue(0);
+			    positionBarChanged();
+			    updateUI();
+			}
+		});
+		vScaleGrid.setWidget(0, 4, resetPosButton);
 
 		manualScaleId = new Label();
 		vScaleGrid.setWidget(1, 0, manualScaleId);
