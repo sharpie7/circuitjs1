@@ -54,6 +54,7 @@ CirSim sim;
 //RichTextArea textBox;
 TextArea textArea;
 RadioButton autoButton, maxButton, manualButton;
+RadioButton acButton, dcButton;
 CheckBox scaleBox, voltageBox, currentBox, powerBox, peakBox, negPeakBox, freqBox, spectrumBox, manualScaleBox;
 CheckBox rmsBox, dutyBox, viBox, xyBox, resistanceBox, ibBox, icBox, ieBox, vbeBox, vbcBox, vceBox, vceIcBox, logSpectrumBox, averageBox;
 TextBox labelTextBox, manualScaleTextBox;
@@ -81,7 +82,7 @@ int plotSelection = 0;
 		else
 		    chanButtons.get(i).removeStyleName("chsel");
 	    }
-	    updateUI();
+	    updateUi();
 	}
     }
     
@@ -89,7 +90,7 @@ int plotSelection = 0;
 	
 	public void onValueChange(ValueChangeEvent<String> event) {
 	    apply();
-	    updateUI();
+	    updateUi();
 	}
 	
     }
@@ -113,7 +114,7 @@ int plotSelection = 0;
 		s*=Scope.multa[a%3];
 	    }
 	    scope.setManualScaleValue(plotSelection, lasts);
-	    updateUI();
+	    updateUi();
 	}
 	
     }
@@ -130,15 +131,21 @@ int plotSelection = 0;
 	    double d = getManualScaleValue();
 	    if (d==0)
 		return;
+	    s=nextHighestScale(d);
+	    scope.setManualScaleValue(plotSelection, s);
+	    updateUi();
+	}
+	
+    }
+    
+    static double nextHighestScale(double d) {
 	    d=d*1.001; // Go just above last check point
+	    double s;
 	    s=Scope.MIN_MAN_SCALE;
 	    for(int a=0; s<d; a++) { // Iterate until we go over the target
 		s*=Scope.multa[a%3];
 	    }
-	    scope.setManualScaleValue(plotSelection, s);
-	    updateUI();
-	}
-	
+	    return s;
     }
     
     void positionBarChanged() {
@@ -224,7 +231,7 @@ int plotSelection = 0;
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(false);
 	        	scope.setMaxScale(false);
-	        	updateUI();
+	        	updateUi();
 	            }
 	        });
 		maxButton = new RadioButton("vMode", CirSim.LS("Auto (Max Scale)"));
@@ -232,14 +239,14 @@ int plotSelection = 0;
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(false);
 	        	scope.setMaxScale(true);
-	        	updateUI();
+	        	updateUi();
 	            }
 	        });
 		manualButton = new RadioButton("vMode", CirSim.LS("Manual"));
 		manualButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(true);
-	        	updateUI();
+	        	updateUi();
 	            }
 	        });
 		vModeP.add(autoButton);
@@ -252,28 +259,47 @@ int plotSelection = 0;
 		channelSettingsp.add(channelButtonsp);
 		fp.add(channelSettingsp);
 		
-		vScaleGrid = new Grid(2,5);
+		vScaleGrid = new Grid(3,5);
+		dcButton= new RadioButton("acdc", CirSim.LS("DC Coupled"));
+		dcButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+		    public void onValueChange(ValueChangeEvent<Boolean> e) {
+		    if (plotSelection<scope.visiblePlots.size())
+			scope.visiblePlots.get(plotSelection).setAcCoupled(false);
+		    updateUi();
+		    }
+		});
+		vScaleGrid.setWidget(0, 0, dcButton);
+		acButton= new RadioButton("acdc", CirSim.LS("AC Coupled"));
+		acButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+		    public void onValueChange(ValueChangeEvent<Boolean> e) {
+		    if (plotSelection<scope.visiblePlots.size())
+			scope.visiblePlots.get(plotSelection).setAcCoupled(true);
+		    updateUi();
+		    }
+		});
+		vScaleGrid.setWidget(0, 1, acButton);
+		
 		positionLabel= new Label("Position");
-		vScaleGrid.setWidget(0,0, positionLabel);
+		vScaleGrid.setWidget(1,0, positionLabel);
 		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		positionBar = new Scrollbar(Scrollbar.HORIZONTAL,0, 1, -Scope.V_POSITION_STEPS, Scope.V_POSITION_STEPS, new Command() {
 		    public void execute() {
 			positionBarChanged();
 		    }
 		});
-		vScaleGrid.setWidget(0,1,positionBar);
-		Button resetPosButton = new Button(CirSim.LS("Zero Position"));
+		vScaleGrid.setWidget(1,1,positionBar);
+		Button resetPosButton = new Button(CirSim.LS("Reset Position"));
 		resetPosButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 			    positionBar.setValue(0);
 			    positionBarChanged();
-			    updateUI();
+			    updateUi();
 			}
 		});
-		vScaleGrid.setWidget(0, 4, resetPosButton);
+		vScaleGrid.setWidget(1, 4, resetPosButton);
 
 		manualScaleId = new Label();
-		vScaleGrid.setWidget(1, 0, manualScaleId);
+		vScaleGrid.setWidget(2, 0, manualScaleId);
 		Grid scaleBoxGrid=new Grid(1,3);
 		scaleDownButton=new Button("&#9660;");
 		scaleDownButton.addClickHandler(new downClickHandler());
@@ -285,10 +311,10 @@ int plotSelection = 0;
 		scaleUpButton=new Button("&#9650;");
 		scaleUpButton.addClickHandler(new upClickHandler());
 		scaleBoxGrid.setWidget(0,2,scaleUpButton);
-		vScaleGrid.setWidget(1,1, scaleBoxGrid);
+		vScaleGrid.setWidget(2,1, scaleBoxGrid);
 		manualScaleLabel = new Label("");
-		vScaleGrid.setWidget(1,2, manualScaleLabel);
-		vScaleGrid.setWidget(1,4, applyButton = new Button(CirSim.LS("Apply")));
+		vScaleGrid.setWidget(2,2, manualScaleLabel);
+		vScaleGrid.setWidget(2,4, applyButton = new Button(CirSim.LS("Apply")));
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -392,7 +418,7 @@ int plotSelection = 0;
 			}
 		});
 		
-		updateUI();
+		updateUi();
 		hp = new HorizontalPanel();
 		hp.setWidth("100%");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
@@ -454,7 +480,7 @@ int plotSelection = 0;
 	    setScopeSpeedLabel();
 	}
 	
-	void updateUI() {
+	void updateUi() {
 	    speedBar.setValue(10-(int)Math.round(Math.log(scope.speed)/Math.log(2)));
 	    if (voltageBox != null) {
 		voltageBox.setValue(scope.showV && !scope.showingValue(Scope.VAL_POWER));
@@ -495,33 +521,42 @@ int plotSelection = 0;
 		maxButton.setValue(scope.maxScale);
 		applyButton.setVisible(false);
 	    }
-	    updateChannelButtons();
-	    channelSettingsp.setVisible(scope.isManualScale());
-	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale());
-	    scaleUpButton.setVisible(scope.isManualScale());
-	    scaleDownButton.setVisible(scope.isManualScale());
-	    updateScaleTextBox();
+	    updateManualScaleUi();
 	    
 	    
 
 	    // if you add more here, make sure it still works with transistor scopes
 	}
 	
-	void updateScaleTextBox() {
+	void updateManualScaleUi() {
+	    updateChannelButtons();
+	    channelSettingsp.setVisible(scope.isManualScale());
+	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale());
+	    vScaleGrid.getRowFormatter().setVisible(1, scope.isManualScale());
+	    scaleUpButton.setVisible(scope.isManualScale());
+	    scaleDownButton.setVisible(scope.isManualScale());
 	    if (scope.isManualScale()) {
 		if (plotSelection<scope.visiblePlots.size()) {
+		    ScopePlot p = scope.visiblePlots.get(plotSelection);
 		    manualScaleId.setText("CH "+String.valueOf(plotSelection+1)+" "+CirSim.LS("Scale"));
-		    manualScaleLabel.setText(Scope.getScaleUnitsText(scope.visiblePlots.get(plotSelection).units)+CirSim.LS("/div"));
-		    manualScaleTextBox.setText(EditDialog.unitString(null, scope.visiblePlots.get(plotSelection).manScale));
+		    manualScaleLabel.setText(Scope.getScaleUnitsText(p.units)+CirSim.LS("/div"));
+		    manualScaleTextBox.setText(EditDialog.unitString(null, p.manScale));
 		    manualScaleTextBox.setEnabled(true);
 		    positionLabel.setText("CH "+String.valueOf(plotSelection+1)+" "+CirSim.LS("Position"));
-		    positionBar.setValue(scope.visiblePlots.get(plotSelection).manVPosition);
+		    positionBar.setValue(p.manVPosition);
+		    dcButton.setEnabled(true);
+		    dcButton.setValue(! p.isAcCoupled());
+		    acButton.setEnabled(p.canAcCouple());
+		    acButton.setValue(p.isAcCoupled());
+		    
 		} else {
 		    manualScaleId.setText("");
 		    manualScaleLabel.setText("");
 		    manualScaleTextBox.setText("");
 		    manualScaleTextBox.setEnabled(false);
 		    positionLabel.setText("");
+		    dcButton.setEnabled(false);
+		    acButton.setEnabled(false);
 		}
 	    } else {
 		manualScaleId.setText("");
@@ -537,7 +572,7 @@ int plotSelection = 0;
 	    // Redraw for every step of the simulation (the simulation may run in the background of this
 	    // dialog and the scope may automatically rescale
 	    if (! scope.isManualScale() )
-		updateScaleTextBox();
+		updateManualScaleUi();
 	}
 	
 	protected void closeDialog()
@@ -574,7 +609,7 @@ int plotSelection = 0;
 	public void onValueChange(ValueChangeEvent<Boolean> event) {
 	    ScopeCheckBox cb = (ScopeCheckBox) event.getSource();
 	    scope.handleMenu(cb.menuCmd, cb.getValue());
-	    updateUI();
+	    updateUi();
 	}
 
 

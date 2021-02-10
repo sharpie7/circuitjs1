@@ -25,8 +25,10 @@ import com.google.gwt.storage.client.Storage;
 
 import java.util.Vector;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.core.client.GWT;
 
 // plot of single value on a scope
 class ScopePlot {
@@ -45,6 +47,9 @@ class ScopePlot {
     int manVPosition = 0; // 0 is center of screen. +V_POSITION_STEPS is top of screen
     double gridMult;
     double plotOffset;
+    boolean acCoupled = false;
+    double acAlpha = 0.9999; // Filter coefficient for AC coupling
+    double acLastOut = 0; // Store y[i-1] term for AC coupling filter
     
     ScopePlot(CircuitElm e, int u) {
 	elm = e;
@@ -69,6 +74,9 @@ class ScopePlot {
 	if (scopePlotSpeed != sp)
 	    oldSpc = 0; // throw away old data
 	scopePlotSpeed = sp;
+	// Adjust the time constant of the AC coupled filter in proportion to the number of samples
+	// we are seeing on the scope (if my maths is right). The constant is empirically determined
+	acAlpha = 1.0-1.0/(1.15*scopePlotSpeed*scopePointCount);
 	double oldMin[] = minValues;
 	double oldMax[] = maxValues;
     	minValues = new double[scopePointCount];
@@ -91,11 +99,19 @@ class ScopePlot {
 	if (elm == null)
 		return;
 	double v = elm.getScopeValue(value);
+	if (isAcCoupled()) {
+	    // AC coupling filter. 1st order IIR high pass
+	    // y[i] = alpha x (y[i-1]+x[i]-x[i-1])
+	    double f=acAlpha*(acLastOut+v-lastValue);
+	    lastValue =v;
+	    v = f;
+	    acLastOut = f;
+	} else
+	    lastValue = v;
 	if (v < minValues[ptr])
 		minValues[ptr] = v;
 	if (v > maxValues[ptr])
 		maxValues[ptr] = v;
-	lastValue = v;
 	ctr++;
 	if (ctr >= scopePlotSpeed) {
 	    ptr = (ptr+1) & (scopePointCount-1);
@@ -139,6 +155,24 @@ class ScopePlot {
 	    color = (CirSim.theSim.printableCheckItem.getState()) ? "#000000" : "#FFFFFF";
 	    break;
 	}
+    }
+    
+    void setAcCoupled(boolean b) {
+	if (canAcCouple()) {
+	    acCoupled = b;
+	    if (b)
+		acLastOut = lastValue;
+	}
+	else
+	    acCoupled = false;
+    }
+    
+    boolean canAcCouple() {
+	return units == Scope.UNITS_V; // AC coupling is permitted if the plot is displaying volts
+    }
+    
+    boolean isAcCoupled() {
+	return acCoupled;
     }
 }
 
@@ -247,7 +281,7 @@ class Scope {
 	manualScale = b; 
 	for (ScopePlot p : plots) {
 	    if (!p.manScaleSet) {
-		p.manScale=getManScaleFromMaxScale(scale[p.value]);
+		p.manScale=getManScaleFromMaxScale(scale[p.units]);
 		p.manVPosition=0;
 		p.manScaleSet = true;
 	    }
@@ -1907,6 +1941,6 @@ class Scope {
     }
     
     public double getManScaleFromMaxScale(double s) {
-	return (2*s)/Double.valueOf(manDivisions);
+	return ScopePropertiesDialog.nextHighestScale((2*s)/Double.valueOf(manDivisions));
     }
 }
