@@ -308,6 +308,7 @@ public abstract class CompositeElm extends CircuitElm {
     public void stamp() {
 	for (int i = 0; i < compElmList.size(); i++) {
 	    CircuitElm ce = compElmList.get(i);
+	    ce.setParentList(compElmList);
 	    ce.stamp();
 	}
     }

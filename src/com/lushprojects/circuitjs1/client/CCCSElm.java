@@ -19,7 +19,12 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class CCCSElm extends VCCSElm {
+import java.util.Vector;
+
+class CCCSElm extends VCCSElm {
+	static int FLAG_SPICE = 2;
+	VoltageElm voltageSources[];
+	
 	public CCCSElm(int xa, int ya, int xb, int yb, int f,
 		      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
@@ -57,11 +62,16 @@ package com.lushprojects.circuitjs1.client;
       	}
 	String getChipName() { return "CCCS"; } 
 	void stamp() {
-            // voltage source (0V) between C+ and C- so we can measure current
             int i;
-            for (i = 0; i != inputCount; i += 2) {
-                int vn1 = pins[i+1].voltSource;
-                sim.stampVoltageSource(nodes[i], nodes[i+1], vn1, 0);
+            if (isSpiceStyle()) {
+        	for (i = 0; i != inputCount; i += 2)
+        	    pins[i+1].voltSource = voltageSources[i/2].getVoltageSource();
+            } else {
+                // voltage sources (0V) between C+ and C- so we can measure current
+        	for (i = 0; i != inputCount; i += 2) {
+        	    int vn1 = pins[i+1].voltSource;
+        	    sim.stampVoltageSource(nodes[i], nodes[i+1], vn1, 0);
+        	}
             }
 	    
             sim.stampNonLinear(nodes[inputCount]);
@@ -84,14 +94,18 @@ package com.lushprojects.circuitjs1.client;
             double convergeLimit = getConvergeLimit()*.1;
             
             int i;
-//          sim.debugger();
+            if (isSpiceStyle()) {
+        	// get current from connected voltage sources
+        	for (i = 0; i != inputPairCount; i++)
+        	    pins[i*2+1].current = voltageSources[i].getCurrent();
+            }
+            
             for (i = 0; i != inputPairCount; i++) {
                 double cur = pins[i*2+1].current;
                 if (Math.abs(cur-lastCurrents[i]) > convergeLimit)
                     sim.converged = false;
             }
 
-            int vn1 = pins[1].voltSource + sim.nodeList.size();
             if (expr != null) {
                 // calculate output
                 for (i = 0; i != inputPairCount; i++)
@@ -106,7 +120,6 @@ package com.lushprojects.circuitjs1.client;
                 for (i = 0; i != inputPairCount; i++) {
                     double cur = pins[i*2+1].current;
                     double dv = cur-lastCurrents[i];
-                    int vni = pins[i*2+1].voltSource + sim.nodeList.size();
                     if (Math.abs(dv) < 1e-6)
                         dv = 1e-6;
                     setCurrentExprValue(i, cur);
@@ -140,13 +153,14 @@ package com.lushprojects.circuitjs1.client;
         }
         
 	int getPostCount() { return inputCount+2; }
-	int getVoltageSourceCount() { return inputPairCount; }
+	int getVoltageSourceCount() { return isSpiceStyle() ? 0 : inputPairCount; }
 	int getDumpType() { return 215; }
 	boolean getConnection(int n1, int n2) {
             return (n1/2 == n2/2);
 	}
         boolean hasCurrentOutput() { return true; }
-	
+        boolean isSpiceStyle() { return (flags & FLAG_SPICE) != 0; }
+
         void setCurrent(int vn, double c) {
             int i;
             for (i = 0; i != inputCount; i += 2)
@@ -168,6 +182,32 @@ package com.lushprojects.circuitjs1.client;
                 setPoints();
             } else
                 super.setEditValue(n, ei);
+        }
+        
+        void setParentList(Vector<CircuitElm> elmList) {
+            int i, j;
+            if (!isSpiceStyle())
+                return;
+            
+            // look for voltage sources across our inputs and use them rather than
+            // creating our own.  this is useful for converting spice subcircuits
+            voltageSources = new VoltageElm[inputPairCount];
+            for (i = 0; i != inputCount; i += 2) {
+                for (j = 0; j != elmList.size(); j++) {
+                    CircuitElm ce = elmList.get(j);
+                    if (!(ce instanceof VoltageElm))
+                        continue;
+                    if (ce.getNode(0) == nodes[i] && ce.getNode(1) == nodes[i+1])
+                        voltageSources[i/2] = (VoltageElm)ce;
+                }
+            }
+        }
+        
+        void setVoltageSource(int j, int vs) {
+            if (isSpiceStyle())
+                pins[inputCount].voltSource = vs;
+            else
+                super.setVoltageSource(j, vs);
         }
     }
 

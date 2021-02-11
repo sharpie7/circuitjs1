@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import java.util.Vector;
+
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -187,6 +189,8 @@ public abstract class CircuitElm implements Editable {
     // get current for one- or two-terminal elements
     double getCurrent() { return current; }
 
+    void setParentList(Vector<CircuitElm> elmList) {}
+    
     // stamp matrix values for linear elements.
     // for non-linear elements, use this to stamp values that don't change each iteration, and call stampRightSide() or stampNonLinear() as needed
     void stamp() {}

@@ -98,6 +98,7 @@ class VoltageElm extends CircuitElm {
 	    return x*(2/pi)-1;
 	return 1-(x-pi)*(2/pi);
     }
+    int getVoltageSource() { return voltSource; }
     void stamp() {
 	if (waveform == WF_DC)
 	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource,

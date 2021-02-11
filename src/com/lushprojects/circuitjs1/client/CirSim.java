@@ -2095,7 +2095,11 @@ MouseOutHandler, MouseWheelHandler {
 	    return;
 
 	timeStep = maxTimeStep;
-	stampCircuit();
+	try {
+	    stampCircuit();
+	} catch (Exception e) {
+	    stop("Exception in stampCircuit()", null);
+	}
     }
     
     // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
@@ -2121,6 +2125,7 @@ MouseOutHandler, MouseWheelHandler {
 	// stamp linear circuit elements
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
+	    ce.setParentList(elmList);
 	    ce.stamp();
 	}
 
