@@ -308,11 +308,7 @@ public abstract class CompositeElm extends CircuitElm {
     public void stamp() {
 	for (int i = 0; i < compElmList.size(); i++) {
 	    CircuitElm ce = compElmList.get(i);
-	    // current sources need special stamp method
-	    if (ce instanceof CurrentElm)
-		((CurrentElm) ce).stampCurrentSource(false);
-	    else
-		ce.stamp();
+	    ce.stamp();
 	}
     }
 

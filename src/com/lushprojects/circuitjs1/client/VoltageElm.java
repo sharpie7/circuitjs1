@@ -337,10 +337,10 @@ class VoltageElm extends CircuitElm {
 	    // even though the frequency has changed.
 	    double oldfreq = frequency;
 	    frequency = ei.value;
-	    double maxfreq = 1/(8*sim.timeStep);
+	    double maxfreq = 1/(8*sim.maxTimeStep);
 	    if (frequency > maxfreq) {
 		if (Window.confirm(sim.LS("Adjust timestep to allow for higher frequencies?")))
-		    sim.timeStep = 1/(32*frequency);
+		    sim.maxTimeStep = 1/(32*frequency);
 		else
 		    frequency = maxfreq;
 	    }

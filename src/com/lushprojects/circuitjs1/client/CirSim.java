@@ -190,7 +190,21 @@ MouseOutHandler, MouseWheelHandler {
     int menuPlot = -1;
     int hintType = -1, hintItem1, hintItem2;
     String stopMessage;
+    
+    // current timestep (time between iterations)
     double timeStep;
+    
+    // maximum timestep (== timeStep unless we reduce it because of trouble converging)
+    double maxTimeStep;
+    double minTimeStep;
+    
+    // accumulated time since we incremented timeStepCount
+    double timeStepAccum;
+    
+    // incremented each time we advance t by maxTimeStep
+    int timeStepCount;
+    
+    boolean adjustTimeStep;
     static final int HINT_LC = 1;
     static final int HINT_RC = 2;
     static final int HINT_3DB_C = 3;
@@ -206,7 +220,7 @@ MouseOutHandler, MouseWheelHandler {
     CircuitElm plotXElm, plotYElm;
     int draggingPost;
     SwitchElm heldSwitchElm;
-    double circuitMatrix[][], circuitRightSide[],
+    double circuitMatrix[][], circuitRightSide[], lastNodeVoltages[], nodeVoltages[],
 	origRightSide[], origMatrix[][];
     RowInfo circuitRowInfo[];
     int circuitPermute[];
@@ -1702,7 +1716,7 @@ MouseOutHandler, MouseWheelHandler {
     // the voltage on their terminal nodes.  But wires have the same voltage at both ends, so we need
     // to use the neighbors' currents instead.  We used to treat wires as zero voltage sources to make
     // this easier, but this is very inefficient, since it makes the matrix 2 rows bigger for each wire.
-    // So we create a list of WireInfo objects instead to help us calculate the wire currents instead,
+    // We create a list of WireInfo objects instead to help us calculate the wire currents instead,
     // so we make the matrix less complex, and we only calculate the wire currents when we need them
     // (once per frame, not once per subiteration)
     boolean calcWireInfo() {
@@ -1765,25 +1779,14 @@ MouseOutHandler, MouseWheelHandler {
 	
 	return true;
     }
-    
-    void analyzeCircuit() {
-	if (elmList.isEmpty()) {
-	    postDrawList = new Vector<Point>();
-	    badConnectionList = new Vector<Point>();
-	    return;
-	}
-	stopMessage = null;
-	stopElm = null;
-	int i, j;
-	int vscount = 0;
-	nodeList = new Vector<CircuitNode>();
-	postCountMap = new HashMap<Point,Integer>();
+
+    // find or allocate ground node
+    void setGroundNode() {
+	int i;
 	boolean gotGround = false;
 	boolean gotRail = false;
 	CircuitElm volt = null;
-
-	calculateWireClosure();
-	
+	    
 	//System.out.println("ac1");
 	// look for voltage or ground element
 	for (i = 0; i != elmList.size(); i++) {
@@ -1816,10 +1819,12 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitNode cn = new CircuitNode();
 	    nodeList.addElement(cn);
 	}
-	//System.out.println("ac2");
+    }
 
-	// allocate nodes and voltage sources
-	LabeledNodeElm.resetNodeList();
+    // make list of nodes
+    void makeNodeList() {
+	int i, j;
+	int vscount = 0;
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
 	    int inodes = ce.getInternalNodeCount();
@@ -1872,54 +1877,25 @@ MouseOutHandler, MouseWheelHandler {
 		ce.setNode(cnl.num, nodeList.size());
 		nodeList.addElement(cn);
 	    }
+	    
+	    // also count voltage sources so we can allocate array
 	    vscount += ivs;
 	}
 	
-	makePostDrawList();
-	if (!calcWireInfo())
-	    return;
-	nodeMap = null; // done with this
+        voltageSources = new CircuitElm[vscount];
+    }
+    
+    Vector<Integer> unconnectedNodes;
+    
+    void findUnconnectedNodes() {
+	int i, j;
 	
-	voltageSources = new CircuitElm[vscount];
-	vscount = 0;
-	circuitNonLinear = false;
-	//System.out.println("ac3");
-
-	// determine if circuit is nonlinear
-	for (i = 0; i != elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    if (ce.nonLinear())
-		circuitNonLinear = true;
-	    int ivs = ce.getVoltageSourceCount();
-	    for (j = 0; j != ivs; j++) {
-		voltageSources[vscount] = ce;
-		ce.setVoltageSource(j, vscount++);
-	    }
-	}
-	voltageSourceCount = vscount;
-
-	int matrixSize = nodeList.size()-1 + vscount;
-	circuitMatrix = new double[matrixSize][matrixSize];
-	circuitRightSide = new double[matrixSize];
-	origMatrix = new double[matrixSize][matrixSize];
-	origRightSide = new double[matrixSize];
-	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
-	circuitRowInfo = new RowInfo[matrixSize];
-	circuitPermute = new int[matrixSize];
-	for (i = 0; i != matrixSize; i++)
-	    circuitRowInfo[i] = new RowInfo();
-	circuitNeedsMap = false;
-	
-	// stamp linear circuit elements
-	for (i = 0; i != elmList.size(); i++) {
-	    CircuitElm ce = getElm(i);
-	    ce.stamp();
-	}
-	//System.out.println("ac4");
-
-	// determine nodes that are not connected indirectly to ground
+	// determine nodes that are not connected indirectly to ground.
+	// all nodes must be connected to ground somehow, or else we
+	// will get a matrix error.
 	boolean closure[] = new boolean[nodeList.size()];
 	boolean changed = true;
+	unconnectedNodes = new Vector<Integer>();
 	closure[0] = true;
 	while (changed) {
 	    changed = false;
@@ -1953,15 +1929,29 @@ MouseOutHandler, MouseWheelHandler {
 	    // connect one of the unconnected nodes to ground with a big resistor, then try again
 	    for (i = 0; i != nodeList.size(); i++)
 		if (!closure[i] && !getCircuitNode(i).internal) {
+		    unconnectedNodes.add(i);
 		    console("node " + i + " unconnected");
-		    stampResistor(0, i, 1e8);
+//		    stampResistor(0, i, 1e8);   // do this later in connectUnconnectedNodes()
 		    closure[i] = true;
 		    changed = true;
 		    break;
 		}
 	}
-	//System.out.println("ac5");
-
+    }
+    
+    // take list of unconnected nodes, which we identified earlier, and connect them to ground
+    // with a big resistor.  otherwise we will get matrix errors
+    void connectUnconnectedNodes() {
+	int i;
+	for (i = 0; i != unconnectedNodes.size(); i++) {
+	    int n = unconnectedNodes.get(i);
+	    stampResistor(0, n, 1e8);
+	}
+    }
+    
+    boolean validateCircuit() {
+	int i, j;
+	
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
 	    // look for inductors with no current path
@@ -1978,10 +1968,7 @@ MouseOutHandler, MouseWheelHandler {
 		CurrentElm cur = (CurrentElm) ce;
 		FindPathInfo fpi = new FindPathInfo(FindPathInfo.INDUCT, ce,
 						    ce.getNode(1));
-		if (!fpi.findPath(ce.getNode(0))) {
-		    cur.stampCurrentSource(true);
-		} else
-		    cur.stampCurrentSource(false);
+		cur.setBroken(!fpi.findPath(ce.getNode(0)));
 	    }
 	    if (ce instanceof VCCSElm) {
 		VCCSElm cur = (VCCSElm) ce;
@@ -2001,7 +1988,7 @@ MouseOutHandler, MouseWheelHandler {
 						    ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
 			stop("Voltage source/wire loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 		}
 	    } else if (ce instanceof Switch2Elm) {
@@ -2010,7 +1997,7 @@ MouseOutHandler, MouseWheelHandler {
 		for (j = 1; j < ce.getPostCount(); j++)
 		    if (ce.getConnection(0, j) && fpi.findPath(ce.getNode(j))) {
 			stop("Voltage source/wire loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 	    }
 
@@ -2020,7 +2007,7 @@ MouseOutHandler, MouseWheelHandler {
 			    ce.getNode(0));
 		if (fpi.findPath(0)) {
 		    stop("Path to ground with no resistance!", ce);
-		    return;
+		    return false;
 		}
 	    }
 	    
@@ -2040,39 +2027,57 @@ MouseOutHandler, MouseWheelHandler {
 		    fpi = new FindPathInfo(FindPathInfo.CAP_V, ce, ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
 			stop("Capacitor loop with no resistance!", ce);
-			return;
+			return false;
 		    }
 		}
 	    }
 	}
-	//System.out.println("ac6");
-
-	if (!simplifyMatrix(matrixSize))
+	return true;
+    }
+    
+    // analyze the circuit when something changes, so it can be simulated
+    void analyzeCircuit() {
+	if (elmList.isEmpty()) {
+	    postDrawList = new Vector<Point>();
+	    badConnectionList = new Vector<Point>();
 	    return;
-	
-	/*
-	System.out.println("matrixSize = " + matrixSize + " " + circuitNonLinear);
-	for (j = 0; j != circuitMatrixSize; j++) {
-	    for (i = 0; i != circuitMatrixSize; i++)
-		System.out.print(circuitMatrix[j][i] + " ");
-	    System.out.print("  " + circuitRightSide[j] + "\n");
 	}
-	System.out.print("\n");*/
+	stopMessage = null;
+	stopElm = null;
+	int i, j;
+	nodeList = new Vector<CircuitNode>();
+	postCountMap = new HashMap<Point,Integer>();
 
-	// check if we called stop()
-	if (circuitMatrix == null)
-	    return;
+	calculateWireClosure();
+	setGroundNode();
+
+	// allocate nodes and voltage sources
+	LabeledNodeElm.resetNodeList();
+	makeNodeList();
 	
-	// if a matrix is linear, we can do the lu_factor here instead of
-	// needing to do it every frame
-	if (!circuitNonLinear) {
-	    if (!lu_factor(circuitMatrix, circuitMatrixSize, circuitPermute)) {
-		stop("Singular matrix!", null);
-		return;
+	makePostDrawList();
+	if (!calcWireInfo())
+	    return;
+	nodeMap = null; // done with this
+	
+	int vscount = 0;
+	circuitNonLinear = false;
+
+	// determine if circuit is nonlinear.  also set voltage sources
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    if (ce.nonLinear())
+		circuitNonLinear = true;
+	    int ivs = ce.getVoltageSourceCount();
+	    for (j = 0; j != ivs; j++) {
+		voltageSources[vscount] = ce;
+		ce.setVoltageSource(j, vscount++);
 	    }
 	}
-	
-	// show resistance in voltage sources if there's only one
+	voltageSourceCount = vscount;
+
+	// show resistance in voltage sources if there's only one.
+	// can't use voltageSourceCount here since that counts internal voltage sources, like the one in GroundElm
 	boolean gotVoltageSource = false;
 	showResistanceInVoltageSources = true;
 	for (i = 0; i != elmList.size(); i++) {
@@ -2085,10 +2090,59 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	}
 
+	findUnconnectedNodes();
+	if (!validateCircuit())
+	    return;
+
+	timeStep = maxTimeStep;
+	stampCircuit();
+    }
+    
+    // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
+    void stampCircuit() {
+	int i;
+	int matrixSize = nodeList.size()-1 + voltageSourceCount;
+	circuitMatrix = new double[matrixSize][matrixSize];
+	circuitRightSide = new double[matrixSize];
+	nodeVoltages = new double[nodeList.size()-1];
+	if (lastNodeVoltages == null || lastNodeVoltages.length != nodeVoltages.length)
+	    lastNodeVoltages = new double[nodeList.size()-1];
+	origMatrix = new double[matrixSize][matrixSize];
+	origRightSide = new double[matrixSize];
+	circuitMatrixSize = circuitMatrixFullSize = matrixSize;
+	circuitRowInfo = new RowInfo[matrixSize];
+	circuitPermute = new int[matrixSize];
+	for (i = 0; i != matrixSize; i++)
+	    circuitRowInfo[i] = new RowInfo();
+	circuitNeedsMap = false;
+	
+	connectUnconnectedNodes();
+
+	// stamp linear circuit elements
+	for (i = 0; i != elmList.size(); i++) {
+	    CircuitElm ce = getElm(i);
+	    ce.stamp();
+	}
+
+	if (!simplifyMatrix(matrixSize))
+	    return;
+	
+	// check if we called stop()
+	if (circuitMatrix == null)
+	    return;
+	
+	// if a matrix is linear, we can do the lu_factor here instead of
+	// needing to do it every frame
+	if (!circuitNonLinear) {
+	    if (!lu_factor(circuitMatrix, circuitMatrixSize, circuitPermute)) {
+		stop("Singular matrix!", null);
+		return;
+	    }
+	}
     }
 
-    // simplify the matrix; this speeds things up quite a bit, especially for
-    // digital circuits
+    // simplify the matrix; this speeds things up quite a bit, especially for digital circuits.
+    // or at least it did before we added wire removal
     boolean simplifyMatrix(int matrixSize) {
 	int i, j;
 	for (i = 0; i != matrixSize; i++) {
@@ -2097,7 +2151,9 @@ MouseOutHandler, MouseWheelHandler {
 	    RowInfo re = circuitRowInfo[i];
 	    /*System.out.println("row " + i + " " + re.lsChanges + " " + re.rsChanges + " " +
 			       re.dropRow);*/
-//	    if (qp != -100) continue;   // uncomment to disable matrix simplification
+	    
+//	    if (qp != -100) continue;   // uncomment this line to disable matrix simplification for debugging purposes
+	    
 	    if (re.lsChanges || re.dropRow || re.rsChanges)
 		continue;
 	    double rsadd = 0;
@@ -2197,8 +2253,8 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     // make list of posts we need to draw.  posts shared by 2 elements should be hidden, all
-    // others should be drawn.  We can't use the node list anymore because wires have the same
-    // node number at both ends.
+    // others should be drawn.  We can't use the node list for this purpose anymore because wires
+    // have the same node number at both ends.
     void makePostDrawList() {
 	postDrawList = new Vector<Point>();
 	badConnectionList = new Vector<Point>();
@@ -2391,7 +2447,7 @@ MouseOutHandler, MouseWheelHandler {
 	stampMatrix(n2, n1, -r0);
     }
 
-    // current from cn1 to cn2 is equal to voltage from vn1 to 2, divided by g
+    // specify that current from cn1 to cn2 is equal to voltage from vn1 to 2, divided by g
     void stampVCCurrentSource(int cn1, int cn2, int vn1, int vn2, double g) {
 	stampMatrix(cn1, vn1, g);
 	stampMatrix(cn2, vn2, g);
@@ -2415,6 +2471,8 @@ MouseOutHandler, MouseWheelHandler {
     // of dv in node j will increase the current into node i by x dv.
     // (Unless i or j is a voltage source node.)
     void stampMatrix(int i, int j, double x) {
+	if (Double.isInfinite(x))
+	    debugger();
 	if (i > 0 && j > 0) {
 	    if (circuitNeedsMap) {
 		i = circuitRowInfo[i-1].mapRow;
@@ -2484,6 +2542,7 @@ MouseOutHandler, MouseWheelHandler {
     
     boolean converged;
     int subIterations;
+    
     void runCircuit(boolean didAnalyze) {
 	if (circuitMatrix == null || elmList.size() == 0) {
 	    circuitMatrix = null;
@@ -2508,17 +2567,33 @@ MouseOutHandler, MouseWheelHandler {
 	
 	boolean delayWireProcessing = canDelayWireProcessing();
 	
+	int timeStepCountAtFrameStart = timeStepCount;
+	
+	// keep track of iterations completed without convergence issues
+	int goodIterations = 100;
+	boolean goodIteration = true;
+	
 	for (iter = 1; ; iter++) {
-	    int i, j, k, subiter;
+	    if (goodIterations >= 3 && timeStep < maxTimeStep && goodIteration) {
+		// things are going well, double the time step
+		timeStep = Math.min(timeStep*2, maxTimeStep);
+		console("timestep up = " + timeStep + " at " + t);
+		stampCircuit();
+		goodIterations = 0;
+	    }
+	    
+	    int i, j, subiter;
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
 		ce.startIteration();
 	    }
 	    steps++;
-	    final int subiterCount = 5000;
+	    int subiterCount = (adjustTimeStep && timeStep/2 > minTimeStep) ? 100 : 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
 		converged = true;
 		subIterations = subiter;
+//		if (t % .030 < .002 && timeStep > 1e-6)  // force nonconvergence for debugging
+//		    converged = false;
 		for (i = 0; i != circuitMatrixSize; i++)
 		    circuitRightSide[i] = origRightSide[i];
 		if (circuitNonLinear) {
@@ -2555,6 +2630,7 @@ MouseOutHandler, MouseWheelHandler {
 		    console("done");
 		}
 		if (circuitNonLinear) {
+		    // stop if converged (elements check for convergence in doStep())
 		    if (converged && subiter > 0)
 			break;
 		    if (!lu_factor(circuitMatrix, circuitMatrixSize,
@@ -2565,44 +2641,40 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		lu_solve(circuitMatrix, circuitMatrixSize, circuitPermute,
 			 circuitRightSide);
-		
-		for (j = 0; j != circuitMatrixFullSize; j++) {
-		    RowInfo ri = circuitRowInfo[j];
-		    double res = 0;
-		    if (ri.type == RowInfo.ROW_CONST)
-			res = ri.value;
-		    else
-			res = circuitRightSide[ri.mapCol];
-		    /*System.out.println(j + " " + res + " " +
-		      ri.type + " " + ri.mapCol);*/
-		    if (Double.isNaN(res)) {
-			converged = false;
-			//debugprint = true;
-			break;
-		    }
-		    if (j < nodeList.size()-1) {
-			CircuitNode cn = getCircuitNode(j+1);
-			for (k = 0; k != cn.links.size(); k++) {
-			    CircuitNodeLink cnl = (CircuitNodeLink)
-				cn.links.elementAt(k);
-			    cnl.elm.setNodeVoltage(cnl.num, res);
-			}
-		    } else {
-			int ji = j-(nodeList.size()-1);
-			//System.out.println("setting vsrc " + ji + " to " + res);
-			voltageSources[ji].setCurrent(ji, res);
-		    }
-		}
+		applySolvedRightSide(circuitRightSide);
 		if (!circuitNonLinear)
 		    break;
 	    }
-	    if (subiter > 5)
-		console("converged after " + subiter + " iterations\n");
 	    if (subiter == subiterCount) {
-		stop("Convergence failed!", null);
-		break;
+		// convergence failed
+		goodIterations = 0;
+		if (adjustTimeStep) {
+		    timeStep /= 2;
+		    console("timestep down to " + timeStep + " at " + t);
+		}
+		if (timeStep < minTimeStep || !adjustTimeStep) {
+		    console("convergence failed after " + subiter + " iterations");
+		    stop("Convergence failed!", null);
+		    break;
+		}
+		// we reduced the timestep.  reset circuit state to the way it was at start of iteration
+		setNodeVoltages(lastNodeVoltages);
+		stampCircuit();
+		continue;
 	    }
+	    if (subiter > 5 || timeStep < maxTimeStep)
+		console("converged after " + subiter + " iterations, timeStep = " + timeStep);
+	    if (subiter < 3 && goodIteration)
+		goodIterations++;
+	    else
+		goodIterations = 0;
 	    t += timeStep;
+	    timeStepAccum += timeStep;
+	    goodIteration = true;
+	    if (timeStepAccum >= maxTimeStep) {
+		timeStepAccum -= maxTimeStep;
+		timeStepCount++;
+	    }
 	    for (i = 0; i != elmList.size(); i++)
 		getElm(i).stepFinished();
 	    if (!delayWireProcessing)
@@ -2610,14 +2682,18 @@ MouseOutHandler, MouseWheelHandler {
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
 	    for (i=0; i != elmList.size(); i++)
-		if (getElm(i) instanceof ScopeElm )
+		if (getElm(i) instanceof ScopeElm)
 		    ((ScopeElm)getElm(i)).stepScope();
+	    // save last node voltages so we can restart the next iteration if necessary
+	    for (i = 0; i != lastNodeVoltages.length; i++)
+		lastNodeVoltages[i] = nodeVoltages[i];
+//	    console("set lastrightside at " + t + " " + lastNodeVoltages);
 		
 	    tm = System.currentTimeMillis();
 	    lit = tm;
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
 	    // those we have already completed.
-	    if ((iter+1)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
 		break;
 	    if (!simRunning)
 		break;
@@ -2628,6 +2704,46 @@ MouseOutHandler, MouseWheelHandler {
 //	System.out.println((System.currentTimeMillis()-lastFrameTime)/(double) iter);
     }
 
+    // set node voltages given right side found by solving matrix
+    void applySolvedRightSide(double rs[]) {
+//	console("setvoltages " + rs);
+	int j;
+	for (j = 0; j != circuitMatrixFullSize; j++) {
+	    RowInfo ri = circuitRowInfo[j];
+	    double res = 0;
+	    if (ri.type == RowInfo.ROW_CONST)
+		res = ri.value;
+	    else
+		res = rs[ri.mapCol];
+	    if (Double.isNaN(res)) {
+		converged = false;
+		break;
+	    }
+	    if (j < nodeList.size()-1) {
+		nodeVoltages[j] = res;
+	    } else {
+		int ji = j-(nodeList.size()-1);
+		voltageSources[ji].setCurrent(ji, res);
+	    }
+	}
+	
+	setNodeVoltages(nodeVoltages);
+    }
+    
+    // set node voltages in each element given an array of node voltages
+    void setNodeVoltages(double nv[]) {
+	int j, k;
+	for (j = 0; j != nv.length; j++) {
+	    double res = nv[j];
+	    CircuitNode cn = getCircuitNode(j+1);
+	    for (k = 0; k != cn.links.size(); k++) {
+		CircuitNodeLink cnl = (CircuitNodeLink)
+			cn.links.elementAt(k);
+		cnl.elm.setNodeVoltage(cnl.num, res);
+	    }
+	}
+    }
+    
     // we removed wires from the matrix to speed things up.  in order to display wire currents,
     // we need to calculate them now.
     void calcWireCurrents() {
@@ -2656,23 +2772,18 @@ MouseOutHandler, MouseWheelHandler {
     
     int min(int a, int b) { return (a < b) ? a : b; }
     int max(int a, int b) { return (a > b) ? a : b; }
-
-    
-    
-
     
     public void resetAction(){
     	int i;
-    	for (i = 0; i != elmList.size(); i++)
-    		getElm(i).reset();
-    	for (i = 0; i != scopeCount; i++)
-    		scopes[i].resetGraph(true);
-    	// TODO: Will need to do IE bug fix here?
     	analyzeFlag = true;
     	if (t == 0)
     	    setSimRunning(true);
-    	else
-    	    t=0;
+    	t = timeStepAccum = 0;
+    	timeStepCount = 0;
+    	for (i = 0; i != elmList.size(); i++)
+		getElm(i).reset();
+	for (i = 0; i != scopeCount; i++)
+		scopes[i].resetGraph(true);
     	repaint();
     }
     
@@ -3148,10 +3259,11 @@ MouseOutHandler, MouseWheelHandler {
 	f |= (powerCheckItem.getState()) ? 8 : 0;
 	f |= (showValuesCheckItem.getState()) ? 0 : 16;
 	// 32 = linear scale in afilter
+	f |= adjustTimeStep ? 64 : 0;
 	String dump = "$ " + f + " " +
-	    timeStep + " " + getIterCount() + " " +
+	    maxTimeStep + " " + getIterCount() + " " +
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
-	    powerBar.getValue() + "\n";
+	    powerBar.getValue() + " " + minTimeStep + "\n";
 		
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
@@ -3276,7 +3388,6 @@ MouseOutHandler, MouseWheelHandler {
     }
     
 	void readSetupFile(String str, String title) {
-		t = 0;
 		System.out.println(str);
 		// TODO: Maybe think about some better approach to cache management!
 		String url=GWT.getModuleBaseURL()+"circuits/"+str+"?v="+random.nextInt(); 
@@ -3329,9 +3440,11 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = getElm(i);
 		ce.delete();
 	    }
+	    t = timeStepAccum = 0;
 	    elmList.removeAllElements();
 	    hintType = -1;
-	    timeStep = 5e-6;
+	    maxTimeStep = 5e-6;
+	    minTimeStep = 50e-12;
 	    dotsCheckItem.setState(false);
 	    smallGridCheckItem.setState(false);
 	    powerCheckItem.setState(false);
@@ -3476,7 +3589,8 @@ MouseOutHandler, MouseWheelHandler {
 	voltsCheckItem.setState((flags & 4) == 0);
 	powerCheckItem.setState((flags & 8) == 8);
 	showValuesCheckItem.setState((flags & 16) == 0);
-	timeStep = new Double (st.nextToken()).doubleValue();
+	adjustTimeStep = (flags & 64) != 0;
+	maxTimeStep = timeStep = new Double (st.nextToken()).doubleValue();
 	double sp = new Double(st.nextToken()).doubleValue();
 	int sp2 = (int) (Math.log(10*sp)*24+61.5);
 	//int sp2 = (int) (Math.log(sp)*24+1.5);
@@ -3486,6 +3600,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	try {
 	    powerBar.setValue(new Integer(st.nextToken()).intValue());
+	    minTimeStep = Double.parseDouble(st.nextToken());
 	} catch (Exception e) {
 	}
 	setGrid();
