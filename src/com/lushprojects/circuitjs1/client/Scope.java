@@ -1535,10 +1535,14 @@ class Scope {
     
     String getScopeLabelOrText() {
     	String t = text;
-    	if (t == null)
+    	if (t == null) {
     	    t = getScopeText();
-    	t = CirSim.LS(t);
-    	return t;
+    	    if (t==null)
+    		return "";
+    	    return CirSim.LS(t);
+    	}
+    	else
+    	    return t;
     }
     
     void setSpeed(int sp) {

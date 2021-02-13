@@ -1058,14 +1058,20 @@ MouseOutHandler, MouseWheelHandler {
     public void composeSelectScopeMenu(MenuBar sb) {
 	sb.clearItems();
 	for( int i = 0; i < scopeCount; i++) {
-	    String s;
-	    s = LS("Scope")+" "+ Integer.toString(i+1) + " ("+SafeHtmlUtils.htmlEscape(scopes[i].getScopeLabelOrText())+")";
+	    String s, l;
+	    s = LS("Scope")+" "+ Integer.toString(i+1);
+	    l=scopes[i].getScopeLabelOrText();
+	    if (l!="")
+		s+=" ("+SafeHtmlUtils.htmlEscape(l)+")";
 	    sb.addItem(new MenuItem(s ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
 	}
 	int c = countScopeElms();
 	for (int j = 0; j < c; j++) {
-	    String s;
-	    s = LS("Undocked Scope")+" "+ Integer.toString(j+1) + " ("+SafeHtmlUtils.htmlEscape(getNthScopeElm(j).elmScope.getScopeLabelOrText())+")";
+	    String s,l;
+	    s = LS("Undocked Scope")+" "+ Integer.toString(j+1);
+	    l = getNthScopeElm(j).elmScope.getScopeLabelOrText();
+	    if (l!="")
+		s += " ("+SafeHtmlUtils.htmlEscape(l)+")";
 	    sb.addItem(new MenuItem(s, new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
 	}
     }

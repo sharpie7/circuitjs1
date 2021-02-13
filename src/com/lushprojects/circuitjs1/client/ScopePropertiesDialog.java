@@ -23,9 +23,6 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.canvas.client.Canvas;
-import com.google.gwt.canvas.dom.client.Context2d;
-import com.google.gwt.user.client.ui.ListBox;
 
 import java.util.Vector;
 
@@ -239,8 +236,10 @@ labelledGridManager gridLabels;
 
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
-		boolean labelsExpanded = true;
-		GWT.log("H"+Window.getClientHeight());
+		// We are going to try and keep the panel below the target height (defined to give some space)
+		int allowedHeight = Window.getClientHeight()*4/5;
+		boolean displayAll = allowedHeight > 600; // We can display everything as maximum height can be shown
+		boolean displayScales = allowedHeight > 470; // We can display the scales and any one other section. So expand scales and collapse rest
 		sim=asim;
 		scope = s;
 		Button okButton, applyButton2;
@@ -250,7 +249,7 @@ labelledGridManager gridLabels;
 
 // *************** VERTICAL SCALE ***********************************************************
 		Grid vSLG = new Grid(1,1); // Stupid grid to force labels to align without diving deep in to table CSS
-		vScaleLabel = new expandingLabel(CirSim.LS("Vertical Scale"), labelsExpanded);
+		vScaleLabel = new expandingLabel(CirSim.LS("Vertical Scale"), displayScales);
 		vSLG.setWidget(0,0,vScaleLabel.p);
 		fp.add(vSLG);
 		
@@ -358,7 +357,7 @@ labelledGridManager gridLabels;
 
 		
 		hScaleGrid = new Grid(2,4);
-		hScaleLabel = new expandingLabel(CirSim.LS("Horizontal Scale"), labelsExpanded);
+		hScaleLabel = new expandingLabel(CirSim.LS("Horizontal Scale"), displayScales);
 		hScaleGrid.setWidget(0, 0, hScaleLabel.p);
 		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, new Command() {
 		    public void execute() {
@@ -381,7 +380,7 @@ labelledGridManager gridLabels;
 		if (!transistor) {
 		    grid = new Grid(11, 3);
 		    gridLabels = new labelledGridManager(grid);
-		    gridLabels.addLabel(CirSim.LS("Plots"), labelsExpanded);
+		    gridLabels.addLabel(CirSim.LS("Plots"), displayAll);
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
@@ -389,7 +388,7 @@ labelledGridManager gridLabels;
 		} else {
 		    grid = new Grid(13,3);
 		    gridLabels = new labelledGridManager(grid);
-		    gridLabels.addLabel(CirSim.LS("Plots"), labelsExpanded);
+		    gridLabels.addLabel(CirSim.LS("Plots"), displayAll);
 		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
 		    addItemToGrid(grid, icBox = new ScopeCheckBox(CirSim.LS("Show Ic"), "showic"));
@@ -412,7 +411,7 @@ labelledGridManager gridLabels;
 		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(CirSim.LS("Log Spectrum"), "logspectrum"));
 		logSpectrumBox.addValueChangeHandler(this);
 		
-		gridLabels.addLabel(CirSim.LS("X-Y Plots"), labelsExpanded);
+		gridLabels.addLabel(CirSim.LS("X-Y Plots"), displayAll);
 		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
 		viBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, xyBox = new ScopeCheckBox(CirSim.LS("Plot X/Y"), "plotxy"));
@@ -421,7 +420,7 @@ labelledGridManager gridLabels;
 		    addItemToGrid(grid, vceIcBox = new ScopeCheckBox(CirSim.LS("Show Vce vs Ic"), "showvcevsic"));
 		    vceIcBox.addValueChangeHandler(this);
 		}
-		gridLabels.addLabel(CirSim.LS("Show Info"), labelsExpanded);
+		gridLabels.addLabel(CirSim.LS("Show Info"), displayAll);
 		addItemToGrid(grid, scaleBox = new ScopeCheckBox(CirSim.LS("Show Scale"), "showscale"));
 		scaleBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, peakBox = new ScopeCheckBox(CirSim.LS("Show Peak Value"), "showpeak"));
@@ -438,7 +437,7 @@ labelledGridManager gridLabels;
 		dutyBox.addValueChangeHandler(this); 
 		fp.add(grid);
 
-		gridLabels.addLabel(CirSim.LS("Custom Label"), labelsExpanded);
+		gridLabels.addLabel(CirSim.LS("Custom Label"), displayAll);
 		labelTextBox = new TextBox();
 		addItemToGrid(grid, labelTextBox);
 		String labelText = scope.getText();
@@ -511,12 +510,10 @@ labelledGridManager gridLabels;
 			end = g.getRowCount();
 		    for(int j=start+1; j<end; j++)
 			g.getRowFormatter().setVisible(j, labels.get(i).expanded);
-		    
 		}
 	    }
 	    
 	}
-	
 	
 	
 	void setScopeSpeedLabel() {
