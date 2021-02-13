@@ -593,8 +593,9 @@ labelledGridManager gridLabels;
 	    channelSettingsp.setVisible(scope.isManualScale() && vScaleLabel.expanded);
 	    vScaleGrid.setVisible(vScaleLabel.expanded);
 	    if (vScaleLabel.expanded) { 
-        	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale());
-        	    vScaleGrid.getRowFormatter().setVisible(1, scope.isManualScale());
+        	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale() && plotSelection<scope.visiblePlots.size() );
+        	    vScaleGrid.getRowFormatter().setVisible(1, scope.isManualScale() && plotSelection<scope.visiblePlots.size() );
+        	    vScaleGrid.getRowFormatter().setVisible(2, (!scope.isManualScale()) || plotSelection<scope.visiblePlots.size());
 	    }
 	    scaleUpButton.setVisible(scope.isManualScale());
 	    scaleDownButton.setVisible(scope.isManualScale());
@@ -608,6 +609,7 @@ labelledGridManager gridLabels;
 		    positionLabel.setText("CH "+String.valueOf(plotSelection+1)+" "+CirSim.LS("Position"));
 		    positionBar.setValue(p.manVPosition);
 		    dcButton.setEnabled(true);
+		    positionBar.enable();
 		    dcButton.setValue(! p.isAcCoupled());
 		    acButton.setEnabled(p.canAcCouple());
 		    acButton.setValue(p.isAcCoupled());
@@ -620,6 +622,8 @@ labelledGridManager gridLabels;
 		    positionLabel.setText("");
 		    dcButton.setEnabled(false);
 		    acButton.setEnabled(false);
+		    positionBar.disable();
+		    
 		}
 	    } else {
 		manualScaleId.setText("");

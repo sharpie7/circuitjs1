@@ -275,6 +275,8 @@ class Scope {
     }
     
     void setManualScale(boolean b) { 
+	if (b!=manualScale)
+	    clear2dView();
 	manualScale = b; 
 	for (ScopePlot p : plots) {
 	    if (!p.manScaleSet) {
@@ -305,6 +307,7 @@ class Scope {
     void setManualScaleValue(int plotId, double d) {
 	if (plotId >= visiblePlots.size() )
 	    return; // Shouldn't happen, but just in case...
+	clear2dView();
 	visiblePlots.get(plotId).manScale=d;
 	visiblePlots.get(plotId).manScaleSet=true;
     }
@@ -363,23 +366,29 @@ class Scope {
 	visiblePlots = new Vector<ScopePlot>();
 	int i;
 	int vc = 0, ac = 0, oc = 0;
-    	for (i = 0; i != plots.size(); i++) {
-    	    ScopePlot plot = plots.get(i);
-    	    if (plot.units == UNITS_V) {
-    		if (showV) {
-    		    visiblePlots.add(plot);
-    		    plot.assignColor(vc++);
-    		}
-    	    } else if (plot.units == UNITS_A) {
-    		if (showI) {
-    		    visiblePlots.add(plot);
-    		    plot.assignColor(ac++);
-    		}
-    	    } else {
-    		visiblePlots.add(plot);
-    		plot.assignColor(oc++);
-    	    }
-    	}
+	if (!plot2d) {
+        	for (i = 0; i != plots.size(); i++) {
+        	    ScopePlot plot = plots.get(i);
+        	    if (plot.units == UNITS_V) {
+        		if (showV) {
+        		    visiblePlots.add(plot);
+        		    plot.assignColor(vc++);
+        		}
+        	    } else if (plot.units == UNITS_A) {
+        		if (showI) {
+        		    visiblePlots.add(plot);
+        		    plot.assignColor(ac++);
+        		}
+        	    } else {
+        		visiblePlots.add(plot);
+        		plot.assignColor(oc++);
+        	    }
+        	}
+	} else { // In 2D mode the visible plots are the first two plots
+	    for(i =0; (i<2) && (i<plots.size()); i++) {
+		visiblePlots.add(plots.get(i));
+	    }
+	}
     }
     
     void setRect(Rectangle r) {
@@ -547,26 +556,32 @@ class Scope {
 	for (i = 0; i != plots.size(); i++)
 	    plots.get(i).timeStep();
 
-    	if (plot2d && imageContext!=null) {
-    	    boolean newscale = false;
-    	    if (plots.size() < 2)
-    		return;
+	int x=0;
+	int y=0;
+	
+	// For 2d plots we draw here rather than in the drawing routine
+    	if (plot2d && imageContext!=null && plots.size()>=2) {
     	    double v = plots.get(0).lastValue;
-    	    while (v > scaleX || v < -scaleX) {
-    		scaleX *= 2;
-    		newscale = true;
-    	    }
     	    double yval = plots.get(1).lastValue;
-    	    while (yval > scaleY || yval < -scaleY) {
-    		scaleY *= 2;
-    		newscale = true;
+    	    if (!isManualScale()) {
+        	    boolean newscale = false;
+        	    while (v > scaleX || v < -scaleX) {
+        		scaleX *= 2;
+        		newscale = true;
+        	    }
+        	    while (yval > scaleY || yval < -scaleY) {
+        		scaleY *= 2;
+        		newscale = true;
+        	    }
+        	    if (newscale)
+        		clear2dView();
+        	    double xa = v   /scaleX;
+        	    double ya = yval/scaleY;
+        	    x = (int) (rect.width *(1+xa)*.499);
+        	    y = (int) (rect.height*(1-ya)*.499);
+    	    } else {
+
     	    }
-    	    if (newscale)
-    		clear2dView();
-    	    double xa = v   /scaleX;
-    	    double ya = yval/scaleY;
-    	    int x = (int) (rect.width *(1+xa)*.499);
-    	    int y = (int) (rect.height*(1-ya)*.499);
     	    drawTo(x, y);
     	}
     }
@@ -772,6 +787,7 @@ class Scope {
     		g.drawString(text, x, yt);
     		yt += 15;
     	}
+    	// Axis
     	g.setColor(CircuitElm.positiveColor);
     	g.drawLine(0, rect.height/2, rect.width-1, rect.height/2);
     	if (!plotXY)
