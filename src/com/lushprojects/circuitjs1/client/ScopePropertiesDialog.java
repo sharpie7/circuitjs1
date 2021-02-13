@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -50,6 +51,7 @@ public class ScopePropertiesDialog extends DialogBox implements ValueChangeHandl
 	
 Panel fp, channelButtonsp, channelSettingsp;
 HorizontalPanel hp;
+HorizontalPanel vModep;
 CirSim sim;
 //RichTextArea textBox;
 TextArea textArea;
@@ -63,9 +65,11 @@ Scrollbar speedBar,positionBar;
 Scope scope;
 Grid grid, vScaleGrid, hScaleGrid;
 int nx, ny;
-Label scopeSpeedLabel, manualScaleLabel, vScaleLabel,vScaleList, manualScaleId, positionLabel;
+Label scopeSpeedLabel, manualScaleLabel,vScaleList, manualScaleId, positionLabel;
+expandingLabel vScaleLabel, hScaleLabel;
 Vector <Button> chanButtons = new Vector <Button>();
 int plotSelection = 0;
+labelledGridManager gridLabels;
 	
     class PlotClickHandler implements ClickHandler {
 	int num;
@@ -205,10 +209,38 @@ int plotSelection = 0;
 		b.removeStyleName("chsel");
 	}
     }
+    
+    class expandingLabel {
+	HorizontalPanel p;
+	Label l;
+	Button b;
+	Boolean expanded;
+	
+	expandingLabel(String s, Boolean ex) {
+	    expanded = ex;
+	    p = new HorizontalPanel();
+	    b = new Button(ex?"-":"+");
+	    b.addClickHandler(new ClickHandler() {
+		public void onClick(ClickEvent event) {
+		    expanded=!expanded;
+		    b.setHTML(expanded?"-":"+");
+		    updateUi();
+		}
+	    });
+	    b.addStyleName("expand-but");
+	    p.add(b);
+	    l = new Label (s);
+	    l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	    p.add(l);
+	    p.setCellVerticalAlignment(l, HasVerticalAlignment.ALIGN_BOTTOM);
+	}
+	
+    }
 
 	public ScopePropertiesDialog ( CirSim asim, Scope s) {
 		super();
-		HorizontalPanel vModeP;
+		boolean labelsExpanded = true;
+		GWT.log("H"+Window.getClientHeight());
 		sim=asim;
 		scope = s;
 		Button okButton, applyButton2;
@@ -217,15 +249,13 @@ int plotSelection = 0;
 		setText(CirSim.LS("Scope Properties"));
 
 // *************** VERTICAL SCALE ***********************************************************
-		vScaleLabel = new Label (CirSim.LS("Vertical Scale"));
-		vScaleLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-
-		fp.add(vScaleLabel);
-//		vScaleList = new Label("");
-//		fp.add(vScaleList);
+		Grid vSLG = new Grid(1,1); // Stupid grid to force labels to align without diving deep in to table CSS
+		vScaleLabel = new expandingLabel(CirSim.LS("Vertical Scale"), labelsExpanded);
+		vSLG.setWidget(0,0,vScaleLabel.p);
+		fp.add(vSLG);
 		
 				
-		vModeP = new HorizontalPanel();
+		vModep = new HorizontalPanel();
 		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
 		autoButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
@@ -249,10 +279,10 @@ int plotSelection = 0;
 	        	updateUi();
 	            }
 	        });
-		vModeP.add(autoButton);
-		vModeP.add(maxButton);
-		vModeP.add(manualButton);
-		fp.add(vModeP);
+		vModep.add(autoButton);
+		vModep.add(maxButton);
+		vModep.add(manualButton);
+		fp.add(vModep);
 		channelSettingsp = new VerticalPanel();
 		channelButtonsp = new FlowPanel();
 		updateChannelButtons();
@@ -324,11 +354,12 @@ int plotSelection = 0;
 		vScaleGrid.getCellFormatter().setVerticalAlignment(1, 1, HasVerticalAlignment.ALIGN_MIDDLE);
 		fp.add(vScaleGrid);
 
+		// *************** HORIZONTAL SCALE ***********************************************************
+
 		
 		hScaleGrid = new Grid(2,4);
-		Label l = new Label(CirSim.LS("Horizontal Scale"));
-		l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-		hScaleGrid.setWidget(0, 0, l);
+		hScaleLabel = new expandingLabel(CirSim.LS("Horizontal Scale"), labelsExpanded);
+		hScaleGrid.setWidget(0, 0, hScaleLabel.p);
 		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, new Command() {
 		    public void execute() {
 			scrollbarChanged();
@@ -343,20 +374,22 @@ int plotSelection = 0;
 	//	speedGrid.getColumnFormatter().setWidth(0, "40%");
 		fp.add(hScaleGrid);
 		
-
-				
+		// *************** PLOTS ***********************************************************
+		
 		CircuitElm elm = scope.getSingleElm();
 		boolean transistor = elm != null && elm instanceof TransistorElm;
 		if (!transistor) {
 		    grid = new Grid(11, 3);
-		    addLabelToGrid(grid,"Plots");
+		    gridLabels = new labelledGridManager(grid);
+		    gridLabels.addLabel(CirSim.LS("Plots"), labelsExpanded);
 		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
 		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
 		} else {
 		    grid = new Grid(13,3);
-		    addLabelToGrid(grid,"Plots");
+		    gridLabels = new labelledGridManager(grid);
+		    gridLabels.addLabel(CirSim.LS("Plots"), labelsExpanded);
 		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
 		    addItemToGrid(grid, icBox = new ScopeCheckBox(CirSim.LS("Show Ic"), "showic"));
@@ -379,7 +412,7 @@ int plotSelection = 0;
 		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(CirSim.LS("Log Spectrum"), "logspectrum"));
 		logSpectrumBox.addValueChangeHandler(this);
 		
-		addLabelToGrid(grid,"X-Y Plots");
+		gridLabels.addLabel(CirSim.LS("X-Y Plots"), labelsExpanded);
 		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
 		viBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, xyBox = new ScopeCheckBox(CirSim.LS("Plot X/Y"), "plotxy"));
@@ -388,7 +421,7 @@ int plotSelection = 0;
 		    addItemToGrid(grid, vceIcBox = new ScopeCheckBox(CirSim.LS("Show Vce vs Ic"), "showvcevsic"));
 		    vceIcBox.addValueChangeHandler(this);
 		}
-		addLabelToGrid(grid, "Show Info");
+		gridLabels.addLabel(CirSim.LS("Show Info"), labelsExpanded);
 		addItemToGrid(grid, scaleBox = new ScopeCheckBox(CirSim.LS("Show Scale"), "showscale"));
 		scaleBox.addValueChangeHandler(this); 
 		addItemToGrid(grid, peakBox = new ScopeCheckBox(CirSim.LS("Show Peak Value"), "showpeak"));
@@ -405,7 +438,7 @@ int plotSelection = 0;
 		dutyBox.addValueChangeHandler(this); 
 		fp.add(grid);
 
-		addLabelToGrid(grid, CirSim.LS("Custom Label"));
+		gridLabels.addLabel(CirSim.LS("Custom Label"), labelsExpanded);
 		labelTextBox = new TextBox();
 		addItemToGrid(grid, labelTextBox);
 		String labelText = scope.getText();
@@ -446,18 +479,45 @@ int plotSelection = 0;
 		show();
 	}
 
-	
-	
-	void addLabelToGrid(Grid g, String s) {
-	    if (nx !=0)
-		ny++;
-	    nx=0;
-	    Label l = new Label(CirSim.LS(s));
-	    l.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-	    g.setWidget(ny, nx, l);
-	    ny++;
+	class labelledGridManager {
+	    Grid g;
+	    Vector <expandingLabel> labels;
+	    Vector <Integer> labelRows;
+	    
+	    labelledGridManager(Grid gIn) {
+		g=gIn;
+		labels = new Vector <expandingLabel>();
+		labelRows = new Vector <Integer>();
+	    }
+	    
+	    void addLabel(String s, boolean e) {
+        	    if (nx != 0)
+        		ny++;
+        	    nx = 0;
+        	    expandingLabel l = new expandingLabel(CirSim.LS(s), e);
+        	    g.setWidget(ny, nx, l.p);
+        	    labels.add(l);
+        	    labelRows.add(ny);
+        	    ny++;
+	    }
+	    
+	    void updateRowVisibility() {
+		for (int i=0; i<labels.size(); i++) {
+		    int end;
+		    int start = labelRows.get(i);
+		    if (i<labels.size()-1)
+			end = labelRows.get(i+1);
+		    else
+			end = g.getRowCount();
+		    for(int j=start+1; j<end; j++)
+			g.getRowFormatter().setVisible(j, labels.get(i).expanded);
+		    
+		}
+	    }
 	    
 	}
+	
+	
 	
 	void setScopeSpeedLabel() {
 	    scopeSpeedLabel.setText(CircuitElm.getUnitText(scope.calcGridStepX(), "s")+"/div");
@@ -481,6 +541,9 @@ int plotSelection = 0;
 	}
 	
 	void updateUi() {
+	    vModep.setVisible(vScaleLabel.expanded);
+	    gridLabels.updateRowVisibility();
+	    hScaleGrid.getRowFormatter().setVisible(1, hScaleLabel.expanded);
 	    speedBar.setValue(10-(int)Math.round(Math.log(scope.speed)/Math.log(2)));
 	    if (voltageBox != null) {
 		voltageBox.setValue(scope.showV && !scope.showingValue(Scope.VAL_POWER));
@@ -530,9 +593,12 @@ int plotSelection = 0;
 	
 	void updateManualScaleUi() {
 	    updateChannelButtons();
-	    channelSettingsp.setVisible(scope.isManualScale());
-	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale());
-	    vScaleGrid.getRowFormatter().setVisible(1, scope.isManualScale());
+	    channelSettingsp.setVisible(scope.isManualScale() && vScaleLabel.expanded);
+	    vScaleGrid.setVisible(vScaleLabel.expanded);
+	    if (vScaleLabel.expanded) { 
+        	    vScaleGrid.getRowFormatter().setVisible(0, scope.isManualScale());
+        	    vScaleGrid.getRowFormatter().setVisible(1, scope.isManualScale());
+	    }
 	    scaleUpButton.setVisible(scope.isManualScale());
 	    scaleDownButton.setVisible(scope.isManualScale());
 	    if (scope.isManualScale()) {

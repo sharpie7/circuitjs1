@@ -99,15 +99,14 @@ class ScopePlot {
 	if (elm == null)
 		return;
 	double v = elm.getScopeValue(value);
-	if (isAcCoupled()) {
-	    // AC coupling filter. 1st order IIR high pass
-	    // y[i] = alpha x (y[i-1]+x[i]-x[i-1])
-	    double f=acAlpha*(acLastOut+v-lastValue);
-	    lastValue =v;
-	    v = f;
-	    acLastOut = f;
-	} else
-	    lastValue = v;
+	 // AC coupling filter. 1st order IIR high pass
+	 // y[i] = alpha x (y[i-1]+x[i]-x[i-1])
+	 // We calculate for all iterations (even DC coupled) to prime the data in case they switch to AC later
+	double newAcOut=acAlpha*(acLastOut+v-lastValue);
+	lastValue = v;
+	acLastOut = newAcOut;
+	if (isAcCoupled())
+	    v = newAcOut;
 	if (v < minValues[ptr])
 		minValues[ptr] = v;
 	if (v > maxValues[ptr])
@@ -160,8 +159,6 @@ class ScopePlot {
     void setAcCoupled(boolean b) {
 	if (canAcCouple()) {
 	    acCoupled = b;
-	    if (b)
-		acLastOut = lastValue;
 	}
 	else
 	    acCoupled = false;
