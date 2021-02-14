@@ -589,8 +589,8 @@ class Scope {
         	    y = (int) (rect.height*(1-ya)*.499);
     	    } else {
     		double gridPx = calc2dGridPx(rect.width, rect.height);
-    		x=(int)(rect.width*.499+(v/plots.get(0).manScale)*gridPx+gridPx*manDivisions*Double.valueOf(plots.get(0).manVPosition)/Double.valueOf(V_POSITION_STEPS));
-    		y=(int)(rect.height*.499-(yval/plots.get(1).manScale)*gridPx-gridPx*manDivisions*Double.valueOf(plots.get(1).manVPosition)/Double.valueOf(V_POSITION_STEPS));
+    		x=(int)(rect.width*.499+(v/plots.get(0).manScale)*gridPx+gridPx*manDivisions*(double)(plots.get(0).manVPosition)/(double)(V_POSITION_STEPS));
+    		y=(int)(rect.height*.499-(yval/plots.get(1).manScale)*gridPx-gridPx*manDivisions*(double)(plots.get(1).manVPosition)/(double)(V_POSITION_STEPS));
 
     	    }
     	    drawTo(x, y);
@@ -599,7 +599,7 @@ class Scope {
 
     double calc2dGridPx(int width, int height) {
 	int m = width<height?width:height;
-	return (Double.valueOf(m)/2)/(Double.valueOf(manDivisions)/2+0.05);
+	return ((double)(m)/2)/((double)(manDivisions)/2+0.05);
 	
     }
     
@@ -840,8 +840,8 @@ class Scope {
     		xValue = px.manScale*((double)(sim.mouseCursorX-rect.x-rect.width/2)/gridPx-manDivisions*px.manVPosition/(double)(V_POSITION_STEPS));
     		yValue = py.manScale*((double)(-sim.mouseCursorY+rect.y+rect.height/2)/gridPx-manDivisions*py.manVPosition/(double)(V_POSITION_STEPS));
     	    } else {
-    		xValue = (Double.valueOf(sim.mouseCursorX-rect.x)/(0.499*Double.valueOf(rect.width))-1.0)*scaleX;
-    		yValue = -(Double.valueOf(sim.mouseCursorY-rect.y)/(0.499*Double.valueOf(rect.height))-1.0)*scaleY;
+    		xValue = ((double)(sim.mouseCursorX-rect.x)/(0.499*(double)(rect.width))-1.0)*scaleX;
+    		yValue = -((double)(sim.mouseCursorY-rect.y)/(0.499*(double)(rect.height))-1.0)*scaleY;
     	    }
  	    info[0]=px.getUnitText(xValue);
     	    info[1]=py.getUnitText(yValue);
@@ -1025,7 +1025,7 @@ class Scope {
 
 
     double getGridMaxFromManScale(ScopePlot plot) {
-	return (Double.valueOf(manDivisions)/2+0.05)*plot.manScale;
+	return ((double)(manDivisions)/2+0.05)*plot.manScale;
     }
     
     void drawPlot(Graphics g, ScopePlot plot, boolean allPlotsSameUnits, boolean selected) {
@@ -1077,7 +1077,7 @@ class Scope {
     	} else {
     	    gridMid =0;
     	    gridMax = getGridMaxFromManScale(plot);
-    	    positionOffset = gridMax*2.0*Double.valueOf(plot.manVPosition)/Double.valueOf(V_POSITION_STEPS);
+    	    positionOffset = gridMax*2.0*(double)(plot.manVPosition)/(double)(V_POSITION_STEPS);
     	}
     	plot.plotOffset = -gridMid+positionOffset;
     	
@@ -2066,6 +2066,6 @@ class Scope {
     }
     
     public double getManScaleFromMaxScale(double s) {
-	return ScopePropertiesDialog.nextHighestScale((2*s)/Double.valueOf(manDivisions));
+	return ScopePropertiesDialog.nextHighestScale((2*s)/(double)(manDivisions));
     }
 }
