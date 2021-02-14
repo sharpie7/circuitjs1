@@ -580,12 +580,22 @@ class Scope {
         	    x = (int) (rect.width *(1+xa)*.499);
         	    y = (int) (rect.height*(1-ya)*.499);
     	    } else {
+    		double gridPx = calc2dGridPx(rect.width, rect.height);
+    		x=(int)(rect.width*.499+(v/plots.get(0).manScale)*gridPx+0.5*gridPx*manDivisions*Double.valueOf(plots.get(0).manVPosition)/Double.valueOf(V_POSITION_STEPS));
+    		y=(int)(rect.height*.499-(yval/plots.get(1).manScale)*gridPx-0.5*gridPx*manDivisions*Double.valueOf(plots.get(1).manVPosition)/Double.valueOf(V_POSITION_STEPS));
 
     	    }
     	    drawTo(x, y);
     	}
     }
 
+    double calc2dGridPx(int width, int height) {
+	int m = width<height?width:height;
+	return (Double.valueOf(m)/2)/(Double.valueOf(manDivisions)/2+0.05);
+	
+    }
+    
+    
     void drawTo(int x2, int y2) {
     	if (draw_ox == -1) {
     		draw_ox = x2;
@@ -641,7 +651,7 @@ class Scope {
 	    scale[UNITS_A] *= x;
 	    scale[UNITS_OHMS] *= x;
 	    scale[UNITS_W] *= x;
-	    scaleX *= x;
+	    scaleX *= x; // For XY plots
 	    scaleY *= x;
 	    return;
 	}
@@ -762,6 +772,7 @@ class Scope {
     		return;
     	g.context.save();
     	g.context.translate(rect.x, rect.y);
+    	g.clipRect(0, 0, rect.width, rect.height);
     	
     	alphadiv++;
     	
@@ -781,23 +792,38 @@ class Scope {
 //    	g.drawImage(image, r.x, r.y, null);
     	g.setColor(CircuitElm.whiteColor);
     	g.fillOval(draw_ox-2, draw_oy-2, 5, 5);
-    	int yt = 10;
-    	int x = 0;
-    	if (text != null &&  rect.height > yt+5) {
-    		g.drawString(text, x, yt);
-    		yt += 15;
-    	}
     	// Axis
     	g.setColor(CircuitElm.positiveColor);
     	g.drawLine(0, rect.height/2, rect.width-1, rect.height/2);
     	if (!plotXY)
     		g.setColor(Color.yellow);
     	g.drawLine(rect.width/2, 0, rect.width/2, rect.height-1);
+    	if (isManualScale()) {
+    	    double gridPx=calc2dGridPx(rect.width, rect.height);
+    	    g.setColor("#404040");
+    	    for(int i=-manDivisions; i<=manDivisions; i++) {
+    		if (i!=0)
+    		    g.drawLine((int)(gridPx*i)+rect.width/2, 0,(int)(gridPx*i)+rect.width/2, rect.height);
+    		    g.drawLine(0, (int)(gridPx*i)+rect.height/2,rect.width, (int)(gridPx*i)+rect.height/2);
+    	    }
+    	}
+	textY=10;
+	g.setColor(CircuitElm.whiteColor);
+    	if (text != null) {
+    	    drawInfoText(g, text);
+	}
+    	if (showScale && plots.size()>=2 && isManualScale()) {
+    	    ScopePlot px = plots.get(0);
+    	    String sx=px.getUnitText(px.manScale);
+    	    ScopePlot py = plots.get(1);
+    	    String sy=py.getUnitText(py.manScale);
+    	    drawInfoText(g,"X="+sx+"/div, Y="+sy+"/div");
+    	}
     	g.context.restore();
     	drawSettingsWheel(g);
     }
 	
-
+  
     
     boolean showSettingsWheel() {
 	return rect.height > 100 && rect.width > 100;
