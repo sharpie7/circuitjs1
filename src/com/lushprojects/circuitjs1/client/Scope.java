@@ -821,14 +821,20 @@ class Scope {
     	}
     	g.context.restore();
     	drawSettingsWheel(g);
-    	if (isManualScale() && !sim.dialogIsShowing() && rect.contains(sim.mouseCursorX, sim.mouseCursorY) && plots.size()>=2) {
+    	if ( !sim.dialogIsShowing() && rect.contains(sim.mouseCursorX, sim.mouseCursorY) && plots.size()>=2) {
     	    double gridPx=calc2dGridPx(rect.width, rect.height);
     	    String info[] = new String [2];
     	    ScopePlot px = plots.get(0);
-    	    double xValue = px.manScale*((double)(sim.mouseCursorX-rect.x-rect.width/2)/gridPx-manDivisions*px.manVPosition/(double)(V_POSITION_STEPS));
-    	    info[0]=px.getUnitText(xValue);
     	    ScopePlot py = plots.get(1);
- 	    double yValue = py.manScale*((double)(-sim.mouseCursorY+rect.y+rect.height/2)/gridPx-manDivisions*py.manVPosition/(double)(V_POSITION_STEPS));
+    	    double xValue;
+    	    double yValue;
+    	    if (isManualScale()) {
+    		xValue = px.manScale*((double)(sim.mouseCursorX-rect.x-rect.width/2)/gridPx-manDivisions*px.manVPosition/(double)(V_POSITION_STEPS));
+    		yValue = py.manScale*((double)(-sim.mouseCursorY+rect.y+rect.height/2)/gridPx-manDivisions*py.manVPosition/(double)(V_POSITION_STEPS));
+    	    } else {
+    		xValue = (Double.valueOf(sim.mouseCursorX-rect.x)/(0.499*Double.valueOf(rect.width))-1.0)*scaleX;
+    		yValue = -(Double.valueOf(sim.mouseCursorY-rect.y)/(0.499*Double.valueOf(rect.height))-1.0)*scaleY;
+    	    }
  	    info[0]=px.getUnitText(xValue);
     	    info[1]=py.getUnitText(yValue);
     	    
