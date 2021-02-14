@@ -51,6 +51,8 @@ class ScopePlot {
     double acAlpha = 0.9999; // Filter coefficient for AC coupling
     double acLastOut = 0; // Store y[i-1] term for AC coupling filter
     
+    final static int FLAG_AC=1;
+    
     ScopePlot(CircuitElm e, int u) {
 	elm = e;
 	units = u;
@@ -171,6 +173,10 @@ class ScopePlot {
     boolean isAcCoupled() {
 	return acCoupled;
     }
+    
+    int getPlotFlags() {
+	return (acCoupled ? FLAG_AC : 0);
+    }
 }
 
 class Scope {
@@ -179,6 +185,8 @@ class Scope {
     // bunch of other flags go here, see dump()
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
+    final int FLAG_PERPLOTFLAGS = 1<< 18; // new-new style dump with plot flags
+    final int FLAG_MAN_SCALE = 16;
     // other flags go here too, see dump()
     
     static final int VAL_POWER = 7;
@@ -1694,14 +1702,23 @@ class Scope {
     	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
 			(showMax ? 0 : 4) |   // showMax used to be always on
 			(showFreq ? 8 : 0) |
-			(manualScale ? 16 : 0) | (plot2d ? 64 : 0) |
+			(manualScale ? FLAG_MAN_SCALE : 0) | (plot2d ? 64 : 0) |
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
 			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0) |
 			(showAverage ? (1<<17) : 0);
-	flags |= FLAG_PLOTS;
+	flags |= FLAG_PLOTS; // 4096
+	int allPlotFlags = 0;
+	for (ScopePlot p : plots) {
+	    allPlotFlags |= p.getPlotFlags();
+	}
+	// If none of our plots has a flag set we will use the old format with no plot flags, or
+	// else we will set FLAG_PLOTFLAGS and include flags in all plots
+	flags |= (allPlotFlags !=0) ? FLAG_PERPLOTFLAGS :0; // (1<<18)
 	return flags;
     }
+    
+
     
     String dump() {
 	ScopePlot vPlot = plots.get(0);
@@ -1720,11 +1737,15 @@ class Scope {
     	int i;
     	for (i = 0; i < plots.size(); i++) {
     	    ScopePlot p = plots.get(i);
+    	    if ((flags & FLAG_PERPLOTFLAGS) !=0)
+    		x += " " + p.getPlotFlags();
     	    if (i > 0)
     		x += " " + sim.locateElm(p.elm) + " " + p.value;
     	    // dump scale if units are not V or A
     	    if (p.units > UNITS_A)
     		x += " " + scale[p.units];
+    	    if (isManualScale())
+    		x += " " + p.manScale +" " + p.manVPosition;
     	}
     	if (text != null)
     	    	x += " " + CustomLogicModel.escape(text);
@@ -1757,6 +1778,7 @@ class Scope {
     	scale[UNITS_OHMS] = scale[UNITS_W] = scale[UNITS_V];
     	text = null;
     	boolean plot2dFlag = (flags & 64) != 0;
+    	boolean hasPlotFlags = (flags & FLAG_PERPLOTFLAGS) != 0;
     	if ((flags & FLAG_PLOTS) != 0) {
     	    // new-style dump
     	    try {
@@ -1771,15 +1793,27 @@ class Scope {
     		int u = plots.get(0).units;
 		if (u > UNITS_A)
 		    scale[u] = Double.parseDouble(st.nextToken());
-    		
-    		for (i = 1; i != sz; i++) {
-    		    int ne = Integer.parseInt(st.nextToken());
-    		    int val = Integer.parseInt(st.nextToken());
-    		    CircuitElm elm = sim.getElm(ne);
-    		    u = elm.getScopeUnits(val);
-    		    if (u > UNITS_A)
-    			scale[u] = Double.parseDouble(st.nextToken());
-    		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u])));
+		
+    		int plotFlags = 0;
+    		for (i = 0; i != sz; i++) {
+    		    if (hasPlotFlags)
+    			plotFlags=Integer.parseInt(st.nextToken());
+    		    if (i!=0) {
+        		    int ne = Integer.parseInt(st.nextToken());
+        		    int val = Integer.parseInt(st.nextToken());
+        		    CircuitElm elm = sim.getElm(ne);
+        		    u = elm.getScopeUnits(val);
+        		    if (u > UNITS_A)
+        			scale[u] = Double.parseDouble(st.nextToken());
+        		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u])));
+    		    }
+    		    ScopePlot p = plots.get(i);
+    		    p.acCoupled = (plotFlags & ScopePlot.FLAG_AC) != 0;
+    		    p.manScaleSet = (flags & FLAG_MAN_SCALE) != 0;
+    		    if (p.manScaleSet) {
+    			p.manScale=Double.parseDouble(st.nextToken());
+    			p.manVPosition=Integer.parseInt(st.nextToken());
+    		    }
     		}
     		while (st.hasMoreTokens()) {
     		    if (text == null)
@@ -1828,7 +1862,7 @@ class Scope {
     	showV = (flags & 2) != 0;
     	showMax = (flags & 4) == 0;
     	showFreq = (flags & 8) != 0;
-    	manualScale = (flags & 16) != 0;
+    	manualScale = (flags & FLAG_MAN_SCALE) != 0;
     	plotXY = (flags & 128) != 0;
     	showMin = (flags & 256) != 0;
     	showScale = (flags & 512) !=0;
