@@ -79,9 +79,11 @@ public class Graphics {
 	  }
 	  
 	  public void drawString(String s, int x, int y){
-		//  context.beginPath();
 		  context.fillText(s, x, y);
-		//  context.closePath();
+	  }
+	  
+	  public double measureWidth(String s) {
+	      return context.measureText(s).getWidth();
 	  }
 	  
 	  public void setLineWidth(double width){

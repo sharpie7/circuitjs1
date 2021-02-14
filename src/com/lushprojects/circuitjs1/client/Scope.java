@@ -1341,20 +1341,42 @@ class Scope {
     }
     
     void drawScale(ScopePlot plot, Graphics g) {
-    	    String vScaleText="";
     	    if (!isManualScale()) {
-        	    if ( gridStepY!=0 && (!(showV && showI)))
-        		vScaleText=" V=" + plot.getUnitText(gridStepY)+"/div";
+        	    if ( gridStepY!=0 && (!(showV && showI))) {
+        		String vScaleText=" V=" + plot.getUnitText(gridStepY)+"/div";
+        	    	drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" + vScaleText);
+        	    }
     	    }  else {
+    		if (rect.y + rect.height <= textY+5)
+    		    return;
+    		double x = 0;
+    		String hs = "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div";
+    		g.drawString(hs, 0, textY);
+    		x+=g.measureWidth(hs);
+		final double bulletWidth = 17;
     		for (int i=0; i<visiblePlots.size(); i++) {
     		    ScopePlot p=visiblePlots.get(i);
     		    String s=p.getUnitText(p.manScale);
-    		    if (p!=null)
-    			vScaleText+=" CH"+String.valueOf(i+1)+"="+s+"/div";
+    		    if (p!=null) {
+    			String vScaleText="="+s+"/div";
+    			double vScaleWidth=g.measureWidth(vScaleText);
+    			if (x+bulletWidth+vScaleWidth > rect.width) {
+    			    x=0;
+    			    textY += 15;
+    			    if (rect.y + rect.height <= textY+5)
+    	    		    	return;
+    			}
+    			g.setColor(p.color);
+    			g.fillOval((int)x+7, textY-9, 8, 8);
+    			x+=bulletWidth;
+    			g.setColor(CircuitElm.whiteColor);
+    			g.drawString(vScaleText, (int)x, textY);
+    			x+=vScaleWidth;
+    		    }
     		}
+    		textY += 15;
     	    }
-    	    drawInfoText(g, "H="+CircuitElm.getUnitText(gridStepX, "s")+"/div" +
-    		    vScaleText);
+
 	
     }
     
