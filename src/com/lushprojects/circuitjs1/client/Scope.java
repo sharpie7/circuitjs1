@@ -44,7 +44,7 @@ class ScopePlot {
     CircuitElm elm;
     boolean manScaleSet = false; // Has anything been put in manual scale? (though we will try and keep sensible value in the scale anyway)
     double manScale = 1.0; // Units per division
-    int manVPosition = 0; // 0 is center of screen. +V_POSITION_STEPS is top of screen
+    int manVPosition = 0; // 0 is center of screen. +V_POSITION_STEPS/2 is top of screen
     double gridMult;
     double plotOffset;
     boolean acCoupled = false;
@@ -581,8 +581,8 @@ class Scope {
         	    y = (int) (rect.height*(1-ya)*.499);
     	    } else {
     		double gridPx = calc2dGridPx(rect.width, rect.height);
-    		x=(int)(rect.width*.499+(v/plots.get(0).manScale)*gridPx+0.5*gridPx*manDivisions*Double.valueOf(plots.get(0).manVPosition)/Double.valueOf(V_POSITION_STEPS));
-    		y=(int)(rect.height*.499-(yval/plots.get(1).manScale)*gridPx-0.5*gridPx*manDivisions*Double.valueOf(plots.get(1).manVPosition)/Double.valueOf(V_POSITION_STEPS));
+    		x=(int)(rect.width*.499+(v/plots.get(0).manScale)*gridPx+gridPx*manDivisions*Double.valueOf(plots.get(0).manVPosition)/Double.valueOf(V_POSITION_STEPS));
+    		y=(int)(rect.height*.499-(yval/plots.get(1).manScale)*gridPx-gridPx*manDivisions*Double.valueOf(plots.get(1).manVPosition)/Double.valueOf(V_POSITION_STEPS));
 
     	    }
     	    drawTo(x, y);
@@ -821,6 +821,20 @@ class Scope {
     	}
     	g.context.restore();
     	drawSettingsWheel(g);
+    	if (isManualScale() && !sim.dialogIsShowing() && rect.contains(sim.mouseCursorX, sim.mouseCursorY) && plots.size()>=2) {
+    	    double gridPx=calc2dGridPx(rect.width, rect.height);
+    	    String info[] = new String [2];
+    	    ScopePlot px = plots.get(0);
+    	    double xValue = px.manScale*((double)(sim.mouseCursorX-rect.x-rect.width/2)/gridPx-manDivisions*px.manVPosition/(double)(V_POSITION_STEPS));
+    	    info[0]=px.getUnitText(xValue);
+    	    ScopePlot py = plots.get(1);
+ 	    double yValue = py.manScale*((double)(-sim.mouseCursorY+rect.y+rect.height/2)/gridPx-manDivisions*py.manVPosition/(double)(V_POSITION_STEPS));
+ 	    info[0]=px.getUnitText(xValue);
+    	    info[1]=py.getUnitText(yValue);
+    	    
+    	    drawCrosshairsInfo(g, info, 2, true);
+    	    
+    	}
     }
 	
   
@@ -1214,6 +1228,10 @@ class Scope {
 	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
 	    info[ct++] = CircuitElm.getTimeText(t);
 	}
+	drawCrosshairsInfo(g, info, ct, false);
+    }
+    
+    void drawCrosshairsInfo(Graphics g, String[] info, int ct, Boolean drawY) {
 	int szw = 0, szh = 15*ct;
 	int i;
 	for (i = 0; i != ct; i++) {
@@ -1224,7 +1242,8 @@ class Scope {
 
 	g.setColor(CircuitElm.whiteColor);
 	g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
-	//	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
+	if (drawY)
+	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
 	g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
 	int bx = sim.mouseCursorX;
 	if (bx < szw/2)
@@ -1235,6 +1254,7 @@ class Scope {
 	    int w=(int)g.context.measureText(info[i]).getWidth();
 	    g.drawString(info[i], bx-w/2, rect.y-2-(ct-1-i)*15);
 	}
+	
     }
 
     boolean canShowRMS() {
