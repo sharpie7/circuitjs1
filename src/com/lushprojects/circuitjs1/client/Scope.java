@@ -42,7 +42,12 @@ class ScopePlot {
     double lastValue;
     String color;
     CircuitElm elm;
-    boolean manScaleSet = false; // Has anything been put in manual scale? (though we will try and keep sensible value in the scale anyway)
+   // Has a manual scale in "/div" format been put in by the user (as opposed to being
+   // inferred from a "MaxValue" format or from an automatically calculated scale)?
+   // Manual scales should be kept to sane values anyway, but this shows if this is a user
+   // intention we should respect, or if we should try and populate reasonable values from
+   // the data we have
+    boolean manScaleSet = false; 
     double manScale = 1.0; // Units per division
     int manVPosition = 0; // 0 is center of screen. +V_POSITION_STEPS/2 is top of screen
     double gridMult;
@@ -186,6 +191,7 @@ class Scope {
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
     final int FLAG_PERPLOTFLAGS = 1<< 18; // new-new style dump with plot flags
+    final int FLAG_PERPLOT_MAN_SCALE = 1<<19; // new-new style dump with manual included in each plot
     final int FLAG_MAN_SCALE = 16;
     // other flags go here too, see dump()
     
@@ -282,13 +288,13 @@ class Scope {
     	  fft = null;
     }
     
-    void setManualScale(boolean b) { 
-	if (b!=manualScale)
+    void setManualScale(boolean value, boolean roundup) { 
+	if (value!=manualScale)
 	    clear2dView();
-	manualScale = b; 
+	manualScale = value; 
 	for (ScopePlot p : plots) {
 	    if (!p.manScaleSet) {
-		p.manScale=getManScaleFromMaxScale(scale[p.units]);
+		p.manScale=getManScaleFromMaxScale(scale[p.units], roundup);
 		p.manVPosition=0;
 		p.manScaleSet = true;
 	    }
@@ -438,17 +444,17 @@ class Scope {
     
     void addValue(int val, CircuitElm ce) {
 	if (val == 0) {
-	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(scale[UNITS_V])));
+	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(scale[UNITS_V], false)));
 	    
 	    // create plot for current if applicable
 	    if (ce != null && !(ce instanceof OutputElm ||
 		    ce instanceof LogicOutputElm ||
 		    ce instanceof AudioOutputElm ||
 		    ce instanceof ProbeElm))
-		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT, getManScaleFromMaxScale(scale[UNITS_A])));
+		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT, getManScaleFromMaxScale(scale[UNITS_A], false)));
 	} else {
 	    int u = ce.getScopeUnits(val);
-	    plots.add(new ScopePlot(ce, u, val, getManScaleFromMaxScale(scale[u])));
+	    plots.add(new ScopePlot(ce, u, val, getManScaleFromMaxScale(scale[u], false)));
 	    if (u == UNITS_V)
 		showV = true;
 	    if (u == UNITS_A)
@@ -467,14 +473,14 @@ class Scope {
     void setValues(int val, int ival, CircuitElm ce, CircuitElm yelm) {
 	if (ival > 0) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival, getManScaleFromMaxScale(scale[ce.getScopeUnits(ival)])));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival, getManScaleFromMaxScale(scale[ce.getScopeUnits(ival)], false)));
 	    return;
 	}
 	if (yelm != null) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
-	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)])));
+	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
+	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
 	    return;
 	}
 	setValue(val);
@@ -1702,7 +1708,9 @@ class Scope {
     	int flags = (showI ? 1 : 0) | (showV ? 2 : 0) |
 			(showMax ? 0 : 4) |   // showMax used to be always on
 			(showFreq ? 8 : 0) |
-			(manualScale ? FLAG_MAN_SCALE : 0) | (plot2d ? 64 : 0) |
+			// In this version we always dump manual settings using the PERPLOT format
+			(isManualScale() ? (FLAG_MAN_SCALE | FLAG_PERPLOT_MAN_SCALE): 0) |
+			(plot2d ? 64 : 0) |
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
 			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0) |
@@ -1711,6 +1719,7 @@ class Scope {
 	int allPlotFlags = 0;
 	for (ScopePlot p : plots) {
 	    allPlotFlags |= p.getPlotFlags();
+	
 	}
 	// If none of our plots has a flag set we will use the old format with no plot flags, or
 	// else we will set FLAG_PLOTFLAGS and include flags in all plots
@@ -1744,7 +1753,7 @@ class Scope {
     	    // dump scale if units are not V or A
     	    if (p.units > UNITS_A)
     		x += " " + scale[p.units];
-    	    if (isManualScale())
+    	    if (isManualScale()) // In this version we always dump manual settings using the PERPLOT format
     		x += " " + p.manScale +" " + p.manVPosition;
     	}
     	if (text != null)
@@ -1805,12 +1814,12 @@ class Scope {
         		    u = elm.getScopeUnits(val);
         		    if (u > UNITS_A)
         			scale[u] = Double.parseDouble(st.nextToken());
-        		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u])));
+        		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u], false)));
     		    }
     		    ScopePlot p = plots.get(i);
     		    p.acCoupled = (plotFlags & ScopePlot.FLAG_AC) != 0;
-    		    p.manScaleSet = (flags & FLAG_MAN_SCALE) != 0;
-    		    if (p.manScaleSet) {
+    		    if ( (flags & FLAG_PERPLOT_MAN_SCALE) != 0) {
+    			p.manScaleSet = true;
     			p.manScale=Double.parseDouble(st.nextToken());
     			p.manVPosition=Integer.parseInt(st.nextToken());
     		    }
@@ -1962,7 +1971,7 @@ class Scope {
     		resetGraph();
     	}
     	if (mi == "manualscale")
-		setManualScale(state);
+		setManualScale(state, true);
     	if (mi == "plotxy") {
     		plotXY = plot2d = state;
     		if (plot2d)
@@ -2065,7 +2074,13 @@ class Scope {
 	return manualScale;
     }
     
-    public double getManScaleFromMaxScale(double s) {
-	return ScopePropertiesDialog.nextHighestScale((2*s)/(double)(manDivisions));
+    public double getManScaleFromMaxScale(double s, boolean roundUp) {
+	// When the user manually switches to manual scale (and we don't already have a setting) then
+	// call with "roundUp=true" to get a "sensible" suggestion for the scale. When importing from
+	// a legacy file then call with "roundUp=false" to stay as close as possible to the old presentation
+	if (roundUp)
+	    return ScopePropertiesDialog.nextHighestScale((2*s)/(double)(manDivisions));
+	else 
+	    return (2*s)/(double)(manDivisions);
     }
 }

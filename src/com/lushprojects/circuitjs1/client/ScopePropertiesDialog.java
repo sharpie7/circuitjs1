@@ -258,7 +258,7 @@ labelledGridManager gridLabels;
 		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
 		autoButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
-	        	scope.setManualScale(false);
+	        	scope.setManualScale(false, false);
 	        	scope.setMaxScale(false);
 	        	updateUi();
 	            }
@@ -266,7 +266,7 @@ labelledGridManager gridLabels;
 		maxButton = new RadioButton("vMode", CirSim.LS("Auto (Max Scale)"));
 		maxButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
-	        	scope.setManualScale(false);
+	        	scope.setManualScale(false, false);
 	        	scope.setMaxScale(true);
 	        	updateUi();
 	            }
@@ -274,7 +274,7 @@ labelledGridManager gridLabels;
 		manualButton = new RadioButton("vMode", CirSim.LS("Manual"));
 		manualButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
-	        	scope.setManualScale(true);
+	        	scope.setManualScale(true, true);
 	        	updateUi();
 	            }
 	        });
