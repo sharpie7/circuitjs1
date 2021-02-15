@@ -1740,7 +1740,8 @@ class Scope {
     	if (eno < 0)
     		return null;
     	String x = "o " + eno + " " +
-    			vPlot.scopePlotSpeed + " " + vPlot.value + " " + flags + " " +
+    			vPlot.scopePlotSpeed + " " + vPlot.value + " " 
+    			+ exportAsDecOrHex(flags, FLAG_PERPLOTFLAGS) + " " +
     			scale[UNITS_V] + " " + scale[UNITS_A] + " " + position + " " +
     			plots.size();
     	int i;
@@ -1775,7 +1776,7 @@ class Scope {
     	if (!(ce instanceof TransistorElm) && value == VAL_POWER_OLD)
     	    value = VAL_POWER;
     	
-    	int flags = new Integer(st.nextToken()).intValue();
+    	int flags = importDecOrHex(st.nextToken());
     	scale[UNITS_V] = new Double(st.nextToken()).doubleValue();
     	scale[UNITS_A] = new Double(st.nextToken()).doubleValue();
     	if (scale[UNITS_V] == 0)
@@ -2082,5 +2083,21 @@ class Scope {
 	    return ScopePropertiesDialog.nextHighestScale((2*s)/(double)(manDivisions));
 	else 
 	    return (2*s)/(double)(manDivisions);
+    }
+    
+    static String exportAsDecOrHex(int v, int thresh) {
+	// If v>=thresh then export as hex value prefixed by "x", else export as decimal
+	// Allows flags to be exported as dec if in an old value (for compatibility) or in hex if new value
+	if (v>=thresh)
+	    return "x"+Integer.toHexString(v);
+	else
+	    return Integer.toString(v);
+    }
+    
+    static int importDecOrHex(String s) {
+	if (s.charAt(0) == 'x')
+	    return Integer.parseInt(s.substring(1), 16);
+	else
+	    return Integer.parseInt(s);
     }
 }
