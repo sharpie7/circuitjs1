@@ -23,6 +23,7 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
 
+
 import java.util.Vector;
 
 import com.gargoylesoftware.htmlunit.javascript.host.Console;
@@ -1754,8 +1755,10 @@ class Scope {
     	    // dump scale if units are not V or A
     	    if (p.units > UNITS_A)
     		x += " " + scale[p.units];
-    	    if (isManualScale()) // In this version we always dump manual settings using the PERPLOT format
-    		x += " " + p.manScale +" " + p.manVPosition;
+    	    if (isManualScale()) {// In this version we always dump manual settings using the PERPLOT format
+    	        x += " " + p.manScale + " "  
+    		+ p.manVPosition;
+    	    }
     	}
     	if (text != null)
     	    	x += " " + CustomLogicModel.escape(text);
