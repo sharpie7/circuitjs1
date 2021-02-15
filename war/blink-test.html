@@ -58,7 +58,7 @@
   		console.log("processing text");
   		lines=request.responseText.split('\n');
   		for(var line =0; line < lines.length; line++) {
-  		  var res = lines[line].match(/^([a-zA-Z0-9]+\.txt)/g);
+  		  var res = lines[line].match(/^([a-zA-Z0-9\-]+\.txt)/g);
   		  if (res!=null) {
   		    files.push(res[0]);
   		 }

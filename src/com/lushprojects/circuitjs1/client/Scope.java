@@ -69,7 +69,9 @@ class ScopePlot {
 	units = u;
 	value = v;
 	manScale = manS;
-	
+	// I *think* all units other than V and A can only be positive, so for these move the v position to the bottom.
+	if (units > Scope.UNITS_A)
+	    manVPosition = -Scope.V_POSITION_STEPS/2;
     }
 
     int startIndex(int w) {
@@ -295,7 +297,7 @@ class Scope {
 	manualScale = value; 
 	for (ScopePlot p : plots) {
 	    if (!p.manScaleSet) {
-		p.manScale=getManScaleFromMaxScale(scale[p.units], roundup);
+		p.manScale=getManScaleFromMaxScale(p.units, roundup);
 		p.manVPosition=0;
 		p.manScaleSet = true;
 	    }
@@ -445,17 +447,17 @@ class Scope {
     
     void addValue(int val, CircuitElm ce) {
 	if (val == 0) {
-	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(scale[UNITS_V], false)));
+	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(UNITS_V, false)));
 	    
 	    // create plot for current if applicable
 	    if (ce != null && !(ce instanceof OutputElm ||
 		    ce instanceof LogicOutputElm ||
 		    ce instanceof AudioOutputElm ||
 		    ce instanceof ProbeElm))
-		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT, getManScaleFromMaxScale(scale[UNITS_A], false)));
+		plots.add(new ScopePlot(ce, UNITS_A, VAL_CURRENT, getManScaleFromMaxScale(UNITS_A, false)));
 	} else {
 	    int u = ce.getScopeUnits(val);
-	    plots.add(new ScopePlot(ce, u, val, getManScaleFromMaxScale(scale[u], false)));
+	    plots.add(new ScopePlot(ce, u, val, getManScaleFromMaxScale(u, false)));
 	    if (u == UNITS_V)
 		showV = true;
 	    if (u == UNITS_A)
@@ -474,14 +476,14 @@ class Scope {
     void setValues(int val, int ival, CircuitElm ce, CircuitElm yelm) {
 	if (ival > 0) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
-	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival, getManScaleFromMaxScale(scale[ce.getScopeUnits(ival)], false)));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits( val),  val, getManScaleFromMaxScale(ce.getScopeUnits( val), false)));
+	    plots.add(new ScopePlot(ce, ce.getScopeUnits(ival), ival, getManScaleFromMaxScale(ce.getScopeUnits(ival), false)));
 	    return;
 	}
 	if (yelm != null) {
 	    plots = new Vector<ScopePlot>();
-	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
-	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0, getManScaleFromMaxScale(scale[ce.getScopeUnits( val)], false)));
+	    plots.add(new ScopePlot(ce,   ce.getScopeUnits( val), 0, getManScaleFromMaxScale(ce.getScopeUnits( val), false)));
+	    plots.add(new ScopePlot(yelm, ce.getScopeUnits(ival), 0, getManScaleFromMaxScale(ce.getScopeUnits( val), false)));
 	    return;
 	}
 	setValue(val);
@@ -1614,7 +1616,7 @@ class Scope {
     	if (showDutyCycle)
     	    drawDutyCycle(g);
     	String t = getScopeLabelOrText();
-    	if (t != null) 
+    	if (t != null &&  t!= "") 
     	    drawInfoText(g, t);
     	if (showFreq)
     	    drawFrequency(g);
@@ -1798,14 +1800,14 @@ class Scope {
     		position = Integer.parseInt(st.nextToken());
     		int sz = Integer.parseInt(st.nextToken());
     		int i;
+    		int u = ce.getScopeUnits(value);
+		if (u > UNITS_A)
+		    scale[u] = Double.parseDouble(st.nextToken());
     		setValue(value);
     		// setValue(0) creates an extra plot for current, so remove that
     		while (plots.size() > 1)
     		    plots.removeElementAt(1);
-    		
-    		int u = plots.get(0).units;
-		if (u > UNITS_A)
-		    scale[u] = Double.parseDouble(st.nextToken());
+
 		
     		int plotFlags = 0;
     		for (i = 0; i != sz; i++) {
@@ -1818,7 +1820,7 @@ class Scope {
         		    u = elm.getScopeUnits(val);
         		    if (u > UNITS_A)
         			scale[u] = Double.parseDouble(st.nextToken());
-        		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(scale[u], false)));
+        		    plots.add(new ScopePlot(elm, u, val, getManScaleFromMaxScale(u, false)));
     		    }
     		    ScopePlot p = plots.get(i);
     		    p.acCoupled = (plotFlags & ScopePlot.FLAG_AC) != 0;
@@ -2078,10 +2080,13 @@ class Scope {
 	return manualScale;
     }
     
-    public double getManScaleFromMaxScale(double s, boolean roundUp) {
+    public double getManScaleFromMaxScale(int units, boolean roundUp) {
 	// When the user manually switches to manual scale (and we don't already have a setting) then
 	// call with "roundUp=true" to get a "sensible" suggestion for the scale. When importing from
 	// a legacy file then call with "roundUp=false" to stay as close as possible to the old presentation
+	double s =scale[units];
+	if ( units > UNITS_A)
+	    s = 0.5*s;
 	if (roundUp)
 	    return ScopePropertiesDialog.nextHighestScale((2*s)/(double)(manDivisions));
 	else 
