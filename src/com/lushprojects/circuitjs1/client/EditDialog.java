@@ -173,6 +173,8 @@ class EditDialog extends DialogBox  {
 		double va = Math.abs(v);
 		if (ei != null && ei.dimensionless)
 			return noCommaFormat.format(v);
+		if (Double.isInfinite(va))
+			return noCommaFormat.format(v);
 		if (v == 0) return "0";
 		if (va < 1e-12)
 			return noCommaFormat.format(v*1e15) + "f";
