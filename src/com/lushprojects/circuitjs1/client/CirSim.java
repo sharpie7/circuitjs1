@@ -140,6 +140,10 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem elmFlipMenuItem;
     MenuItem elmSplitMenuItem;
     MenuItem elmSliderMenuItem;
+    MenuItem stackAllItem;
+    MenuItem unstackAllItem;
+    MenuItem combineAllItem;
+    MenuItem separateAllItem;
     MenuBar mainMenuBar;
     MenuBar selectScopeMenuBar;
     MenuItem scopeRemovePlotMenuItem;
@@ -478,10 +482,10 @@ MouseOutHandler, MouseWheelHandler {
 	menuBar.addItem(LS("Draw"), drawMenuBar);
 
 	m = new MenuBar(true);
-	m.addItem(iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
-	m.addItem(iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
-	m.addItem(iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
-	m.addItem(iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
+	m.addItem(stackAllItem = iconMenuItem("lines", "Stack All", new MyCommand("scopes", "stackAll")));
+	m.addItem(unstackAllItem = iconMenuItem("columns", "Unstack All", new MyCommand("scopes", "unstackAll")));
+	m.addItem(combineAllItem = iconMenuItem("object-group", "Combine All", new MyCommand("scopes", "combineAll")));
+	m.addItem(separateAllItem = iconMenuItem("object-ungroup", "Separate All", new MyCommand("scopes", "separateAll")));
 	menuBar.addItem(LS("Scopes"), m);
 
 	optionsMenuBar = m = new MenuBar(true );
@@ -1067,11 +1071,23 @@ MouseOutHandler, MouseWheelHandler {
     
     public void composeSelectScopeMenu(MenuBar sb) {
 	sb.clearItems();
-	for( int i = 0; i < scopeCount; i++)
-	    sb.addItem(new MenuItem(LS("Scope")+" "+ Integer.toString(i+1) ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
+	for( int i = 0; i < scopeCount; i++) {
+	    String s, l;
+	    s = LS("Scope")+" "+ Integer.toString(i+1);
+	    l=scopes[i].getScopeLabelOrText();
+	    if (l!="")
+		s+=" ("+SafeHtmlUtils.htmlEscape(l)+")";
+	    sb.addItem(new MenuItem(s ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
+	}
 	int c = countScopeElms();
-	for (int j = 0; j < c; j++)
-	    sb.addItem(new MenuItem(LS("Undocked Scope")+" "+Integer.toString(j+1), new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
+	for (int j = 0; j < c; j++) {
+	    String s,l;
+	    s = LS("Undocked Scope")+" "+ Integer.toString(j+1);
+	    l = getNthScopeElm(j).elmScope.getScopeLabelOrText();
+	    if (l!="")
+		s += " ("+SafeHtmlUtils.htmlEscape(l)+")";
+	    sb.addItem(new MenuItem(s, new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
+	}
     }
     
     public void setiFrameHeight() {
@@ -1299,6 +1315,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	g.context.setLineCap(LineCap.ROUND);
 
+	if (noEditCheckItem.getState())
+	    g.drawLock(20, 30);
+	g.setColor(Color.white);
 	// draw elements
 	backcontext.setTransform(transform[0], transform[1], transform[2],
 				 transform[3], transform[4], transform[5]);
@@ -2837,7 +2856,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     public void menuPerformed(String menu, String item) {
-	if (menu=="edit" && noEditCheckItem.getState()) {
+	if ((menu=="edit" || menu=="main" || menu=="scopes") && noEditCheckItem.getState()) {
 	    Window.alert(LS("Editing disabled.  Re-enable from the Options menu."));
 	    return;
 	}
@@ -3121,36 +3140,62 @@ MouseOutHandler, MouseWheelHandler {
 	return (ScopeElm) null;
     }
     
+    
+    boolean canStackScope(int s) {
+	if (scopeCount < 2) 
+	    return false;
+	if (s==0)
+	    s=1;
+    	if (scopes[s].position == scopes[s-1].position)
+    	    return false;
+	return true;
+    }
+    
+    boolean canCombineScope(int s) {
+	return scopeCount >=2;
+    }
+    
+    boolean canUnstackScope(int s) {
+	if (scopeCount < 2) 
+	    return false;
+	if (s==0)
+	    s=1;
+    	if (scopes[s].position != scopes[s-1].position) {
+        	if ( s + 1 < scopeCount && scopes[s+1].position == scopes[s].position) // Allow you to unstack by selecting the top scope in the stack
+        	    return true;
+        	else
+        	    return false;
+    	}
+	return true;
+    }
 
     void stackScope(int s) {
+	if (! canStackScope(s) )
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
-    	if (scopes[s].position == scopes[s-1].position)
-    		return;
     	scopes[s].position = scopes[s-1].position;
     	for (s++; s < scopeCount; s++)
     		scopes[s].position--;
     }
 
     void unstackScope(int s) {
+	if (! canUnstackScope(s) )
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
-    	if (scopes[s].position != scopes[s-1].position)
-    		return;
+    	if (scopes[s].position != scopes[s-1].position) // Allow you to unstack by selecting the top scope in the stack
+    	    s++;
     	for (; s < scopeCount; s++)
     		scopes[s].position++;
     }
 
     void combineScope(int s) {
+	if (! canCombineScope(s))
+	    return;
     	if (s == 0) {
-    		if (scopeCount < 2)
-    			return;
     		s = 1;
     	}
     	scopes[s-1].combine(scopes[s]);
@@ -4092,7 +4137,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	if (scopes[scopeSelected].canMenu()) {
     	    	    menuScope=scopeSelected;
     	    	    menuPlot=scopes[scopeSelected].selectedPlot;
-    	    	    scopePopupMenu.doScopePopupChecks(false, scopes[scopeSelected]);
+    	    	    scopePopupMenu.doScopePopupChecks(false, canStackScope(scopeSelected), canCombineScope(scopeSelected), 
+    	    		    canUnstackScope(scopeSelected), scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(scopePopupMenu.getMenuBar());
     	    	    y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-160));
@@ -4126,7 +4172,7 @@ MouseOutHandler, MouseWheelHandler {
     	    	    ScopeElm s = (ScopeElm) mouseElm;
     	    	    if (s.elmScope.canMenu()) {
     	    		menuPlot = s.elmScope.selectedPlot;
-    	    		scopePopupMenu.doScopePopupChecks(true, s.elmScope);
+    	    		scopePopupMenu.doScopePopupChecks(true, false, false, false, s.elmScope);
     			contextPanel=new PopupPanel(true);
     			contextPanel.add(scopePopupMenu.getMenuBar());
     			contextPanel.setPopupPosition(menuClientX, menuClientY);
@@ -4314,10 +4360,20 @@ MouseOutHandler, MouseWheelHandler {
     
     
     void doMainMenuChecks() {
-    	int c = mainMenuItems.size();
-    	int i;
-    	for (i=0; i<c ; i++)
-    		mainMenuItems.get(i).setState(mainMenuItemNames.get(i)==mouseModeStr);
+	// Code to disable draw menu items when cct is not editable, but no used in this version as it
+	// puts up a dialog box instead (see menuPerformed).
+//    	int c = mainMenuItems.size();
+//    	int i;
+//    	for (i=0; i<c ; i++) {
+//    	    	String s = mainMenuItemNames.get(i);
+//    		mainMenuItems.get(i).setState(s==mouseModeStr);
+//    		if (s.length() > 3 && s.substring(s.length()-3)=="Elm")
+//    		    mainMenuItems.get(i).setEnabled(!noEditCheckItem.getState());
+//    	}
+    	stackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position > 0);
+    	unstackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position != scopeCount -1);
+    	combineAllItem.setEnabled(scopeCount > 1);
+    	separateAllItem.setEnabled(scopeCount > 0);
     }
     
  

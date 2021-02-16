@@ -50,11 +50,14 @@ public class ScopePopupMenu {
 	 m.addItem(propertiesItem = new CheckboxAlignedMenuItem(CirSim.LS("Properties..."), new MyCommand("scopepop", "properties")));
     }
     
-    void doScopePopupChecks( boolean floating, Scope s) {
+    void doScopePopupChecks( boolean floating, boolean canstack, boolean cancombine, boolean canunstack, Scope s) {
 	maxScaleItem.setState(s.maxScale);
 	stackItem.setVisible(!floating);
+	stackItem.setEnabled(canstack);
 	unstackItem.setVisible(!floating);
+	unstackItem.setEnabled(canunstack);
 	combineItem.setVisible(!floating);
+	combineItem.setEnabled(cancombine);
 	dockItem.setVisible(floating);
 	undockItem.setVisible(!floating);
     }

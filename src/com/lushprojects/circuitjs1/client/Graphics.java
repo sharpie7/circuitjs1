@@ -79,9 +79,11 @@ public class Graphics {
 	  }
 	  
 	  public void drawString(String s, int x, int y){
-		//  context.beginPath();
 		  context.fillText(s, x, y);
-		//  context.closePath();
+	  }
+	  
+	  public double measureWidth(String s) {
+	      return context.measureText(s).getWidth();
 	  }
 	  
 	  public void setLineWidth(double width){
@@ -133,6 +135,20 @@ public class Graphics {
 	  
 	  Font getFont(){
 		  return currentFont;
+	  }
+	  
+	  public void drawLock(int x, int y) {
+	      context.save();
+	      setColor(new Color(209,75,75));
+	      context.setLineWidth(3);
+	      fillRect(x,y,30,20);
+	      context.beginPath();
+	      context.moveTo(x+15-10, y);
+	      context.lineTo(x+15-10 , y -4);
+	      context.arc(x+15,y-4,10,-3.1415, 0);
+	      context.lineTo(x+15+10, y);
+	      context.stroke();
+	      context.restore();
 	  }
 	  
 	   static int distanceSq(int x1, int y1, int x2, int y2) {
