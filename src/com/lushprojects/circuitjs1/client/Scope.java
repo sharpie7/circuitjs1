@@ -1751,7 +1751,7 @@ class Scope {
     	for (i = 0; i < plots.size(); i++) {
     	    ScopePlot p = plots.get(i);
     	    if ((flags & FLAG_PERPLOTFLAGS) !=0)
-    		x += " " + p.getPlotFlags();
+    		x += " " + Integer.toHexString(p.getPlotFlags()); // NB always export in Hex (no prefix)
     	    if (i > 0)
     		x += " " + sim.locateElm(p.elm) + " " + p.value;
     	    // dump scale if units are not V or A
@@ -1812,7 +1812,7 @@ class Scope {
     		int plotFlags = 0;
     		for (i = 0; i != sz; i++) {
     		    if (hasPlotFlags)
-    			plotFlags=Integer.parseInt(st.nextToken());
+    			plotFlags=Integer.parseInt(st.nextToken(), 16); // Import in hex (no prefix)
     		    if (i!=0) {
         		    int ne = Integer.parseInt(st.nextToken());
         		    int val = Integer.parseInt(st.nextToken());
