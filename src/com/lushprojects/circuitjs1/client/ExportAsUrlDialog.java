@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.Window.Location;
@@ -41,7 +42,7 @@ public class ExportAsUrlDialog extends DialogBox {
 	
 	VerticalPanel vp;
 	Button shortButton;
-	static RichTextArea tb;
+	static TextArea textArea;
 	String requrl;
 	
 	public boolean shortIsSupported() {
@@ -59,7 +60,7 @@ public class ExportAsUrlDialog extends DialogBox {
 	{
     	String url;
     	url = "shortrelay.php"+"?v="+urlin; 
-    	tb.setText("Waiting for short URL for web service...");
+    	textArea.setText("Waiting for short URL for web service...");
 		RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
 		try {
 			requestBuilder.sendRequest(null, new RequestCallback() {
@@ -71,12 +72,12 @@ public class ExportAsUrlDialog extends DialogBox {
 					// processing goes here
 					if (response.getStatusCode()==Response.SC_OK) {
 					String text = response.getText();
-					tb.setText(text);
+					textArea.setText(text);
 					// end or processing
 					}
 					else  {
 						String text="Shortner error:"+response.getStatusText();
-						tb.setText(text);
+						textArea.setText(text);
 						GWT.log(text );
 					}
 				}
@@ -96,7 +97,7 @@ public class ExportAsUrlDialog extends DialogBox {
 		String query="?ctz=" + compress(dump);
 		dump = start[0] + query;
 		requrl = URL.encodeQueryString(query);
-		Button okButton;
+		Button okButton, copyButton;
 	
 		Label la1, la2;
 		vp=new VerticalPanel();
@@ -107,18 +108,21 @@ public class ExportAsUrlDialog extends DialogBox {
 			vp.add( la1= new Label(CirSim.LS("Warning: this URL is longer than 2000 characters and may not work in some browsers."), true));
 			la1.setWidth("300px");
 		}
-		vp.add(tb = new RichTextArea());
-		tb.setText(dump);
+		vp.add(textArea = new TextArea());
+		textArea.setWidth("400px");
+		textArea.setHeight("300px");
+		textArea.setText(dump);
 //		tb.setMaxLength(s.length());
 //		tb.setVisibleLength(s.length());
-		vp.add(la2 = new Label(CirSim.LS("To save this URL select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to a suitable place."), true));
-		la2.setWidth("300px");
+//		vp.add(la2 = new Label(CirSim.LS("To save this URL select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to a suitable place."), true));
+//		la2.setWidth("300px");
 		
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setWidth("100%");
 		hp.setStyleName("topSpace");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.add(okButton = new Button(CirSim.LS("OK")));
+		hp.add(copyButton = new Button(CirSim.LS("Copy to Clipboard")));
 		vp.add(hp);
 		if (shortIsSupported()) {
 			hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -136,6 +140,14 @@ public class ExportAsUrlDialog extends DialogBox {
 				closeDialog();
 			}
 		});
+		copyButton.addClickHandler(new ClickHandler() {
+		    public void onClick(ClickEvent event) {
+			textArea.setFocus(true);
+			textArea.selectAll();
+			copyToClipboard();
+			textArea.setSelectionRange(0,0);
+		    }
+		});
 		this.center();
 	}
 	
@@ -143,5 +155,9 @@ public class ExportAsUrlDialog extends DialogBox {
 	{
 		this.hide();
 	}
+	
+	private static native boolean copyToClipboard() /*-{
+	    return $doc.execCommand('copy');
+	}-*/;
 
 }
