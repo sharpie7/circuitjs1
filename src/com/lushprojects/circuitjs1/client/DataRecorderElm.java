@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Anchor;
 
 public class DataRecorderElm extends CircuitElm {
     int dataCount, dataPtr;
+    int lastTimeStepCount;
     double data[];
     boolean dataFull;
     
@@ -27,6 +28,7 @@ public class DataRecorderElm extends CircuitElm {
 	void reset() {
 	    dataPtr = 0;
 	    dataFull = false;
+	    lastTimeStepCount = 0;
 	}
 	void setPoints() {
 	    super.setPoints();
@@ -54,7 +56,10 @@ public class DataRecorderElm extends CircuitElm {
 	    arr[2] = (dataFull ? dataCount : dataPtr) + "/" + dataCount;
 	}
 	void stepFinished() {
+	    if (lastTimeStepCount == sim.timeStepCount)
+		return;
 	    data[dataPtr++] = volts[0];
+	    lastTimeStepCount = sim.timeStepCount;
 	    if (dataPtr >= dataCount) {
 		dataPtr = 0;
 		dataFull = true;

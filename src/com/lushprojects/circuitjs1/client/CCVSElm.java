@@ -19,114 +19,197 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class CCVSElm extends VCCSElm {
+import java.util.Vector;
+
+import com.lushprojects.circuitjs1.client.ChipElm.Pin;
+
+class CCVSElm extends VCCSElm {
+    	static int FLAG_SPICE = 2;
+    	VoltageElm voltageSources[];
+    	int outputVS;
+    
 	public CCVSElm(int xa, int ya, int xb, int yb, int f,
 		      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 //	    exprString = CustomLogicModel.unescape(st.nextToken());
-	    inputCount = 2;
+//	    inputCount = 2;
 //	    parseExpr();
 	    setupPins();
 	}
 	public CCVSElm(int xx, int yy) {
 	    super(xx, yy);
-	    exprString = "2*i";
+	    exprString = "2*a";
 	    parseExpr();
 //	    setupPins();
 	}
 	
+	int inputPairCount;
+	
 	void setupPins() {
 	    sizeX = 2;
-	    sizeY = 2;
-	    pins = new Pin[3];
-	    pins[0] = new Pin(0, SIDE_W, "C+");
-	    pins[1] = new Pin(1, SIDE_W, "C-");
-	    pins[1].output = true;
-	    pins[2] = new Pin(0, SIDE_E, "V+");
-	    pins[2].output = true;
-	    pins[3] = new Pin(1, SIDE_E, "V-");
-	    exprState = new ExprState(1);
+	    sizeY = inputCount > 2 ? inputCount : 2;
+	    inputPairCount = inputCount/2;
+	    pins = new Pin[inputCount+2];
+	    int i;
+	    for (i = 0; i != inputPairCount; i++) {
+                pins[i*2  ] = new Pin(i*2,   SIDE_W, Character.toString((char)('A'+i)) + "+");
+                pins[i*2+1] = new Pin(i*2+1, SIDE_W, Character.toString((char)('A'+i)) + "-");
+                pins[i*2+1].output = true;
+	    }
+	    pins[i*2] = new Pin(0, SIDE_E, "V+");
+	    pins[i*2].output = true;
+	    pins[i*2+1] = new Pin(1, SIDE_E, "V-");
+	    exprState = new ExprState(inputPairCount);
+	    lastCurrents = new double[inputPairCount];
+	    allocNodes();
 	}
-	String getChipName() { return "CCVS"; } 
+	
+	String getChipName() { return "CCVS"; }
+	
 	void stamp() {
-	    // voltage source (0V) between C+ and C- so we can measure current
-            int vn1 = pins[1].voltSource;
-	    sim.stampVoltageSource(nodes[0], nodes[1], vn1, 0);
+	    int i;
+	    if (isSpiceStyle()) {
+		for (i = 0; i != inputCount; i += 2)
+		    pins[i+1].voltSource = voltageSources[i/2].getVoltageSource();
+	    } else {
+		// voltage source (0V) between C+ and C- so we can measure current
+		for (i = 0; i != inputCount; i += 2) {
+		    int vn1 = pins[i+1].voltSource;
+		    sim.stampVoltageSource(nodes[i], nodes[i+1], vn1, 0);
+		}
+	    }
 	    
 	    // voltage source for outputs
-            int vn2 = pins[2].voltSource;
+	    int vn2 = pins[inputCount].voltSource;
+            outputVS = vn2;
             sim.stampNonLinear(vn2 + sim.nodeList.size());
-            sim.stampVoltageSource(nodes[3], nodes[2], vn2);
+            sim.stampVoltageSource(nodes[inputCount+1], nodes[inputCount], vn2);
 	}
 
-	double lastCurrent;
+	double lastCurrents[];
 	
         void doStep() {
             // converged yet?
-//            double limitStep = getLimitStep()*.1;
             double convergeLimit = getConvergeLimit()*.1;
             
-            double cur = pins[1].current;
-            if (Math.abs(cur-lastCurrent) > convergeLimit) {
-        	sim.converged = false;
-//        	if (Math.abs(cur-lastCurrent) > limitStep)
-//        	    volts[i] = lastVolts[i] + sign(volts[i]-lastVolts[i], limitStep);
+            int i;
+            if (isSpiceStyle()) {
+                for (i = 0; i != inputPairCount; i++)
+                    pins[i*2+1].current = voltageSources[i].getCurrent();
             }
-            int vn1 = pins[1].voltSource + sim.nodeList.size();
-            int vn2 = pins[2].voltSource + sim.nodeList.size();
+            
+            for (i = 0; i != inputPairCount; i++) {
+        	double cur = pins[i*2+1].current;
+        	if (Math.abs(cur-lastCurrents[i]) > convergeLimit)
+        	    sim.converged = false;
+            }
+            
+            int vno = outputVS + sim.nodeList.size();
             if (expr != null) {
         	// calculate output
-        	exprState.values[8] = cur;  // I = current
+        	for (i = 0; i != inputPairCount; i++)
+        	    setCurrentExprValue(i, pins[i*2+1].current);
         	exprState.t = sim.t;
         	double v0 = expr.eval(exprState);
         	double rs = v0;
-
-        	double dv = 1e-6;
-        	exprState.values[8] = cur+dv;
-        	double v = expr.eval(exprState);
-        	exprState.values[8] = cur-dv;
-        	double v2 = expr.eval(exprState);
-        	double dx = (v-v2)/(dv*2);
-        	if (Math.abs(dx) < 1e-6)
-        	    dx = sign(dx, 1e-6);
-        	sim.stampMatrix(vn2, vn1, -dx);
-        	// adjust right side
-        	rs -= dx*cur;
-        	//                	sim.console("ccedx " + cur + " " + dx + " " + rs);
-        	sim.stampRightSide(vn2, rs);
+        	
+        	for (i = 0; i != inputPairCount; i++) {
+        	    double cur = pins[i*2+1].current;
+        	    double dv = cur-lastCurrents[i];
+                    int vni = pins[i*2+1].voltSource + sim.nodeList.size();
+        	    if (Math.abs(dv) < 1e-6)
+        		dv = 1e-6;
+        	    setCurrentExprValue(i, cur);
+        	    double v = expr.eval(exprState);
+        	    setCurrentExprValue(i, cur-dv);
+        	    double v2 = expr.eval(exprState);
+        	    double dx = (v-v2)/dv;
+        	    if (Math.abs(dx) < 1e-6)
+        		dx = sign(dx, 1e-6);
+        	    sim.stampMatrix(vno, vni, -dx);
+        	    // adjust right side
+        	    rs -= dx*cur;
+        	    //if (sim.subIterations > 1)
+        	        //sim.console("ccedx " + i + " " + cur + " " + dx + " " + rs + " " + sim.subIterations + " " + sim.t);
+        	    setCurrentExprValue(i, cur);
+        	}
+        	sim.stampRightSide(vno, rs);
             }
 
-            lastCurrent = cur;
+            for (i = 0; i != inputPairCount; i++)
+        	lastCurrents[i] = pins[i*2+1].current;
         }
 	
-	int getPostCount() { return 4; }
-	int getVoltageSourceCount() { return 2; }
+        void setCurrentExprValue(int n, double cur) {
+            // set i to current for backward compatibility
+            if (n == 0 && inputPairCount < 9)
+        	exprState.values[8] = cur;
+            exprState.values[n] = cur;
+        }
+        
+	int getPostCount() { return inputCount+2; }
+	int getVoltageSourceCount() { return isSpiceStyle() ? 1 : 1+inputPairCount; }
 	int getDumpType() { return 214; }
 	boolean getConnection(int n1, int n2) {
-	    if (comparePair(0, 1, n1, n2))
-		return true;
-	    if (comparePair(2, 3, n1, n2))
-		return true;
-	    return false;
+	    return (n1/2 == n2/2);
 	}
         boolean hasCurrentOutput() { return false; }
+        boolean isSpiceStyle() { return (flags & FLAG_SPICE) != 0; }
 	
         void setCurrent(int vn, double c) {
-            if (pins[1].voltSource == vn) {
-        	pins[0].current = -c;
-        	pins[1].current = c;
+            int i = 0;
+            if (!isSpiceStyle()) {
+        	for (i = 0; i != inputCount; i += 2)
+        	    if (pins[i+1].voltSource == vn) {
+        		pins[i].current = -c;
+        		pins[i+1].current = c;
+        		return;
+        	    }
             }
-            if (pins[2].voltSource == vn) {
-                pins[2].current = c;
-                pins[3].current = -c;
+            if (pins[i].voltSource == vn) {
+                pins[i].current = c;
+                pins[i+1].current = -c;
             }
         }
         
-        public EditInfo getEditInfo(int n) {
-            // can't set number of inputs
-            if (n == 1)
-        	return null;
-            return super.getEditInfo(n);
+        public void setEditValue(int n, EditInfo ei) {
+            if (n == 1) {
+        	// make sure number of inputs is even
+                if (ei.value < 0 || ei.value > 8 || (ei.value % 2) == 1)
+                    return;
+                inputCount = (int) ei.value;
+                setupPins();
+                allocNodes();
+                setPoints();
+            } else
+        	super.setEditValue(n, ei);
         }
+
+        void setParentList(Vector<CircuitElm> elmList) {
+            int i, j;
+            if (!isSpiceStyle())
+        	return;
+            
+            // look for voltage sources across our inputs and use them rather than
+            // creating our own.  this is useful for converting spice subcircuits
+            voltageSources = new VoltageElm[inputPairCount];
+            for (i = 0; i != inputCount; i += 2) {
+        	for (j = 0; j != elmList.size(); j++) {
+        	    CircuitElm ce = elmList.get(j);
+        	    if (!(ce instanceof VoltageElm))
+        		continue;
+        	    if (ce.getNode(1) == nodes[i] && ce.getNode(0) == nodes[i+1])
+        		voltageSources[i/2] = (VoltageElm)ce;
+        	}
+            }
+        }
+        
+	void setVoltageSource(int j, int vs) {
+	    if (isSpiceStyle())
+		pins[inputCount].voltSource = vs;
+	    else
+		super.setVoltageSource(j, vs);
+	}
+
     }
 

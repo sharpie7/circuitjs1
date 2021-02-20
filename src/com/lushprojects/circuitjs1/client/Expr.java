@@ -3,11 +3,11 @@ package com.lushprojects.circuitjs1.client;
 import java.util.Vector;
 
 class ExprState {
-    int n;
+    //int n;
     double values[];
     double t;
     ExprState(int xx) {
-	n = xx;
+	//n = xx;
 	values = new double[9];
 	values[4] = Math.E;
     }
@@ -90,6 +90,14 @@ class Expr {
 	    return left.eval(es) % right.eval(es);
 	case E_PWL:
 	    return pwl(es, children);
+	case E_PWR:
+	    return Math.pow(Math.abs(left.eval(es)), right.eval(es));
+	case E_PWRS: {
+	    double x = left.eval(es);
+	    if (x < 0)
+		return -Math.pow(-x, right.eval(es)); 
+	    return Math.pow(x, right.eval(es)); 
+	}
 	default:
 	    if (type >= E_A)
 		return es.values[type-E_A];
@@ -154,7 +162,9 @@ class Expr {
     static final int E_MOD = 25;
     static final int E_STEP = 26;
     static final int E_SELECT = 27;
-    static final int E_A = 28; // should be at end
+    static final int E_PWR = 28;
+    static final int E_PWRS = 29;
+    static final int E_A = 30; // should be at end
 };
 
 class ExprParser {
@@ -335,6 +345,10 @@ class ExprParser {
 	    return parseFuncMulti(Expr.E_SELECT, 3, 3);
 	if (skip("clamp"))
 	    return parseFuncMulti(Expr.E_CLAMP, 3, 3);
+	if (skip("pwr"))
+	    return parseFuncMulti(Expr.E_PWR, 2, 2);
+	if (skip("pwrs"))
+	    return parseFuncMulti(Expr.E_PWRS, 2, 2);
 	try {
 	    Expr e = new Expr(Expr.E_VAL, Double.valueOf(token).doubleValue());
 	    getToken();

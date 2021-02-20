@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
     class CurrentElm extends CircuitElm {
 	double currentValue;
+	boolean broken;
 	public CurrentElm(int xx, int yy) {
 	    super(xx, yy);
 	    currentValue = .01;
@@ -62,16 +63,21 @@ package com.lushprojects.circuitjs1.client;
 	    g.fillPolygon(arrow);
 	    setBbox(point1, point2, cr);
 	    doDots(g);
-	    if (sim.showValuesCheckItem.getState()) {
-		String s = getShortUnitText(currentValue, "A");
+	    if (sim.showValuesCheckItem.getState() && current != 0) {
+		String s = getShortUnitText(current, "A");
 		if (dx == 0 || dy == 0)
 		    drawValues(g, s, cr);
 	    }
 	    drawPosts(g);
 	}
 	
+	// analyzeCircuit determines if current source has a path or if it's broken
+	void setBroken(boolean b) {
+	    broken = b;
+	}
+	
 	// we defer stamping current sources until we can tell if they have a current path or not
-	void stampCurrentSource(boolean broken) {
+	void stamp() {
 	    if (broken) {
 		// no current path; stamping a current source would cause a matrix error.
 		sim.stampResistor(nodes[0], nodes[1], 1e8);

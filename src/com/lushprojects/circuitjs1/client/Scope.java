@@ -35,11 +35,12 @@ import com.google.gwt.core.client.GWT;
 class ScopePlot {
     double minValues[], maxValues[];
     int scopePointCount;
-    // ScopePlotSpeed it sim timestep units per pixel
     int ptr; // ptr is pointer to the current sample
     int ctr; // ctr is counts each timestep going in to a sample
     int value; // Value - the property being shown - e.g. VAL_CURRENT
+    // scopePlotSpeed is in sim timestep units per pixel
     int scopePlotSpeed, units;
+    double lastUpdateTime;
     double lastValue;
     String color;
     CircuitElm elm;
@@ -101,7 +102,7 @@ class ScopePlot {
     		maxValues[i1] = oldMax[i2];
     	    }
     	} else
-    	    ctr = 0;
+    	    lastUpdateTime = CirSim.theSim.t;
     	ptr = 0;
     }
 
@@ -121,11 +122,10 @@ class ScopePlot {
 		minValues[ptr] = v;
 	if (v > maxValues[ptr])
 		maxValues[ptr] = v;
-	ctr++;
-	if (ctr >= scopePlotSpeed) {
+	if (CirSim.theSim.t-lastUpdateTime >= CirSim.theSim.maxTimeStep * scopePlotSpeed) {
 	    ptr = (ptr+1) & (scopePointCount-1);
 	    minValues[ptr] = maxValues[ptr] = v;
-	    ctr = 0;
+	    lastUpdateTime += CirSim.theSim.maxTimeStep * scopePlotSpeed;
 	}
     }
     
@@ -317,7 +317,7 @@ class Scope {
     	for (i = 0; i != plots.size(); i++)
     	    plots.get(i).reset(scopePointCount, speed, full);
 	calcVisiblePlots();
-    	scopeTimeStep = sim.timeStep;
+    	scopeTimeStep = sim.maxTimeStep;
     	allocImage();
     }
     
@@ -685,7 +685,7 @@ class Scope {
       // Draw x-grid lines and label the frequencies in the FFT that they point to.
       int prevEnd = 0;
       int divs = 20;
-      double maxFrequency = 1 / (sim.timeStep * speed * divs * 2);
+      double maxFrequency = 1 / (sim.maxTimeStep * speed * divs * 2);
       for (int i = 0; i < divs; i++) {
         int x = rect.width * i / divs;
         if (x < prevEnd) continue;
@@ -881,8 +881,8 @@ class Scope {
 	    return;
     	
     	// reset if timestep changed
-    	if (scopeTimeStep != sim.timeStep) {
-    	    scopeTimeStep = sim.timeStep;
+    	if (scopeTimeStep != sim.maxTimeStep) {
+    	    scopeTimeStep = sim.maxTimeStep;
     	    resetGraph();
     	}
     	
@@ -1025,7 +1025,7 @@ class Scope {
 	int multptr=0;
     	double gsx = 1e-15;
 
-    	double ts = sim.timeStep*speed;
+    	double ts = sim.maxTimeStep*speed;
     	while (gsx < ts*20) {
     	    gsx *=multa[(multptr++)%3];
     	}
@@ -1112,7 +1112,7 @@ class Scope {
     	}
     	
     	// Vertical (T) gridlines
-    	double ts = sim.timeStep*speed;
+    	double ts = sim.maxTimeStep*speed;
     	gridStepX = calcGridStepX();
 
     	if (drawGridLines) {
@@ -1132,7 +1132,7 @@ class Scope {
     	    }
     	    
     	    // vertical gridlines
-    	    double tstart = sim.t-sim.timeStep*speed*rect.width;
+    	    double tstart = sim.t-sim.maxTimeStep*speed*rect.width;
     	    double tx = sim.t-(sim.t % gridStepX);
 
     	    for (int ll = 0; ; ll++) {
@@ -1244,11 +1244,11 @@ class Scope {
     	    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
     	}
         if (showFFT) {
-    		double maxFrequency = 1 / (sim.timeStep * speed * 2);
+    		double maxFrequency = 1 / (sim.maxTimeStep * speed * 2);
     		info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
         }
 	if (visiblePlots.size() > 0) {
-	    double t = sim.t-sim.timeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
+	    double t = sim.t-sim.maxTimeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
 	    info[ct++] = CircuitElm.getTimeText(t);
 	}
 	drawCrosshairsInfo(g, info, ct, false);
@@ -1563,7 +1563,7 @@ class Scope {
 	avperiod /= periodct;
 	avperiod2 /= periodct;
 	double periodstd = Math.sqrt(avperiod2-avperiod*avperiod);
-	double freq = 1/(avperiod*sim.timeStep*speed);
+	double freq = 1/(avperiod*sim.maxTimeStep*speed);
 	// don't show freq if standard deviation is too great
 	if (periodct < 1 || periodstd > 2)
 	    freq = 0;

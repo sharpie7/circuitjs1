@@ -57,13 +57,18 @@ package com.lushprojects.circuitjs1.client;
 		int i;
 		for (i = 0; i <= 2; i++) {
 		    Point p = interpPoint(ps1, ps2, i/2.);  
-		    drawThickLine(g, p.x, p.y, p.x-5, p.y+8*dy/(int)dn);
+		    drawThickLine(g, p.x, p.y, (int) (p.x-5*dpx1+8*dx/dn), (int) (p.y+8*dy/dn-5*dpy1));
 		}
+	    } else if (symbolType == 2) {
+		interpPoint2(point1, point2, ps1, ps2, 1, 10);
+		drawThickLine(g, ps1, ps2);
+		int ps3x = (int) (point2.x+10*dx/dn);
+		int ps3y = (int) (point2.y+10*dy/dn);
+		drawThickLine(g, ps1.x, ps1.y, ps3x, ps3y);
+		drawThickLine(g, ps2.x, ps2.y, ps3x, ps3y);
 	    } else {
 		interpPoint2(point1, point2, ps1, ps2, 1, 10);
 		drawThickLine(g, ps1, ps2);
-		drawThickLine(g, ps1.x, ps1.y, point2.x, point2.y+10*dy/(int)dn);
-		drawThickLine(g, ps2.x, ps2.y, point2.x, point2.y+10*dy/(int)dn);
 	    }
 	    interpPoint(point1, point2, ps2, 1+11./dn);
 	    doDots(g);
@@ -90,6 +95,7 @@ package com.lushprojects.circuitjs1.client;
 		ei.choice.add("Earth");
 		ei.choice.add("Chassis");
 		ei.choice.add("Signal");
+		ei.choice.add("Common");
 		ei.choice.select(symbolType);
 		return ei;
 	    }

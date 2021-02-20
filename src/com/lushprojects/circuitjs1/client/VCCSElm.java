@@ -46,7 +46,7 @@ package com.lushprojects.circuitjs1.client;
 	    return super.dump() + " " + inputCount + " " + CustomLogicModel.escape(exprString);
 	}
 	
-	double lastVolts[], origVolts[];
+	double lastVolts[];
 	
 	void setupPins() {
 	    sizeX = 2;
@@ -58,8 +58,8 @@ package com.lushprojects.circuitjs1.client;
 	    pins[inputCount] = new Pin(0, SIDE_E, "C+");
 	    pins[inputCount+1] = new Pin(1, SIDE_E, "C-");
 	    lastVolts = new double[inputCount];
-	    origVolts = new double[inputCount];
 	    exprState = new ExprState(inputCount);
+	    allocNodes();
 	}
 	String getChipName() { return "VCCS~"; } // ~ is for localization 
 	boolean nonLinear() { return true; }
@@ -72,19 +72,6 @@ package com.lushprojects.circuitjs1.client;
             return a > 0 ? b : -b;
         }
 
-        double getLimitStep() {
-            // get limit on changes in voltage per step.  be less lenient the more iterations we do
-            if (sim.subIterations < 4)
-        	return 10;
-            if (sim.subIterations < 10)
-        	return 1;
-            if (sim.subIterations < 20)
-        	return .1;
-            if (sim.subIterations < 40)
-        	return .01;
-            return .001;
-        }
-        
         double getConvergeLimit() {
             // get maximum change in voltage per step when testing for convergence.  be more lenient over time
             if (sim.subIterations < 10)
@@ -112,15 +99,14 @@ package com.lushprojects.circuitjs1.client;
             }
             
             // converged yet?
-            double limitStep = getLimitStep();
             double convergeLimit = getConvergeLimit();
             for (i = 0; i != inputCount; i++) {
-        	if (Math.abs(volts[i]-lastVolts[i]) > convergeLimit)
+        	if (Math.abs(volts[i]-lastVolts[i]) > convergeLimit) {
         	    sim.converged = false;
-        	if (Double.isNaN(volts[i]))
-        	    volts[i] = 0;
-        	if (Math.abs(volts[i]-lastVolts[i]) > limitStep)
-        	    volts[i] = lastVolts[i] + sign(volts[i]-lastVolts[i], limitStep);
+//        	    sim.console("vcvs " + nodes + " " + i + " " + volts[i] + " " + lastVolts[i] + " " + sim.subIterations);
+        	}
+//        	if (Double.isNaN(volts[i]))
+//        	    volts[i] = 0;
             }
             if (expr != null) {
         	// calculate output
@@ -134,16 +120,19 @@ package com.lushprojects.circuitjs1.client;
         	
         	// calculate and stamp output derivatives
         	for (i = 0; i != inputCount; i++) {
-        	    double dv = 1e-6;
-        	    exprState.values[i] = volts[i]+dv;
+        	    double dv = volts[i]-lastVolts[i];
+        	    if (Math.abs(dv) < 1e-6)
+        		dv = 1e-6;
+        	    exprState.values[i] = volts[i];
         	    double v = -expr.eval(exprState);
         	    exprState.values[i] = volts[i]-dv;
         	    double v2 = -expr.eval(exprState);
-        	    double dx = (v-v2)/(dv*2);
+        	    double dx = (v-v2)/dv;
         	    if (Math.abs(dx) < 1e-6)
         		dx = sign(dx, 1e-6);
         	    sim.stampVCCurrentSource(nodes[inputCount], nodes[inputCount+1], nodes[i], 0, dx);
-//            	sim.console("ccedx " + i + " " + dx);
+        	    //if (sim.subIterations > 1)
+        		//sim.console("ccedx " + i + " " + dx + " " + sim.subIterations + " " + sim.t);
         	    // adjust right side
         	    rs -= dx*volts[i];
         	    exprState.values[i] = volts[i];
