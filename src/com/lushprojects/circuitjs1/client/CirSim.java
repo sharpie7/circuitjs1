@@ -3129,6 +3129,7 @@ MouseOutHandler, MouseWheelHandler {
     		Graphics.viewFullScreen();
     	    else
     		Graphics.exitFullScreen();
+    	    centreCircuit();
     	}
     
 	repaint();
