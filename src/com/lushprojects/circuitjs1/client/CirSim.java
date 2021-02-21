@@ -987,6 +987,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Varactor/Varicap"), "VaractorElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Tunnel Diode"), "TunnelDiodeElm"));
     	activeMenuBar.addItem(getClassCheckItem(LS("Add Triode"), "TriodeElm"));
+    	activeMenuBar.addItem(getClassCheckItem(LS("Add Unijunction Transistor"), "UnijunctionElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Components")), activeMenuBar);
 
     	MenuBar activeBlocMenuBar = new MenuBar(true);
@@ -5203,6 +5204,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 414: return new TimeDelayRelayElm(x1, y1, x2, y2, f, st);
 	case 415: return new DCMotorElm(x1, y1, x2, y2, f, st);
 	case 416: return new MBBSwitchElm(x1, y1, x2, y2, f, st);
+    	case 417: return new UnijunctionElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5451,6 +5453,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new LDRElm(x1, y1);
     	if (n=="ThermistorNTCElm")
 		return (CircuitElm) new ThermistorNTCElm(x1, y1);
+    	if (n=="UnijunctionElm")
+		return (CircuitElm) new UnijunctionElm(x1, y1);
     	return null;
     }
     
