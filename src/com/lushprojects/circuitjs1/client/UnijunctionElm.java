@@ -49,6 +49,11 @@ class UnijunctionElm extends CompositeElm {
 	    sim.adjustTimeStep = true; // model doesn't work without time step auto-adjust
 	}
 	
+	public String dump() {
+	    // don't want model details dumped, takes up space and will make it hard to change
+	    return super.dumpWithMask(0);
+	}
+
 	public void reset() {
 	    super.reset();
 	    curcountb1 = curcountb2 = curcounte = 0;
