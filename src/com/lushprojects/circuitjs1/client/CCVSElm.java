@@ -165,7 +165,8 @@ class CCVSElm extends VCCSElm {
         		pins[i+1].current = c;
         		return;
         	    }
-            }
+            } else
+        	i = inputCount;
             if (pins[i].voltSource == vn) {
                 pins[i].current = c;
                 pins[i+1].current = -c;
@@ -198,7 +199,7 @@ class CCVSElm extends VCCSElm {
         	    CircuitElm ce = elmList.get(j);
         	    if (!(ce instanceof VoltageElm))
         		continue;
-        	    if (ce.getNode(1) == nodes[i] && ce.getNode(0) == nodes[i+1])
+        	    if (ce.getNode(0) == nodes[i] && ce.getNode(1) == nodes[i+1])
         		voltageSources[i/2] = (VoltageElm)ce;
         	}
             }
