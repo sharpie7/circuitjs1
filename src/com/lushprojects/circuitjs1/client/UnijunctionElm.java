@@ -24,7 +24,7 @@ import java.util.Vector;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 
-class UnijunctionElm extends CircuitElm {
+class UnijunctionElm extends CompositeElm {
 	// node 0 = base
 	// node 1 = collector
 	// node 2 = emitter
@@ -37,11 +37,18 @@ class UnijunctionElm extends CircuitElm {
 	    super(xa, ya, xb, yb, f);
 	    setup();
 	}
+	
+	private static String ujtModelString = "DiodeElm 1 4\rVoltageElm 5 4\rCCVSElm 4 5 6 0\rResistorElm 0 6\rVCCSElm 5 7 5 7 6 7 5\rCapacitorElm 5 7\rResistorElm 7 2\rResistorElm 3 5";
+	private static int ujtExternalNodes[] = { 1, 2, 3 };
+	private static String ujtModelDump = "2 x2n2646-emitter/0 0 0 0/2 2 1000*(a-b)/0 1000000/0 5 0.00028*(a-b)\\p0.00575*(c-d)*e/2 3.5e-11 0 0/0 38.15/0 2518";
 	void setup() {
 	    noDiagonal = true;
+	    flags |= FLAG_ESCAPE;
+	    StringTokenizer st = new StringTokenizer(ujtModelDump, "/");
+	    loadComposite(st, ujtModelString, ujtExternalNodes);
 	}
-	boolean nonLinear() { return true; }
-	void reset() {
+	
+	public void reset() {
 	    volts[0] = volts[1] = volts[2] = 0;
 	    lastvbc = lastvbe = curcount_c = curcount_e = curcount_b = 0;
 	}
@@ -112,14 +119,10 @@ class UnijunctionElm extends CircuitElm {
 	        
 
 	        Point getPost(int n) {
-	            return (n == 0) ? gate[0] : (n == 1) ? src[0] : drn[0];
+	            return (n == 0) ? gate[0] : (n == 1) ? drn[0] : src[0];
 	        }
 	
 	int getPostCount() { return 3; }
-	double getPower() {
-	    return (volts[0]-volts[2])*ib + (volts[1]-volts[2])*ic;
-	}
-
 	
 	static final double leakage = 1e-13; // 1e-6;
 	// Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
@@ -146,12 +149,6 @@ class UnijunctionElm extends CircuitElm {
 	    }
 	    return(vnew);
 	}
-	void stamp() {
-	    sim.stampNonLinear(nodes[0]);
-	    sim.stampNonLinear(nodes[1]);
-	    sim.stampNonLinear(nodes[2]);
-	}
-	void doStep()  {}
 	
 	void getInfo(String arr[]) {
 	    arr[0] = "unijunction transistor";
@@ -165,8 +162,6 @@ class UnijunctionElm extends CircuitElm {
 	    arr[5] = "Vce = " + getVoltageText(vce);
 	    arr[6] = "P = " + getUnitText(getPower(), "W");
 	}
-	
-	boolean canViewInScope() { return true; }
 	
 	double getCurrentIntoNode(int n) {
 	    if (n==0)
