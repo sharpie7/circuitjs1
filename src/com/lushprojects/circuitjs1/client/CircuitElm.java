@@ -981,6 +981,7 @@ public abstract class CircuitElm implements Editable {
     void updateModels() {}
     void stepFinished() {}
     
+    // get current flowing into node n out of this element
     double getCurrentIntoNode(int n) {
 	// if we take out the getPostCount() == 2 it gives the wrong value for rails
 	if (n==0 && getPostCount() == 2)
