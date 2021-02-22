@@ -25,9 +25,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 
 class UnijunctionElm extends CompositeElm {
-	// node 0 = base
-	// node 1 = collector
-	// node 2 = emitter
+	// node 0 = E
+	// node 1 = B1
+	// node 2 = B2
 	
 	public UnijunctionElm(int xx, int yy) {
 	    super(xx, yy);
@@ -38,7 +38,7 @@ class UnijunctionElm extends CompositeElm {
 	    setup();
 	}
 	
-	private static String ujtModelString = "DiodeElm 1 4\rVoltageElm 5 4\rCCVSElm 4 5 6 0\rResistorElm 0 6\rVCCSElm 5 7 5 7 6 7 5\rCapacitorElm 5 7\rResistorElm 7 2\rResistorElm 3 5";
+	private static String ujtModelString = "DiodeElm 1 4\rVoltageElm 4 5\rCCVSElm 4 5 6 0\rResistorElm 0 6\rVCCSElm 5 7 5 7 6 7 5\rCapacitorElm 5 7\rResistorElm 7 2\rResistorElm 3 5";
 	private static int ujtExternalNodes[] = { 1, 2, 3 };
 	private static String ujtModelDump = "2 x2n2646-emitter/0 0 0 0/2 2 1000*(a-b)/0 1000000/0 5 0.00028*(a-b)\\p0.00575*(c-d)*e/2 3.5e-11 0 0/0 38.15/0 2518";
 	void setup() {
@@ -49,46 +49,46 @@ class UnijunctionElm extends CompositeElm {
 	}
 	
 	public void reset() {
-	    volts[0] = volts[1] = volts[2] = 0;
-	    lastvbc = lastvbe = curcount_c = curcount_e = curcount_b = 0;
+	    super.reset();
+	    curcountb1 = curcountb2 = curcounte = 0;
 	}
-	int getDumpType() { return 't'; }
+	int getDumpType() { return 417; }
 	
-	double ic, ie, ib, curcount_c, curcount_e, curcount_b;
-	Point src[], drn[];
-        Polygon gatePoly;
-        Point gate[];
-        double curcountg, curcounts, curcountd;
-        double ids;
+	Point b1[], b2[];
+        Polygon emitterPoly;
+        Point emitter[];
+        double curcountb1, curcountb2, curcounte;
 	
 		Polygon rectPoly, arrowPoly;
 	        double gateCurrent;
 	        final int hs = 16;
 	        
 	        void draw(Graphics g) {
-	            setBbox(point1, point2, hs);
+	            setBbox(point1, b1[0], 0);
 	            setVoltageColor(g, volts[1]);
-	            drawThickLine(g, src[0], src[1]);
-	            drawThickLine(g, src[1], src[2]);
+	            drawThickLine(g, b1[0], b1[1]);
+	            drawThickLine(g, b1[1], b1[2]);
 	            setVoltageColor(g, volts[2]);
-	            drawThickLine(g, drn[0], drn[1]);
-	            drawThickLine(g, drn[1], drn[2]);
+	            drawThickLine(g, b2[0], b2[1]);
+	            drawThickLine(g, b2[1], b2[2]);
 	            setVoltageColor(g, volts[0]);
-	            drawThickLine(g, gate[0], gate[1]);
-	            drawThickLine(g, gate[1], gate[2]);
+	            drawThickLine(g, emitter[0], emitter[1]);
+	            drawThickLine(g, emitter[1], emitter[2]);
 	            g.fillPolygon(arrowPoly);
 	            setPowerColor(g, true);
-	            g.fillPolygon(gatePoly);
-	            curcountd = updateDotCount(-ids,            curcountd);
-	            curcountg = updateDotCount(gateCurrent,     curcountg);
-	            curcounts = updateDotCount(-gateCurrent-ids, curcounts);
-	            if (curcountd != 0 || curcounts != 0) {
-	                drawDots(g, src[0], src[1], curcounts);
-	                drawDots(g, src[1], src[2], curcounts+8);
-	                drawDots(g, drn[0], drn[1], -curcountd);
-	                drawDots(g, drn[1], drn[2], -(curcountd+8));
-	                drawDots(g, gate[0], gate[1], curcountg);
-	                drawDots(g, gate[1], gate[2], curcountg);
+	            g.fillPolygon(emitterPoly);
+	            double ib2 = -getCurrentIntoNode(2);
+	            double ib1 = -getCurrentIntoNode(1);
+	            curcountb2 = updateDotCount(ib2, curcountb2);
+	            curcountb1 = updateDotCount(ib1, curcountb1);
+	            curcounte  = updateDotCount(-ib1-ib2, curcounte);
+	            if (curcountb1 != 0 || curcountb2 != 0) {
+	                drawDots(g, b1[0], b1[1], curcountb1);
+	                drawDots(g, b1[1], b1[2], curcountb1+8);
+	                drawDots(g, b2[0], b2[1], curcountb2);
+	                drawDots(g, b2[1], b2[2], (curcountb2+8));
+	                drawDots(g, emitter[0], emitter[1], curcounte);
+	                drawDots(g, emitter[1], emitter[2], curcounte);
 	            }
 	            drawPosts(g);
 	        }
@@ -99,75 +99,39 @@ class UnijunctionElm extends CompositeElm {
 	            // find the coordinates of the various points we need to draw
 	            // the JFET.
 	            int hs2 = hs*dsign;
-	            src = newPointArray(3);
-	            drn = newPointArray(3);
-	            gate = newPointArray(3);
-	            interpPoint2(point1, point2, src[0], drn[0], 1, -hs2);
-	            interpPoint2(point1, point2, src[1], drn[1], 1, -hs2/2);
-	            interpPoint2(point1, point2, src[2], drn[2], 1-10/dn, -hs2/2);
+	            b1 = newPointArray(3);
+	            b2 = newPointArray(3);
+	            emitter = newPointArray(3);
+	            Point p1 = interpPoint(point1, point2, 0, -hs2);
+	            Point p2 = interpPoint(point1, point2, 1, -hs2);
+	            interpPoint2(p1, p2, b1[0], b2[0], 1, -hs2);
+	            interpPoint2(p1, p2, b1[1], b2[1], 1, -hs2/2);
+	            interpPoint2(p1, p2, b1[2], b2[2], 1-10/dn, -hs2/2);
 
-	            interpPoint(point1, point2, gate[0], 0, hs2);
-	            interpPoint(point1, point2, gate[1], 1-28/dn, hs2);
-	            gate[2] = interpPoint(point1, point2, 1-14/dn);
+	            interpPoint(p1, p2, emitter[0], 0, hs2);
+	            interpPoint(p1, p2, emitter[1], 1-28/dn, hs2);
+	            emitter[2] = interpPoint(p1, p2, 1-14/dn);
 
 	            Point ra[] = newPointArray(4);
-	            interpPoint2(point1, point2, ra[0], ra[1], 1-13/dn, hs);
-	            interpPoint2(point1, point2, ra[2], ra[3], 1-10/dn, hs);
-	            gatePoly = createPolygon(ra[0], ra[1], ra[3], ra[2]);
-	            arrowPoly = calcArrow(gate[1], gate[2], 8, 3);
+	            interpPoint2(p1, p2, ra[0], ra[1], 1-13/dn, hs);
+	            interpPoint2(p1, p2, ra[2], ra[3], 1-10/dn, hs);
+	            emitterPoly = createPolygon(ra[0], ra[1], ra[3], ra[2]);
+	            arrowPoly = calcArrow(emitter[1], emitter[2], 8, 3);
 	        }
 	        
 
 	        Point getPost(int n) {
-	            return (n == 0) ? gate[0] : (n == 1) ? drn[0] : src[0];
+	            return (n == 0) ? emitter[0] : (n == 1) ? b1[0] : b2[0];
 	        }
 	
 	int getPostCount() { return 3; }
 	
-	static final double leakage = 1e-13; // 1e-6;
-	// Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
-	static final double vt = 0.025865;
-	double vcrit;
-	double lastvbc, lastvbe;
-	double limitStep(double vnew, double vold) {
-	    double arg;
-	    double oo = vnew;
-	    
-	    if (vnew > vcrit && Math.abs(vnew - vold) > (vt + vt)) {
-		if(vold > 0) {
-		    arg = 1 + (vnew - vold) / vt;
-		    if(arg > 0) {
-			vnew = vold + vt * Math.log(arg);
-		    } else {
-			vnew = vcrit;
-		    }
-		} else {
-		    vnew = vt *Math.log(vnew/vt);
-		}
-		sim.converged = false;
-		//System.out.println(vnew + " " + oo + " " + vold);
-	    }
-	    return(vnew);
-	}
-	
 	void getInfo(String arr[]) {
 	    arr[0] = "unijunction transistor";
-	    double vbc = volts[0]-volts[1];
-	    double vbe = volts[0]-volts[2];
-	    double vce = volts[1]-volts[2];
-	    arr[1] = "Ic = " + getCurrentText(ic);
-	    arr[2] = "Ib = " + getCurrentText(ib);
-	    arr[3] = "Vbe = " + getVoltageText(vbe);
-	    arr[4] = "Vbc = " + getVoltageText(vbc);
-	    arr[5] = "Vce = " + getVoltageText(vce);
-	    arr[6] = "P = " + getUnitText(getPower(), "W");
-	}
-	
-	double getCurrentIntoNode(int n) {
-	    if (n==0)
-		return -ib;
-	    if (n==1)
-		return -ic;
-	    return -ie;
+	    arr[1] = "Ie = " + getCurrentText(-getCurrentIntoNode(0));
+	    arr[2] = "Ib2 = " + getCurrentText(-getCurrentIntoNode(2));
+	    arr[3] = "Veb1 = " + getVoltageText(volts[0]-volts[1]);
+	    arr[4] = "Vb2b1 = " + getVoltageText(volts[2]-volts[1]);
+	    arr[5] = "P = " + getUnitText(getPower(), "W");
 	}
     }
