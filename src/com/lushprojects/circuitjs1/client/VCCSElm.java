@@ -208,5 +208,10 @@ package com.lushprojects.circuitjs1.client;
             for (i = 0; arr[i] != null; i++) ;
             arr[i] = "I = " + getCurrentText(pins[inputCount].current);
         }
+        
+        void reset() {
+            super.reset();
+            exprState.reset();
+        }
     }
 

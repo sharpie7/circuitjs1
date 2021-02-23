@@ -14,11 +14,18 @@ class ExprState {
 	lastValues = new double[9];
 	values[4] = Math.E;
     }
+    
     void updateLastValues(double lastOut) {
 	lastOutput = lastOut;
 	int i;
 	for (i = 0; i != values.length; i++)
 	    lastValues[i] = values[i];
+    }
+    
+    void reset() {
+	for (int i = 0; i != values.length; i++)
+	    lastValues[i] = 0;
+	lastOutput = 0;
     }
 }
 
