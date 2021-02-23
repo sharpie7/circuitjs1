@@ -104,6 +104,9 @@ package com.lushprojects.circuitjs1.client;
             for (i = 0; i != inputCount; i++)
         	lastVolts[i] = volts[i];
         }
+        void stepFinished() {
+            exprState.updateLastValues(volts[inputCount]-volts[inputCount+1]);
+        }
 	int getPostCount() { return inputCount+2; }
 	int getVoltageSourceCount() { return 1; }
 	int getDumpType() { return 212; }

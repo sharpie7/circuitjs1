@@ -140,6 +140,10 @@ class CCVSElm extends VCCSElm {
         	lastCurrents[i] = pins[i*2+1].current;
         }
 	
+        void stepFinished() {
+            exprState.updateLastValues(volts[inputCount]-volts[inputCount+1]);
+        }
+
         void setCurrentExprValue(int n, double cur) {
             // set i to current for backward compatibility
             if (n == 0 && inputPairCount < 9)

@@ -5,11 +5,20 @@ import java.util.Vector;
 class ExprState {
     //int n;
     double values[];
+    double lastValues[];
+    double lastOutput;
     double t;
     ExprState(int xx) {
 	//n = xx;
 	values = new double[9];
+	lastValues = new double[9];
 	values[4] = Math.E;
+    }
+    void updateLastValues(double lastOut) {
+	lastOutput = lastOut;
+	int i;
+	for (i = 0; i != values.length; i++)
+	    lastValues[i] = values[i];
     }
 }
 
@@ -98,7 +107,15 @@ class Expr {
 		return -Math.pow(-x, right.eval(es)); 
 	    return Math.pow(x, right.eval(es)); 
 	}
+	case E_LASTOUTPUT:
+	    return es.lastOutput;
+	case E_TIMESTEP:
+	    return CirSim.theSim.timeStep;
 	default:
+	    if (type >= E_LASTA)
+		return es.lastValues[type-E_LASTA];
+	    if (type >= E_DADT)
+		return (es.values[type-E_DADT]-es.lastValues[type-E_DADT])/CirSim.theSim.timeStep;
 	    if (type >= E_A)
 		return es.values[type-E_A];
 	    CirSim.console("unknown\n");
@@ -164,7 +181,11 @@ class Expr {
     static final int E_SELECT = 27;
     static final int E_PWR = 28;
     static final int E_PWRS = 29;
-    static final int E_A = 30; // should be at end
+    static final int E_LASTOUTPUT = 30;
+    static final int E_TIMESTEP = 31;
+    static final int E_A = 32; // reserve some space after this
+    static final int E_DADT = 42; // reserve more space
+    static final int E_LASTA = 52; // should be at end
 };
 
 class ExprParser {
@@ -309,6 +330,24 @@ class ExprParser {
 		return new Expr(Expr.E_A + (c-'a'));
 	    }
 	}
+	if (token.startsWith("last") && token.length() == 5) {
+	    char c = token.charAt(4);
+	    if (c >= 'a' && c <= 'i') {
+		getToken();
+		return new Expr(Expr.E_LASTA + (c-'a'));
+	    }
+	}
+	if (token.endsWith("dt") && token.startsWith("d") && token.length() == 4) {
+	    char c = token.charAt(1);
+	    if (c >= 'a' && c <= 'i') {
+		getToken();
+		return new Expr(Expr.E_DADT + (c-'a'));
+	    }
+	}
+	if (skip("lastoutput"))
+	    return new Expr(Expr.E_LASTOUTPUT);
+	if (skip("timestep"))
+	    return new Expr(Expr.E_TIMESTEP);
 	if (skip("pi"))
 	    return new Expr(Expr.E_VAL, 3.14159265358979323846);
 //	if (skip("e"))
