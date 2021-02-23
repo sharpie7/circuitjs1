@@ -4726,11 +4726,17 @@ MouseOutHandler, MouseWheelHandler {
     	
     	// add new items
     	int oldsz = elmList.size();
+    	int flags = RC_RETAIN;
+    	
+    	// don't recenter circuit if we're going to paste in place because that will change the transform
+	if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY))
+	    flags |= RC_NO_CENTER;
+	
     	if (dump != null)
-    	    readCircuit(dump, RC_RETAIN);
+    	    readCircuit(dump, flags);
     	else {
     	    readClipboardFromStorage();
-    	    readCircuit(clipboard, RC_RETAIN);
+    	    readCircuit(clipboard, flags);
     	}
 
     	// select new items and get their bounding box
