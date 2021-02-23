@@ -4361,21 +4361,20 @@ MouseOutHandler, MouseWheelHandler {
 	}
     }
 
- 
-    
-    
-    
+    // check/uncheck/enable/disable menu items as appropriate when menu bar clicked on, or when
+    // right mouse menu accessed.  also displays shortcuts as a side effect
     void doMainMenuChecks() {
-	// Code to disable draw menu items when cct is not editable, but no used in this version as it
-	// puts up a dialog box instead (see menuPerformed).
-//    	int c = mainMenuItems.size();
-//    	int i;
-//    	for (i=0; i<c ; i++) {
-//    	    	String s = mainMenuItemNames.get(i);
-//    		mainMenuItems.get(i).setState(s==mouseModeStr);
-//    		if (s.length() > 3 && s.substring(s.length()-3)=="Elm")
-//    		    mainMenuItems.get(i).setEnabled(!noEditCheckItem.getState());
-//    	}
+    	int c = mainMenuItems.size();
+    	int i;
+    	for (i=0; i<c ; i++) {
+    	    	String s = mainMenuItemNames.get(i);
+    		mainMenuItems.get(i).setState(s==mouseModeStr);
+
+	        // Code to disable draw menu items when cct is not editable, but no used in this version as it
+	        // puts up a dialog box instead (see menuPerformed).
+    		//if (s.length() > 3 && s.substring(s.length()-3)=="Elm")
+    		    //mainMenuItems.get(i).setEnabled(!noEditCheckItem.getState());
+    	}
     	stackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position > 0);
     	unstackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position != scopeCount -1);
     	combineAllItem.setEnabled(scopeCount > 1);
