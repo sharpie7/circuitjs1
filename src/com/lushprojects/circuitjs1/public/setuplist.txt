@@ -297,6 +297,7 @@ majority.txt Majority Logic
 digcompare.txt 2-Bit Comparator
 7segdecoder.txt 7-Segment LED Decoder
 brentkung.txt Brent-Kung Adder
+alu74181.txt 74181 ALU
 -
 +Sequential Logic
 +Flip-Flops
