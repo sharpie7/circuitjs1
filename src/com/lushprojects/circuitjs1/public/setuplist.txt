@@ -262,7 +262,8 @@ fanout.txt Fan-Out
 -
 +NMOS
 nmosinverter.txt NMOS Inverter
-nmosinverter2.txt NMOS Inverter 2
+nmosinverter2.txt Inverter with only MOSFETs
+nmosinverter3.txt Depletion-load NMOS Inverter
 nmosnand.txt NMOS NAND
 -
 +CMOS
