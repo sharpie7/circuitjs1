@@ -88,8 +88,9 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	Iterator it = modelMap.entrySet().iterator();
 	while (it.hasNext()) {
 	    Map.Entry<String,TransistorModel> pair = (Map.Entry)it.next();
-	    TransistorModel dm = pair.getValue();
-	    vector.add(dm);
+	    TransistorModel tm = pair.getValue();
+	    if (!vector.contains(tm))
+		vector.add(tm);
 	}
 	Collections.sort(vector);
 	return vector;

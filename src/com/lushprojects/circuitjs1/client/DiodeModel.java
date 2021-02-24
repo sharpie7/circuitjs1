@@ -168,7 +168,8 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 		continue;
 	    if (zener && dm.breakdownVoltage == 0)
 		continue;
-	    vector.add(dm);
+	    if (!vector.contains(dm))
+		vector.add(dm);
 	}
 	Collections.sort(vector);
 	return vector;
