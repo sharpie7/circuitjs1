@@ -90,7 +90,6 @@ To build the Electron application:
 
 Known limitations of the Electron application:
 * "Create short URL" on "Export as URL" doesn't work as it relies on server support.
-* For diodes, "Create Simple Model" doesn't work as it relies on a javascript feature that is not supported.
 
 Thanks to @Immortalin for the initial work in applying Electron to CircuitJS1.
 
