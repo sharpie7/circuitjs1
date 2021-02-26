@@ -73,6 +73,8 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
 .../circuitjs1.html?negativeColor=%23ff0000 // change negative voltage color
 ```
+The simulator can also interface with your javascript code.  See war/jsinterface.html for an example.
+
 ## Building an Electron application
 
 The [Electron](https://electronjs.org/) project allows web applications to be distributed as local executables for a variety of platforms. This repository contains the additional files needed to build circuitJS1 as an Electron application.
