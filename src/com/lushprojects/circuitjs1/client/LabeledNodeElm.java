@@ -105,6 +105,11 @@ class LabeledNodeElm extends CircuitElm {
 	// allocate a new one
 	return 1;
     }
+    
+    static Integer getByName(String n) {
+	return nodeList == null ? null : nodeList.get(n);
+    }
+    
     void draw(Graphics g) {
 	setVoltageColor(g, volts[0]);
 	drawThickLine(g, point1, lead1);
