@@ -143,12 +143,14 @@ class EditDialog extends DialogBox  {
 			} else if (ei.widget != null) {
 			    vp.insert(ei.widget, idx);
 			} else {
-				vp.insert(ei.textf = new TextBox(), idx);
-				if (ei.text != null)
-					ei.textf.setText(ei.text);
-				if (ei.text == null) {
-					ei.textf.setText(unitString(ei));
-				}
+			    vp.insert(ei.textf = new TextBox(), idx);
+			    if (ei.text != null) {
+				ei.textf.setText(ei.text);
+				ei.textf.setVisibleLength(50);
+			    }
+			    if (ei.text == null) {
+				ei.textf.setText(unitString(ei));
+			    }
 			}
 		}
 		einfocount = i;
