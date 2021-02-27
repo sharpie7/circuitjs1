@@ -216,5 +216,16 @@ class CCVSElm extends VCCSElm {
 		super.setVoltageSource(j, vs);
 	}
 
+        void getInfo(String arr[]) {
+            super.getInfo(arr);
+            int i = 1;
+            int j;
+            for (j = 0; j != inputCount; j += 2)
+        	arr[i++] = pins[j].text + " = " + getCurrentText(-pins[j].current);
+            arr[i++] = pins[j].text + " = " + getVoltageText(volts[j]) + "; " + pins[j+1].text + " = " + getVoltageText(volts[j+1]);
+            arr[i++] = "I = " + getCurrentText(pins[j].current);
+            arr[i++] = null;
+        }
+
     }
 
