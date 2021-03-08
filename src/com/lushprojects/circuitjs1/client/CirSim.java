@@ -21,11 +21,8 @@ package com.lushprojects.circuitjs1.client;
 
 // GWT conversion (c) 2015 by Iain Sharp
 
-
-
 // For information about the theory behind this, see Electronic Circuit & System Simulation Methods by Pillage
-
-
+// or https://github.com/sharpie7/circuitjs1/blob/master/INTERNALS.md
 
 import java.util.Vector;
 import java.util.Arrays;
