@@ -139,7 +139,7 @@ amp-rect.txt Half-Wave Rectifier (inverting)
 amp-fullrect.txt Full-Wave Rectifier
 peak-detect.txt Peak Detector
 amp-integ.txt Integrator
-amp-dfdx.txt Differentiator
+amp-dfdx.txt Differentiator (inverting)
 amp-schmitt.txt Schmitt Trigger
 nic-r.txt Negative Impedance Converter
 gyrator.txt Gyrator
