@@ -73,7 +73,7 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
 .../circuitjs1.html?negativeColor=%23ff0000 // change negative voltage color
 ```
-The simulator can also interface with your javascript code.  See war/jsinterface.html for an example.
+The simulator can also interface with your javascript code.  See [war/jsinterface.html](http://www.falstad.com/circuit/jsinterface.html) for an example.
 
 ## Building an Electron application
 
