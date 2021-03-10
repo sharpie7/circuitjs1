@@ -197,6 +197,7 @@ gilbertcell.txt Gilbert Cell Multiplier
 rmsconverter.txt True RMS Converter
 joule-thief.txt Joule Thief
 transrectifier.txt Full-Wave Rectifier
+early.txt Early Effect
 -
 +MOSFETs
 nmosfet.txt n-MOSFET
