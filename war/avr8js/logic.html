@@ -3,13 +3,19 @@
 <iframe id="circuitFrame" width="95%" height="800" src="../circuitjs.html?startCircuit=avr8js-logic.txt&running=false"></iframe>
 <p> <a href="index.html">LED strobe</a>, <a href="logic.html">Logic</a>, <a href="analog.html">Analog Read</a></p>
 
-</div> <div style="width:50%;position:fixed;right:0;"> <div class="toolbar"> <button id="run-button">Run</button> <button id="stop-button" disabled="">Stop</button> <button id="revert-button">Back to initial example</button> <div class="spacer"></div> <div id="status-label"></div> </div> <div class="code-editor"></div> <div class="compiler-output"> <pre id="compiler-output-text"></pre> <pre id="serial-output-text"></pre> </div> </div> <script src="//cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs/loader.js"></script> <script>
+</div> <div style="width:50%;position:fixed;right:0;"> 
+<p>Click Run below to start the simulation.</p>
+<div class="toolbar"> <button id="run-button">Run</button> <button id="stop-button" disabled="">Stop</button> <button id="revert-button">Back to initial example</button> <div class="spacer"></div> <div id="status-label"></div> </div> <div class="code-editor"></div> <div class="compiler-output"> <pre id="compiler-output-text"></pre> <pre id="serial-output-text"></pre> </div> </div> <script src="//cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs/loader.js"></script> <script>
 
 window.defaultCode=`
 void setup() {
   Serial.begin(115200);
+
+  // create labeled node with name "pin n" to access input pins
   pinMode(8, INPUT);
   pinMode(9, INPUT);
+
+  // create external voltage (javascript) with name "pin n" to access output pins
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
