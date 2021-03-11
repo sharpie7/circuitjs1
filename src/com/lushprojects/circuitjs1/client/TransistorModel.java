@@ -101,7 +101,7 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
     }
 
     String getDescription() {
-	if (description == null)
+	if (description == null || description.equals(name))
 	    return name;
 	return name + " (" + CirSim.LS(description) + ")";
     }
