@@ -466,13 +466,17 @@ public abstract class CircuitElm implements Editable {
 	}
     }
     
+    int getNumHandles() {
+	return getPostCount();
+    }
+    
     void drawHandles(Graphics g, Color c) {
     	g.setColor(c);
     	if (lastHandleGrabbed==-1)
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (getPostCount() > 1 || this instanceof ScopeElm) {
+    	if (getNumHandles() > 1) {
     		if (lastHandleGrabbed==-1)
     			g.fillRect(x2-3, y2-3, 7, 7);
     		else if (lastHandleGrabbed==1)
@@ -485,7 +489,7 @@ public abstract class CircuitElm implements Editable {
     	if ( Graphics.distanceSq(x , y , x2, y2)>=minSize) {
     		if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
     			lastHandleGrabbed=0;
-    		else if (Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
+    		else if (getNumHandles() > 1 && Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
     			lastHandleGrabbed=1;
     	}
     	return lastHandleGrabbed;

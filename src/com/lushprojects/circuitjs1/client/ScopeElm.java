@@ -108,6 +108,6 @@ class ScopeElm extends CircuitElm {
     }
     
     int getPostCount() { return 0; }
-    
+    int getNumHandles() { return 2; }
     
 }
