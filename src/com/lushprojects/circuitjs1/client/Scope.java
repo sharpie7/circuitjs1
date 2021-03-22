@@ -1631,6 +1631,10 @@ class Scope {
 	if (selectedPlot < 0 && getSingleElm() == null)
 	    return null;
 	
+	// no visible plots?
+	if (visiblePlots.size() == 0)
+	    return null;
+	
 	ScopePlot plot = visiblePlots.firstElement();
 	if (selectedPlot >= 0 && visiblePlots.size() > selectedPlot)
 	    plot = visiblePlots.get(selectedPlot);
