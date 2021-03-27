@@ -37,6 +37,7 @@ class EditOptions implements Editable {
 	            EditInfo ei =  new EditInfo("Change Language", 0, -1, -1);
 	            ei.choice = new Choice();
 	            ei.choice.add("(no change)");
+	            ei.choice.add("Čeština");
 	            ei.choice.add("Dansk");
 	            ei.choice.add("Deutsch");
 	            ei.choice.add("English");
@@ -80,16 +81,17 @@ class EditOptions implements Editable {
 		    	    return;
 		    	String langString = null;
 		    	switch (lang) {
-		    	case 1: langString = "da"; break;
-		    	case 2: langString = "de"; break;
-		    	case 3: langString = "en"; break;
-		    	case 4: langString = "es"; break;
-		    	case 5: langString = "fr"; break;
-		    	case 6: langString = "it"; break;
-		    	case 7: langString = "nb"; break;
-		    	case 8: langString = "pl"; break;
-			case 9: langString = "pt"; break;
-		    	case 10: langString = "ru"; break;
+		    	case 1: langString = "cs"; break;
+		    	case 2: langString = "da"; break;
+		    	case 3: langString = "de"; break;
+		    	case 4: langString = "en"; break;
+		    	case 5: langString = "es"; break;
+		    	case 6: langString = "fr"; break;
+		    	case 7: langString = "it"; break;
+		    	case 8: langString = "nb"; break;
+		    	case 9: langString = "pl"; break;
+			case 10: langString = "pt"; break;
+		    	case 11: langString = "ru"; break;
 		    	}
 		    	if (langString == null)
 		    	    return;
