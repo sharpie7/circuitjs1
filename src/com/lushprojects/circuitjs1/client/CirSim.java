@@ -959,6 +959,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Labeled Node"), "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Test Point"), "TestPointElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ammeter"), "AmmeterElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Decimal Display"), "DecimalDisplayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Data Export"), "DataRecorderElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
@@ -5209,6 +5210,7 @@ MouseOutHandler, MouseWheelHandler {
 	case 416: return new MBBSwitchElm(x1, y1, x2, y2, f, st);
     	case 417: return new UnijunctionElm(x1, y1, x2, y2, f, st);
     	case 418: return new ExtVoltageElm(x1, y1, x2, y2, f, st);
+    	case 419: return new DecimalDisplayElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5461,6 +5463,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new UnijunctionElm(x1, y1);
     	if (n=="ExtVoltageElm")
 		return (CircuitElm) new ExtVoltageElm(x1, y1);
+    	if (n=="DecimalDisplayElm")
+		return (CircuitElm) new DecimalDisplayElm(x1, y1);
     	return null;
     }
     
