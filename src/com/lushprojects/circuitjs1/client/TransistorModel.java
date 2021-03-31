@@ -18,6 +18,7 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
     boolean dumped;
     boolean readOnly;
     boolean builtIn;
+    boolean internal;
 
     TransistorModel(String d, double sc) {
 	description = d;
@@ -61,6 +62,13 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	modelMap = new HashMap<String,TransistorModel>();
 	addDefaultModel("default",      new TransistorModel("default",        1e-13));
 	addDefaultModel("spice-default", new TransistorModel("spice-default", 1e-16));
+	
+	// for LM324v2 OpAmpRealElm
+	loadInternalModel("xlm324v2-qpi 0 1.01e-16 333.3333333333333 0 1.5 0 0 2 1 1 0.0034482758620689655 0 1");
+	loadInternalModel("xlm324v2-qpi 0 1.01e-16 333.3333333333333 0 1.5 0 0 2 1 1 0.0034482758620689655 0 1");
+	loadInternalModel("xlm324v2-qpa 0 1.01e-16 333.3333333333333 0 1.5 0 0 2 1 1 0.004081632653061225 0 1");
+	loadInternalModel("xlm324v2-qnq 0 1e-16 200 0 1.5 0 0 2 1 1 0 0 1");
+	loadInternalModel("xlm324v2-qpq 0 1e-16 333.3333333333333 0 1.5 0 0 2 1 1 0 0 1");
     }
 
     static void addDefaultModel(String name, TransistorModel dm) {
@@ -89,6 +97,8 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	while (it.hasNext()) {
 	    Map.Entry<String,TransistorModel> pair = (Map.Entry)it.next();
 	    TransistorModel tm = pair.getValue();
+	    if (tm.internal)
+		continue;
 	    if (!vector.contains(tm))
 		vector.add(tm);
 	}
@@ -127,10 +137,17 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
 	updateModel();
     }
 
-    static void undumpModel(StringTokenizer st) {
+    static void loadInternalModel(String s) {
+	StringTokenizer st = new StringTokenizer(s);
+	TransistorModel tm = undumpModel(st);
+	tm.builtIn = tm.internal = true;
+    }
+    
+    static TransistorModel undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
 	TransistorModel dm = TransistorModel.getModelWithName(name);
 	dm.undump(st);
+	return dm;
     }
 
     void undump(StringTokenizer st) {
