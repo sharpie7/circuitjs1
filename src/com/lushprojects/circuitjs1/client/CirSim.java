@@ -3569,7 +3569,8 @@ MouseOutHandler, MouseWheelHandler {
 		    }
 		    if (tint == 38) {
 			Adjustable adj = new Adjustable(st, this);
-			adjustables.add(adj);
+			if (adj.elm != null)
+			    adjustables.add(adj);
 			break;
 		    }
 		    if (tint == '.') {
@@ -3603,8 +3604,10 @@ MouseOutHandler, MouseWheelHandler {
 	enableItems();
 	if ((flags & RC_RETAIN) == 0) {
 	    // create sliders as needed
-	    for (i = 0; i != adjustables.size(); i++)
-		adjustables.get(i).createSlider(this);
+	    for (i = 0; i < adjustables.size(); i++) {
+		if (!adjustables.get(i).createSlider(this))
+		    adjustables.remove(i--);
+	    }
 	}
 //	if (!retain)
 	//    handleResize(); // for scopes
