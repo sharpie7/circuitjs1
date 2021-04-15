@@ -3,13 +3,29 @@ package com.lushprojects.circuitjs1.client;
 import java.util.Vector;
 
 class ExprState {
-    int n;
+    //int n;
     double values[];
+    double lastValues[];
+    double lastOutput;
     double t;
     ExprState(int xx) {
-	n = xx;
+	//n = xx;
 	values = new double[9];
+	lastValues = new double[9];
 	values[4] = Math.E;
+    }
+    
+    void updateLastValues(double lastOut) {
+	lastOutput = lastOut;
+	int i;
+	for (i = 0; i != values.length; i++)
+	    lastValues[i] = values[i];
+    }
+    
+    void reset() {
+	for (int i = 0; i != values.length; i++)
+	    lastValues[i] = 0;
+	lastOutput = 0;
     }
 }
 
@@ -90,7 +106,23 @@ class Expr {
 	    return left.eval(es) % right.eval(es);
 	case E_PWL:
 	    return pwl(es, children);
+	case E_PWR:
+	    return Math.pow(Math.abs(left.eval(es)), right.eval(es));
+	case E_PWRS: {
+	    double x = left.eval(es);
+	    if (x < 0)
+		return -Math.pow(-x, right.eval(es)); 
+	    return Math.pow(x, right.eval(es)); 
+	}
+	case E_LASTOUTPUT:
+	    return es.lastOutput;
+	case E_TIMESTEP:
+	    return CirSim.theSim.timeStep;
 	default:
+	    if (type >= E_LASTA)
+		return es.lastValues[type-E_LASTA];
+	    if (type >= E_DADT)
+		return (es.values[type-E_DADT]-es.lastValues[type-E_DADT])/CirSim.theSim.timeStep;
 	    if (type >= E_A)
 		return es.values[type-E_A];
 	    CirSim.console("unknown\n");
@@ -154,7 +186,13 @@ class Expr {
     static final int E_MOD = 25;
     static final int E_STEP = 26;
     static final int E_SELECT = 27;
-    static final int E_A = 28; // should be at end
+    static final int E_PWR = 28;
+    static final int E_PWRS = 29;
+    static final int E_LASTOUTPUT = 30;
+    static final int E_TIMESTEP = 31;
+    static final int E_A = 32; // reserve some space after this
+    static final int E_DADT = 42; // reserve more space
+    static final int E_LASTA = 52; // should be at end
 };
 
 class ExprParser {
@@ -299,6 +337,24 @@ class ExprParser {
 		return new Expr(Expr.E_A + (c-'a'));
 	    }
 	}
+	if (token.startsWith("last") && token.length() == 5) {
+	    char c = token.charAt(4);
+	    if (c >= 'a' && c <= 'i') {
+		getToken();
+		return new Expr(Expr.E_LASTA + (c-'a'));
+	    }
+	}
+	if (token.endsWith("dt") && token.startsWith("d") && token.length() == 4) {
+	    char c = token.charAt(1);
+	    if (c >= 'a' && c <= 'i') {
+		getToken();
+		return new Expr(Expr.E_DADT + (c-'a'));
+	    }
+	}
+	if (skip("lastoutput"))
+	    return new Expr(Expr.E_LASTOUTPUT);
+	if (skip("timestep"))
+	    return new Expr(Expr.E_TIMESTEP);
 	if (skip("pi"))
 	    return new Expr(Expr.E_VAL, 3.14159265358979323846);
 //	if (skip("e"))
@@ -335,6 +391,10 @@ class ExprParser {
 	    return parseFuncMulti(Expr.E_SELECT, 3, 3);
 	if (skip("clamp"))
 	    return parseFuncMulti(Expr.E_CLAMP, 3, 3);
+	if (skip("pwr"))
+	    return parseFuncMulti(Expr.E_PWR, 2, 2);
+	if (skip("pwrs"))
+	    return parseFuncMulti(Expr.E_PWRS, 2, 2);
 	try {
 	    Expr e = new Expr(Expr.E_VAL, Double.valueOf(token).doubleValue());
 	    getToken();

@@ -22,17 +22,23 @@ package com.lushprojects.circuitjs1.client;
     class CapacitorElm extends CircuitElm {
 	double capacitance;
 	double compResistance, voltdiff;
+	double initialVoltage;
 	Point plate1[], plate2[];
 	public static final int FLAG_BACK_EULER = 2;
 	public CapacitorElm(int xx, int yy) {
 	    super(xx, yy);
 	    capacitance = 1e-5;
+	    initialVoltage = 1e-3;
 	}
 	public CapacitorElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    capacitance = new Double(st.nextToken()).doubleValue();
 	    voltdiff = new Double(st.nextToken()).doubleValue();
+	    initialVoltage = 1e-3;
+	    try {
+		initialVoltage = new Double(st.nextToken()).doubleValue();
+	    } catch (Exception e) {}
 	}
 	boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
 	void setNodeVoltage(int n, double c) {
@@ -43,7 +49,7 @@ package com.lushprojects.circuitjs1.client;
 	    super.reset();
 	    current = curcount = curSourceValue = 0;
 	    // put small charge on caps when reset to start oscillators
-	    voltdiff = 1e-3;
+	    voltdiff = initialVoltage;
 	}
 	void shorted() {
 	    super.reset();
@@ -51,7 +57,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getDumpType() { return 'c'; }
 	String dump() {
-	    return super.dump() + " " + capacitance + " " + voltdiff;
+	    return super.dump() + " " + capacitance + " " + voltdiff + " " + initialVoltage;
 	}
 	
 	// used for PolarCapacitorElm
@@ -170,6 +176,8 @@ package com.lushprojects.circuitjs1.client;
 		ei.checkbox = new Checkbox("Trapezoidal Approximation", isTrapezoidal());
 		return ei;
 	    }
+	    if (n == 2)
+		return new EditInfo("Initial Voltage (on Reset)", initialVoltage);
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -181,6 +189,8 @@ package com.lushprojects.circuitjs1.client;
 		else
 		    flags |= FLAG_BACK_EULER;
 	    }
+	    if (n == 2)
+		initialVoltage = ei.value;
 	}
 	int getShortcut() { return 'c'; }
 	public double getCapacitance() { return capacitance; }

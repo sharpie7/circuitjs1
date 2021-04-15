@@ -7,7 +7,7 @@
 The controlled source elements take an output function parameter.  The output function takes the inputs, if any,
 as parameters (which will be <tt>a</tt>, <tt>b</tt>, etc. for a voltage-controlled source, or <tt>i</tt> for a current-controlled source).  You
 can also specify <tt>t</tt> for
-the current simulation time, <tt>pi</tt> for &pi;, and <tt>e</tt> for <i>e</i> (unless there is an input <tt>e</tt>).
+the current simulation time, <tt>timestep</tt> for the timestep, <tt>pi</tt> for &pi;, and <tt>e</tt> for <i>e</i> (unless there is an input <tt>e</tt>).
 <p>
 The function can use arithmetic like <tt>a+b</tt>, <tt>a*b</tt>, <tt>a^2/(b-1)</tt>, etc.  It can also use functions like
 <tt>sin(x)</tt>,
@@ -39,6 +39,9 @@ If <tt>x1 < x < x2</tt>, the result is a linear interpolation between <tt>y1</tt
 result is <tt>yn</tt>.  For example, in the simplest case, <tt>pwl(t,0,0,.1,5)</tt> is a waveform that starts at 0 at time 0 and then
 ramps to 5 over 100ms, then stays at 5.
 </p><p>
+<tt>dadt</tt>, <tt>dbdt</tt>, etc. are equal to the time derivative of <tt>a</tt>, <tt>b</tt>, etc.
+<tt>lasta</tt>, <tt>lastb</tt>, etc. are equal to the value of <tt>a</tt>, <tt>b</tt>, etc. in the previous timestep.
+<tt>lastoutput</tt> is equal to value of the output function in the previous timestep.
 Examples:
 <ul>
 <li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+58+5+50%0A213+464+288+528+288+0+2+-(a-b)/1000%0Aw+464+288+464+240+0%0Aw+464+240+560+240+0%0Aw+560+240+560+288+0%0Aw+464+320+464+368+0%0Aw+464+368+560+368+0%0Aw+560+368+560+320+1%0Ag+464+368+464+400+0%0AR+464+240+464+176+0+0+40+5+0+0+0.5%0A">Resistor</a>
@@ -49,5 +52,9 @@ Examples:
 <li><a href="circuitjs.html?cct=$+1+0.000005+16.817414165184545+50+5+50%0A212+496+272+544+272+0+1+abs(a)%0AR+496+272+448+272+0+1+40+5+0+0+0.5%0Ag+592+304+592+320+0%0AO+592+272+672+272+0%0Ao+1+64+0+12291+5.000000000000001+0.0001+0+3+1+3+3+0%0A">Full Rectifier</a>
 <li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A212+448+224+480+224+0+0+pwl(t,0,0,.1,5)%0Ag+544+256+544+288+0%0Ar+544+224+624+224+0+1000%0Ag+624+224+624+256+0%0Ao+2+64+0+4098+5+0.003125+0+2+2+3%0A">Voltage Ramp</a>
 <li><a href="circuitjs.html?cct=$+1+0.000005+10.20027730826997+50+5+50%0A214+304+192+336+192+0+2+i%0A214+304+288+352+288+0+2+i%0A213+464+240+480+240+0+2+a%5Cpb%0Aw+400+192+464+192+0%0Aw+464+192+464+240+0%0Aw+400+288+464+288+0%0Aw+464+288+464+272+0%0Ag+400+224+400+256+0%0Ag+400+320+400+352+0%0Aw+560+240+560+208+0%0Aw+560+208+624+208+1%0Ar+624+208+624+304+0+1000%0Aw+560+272+560+304+0%0Aw+560+304+624+304+0%0Ag+624+304+624+320+0%0Ai+224+192+304+192+0+0.015%0Aw+224+192+224+224+0%0Aw+224+224+304+224+0%0Aw+224+288+224+320+0%0Aw+224+320+304+320+0%0Ai+224+288+304+288+0+0.005%0A">Current Adder</a>
+<li><a href="circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAXKQUgoFMBaMMAKAHMRjCQUUAWTt0wooUFgDdBPflLB8BtEX1pJa2aHLAJiRBNgR4yxbFGgIJs+VLy1FIGz1G2zLAA7gUee7TCfpCpxYAdyleAV8vMLEQrm8PLwdIYPi4sAxuRJYUX3B01J04nxAAGwBDAGcAFwB7AFdK13qAHVdKgEsAWzoqulcAKjA4PtL2HgwRZhFhcCtbFgB5MZEHbDRCsWqQE1XRZWIvQdN4SDJCBEIUVXAQNoA7RsqWTeItkVo9rz5oImJ5Y+OUC8YPAIKCWEA">Integrator</a>
+<li><a href="circuitjs.html?ctz=CQAgjCAMB0l3BWcMBMcUHYMGZIA4UA2ATmIxAXKQUgoFMBaMMAKADdwwUQUFDPuxfrWwgALLSS0w0SpAxDsRBWLxDhslgHMBPPrtxioUFii7hCtIT3whr0kAGMANgEMAtgAcAFABNXvgAuAFSwYAA0ADoAzkwIUdFgCACULADuutZglnbC2nr8XHgFFrRlLADyJdaGucaQLAD2xkrGEsTFYGVhvMbcIk0UIK207cVoUNAQ0yxAA">Differentiator</a>
+<li><a href="circuitjs.html?ctz=CQAgjCAMB0l3BWcAWaAmAzAgbBjB2BSfZBNBADhASVsmoFMBaMMAKADdx9sQ1803XhXr1BYeklFRoCNgCchIESDzDpYEWwDuS-oLV8BUNmjDJVGXuYtWqNqCAsATAIbOALgCoARl+RwOpbqwSgWkEHIGOI8TtFGghG6UYL6oWlJoWCxGJAW2byZufk5eeBgiUHF5YIpNSbJ8ay1TcjhbACWfBRUaJBUhn1UorDExACck1PTU3K6aD18-d29AQ0rfGuDaxEA9o7Y4U6Qk9QykPz4V9c3+BQ4+I6JqmwY9hAjcB+wggCSAHbOACuAGMPK5-iCGGwgA">Variable Inductor</a>
+<li><a href="circuitjs.html?ctz=CQAgjCAMB0l3BWcAWaAmAzAgbBjB2BSfZBNBADhASVsmoFMBaMMAKADcQ01luduvEBXr003eklFRoCNgCdBfESDzZh0sCLYB3Jf3VqDUNmjAZVGdWGR8rVG33oWmACgAmAQ3cAXJu4BjXwBKACoAI1DYeHY9IxUjRxM9ZAxxFVTxJMhdS3U0SCojcnUclLTwfHVM4zK8jRAalTrigRqSkwBzeo7i-HFRNgAlerAq7goHcelkelQATmwpKBk5AHsVirnIefmQbFkEKxliecoweYo0bDAbpcwVgdU2DAcIUVlwegBhTwAHTwBACWPk8ADsAgw2EA">Variable Capacitor</a>
 </ul>
 </body></html>

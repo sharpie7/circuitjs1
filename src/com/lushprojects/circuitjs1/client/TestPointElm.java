@@ -44,6 +44,7 @@ class TestPointElm extends CircuitElm {
     double pulseWidth=0;
     double dutyCycle=0;
     double selectedValue=0;
+    int lastStepCount;
     
     double voltages[];
     boolean increasingV=true, decreasingV=true;
@@ -147,6 +148,9 @@ class TestPointElm extends CircuitElm {
     
     
     void stepFinished(){
+	if (sim.timeStepCount == lastStepCount)
+	    return;
+	lastStepCount = sim.timeStepCount;
         count++;//how many counts are in a cycle    
         total += volts[0]*volts[0]; //sum of squares
 
@@ -289,10 +293,10 @@ class TestPointElm extends CircuitElm {
                 arr[1] = "Freq = " + getUnitText(frequency, "Hz");
                 break;
             case TP_PER:
-                arr[1] = "Period = " + getUnitText(period*sim.timeStep/sim.getIterCount(), "S");
+                arr[1] = "Period = " + getUnitText(period*sim.maxTimeStep/sim.getIterCount(), "S");
                 break;
             case TP_PWI:
-                arr[1] = "Pulse width = " + getUnitText(pulseWidth*sim.timeStep*sim.getIterCount(), "S");
+                arr[1] = "Pulse width = " + getUnitText(pulseWidth*sim.maxTimeStep*sim.getIterCount(), "S");
                 break;
             case TP_DUT:
                 arr[1] = "Duty cycle = " + showFormat.format(dutyCycle);

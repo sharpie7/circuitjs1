@@ -22,18 +22,15 @@ package com.lushprojects.circuitjs1.client;
 class RailElm extends VoltageElm {
 	public RailElm(int xx, int yy) { 
 		super(xx, yy, WF_DC); 
-		numHandles=1;
 
 	}
 	RailElm(int xx, int yy, int wf) {
 		super(xx, yy, wf); 
-		numHandles=1;
 	}
 
 	public RailElm(int xa, int ya, int xb, int yb, int f,
 			StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
-		numHandles=1;
 	}
 
     

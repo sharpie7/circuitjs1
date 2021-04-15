@@ -73,7 +73,8 @@ class EditDialog extends DialogBox  {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(applyButton = new Button(CirSim.LS("Apply")));
+		applyButton = new Button(CirSim.LS("Apply"));
+		hp.add(applyButton);
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -142,12 +143,14 @@ class EditDialog extends DialogBox  {
 			} else if (ei.widget != null) {
 			    vp.insert(ei.widget, idx);
 			} else {
-				vp.insert(ei.textf = new TextBox(), idx);
-				if (ei.text != null)
-					ei.textf.setText(ei.text);
-				if (ei.text == null) {
-					ei.textf.setText(unitString(ei));
-				}
+			    vp.insert(ei.textf = new TextBox(), idx);
+			    if (ei.text != null) {
+				ei.textf.setText(ei.text);
+				ei.textf.setVisibleLength(50);
+			    }
+			    if (ei.text == null) {
+				ei.textf.setText(unitString(ei));
+			    }
 			}
 		}
 		einfocount = i;
@@ -172,7 +175,11 @@ class EditDialog extends DialogBox  {
 		double va = Math.abs(v);
 		if (ei != null && ei.dimensionless)
 			return noCommaFormat.format(v);
+		if (Double.isInfinite(va))
+			return noCommaFormat.format(v);
 		if (v == 0) return "0";
+		if (va < 1e-12)
+			return noCommaFormat.format(v*1e15) + "f";
 		if (va < 1e-9)
 			return noCommaFormat.format(v*1e12) + "p";
 		if (va < 1e-6)
@@ -204,10 +211,13 @@ class EditDialog extends DialogBox  {
 		}
 		// rewrite shorthand (eg "2k2") in to normal format (eg 2.2k) using regex
 		s=s.replaceAll("([0-9]+)([pPnNuUmMkKgG])([0-9]+)", "$1.$3$2");
+		// rewrite meg to M
+		s=s.replaceAll("[mM][eE][gG]$", "M");
 		int len = s.length();
 		char uc = s.charAt(len-1);
 		double mult = 1;
 		switch (uc) {
+		case 'f': case 'F': mult = 1e-15; break;
 		case 'p': case 'P': mult = 1e-12; break;
 		case 'n': case 'N': mult = 1e-9; break;
 		case 'u': case 'U': mult = 1e-6; break;
@@ -280,6 +290,11 @@ class EditDialog extends DialogBox  {
 	    }
 	}
 	
+	public void resetDialog() {
+	    clearDialog();
+	    buildDialog();
+	}
+	
 	public void clearDialog() {
 		while (vp.getWidget(0)!=hp)
 			vp.remove(0);
@@ -288,7 +303,8 @@ class EditDialog extends DialogBox  {
 	protected void closeDialog()
 	{
 		EditDialog.this.hide();
-		cframe.editDialog = null;
+		if (cframe.editDialog == this)
+		    cframe.editDialog = null;
 	}
 	
 	public void enterPressed() {

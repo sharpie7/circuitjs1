@@ -6,9 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.TextArea;
-
 public class DiodeModel implements Editable, Comparable<DiodeModel> {
 
     static HashMap<String, DiodeModel> modelMap;
@@ -16,10 +13,16 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
     int flags;
     String name, description;
     double saturationCurrent, seriesResistance, emissionCoefficient, breakdownVoltage;
+    
+    // used for UI code, not guaranteed to be set
+    double forwardVoltage, forwardCurrent;
+    
     boolean dumped;
     boolean readOnly;
     boolean builtIn;
     boolean oldStyle;
+    boolean internal;
+    static final int FLAGS_SIMPLE = 1; 
     
     // Electron thermal voltage at SPICE's default temperature of 27 C (300.15 K):
     static final double vt = 0.025865;
@@ -77,7 +80,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	addDefaultModel("default-zener", new DiodeModel(1.7143528192808883e-7, 0, 2, 5.6, null));
 	
 	// old default LED with saturation current that is way too small (causes numerical errors)
-	addDefaultModel("old-default-led", new DiodeModel(2.2349907006671927e-18, 0, 2, 0, null));
+	addDefaultModel("old-default-led", new DiodeModel(2.2349907006671927e-18, 0, 2, 0, null).setInternal());
 	
 	// default for newly created LEDs, https://www.diyaudio.com/forums/software-tools/25884-spice-models-led.html
 	addDefaultModel("default-led", new DiodeModel(93.2e-12, .042, 3.73, 0, null));
@@ -91,6 +94,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	
 	// http://users.skynet.be/hugocoolens/spice/diodes/1n4148.htm
 	addDefaultModel("1N4148", new DiodeModel(4.352e-9, .6458, 1.906, 75, "switching"));
+	addDefaultModel("x2n2646-emitter", new DiodeModel(2.13e-11, 0, 1.8, 0, null).setInternal());
     }
 
     static void addDefaultModel(String name, DiodeModel dm) {
@@ -98,9 +102,15 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	dm.readOnly = dm.builtIn = true;
 	dm.name = name;
     }
+
+    DiodeModel setInternal() {
+	internal = true;
+	return this;
+    }
     
-    // create a new model using given parameters, keeping backward compatibility.  The method we use has problems, as explained below, but we don't want to
-    // change circuit behavior
+    // create a new model using given parameters, keeping backward compatibility.  The method we use has problems, but we don't want to
+    // change circuit behavior.  We don't do this anymore because we discovered that changing the leakage current to get a given fwdrop
+    // does not work well; the leakage currents can be way too high or low.
     static DiodeModel getModelWithParameters(double fwdrop, double zvoltage) {
 	createModelMap();
 	
@@ -134,59 +144,6 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	return dm;
     }
     
-    // create a new model using given fwdrop, using older method (pre-Aug 2017) that keeps a constant leakage current, but changes the emission coefficient.
-    // We discovered that changing the leakage current to get a given fwdrop does not work well; the leakage currents can be way too high or low.
-    static DiodeModel getModelWithVoltageDrop(double fwdrop) {
-	createModelMap();
-
-	// look for existing model with same parameters
-	Iterator it = modelMap.entrySet().iterator();
-	while (it.hasNext()) {
-	    Map.Entry<String,DiodeModel> pair = (Map.Entry)it.next();
-	    DiodeModel dm = pair.getValue();
-	    if (Math.abs(dm.fwdrop-fwdrop) < 1e-8 && Math.abs(dm.breakdownVoltage) < 1e-8)
-		return dm;
-	}
-
-	// create a new one, converting to new parameter values
-	double leakage = 100e-9;
-	double vdcoef = Math.log(1/leakage + 1)/fwdrop;
-	double emcoef = 1/(vdcoef*vt);
-	String name = "fwdrop=" + fwdrop;
-	DiodeModel dm = getModelWithName(name);
-//	CirSim.console("got model with name " + name);
-	dm.saturationCurrent = leakage;
-	dm.emissionCoefficient = emcoef;
-	dm.breakdownVoltage = 0;
-	dm.updateModel();
-	return dm;
-    }
-
-    // create a new model using given zener voltage, otherwise the same as default
-    static DiodeModel getZenerModel(double zvoltage) {
-	createModelMap();
-
-	// look for existing model with same parameters
-	Iterator it = modelMap.entrySet().iterator();
-	while (it.hasNext()) {
-	    Map.Entry<String,DiodeModel> pair = (Map.Entry)it.next();
-	    DiodeModel dm = pair.getValue();
-	    if (Math.abs(dm.breakdownVoltage-zvoltage) < 1e-8)
-		return dm;
-	}
-
-	// create a new one from default
-	DiodeModel dd = getModelWithName("default");
-	
-	String name = "zvoltage=" + zvoltage;
-	DiodeModel dm = getModelWithName(name);
-	dm.saturationCurrent = dd.saturationCurrent;
-	dm.emissionCoefficient = dd.emissionCoefficient;
-	dm.breakdownVoltage = zvoltage;
-	dm.updateModel();
-	return dm;
-    }
-    
     static DiodeModel getDefaultModel() {
 	return getModelWithName("default");
     }
@@ -207,9 +164,12 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	while (it.hasNext()) {
 	    Map.Entry<String,DiodeModel> pair = (Map.Entry)it.next();
 	    DiodeModel dm = pair.getValue();
+	    if (dm.internal)
+		continue;
 	    if (zener && dm.breakdownVoltage == 0)
 		continue;
-	    vector.add(dm);
+	    if (!vector.contains(dm))
+		vector.add(dm);
 	}
 	Collections.sort(vector);
 	return vector;
@@ -239,6 +199,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	seriesResistance = copy.seriesResistance;
 	emissionCoefficient = copy.emissionCoefficient;
 	breakdownVoltage = copy.breakdownVoltage;
+	forwardCurrent = copy.forwardCurrent;
 	updateModel();
     }
 
@@ -254,34 +215,74 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	seriesResistance = Double.parseDouble(st.nextToken());
 	emissionCoefficient = Double.parseDouble(st.nextToken());
 	breakdownVoltage = Double.parseDouble(st.nextToken());
+	try {
+	    forwardCurrent = Double.parseDouble(st.nextToken());
+	} catch (Exception e) {}
 	updateModel();
     }
     
     public EditInfo getEditInfo(int n) {
-        if (n == 0)
-            return new EditInfo("Saturation Current", saturationCurrent, -1, -1);
-        if (n == 1)
-            return new EditInfo("Series Resistance", seriesResistance, -1, -1);
-        if (n == 2)
-            return new EditInfo(EditInfo.makeLink("diodecalc.html", "Emission Coefficient"), emissionCoefficient, -1, -1);
-        if (n == 3)
-            return new EditInfo("Breakdown Voltage", breakdownVoltage, -1, -1);
+	if (n == 0) {
+	    EditInfo ei = new EditInfo("Model Name", 0);
+	    ei.text = name == null ? "" : name;
+	    return ei;
+	}
+	if (n == 1)
+	    return new EditInfo("Saturation Current", saturationCurrent, -1, -1);
+	if (isSimple()) {
+	    if (n == 2)
+		return new EditInfo("Forward Voltage", forwardVoltage, -1, -1);
+	    if (n == 3)
+		return new EditInfo("Current At Above Voltage (A)", forwardCurrent, -1, -1);
+	} else {
+	    if (n == 2)
+		return new EditInfo("Series Resistance", seriesResistance, -1, -1);
+	    if (n == 3)
+		return new EditInfo(EditInfo.makeLink("diodecalc.html", "Emission Coefficient"), emissionCoefficient, -1, -1);
+	}
+	if (n == 4)
+	    return new EditInfo("Breakdown Voltage", breakdownVoltage, -1, -1);
 	return null;
     }
 
     public void setEditValue(int n, EditInfo ei) {
-	if (n == 0)
-	    saturationCurrent = ei.value;
+	if (n == 0) {
+	    name = ei.textf.getText();
+	    if (name.length() > 0)
+		modelMap.put(name, this);
+	}
 	if (n == 1)
-	    seriesResistance = ei.value;
-	if (n == 2)
-	    emissionCoefficient = ei.value;
-	if (n == 3)
+	    saturationCurrent = ei.value;
+	if (isSimple()) {
+	    if (n == 2)
+		forwardVoltage = ei.value;
+	    if (n == 3)
+		forwardCurrent = ei.value;
+	    setEmissionCoefficient();
+	} else {
+	    if (n == 2)
+		seriesResistance = ei.value;
+	    if (n == 3)
+		emissionCoefficient = ei.value;
+	}
+	if (n == 4)
 	    breakdownVoltage = Math.abs(ei.value);
 	updateModel();
 	CirSim.theSim.updateModels();
     }
 
+    // set emission coefficient for simple mode if we have enough data  
+    void setEmissionCoefficient() {
+	if (forwardCurrent > 0 && forwardVoltage > 0)
+	    emissionCoefficient = (forwardVoltage/Math.log(forwardCurrent/saturationCurrent+1)) / vt;
+    }
+    
+    public void setForwardVoltage() {
+	if (forwardCurrent == 0)
+	    forwardCurrent = 1;
+	forwardVoltage = emissionCoefficient*vt * Math.log(forwardCurrent/saturationCurrent+1);
+    }
+    
     void updateModel() {
 	vscale = emissionCoefficient * vt;
 	vdcoef = 1/vscale;
@@ -290,6 +291,33 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
     
     String dump() {
 	dumped = true;
-	return "34 " + CustomLogicModel.escape(name) + " " + flags + " " + saturationCurrent + " " + seriesResistance + " " + emissionCoefficient + " " + breakdownVoltage;
-    }    
+	return "34 " + CustomLogicModel.escape(name) + " " + flags + " " + saturationCurrent + " " + seriesResistance + " " + emissionCoefficient + " " + breakdownVoltage + " " + forwardCurrent;
+    }
+    
+    boolean isSimple() {
+	return (flags & FLAGS_SIMPLE) != 0;
+    }
+    
+    void setSimple(boolean s) {
+	flags = (s) ? FLAGS_SIMPLE : 0;
+    }
+    
+    void pickName() {
+	if (breakdownVoltage > 0 && breakdownVoltage < 20)
+	    name = "zener-" + CircuitElm.showFormat.format(breakdownVoltage);
+	else if (isSimple())
+	    name = "fwdrop=" + CircuitElm.showFormat.format(forwardVoltage);
+	else
+	    name = "diodemodel";
+	if (modelMap.get(name) != null) {
+	    int num = 2;
+	    for (; ; num++) {
+		String n = name + "-" + num;
+		if (modelMap.get(n) == null) {
+		    name = n;
+		    break;
+		}
+	    }
+	}
+    }
 }

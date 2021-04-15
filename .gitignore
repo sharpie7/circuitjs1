@@ -2,6 +2,7 @@
 gwt-unitCache/
 war/circuitjs1/
 war/circuitjs1/circuits/
+war/e-*.html
 war/WEB-INF/
 
 # Windows image file caches

@@ -1,0 +1,14 @@
+$ 1 0.000005 10.20027730826997 59 5 50
+. fullrect 0 2 2 4 in\p 1 0 2 in- 3 1 2 out\p 2 0 3 out- 4 1 3 DiodeElm\s1\s2\rDiodeElm\s3\s2\rDiodeElm\s4\s1\rDiodeElm\s4\s3 2\\sdefault\s2\\sdefault\s2\\sdefault\s2\\sdefault
+410 688 288 784 368 1 fullrect 2\sdefault 2\sdefault 2\sdefault 2\sdefault
+w 688 288 688 240 0
+w 688 320 688 368 0
+w 688 368 640 368 0
+w 688 240 640 240 0
+v 640 368 640 240 0 1 40 5 0 0 0.5
+w 784 288 784 240 0
+w 784 320 784 368 0
+w 784 368 832 368 0
+r 832 240 832 368 0 1000
+w 784 240 832 240 0
+o 9 64 0 4099 5 0.025 0 2 9 3

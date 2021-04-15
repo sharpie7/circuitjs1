@@ -98,6 +98,7 @@ class VoltageElm extends CircuitElm {
 	    return x*(2/pi)-1;
 	return 1-(x-pi)*(2/pi);
     }
+    int getVoltageSource() { return voltSource; }
     void stamp() {
 	if (waveform == WF_DC)
 	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource,
@@ -337,10 +338,10 @@ class VoltageElm extends CircuitElm {
 	    // even though the frequency has changed.
 	    double oldfreq = frequency;
 	    frequency = ei.value;
-	    double maxfreq = 1/(8*sim.timeStep);
+	    double maxfreq = 1/(8*sim.maxTimeStep);
 	    if (frequency > maxfreq) {
 		if (Window.confirm(sim.LS("Adjust timestep to allow for higher frequencies?")))
-		    sim.timeStep = 1/(32*frequency);
+		    sim.maxTimeStep = 1/(32*frequency);
 		else
 		    frequency = maxfreq;
 	    }

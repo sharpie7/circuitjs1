@@ -49,7 +49,7 @@ package com.lushprojects.circuitjs1.client;
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
-	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : "out";
+	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : sim.LS("out");
 //	    FontMetrics fm = g.getFontMetrics();
 	    if (this == sim.plotXElm)
 		s = "X";

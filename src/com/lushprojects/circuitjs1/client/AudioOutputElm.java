@@ -188,9 +188,9 @@ public class AudioOutputElm extends CircuitElm {
 	    
 //	    int frac = (int)Math.round(Math.max(sampleStep*33000, 1));
 	    double target = sampleStep/8;
-	    if (sim.timeStep != target) {
+	    if (sim.maxTimeStep != target) {
                 if (okToChangeTimeStep || Window.confirm(sim.LS("Adjust timestep for best audio quality and performance?"))) {
-                    sim.timeStep = target;
+                    sim.maxTimeStep = target;
                     okToChangeTimeStep = true;
                 }
 	    }

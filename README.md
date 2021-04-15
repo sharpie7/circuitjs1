@@ -66,10 +66,15 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs1.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
 .../circuitjs1.html?whiteBackground=<true|false>
 .../circuitjs1.html?conventionalCurrent=<true|false>
-.../circuitjs1.html?hideSidebar=<true|false>
-.../circuitjs1.html?hideMenu=<true|false>
-.../circuitjs1.html?running=<true|false> // Set to false to keep the simulation from starting automatically.
+.../circuitjs1.html?running=<true|false> // Start the app without the simulation running, default true
+.../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
+.../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
+.../circuitjs1.html?editable=<true|false> // Allow circuit editing, default true
+.../circuitjs1.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
+.../circuitjs1.html?negativeColor=%23ff0000 // change negative voltage color
 ```
+The simulator can also interface with your javascript code.  See [war/jsinterface.html](http://www.falstad.com/circuit/jsinterface.html) for an example.
+
 ## Building an Electron application
 
 The [Electron](https://electronjs.org/) project allows web applications to be distributed as local executables for a variety of platforms. This repository contains the additional files needed to build circuitJS1 as an Electron application.
@@ -85,7 +90,6 @@ To build the Electron application:
 
 Known limitations of the Electron application:
 * "Create short URL" on "Export as URL" doesn't work as it relies on server support.
-* For diodes, "Create Simple Model" doesn't work as it relies on a javascript feature that is not supported.
 
 Thanks to @Immortalin for the initial work in applying Electron to CircuitJS1.
 

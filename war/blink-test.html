@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+    <!-- Properties can be specified to influence deferred binding -->
+    <meta name='gwt:property' content='locale=en_UK'>
+    
+    
+    <!-- Titles are optional, but useful -->
+    <title></title>
+    </head>
+    <body>
+
+    <h1>Blink Test</h1>
+    <h2 name="fname">LCR</h2>
+    <iframe name="local" src="http://127.0.0.1:8888/circuitjs.html" width=49% height=700px></iframe>
+    <iframe name="remote" src="https://lushprojects.com/circuitjs/circuitjs.html" width=49% height=700px></iframe>
+     
+	<button onclick="next()">Next File</button>
+	<br>
+	
+	<input type="text" id="fname" value="">
+	<button onclick="load()">Load File</button>
+     
+      <script>
+      
+          var lines; 
+    var request = new XMLHttpRequest();
+    var files = [];
+    var ptr = 0;
+    
+      
+    function setScr(msg, fname) {
+    document.getElementsByName("local")[0].src = "http://127.0.0.1:8888/circuitjs.html?startCircuit="+fname;
+    document.getElementsByName("remote")[0].src = "https://lushprojects.com/circuitjs/circuitjs.html?startCircuit="+fname;
+    document.getElementsByName("fname")[0].innerHTML= msg+" "+fname;
+    }
+    
+    function next() {
+    if (ptr<files.length-1) {
+    	ptr++;
+    	}
+    	setScr(String(ptr+1)+" of "+String(files.length-1), files[ptr]);
+    }
+    
+    function load() {
+     var x = document.getElementById("fname").value;
+     setScr("", x);
+    }
+    
+ 
+
+	request.open('GET', '/circuitjs1/setuplist.txt', false);  // `false` makes the request synchronous
+	request.send(null);
+	console.log(request.status);
+
+	if (request.status === 200) {
+  		console.log("processing text");
+  		lines=request.responseText.split('\n');
+  		for(var line =0; line < lines.length; line++) {
+  		  var res = lines[line].match(/^([a-zA-Z0-9\-]+\.txt)/g); // Match lines starting with filename.txt
+  		  if (res!=null) {
+  		    files.push(res[0]);
+  		 }
+  		}
+  		console.log(files);
+  		setScr("1", files[0]);
+}
+
+  </script>
+    </body>
+    </html>
+    

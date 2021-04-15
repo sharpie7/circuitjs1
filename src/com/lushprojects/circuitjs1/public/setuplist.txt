@@ -139,7 +139,7 @@ amp-rect.txt Half-Wave Rectifier (inverting)
 amp-fullrect.txt Full-Wave Rectifier
 peak-detect.txt Peak Detector
 amp-integ.txt Integrator
-amp-dfdx.txt Differentiator
+amp-dfdx.txt Differentiator (inverting)
 amp-schmitt.txt Schmitt Trigger
 nic-r.txt Negative Impedance Converter
 gyrator.txt Gyrator
@@ -196,6 +196,8 @@ crystalosc2.txt Crystal Oscillator
 gilbertcell.txt Gilbert Cell Multiplier
 rmsconverter.txt True RMS Converter
 joule-thief.txt Joule Thief
+transrectifier.txt Full-Wave Rectifier
+early.txt Early Effect
 -
 +MOSFETs
 nmosfet.txt n-MOSFET
@@ -261,7 +263,8 @@ fanout.txt Fan-Out
 -
 +NMOS
 nmosinverter.txt NMOS Inverter
-nmosinverter2.txt NMOS Inverter 2
+nmosinverter2.txt Inverter with only MOSFETs
+nmosinverter3.txt Depletion-load NMOS Inverter
 nmosnand.txt NMOS NAND
 -
 +CMOS
@@ -295,6 +298,7 @@ majority.txt Majority Logic
 digcompare.txt 2-Bit Comparator
 7segdecoder.txt 7-Segment LED Decoder
 brentkung.txt Brent-Kung Adder
+alu74181.txt 74181 ALU
 -
 +Sequential Logic
 +Flip-Flops
@@ -312,6 +316,7 @@ updownctr.txt Up/Down Counter
 deccounter.txt Decimal Counter
 graycode.txt Gray Code Counter
 johnsonctr.txt Johnson Counter
+ringcascade.txt Cascading Ring Counters
 -
 +Shift Registers
 sipo-sr.txt Serial-In Parallel-Out
@@ -428,5 +433,6 @@ varactorvco.txt VCO
 -
 ledarray.txt LED Array
 triacdimmer.txt DIAC/TRIAC Dimmer
+ujtosc.txt Unijunction Oscillator
 -
 blank.txt Blank Circuit

@@ -23,7 +23,7 @@ package com.lushprojects.circuitjs1.client;
 // 3 nodes, 1 internal node
 // 0 = anode, 1 = cathode, 2 = gate
 // 0, 3 = variable resistor
-// 3, 2 = diode
+// 3, 1 = diode
 // 2, 1 = 50 ohm resistor
 
 class SCRElm extends CircuitElm {
@@ -52,13 +52,13 @@ class SCRElm extends CircuitElm {
 	    volts[gnode] = -lastvag;
 	    triggerI = new Double(st.nextToken()).doubleValue();
 	    holdingI = new Double(st.nextToken()).doubleValue();
-	    cresistance = new Double(st.nextToken()).doubleValue();
+	    gresistance = new Double(st.nextToken()).doubleValue();
 	} catch (Exception e) {
 	}
 	setup();
     }
     void setDefaults() {
-	cresistance = 50;
+	gresistance = 50;
 	holdingI = .0082;
 	triggerI = .01;
     }
@@ -76,11 +76,11 @@ class SCRElm extends CircuitElm {
     String dump() {
 	return super.dump() + " " + (volts[anode]-volts[cnode]) + " " +
 	    (volts[anode]-volts[gnode]) + " " + triggerI + " "+  holdingI + " " +
-	    cresistance;
+	    gresistance;
     }
     double ia, ic, ig, curcount_a, curcount_c, curcount_g;
     double lastvac, lastvag;
-    double cresistance, triggerI, holdingI;
+    double gresistance, triggerI, holdingI;
 
     final int hs = 8;
     Polygon poly;
@@ -197,8 +197,8 @@ class SCRElm extends CircuitElm {
 	sim.stampNonLinear(nodes[cnode]);
 	sim.stampNonLinear(nodes[gnode]);
 	sim.stampNonLinear(nodes[inode]);
-	sim.stampResistor(nodes[gnode], nodes[cnode], cresistance);
-	diode.stamp(nodes[inode], nodes[gnode]);
+	sim.stampResistor(nodes[gnode], nodes[cnode], gresistance);
+	diode.stamp(nodes[inode], nodes[cnode]);
     }
 
     void doStep() {
@@ -209,7 +209,7 @@ class SCRElm extends CircuitElm {
 	    sim.converged = false;
 	lastvac = vac;
 	lastvag = vag;
-	diode.doStep(volts[inode]-volts[gnode]);
+	diode.doStep(volts[inode]-volts[cnode]);
 	double icmult = 1/triggerI;
 	double iamult = 1/holdingI - icmult;
 	//System.out.println(icmult + " " + iamult);
@@ -230,18 +230,17 @@ class SCRElm extends CircuitElm {
         arr[6] = "P = " + getUnitText(getPower(), "W");
     }
     void calculateCurrent() {
-	ic = (volts[cnode]-volts[gnode])/cresistance;
+	ig = (volts[gnode]-volts[cnode])/gresistance;
 	ia = (volts[anode]-volts[inode])/aresistance;
-	ig = -ic-ia;
+	ic = -ig-ia;
     }
     public EditInfo getEditInfo(int n) {
-	// ohmString doesn't work here on linux
 	if (n == 0)
 	    return new EditInfo("Trigger Current (A)", triggerI, 0, 0);
 	if (n == 1)
 	    return new EditInfo("Holding Current (A)", holdingI, 0, 0);
 	if (n == 2)
-	    return new EditInfo("Gate-Cathode Resistance (ohms)", cresistance, 0, 0);
+	    return new EditInfo("Gate Resistance (ohms)", gresistance, 0, 0);
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
@@ -250,7 +249,7 @@ class SCRElm extends CircuitElm {
 	if (n == 1 && ei.value > 0)
 	    holdingI = ei.value;
 	if (n == 2 && ei.value > 0)
-	    cresistance = ei.value;
+	    gresistance = ei.value;
     }
 }
 

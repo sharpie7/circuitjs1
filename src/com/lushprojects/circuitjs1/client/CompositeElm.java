@@ -88,6 +88,14 @@ public abstract class CompositeElm extends CircuitElm {
 	    int thisPost = 0;
 	    while (stModel.hasMoreTokens()) {
 		int nodeOfThisPost = new Integer(stModel.nextToken()).intValue();
+
+		// node = 0 means ground
+		if (nodeOfThisPost == 0) {
+		    newce.setNode(thisPost, 0);
+		    newce.setNodeVoltage(thisPost, 0);
+		    thisPost++;
+		    continue;
+		}
 		cnLink = new CircuitNodeLink();
 		cnLink.num = thisPost;
 		cnLink.elm = newce;
@@ -196,17 +204,35 @@ public abstract class CompositeElm extends CircuitElm {
 
     // are n1 and n2 connected internally somehow?
     public boolean getConnection(int n1, int n2) {
-	Vector<CircuitNodeLink> cnLinks1 = compNodeList.get(n1).links;
-	Vector<CircuitNodeLink> cnLinks2 = compNodeList.get(n2).links;
-	
-	// see if any elements are connected to both n1 and n2, then call getConnection() on those
-	for (int i = 0; i < cnLinks1.size(); i++) {
-	    CircuitNodeLink link1 = cnLinks1.get(i);
-	    for (int j = 0; j < cnLinks2.size(); j++) {
-		CircuitNodeLink link2 = cnLinks2.get(j);
-		if (link1.elm == link2.elm &&
-		    link1.elm.getConnection(link1.num, link2.num))
-		    return true;
+	Vector<Integer> connectedNodes = new Vector<Integer>();
+
+	// keep list of nodes connected to n1
+	connectedNodes.add(n1);
+	int i;
+	for (i = 0; i < connectedNodes.size(); i++) {
+	    // next node in list
+	    int n = connectedNodes.get(i);
+	    if (n == n2)
+		return true;
+	    
+	    // find all elements connected to n
+	    Vector<CircuitNodeLink> cnLinks = compNodeList.get(n).links;
+	    for (int j = 0; j < cnLinks.size(); j++) {
+		CircuitNodeLink link = cnLinks.get(j);
+		CircuitElm lelm = link.elm;
+		// loop through all other nodes this element has
+		for (int k = 0; k != lelm.getConnectionNodeCount(); k++)
+		    // are they connected?
+		    if (k != link.num && lelm.getConnection(link.num, k)) {
+			int kn = lelm.getConnectionNode(k);
+			if (kn == 0)
+			    return true;
+			int m;
+			// find local node number (kn is global) and add it to list
+			for (m = 0; m != nodes.length; m++)
+			    if (nodes[m] == kn && !connectedNodes.contains(m))
+				connectedNodes.add(m);
+		    }
 	    }
 	}
 	return false;
@@ -214,13 +240,35 @@ public abstract class CompositeElm extends CircuitElm {
     
     // is n1 connected to ground somehow?
     public boolean hasGroundConnection(int n1) {
-	Vector<CircuitNodeLink> cnLinks;
-	cnLinks = compNodeList.get(n1).links;
-	for (int i = 0; i < cnLinks.size(); i++) {
-	    if (cnLinks.get(i).elm.hasGroundConnection(cnLinks.get(i).num))
-		return true;
+	Vector<Integer> connectedNodes = new Vector<Integer>();
+
+	// keep list of nodes connected to n1
+	connectedNodes.add(n1);
+	int i;
+	for (i = 0; i < connectedNodes.size(); i++) {
+	    // next node in list
+	    int n = connectedNodes.get(i);	    
+	    // find all elements connected to n
+	    Vector<CircuitNodeLink> cnLinks = compNodeList.get(n).links;
+	    for (int j = 0; j < cnLinks.size(); j++) {
+		CircuitNodeLink link = cnLinks.get(j);
+		CircuitElm lelm = link.elm;
+		if (lelm.hasGroundConnection(link.num))
+		    return true;
+		// loop through all other nodes this element has
+		for (int k = 0; k != lelm.getConnectionNodeCount(); k++)
+		    // are they connected?
+		    if (k != link.num && lelm.getConnection(link.num, k)) {
+			int kn = lelm.getConnectionNode(k);
+			int m;
+			// find local node number (kn is global) and add it to list
+			for (m = 0; m != nodes.length; m++)
+			    if (nodes[m] == kn && !connectedNodes.contains(m))
+				connectedNodes.add(m);
+		    }
+	    }
 	}
-	return false; 
+	return false;
     }
 
     public void reset() {
@@ -260,11 +308,8 @@ public abstract class CompositeElm extends CircuitElm {
     public void stamp() {
 	for (int i = 0; i < compElmList.size(); i++) {
 	    CircuitElm ce = compElmList.get(i);
-	    // current sources need special stamp method
-	    if (ce instanceof CurrentElm)
-		((CurrentElm) ce).stampCurrentSource(false);
-	    else
-		ce.stamp();
+	    ce.setParentList(compElmList);
+	    ce.stamp();
 	}
     }
 
@@ -283,11 +328,14 @@ public abstract class CompositeElm extends CircuitElm {
 	    compElmList.get(i).stepFinished();
     }
 
+    // called to set node p (local to this element) to equal n (global)
     public void setNode(int p, int n) {
 	// nodes[p] = n
 	Vector<CircuitNodeLink> cnLinks;
 	super.setNode(p, n);
 	cnLinks = compNodeList.get(p).links;
+
+        // call setNode() for all elements that use that node
 	for (int i = 0; i < cnLinks.size(); i++) {
 	    cnLinks.get(i).elm.setNode(cnLinks.get(i).num, n);
 	}

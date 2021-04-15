@@ -42,7 +42,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	    // create default stub model
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
 	    extList.add(new ExtListEntry("gnd", 1));
-	    CustomCompositeModel d = createModel("default", "0", "GroundElm 1", extList);
+	    CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
 	    d.sizeX = d.sizeY = 1;
 	    modelMap.put(d.name, d);
 	}

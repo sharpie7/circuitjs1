@@ -23,9 +23,10 @@ class TransLineElm extends CircuitElm {
     double delay, imped;
     double voltageL[], voltageR[];
     int lenSteps, ptr, width;
+    int lastStepCount;
     public TransLineElm(int xx, int yy) {
 	super(xx, yy);
-	delay = 1000*sim.timeStep;
+	delay = 1000*sim.maxTimeStep;
 	imped = 75;
 	noDiagonal = true;
 	reset();
@@ -66,9 +67,9 @@ class TransLineElm extends CircuitElm {
     Point posts[], inner[];
 	
     void reset() {
-	if (sim.timeStep == 0)
+	if (sim.maxTimeStep == 0)
 	    return;
-	lenSteps = (int) (delay/sim.timeStep);
+	lenSteps = (int) (delay/sim.maxTimeStep);
 	System.out.println(lenSteps + " steps");
 	if (lenSteps > 100000)
 	    voltageL = voltageR = null;
@@ -78,6 +79,7 @@ class TransLineElm extends CircuitElm {
 	}
 	ptr = 0;
 	super.reset();
+	lastStepCount = 0;
     }
     void setPoints() {
 	super.setPoints();
@@ -171,21 +173,28 @@ class TransLineElm extends CircuitElm {
 	/*System.out.println("sending fwd  " + currentL[ptr] + " " + current1);
 	  System.out.println("sending back " + currentR[ptr] + " " + current2);*/
 	//System.out.println("sending back " + voltageR[ptr]);
-	ptr = (ptr+1) % lenSteps;
     }
     void doStep() {
 	if (voltageL == null) {
 	    sim.stop("Transmission line delay too large!", this);
 	    return;
 	}
-	sim.updateVoltageSource(nodes[4], nodes[0], voltSource1, -voltageR[ptr]);
-	sim.updateVoltageSource(nodes[5], nodes[1], voltSource2, -voltageL[ptr]);
+	int nextPtr = (ptr + 1) % lenSteps;
+	sim.updateVoltageSource(nodes[4], nodes[0], voltSource1, -voltageR[nextPtr]);
+	sim.updateVoltageSource(nodes[5], nodes[1], voltSource2, -voltageL[nextPtr]);
 	if (Math.abs(volts[0]) > 1e-5 || Math.abs(volts[1]) > 1e-5) {
 	    sim.stop("Need to ground transmission line!", this);
 	    return;
 	}
     }
 
+    void stepFinished() {
+	if (sim.timeStepCount == lastStepCount)
+	    return;
+	lastStepCount = sim.timeStepCount;
+	ptr = (ptr+1) % lenSteps;	
+    }
+    
     Point getPost(int n) {
 	return posts[n];
     }

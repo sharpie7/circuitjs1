@@ -25,7 +25,6 @@ package com.lushprojects.circuitjs1.client;
 	double hiV, loV;
 	public LogicInputElm(int xx, int yy) {
 	    super(xx, yy, false);
-	    numHandles=1;
 	    hiV = 5;
 	    loV = 0;
 	    
@@ -33,7 +32,6 @@ package com.lushprojects.circuitjs1.client;
 	public LogicInputElm(int xa, int ya, int xb, int yb, int f,
 			     StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	    numHandles=1;
 	    try {
 		hiV = new Double(st.nextToken()).doubleValue();
 		loV = new Double(st.nextToken()).doubleValue();
@@ -68,7 +66,7 @@ package com.lushprojects.circuitjs1.client;
 	    setVoltageColor(g, volts[0]);
 	    drawThickLine(g, point1, lead1);
 	    updateDotCount();
-	    drawDots(g, point1, lead1, curcount);
+	    drawDots(g, point1, lead1, -curcount);
 	    drawPosts(g);
 	    g.setFont(oldf);
 	}
@@ -77,7 +75,7 @@ package com.lushprojects.circuitjs1.client;
 	    return new Rectangle(x2-10, y2-10, 20, 20);
 	}	
 
-	void setCurrent(int vs, double c) { current = -c; }
+	void setCurrent(int vs, double c) { current = c; }
 	void stamp() {
 	    double v = (position == 0) ? loV : hiV;
 	    if (isTernary())
@@ -93,7 +91,7 @@ package com.lushprojects.circuitjs1.client;
 		arr[1] = "" + position;
 	    arr[1] += " (" + getVoltageText(volts[0]) + ")";
 	    arr[2] = "I = " + getCurrentText(getCurrent());
-	}
+	} 
 	boolean hasGroundConnection(int n1) { return true; }
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
@@ -141,6 +139,6 @@ package com.lushprojects.circuitjs1.client;
 	int getShortcut() { return 'i'; }
 	
 	double getCurrentIntoNode(int n) {
-	    return -current;
+	    return current;
 	}
     }

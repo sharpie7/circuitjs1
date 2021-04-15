@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import java.util.Vector;
+
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -58,7 +60,6 @@ public abstract class CircuitElm implements Editable {
     int dx, dy, dsign;
 
     int lastHandleGrabbed=-1;
-    int numHandles=2;
     
     // length of element
     double dn;
@@ -109,23 +110,26 @@ public abstract class CircuitElm implements Editable {
 
 	shortFormat=NumberFormat.getFormat("####.#");
     }
+
+    static public Color positiveColor, negativeColor, neutralColor;
     
     static void setColorScale() {
 
 	int i;
+
+	if (positiveColor == null)
+	    positiveColor = Color.green;
+	if (negativeColor == null)
+	    negativeColor = Color.red;
+	if (neutralColor == null)
+	    neutralColor = Color.gray;
+	
 	for (i = 0; i != colorScaleCount; i++) {
 	    double v = i * 2. / colorScaleCount - 1;
 	    if (v < 0) {
-		int n1 = (int) (128 * -v) + 127;
-		int n2 = (int) (127 * (1 + v));
-		colorScale[i] = new Color(n1, n2, n2);
+		colorScale[i] = new Color(neutralColor, negativeColor, -v);
 	    } else {
-		int n1 = (int) (128 * v) + 127;
-		int n2 = (int) (127 * (1 - v));
-		if (sim.alternativeColorCheckItem.getState())
-		    colorScale[i] = new Color(n2, n2, n1);
-		else
-		    colorScale[i] = new Color(n2, n1, n2);
+		colorScale[i] = new Color(neutralColor, positiveColor, v);
 	    }
 	}
 
@@ -185,6 +189,8 @@ public abstract class CircuitElm implements Editable {
     // get current for one- or two-terminal elements
     double getCurrent() { return current; }
 
+    void setParentList(Vector<CircuitElm> elmList) {}
+    
     // stamp matrix values for linear elements.
     // for non-linear elements, use this to stamp values that don't change each iteration, and call stampRightSide() or stampNonLinear() as needed
     void stamp() {}
@@ -460,13 +466,17 @@ public abstract class CircuitElm implements Editable {
 	}
     }
     
+    int getNumHandles() {
+	return getPostCount();
+    }
+    
     void drawHandles(Graphics g, Color c) {
     	g.setColor(c);
     	if (lastHandleGrabbed==-1)
     		g.fillRect(x-3, y-3, 7, 7);
     	else if (lastHandleGrabbed==0)
     		g.fillRect(x-4, y-4, 9, 9);
-    	if (numHandles==2) {
+    	if (getNumHandles() > 1) {
     		if (lastHandleGrabbed==-1)
     			g.fillRect(x2-3, y2-3, 7, 7);
     		else if (lastHandleGrabbed==1)
@@ -479,7 +489,7 @@ public abstract class CircuitElm implements Editable {
     	if ( Graphics.distanceSq(x , y , x2, y2)>=minSize) {
     		if (Graphics.distanceSq(x, y, xtest,ytest) <= deltaSq)
     			lastHandleGrabbed=0;
-    		else if (Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
+    		else if (getNumHandles() > 1 && Graphics.distanceSq(x2, y2, xtest,ytest) <= deltaSq)
     			lastHandleGrabbed=1;
     	}
     	return lastHandleGrabbed;
@@ -975,6 +985,7 @@ public abstract class CircuitElm implements Editable {
     void updateModels() {}
     void stepFinished() {}
     
+    // get current flowing into node n out of this element
     double getCurrentIntoNode(int n) {
 	// if we take out the getPostCount() == 2 it gives the wrong value for rails
 	if (n==0 && getPostCount() == 2)

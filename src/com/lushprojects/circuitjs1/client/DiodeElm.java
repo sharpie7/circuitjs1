@@ -171,11 +171,10 @@ class DiodeElm extends CircuitElm {
 	    arr[4] = "Vf = " + getVoltageText(model.fwdrop);
     }
     
-    boolean customModelUI;
     Vector<DiodeModel> models;
     
     public EditInfo getEditInfo(int n) {
-	if (!customModelUI && n == 0) {
+	if (n == 0) {
 	    EditInfo ei =  new EditInfo("Model", 0, -1, -1);
 	    models = DiodeModel.getModelList(this instanceof ZenerElm);
 	    ei.choice = new Choice();
@@ -186,78 +185,65 @@ class DiodeElm extends CircuitElm {
 		if (dm == model)
 		    ei.choice.select(i);
 	    }
-	    ei.choice.add("Custom");
 	    return ei;
 	}
-        if (n == 0) {
-            EditInfo ei = new EditInfo("Model Name", 0, -1, -1);
-            ei.text = modelName;
+        if (n == 1) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Create New Simple Model"));
             return ei;
         }
-        if (n == 1) {
-            if (model.readOnly && !customModelUI)
-        		return null;
+        if (n == 2) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Create New Advanced Model"));
+            return ei;
+        }
+        if (n == 3) {
+            if (model.readOnly)
+        	return null;
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.button = new Button(sim.LS("Edit Model"));
             return ei;
         }
-        if (n == 2) {
-            EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Create Simple Model"));
-            return ei;
-        }
-        return super.getEditInfo(n);
+        return null;
+    }
+    
+    public void newModelCreated(DiodeModel dm) {
+	model = dm;
+	modelName = model.name;
+	setup();
     }
     
     public void setEditValue(int n, EditInfo ei) {
-	if (!customModelUI && n == 0) {
-	    int ix = ei.choice.getSelectedIndex();
-	    if (ix >= models.size()) {
-		models = null;
-		customModelUI = true;
-		ei.newDialog = true;
-		return;
-	    }
+	if (n == 0) {
 	    model = models.get(ei.choice.getSelectedIndex());
 	    modelName = model.name;
 	    setup();
+	    ei.newDialog = true;
 	    return;
 	}
-        if (n == 0) {
-            // the text field may not have been created yet, check to avoid exception
-            if (ei.textf == null)
-        		return;
-            modelName = ei.textf.getText();
-            setLastModelName(modelName);
-            model = DiodeModel.getModelWithNameOrCopy(modelName, model);
-            setup();
-            return;
-        }
-        if (n == 1) {
-            if (model.readOnly) {
-        		Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
-        		return;
-            }
-            EditDialog editDialog = new EditDialog(model, sim);
+        if (n == 1 || n == 2) {
+            DiodeModel newModel = new DiodeModel(model);
+            newModel.setSimple(n == 1);
+            if (newModel.isSimple())
+        	newModel.setForwardVoltage();
+            EditDialog editDialog = new EditDiodeModelDialog(newModel, sim, this);
             CirSim.diodeModelEditDialog = editDialog;
             editDialog.show();
             return;
         }
-        if (n == 2) {
-            String val = Window.prompt(sim.LS("Fwd Voltage @ 1A"), sim.LS("0.8"));
-            try {
-        		double fwdrop = new Double(val).doubleValue();
-        		if (fwdrop > 0) {
-        		    model = DiodeModel.getModelWithVoltageDrop(fwdrop);
-        		    modelName = model.name;
-        		    ei.newDialog = true;
-        		    return;
-        		}
-            } catch (Exception e) {
+        if (n == 3) {
+            if (model.readOnly) {
+        	// probably never reached
+        	Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
+        	return;
             }
+            if (model.isSimple())
+        	model.setForwardVoltage();            
+            EditDialog editDialog = new EditDiodeModelDialog(model, sim, null);
+            CirSim.diodeModelEditDialog = editDialog;
+            editDialog.show();
+            return;
         }
-        
-        super.setEditValue(n, ei);
     }
     int getShortcut() { return 'd'; }
     
