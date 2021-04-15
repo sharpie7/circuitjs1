@@ -110,9 +110,11 @@ abstract class ChipElm extends CircuitElm {
 		    }
 		    int asc=(int)g.currentFontSize;
 		    int tx;
-		    if (p.side == SIDE_W)
+		    // put text closer to edge if it's on left or right.
+		    // we could do extra work to handle flipped case, but we don't
+		    if (p.side == SIDE_W && !isFlippedX())
 			tx = p.textloc.x-(cspc-5);
-		    else if (p.side == SIDE_E)
+		    else if (p.side == SIDE_E && !isFlippedX())
 			tx = p.textloc.x+(cspc-5)-sw;
 		    else
 			tx = p.textloc.x-sw/2;
@@ -304,6 +306,8 @@ abstract class ChipElm extends CircuitElm {
 	double getCurrentIntoNode(int n) {
 	    return pins[n].current;
 	}
+	
+	boolean isFlippedX() { return (flags & FLAG_FLIP_X) != 0; }
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
