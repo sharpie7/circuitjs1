@@ -5752,7 +5752,15 @@ MouseOutHandler, MouseWheelHandler {
 		    return null;
 		}
 	    }
-		    
+	
+	    for (i = 0; i != unconnectedNodes.size(); i++) {
+		int q = unconnectedNodes.get(i);
+		if (nodeNumberHash.get(q) == null && used[q]) {
+		    Window.alert("Some nodes are unconnected!");
+		    return null;
+		}
+	    }	    
+
 	    CustomCompositeModel ccm = new CustomCompositeModel();
 	    ccm.nodeList = nodeDump;
 	    ccm.elmDump = dump;
