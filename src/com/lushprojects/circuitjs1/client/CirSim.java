@@ -3381,7 +3381,7 @@ MouseOutHandler, MouseWheelHandler {
     	for (p = 0; p < len; ) {
     		int l;
     		for (l = 0; l != len-p; l++)
-    			if (b[l+p] == '\n') {
+    			if (b[l+p] == '\n' || b[l+p] == '\r') {
     				l++;
     				break;
     			}
