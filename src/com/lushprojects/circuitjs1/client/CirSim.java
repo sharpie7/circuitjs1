@@ -1263,8 +1263,8 @@ MouseOutHandler, MouseWheelHandler {
 		e.printStackTrace();
 		return;
 	    }
-	 myruntime+=System.currentTimeMillis()-myrunstarttime;
-}
+	    myruntime+=System.currentTimeMillis()-myrunstarttime;
+	}
 	long sysTime = System.currentTimeMillis();
 		if (simRunning) {
 			
@@ -1300,7 +1300,7 @@ MouseOutHandler, MouseWheelHandler {
 //	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
 	
 	mydrawstarttime=System.currentTimeMillis();
-	
+
 	g.context.setLineCap(LineCap.ROUND);
 
 	if (noEditCheckItem.getState())
@@ -1344,7 +1344,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (tempMouseMode==MODE_SELECT && mouseElm!=null) {
 		mouseElm.drawHandles(g, Color.cyan);
 	}
-	
+
 	// draw handles for elm we're dragging
 	if (dragElm != null &&
 		      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
