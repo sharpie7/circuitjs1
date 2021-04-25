@@ -269,8 +269,6 @@ MouseOutHandler, MouseWheelHandler {
 	
     Canvas cv;
     Context2d cvcontext;
-    Canvas backcv;
-    Context2d backcontext;
     static final int MENUBARHEIGHT=30;
     static int VERTICALPANELWIDTH=166; // default
     static final int POSTGRABSQ=25;
@@ -301,12 +299,6 @@ MouseOutHandler, MouseWheelHandler {
 			cv.setHeight(height + "PX");
 			cv.setCoordinateSpaceWidth(width);
 			cv.setCoordinateSpaceHeight(height);
-		}
-		if (backcv != null) {
-			backcv.setWidth(width + "PX");
-			backcv.setHeight(height + "PX");
-			backcv.setCoordinateSpaceWidth(width);
-			backcv.setCoordinateSpaceHeight(height);
 		}
 
     	setCircuitArea();
@@ -582,8 +574,6 @@ MouseOutHandler, MouseWheelHandler {
 
 
 	cvcontext=cv.getContext2d();
-	backcv=Canvas.createIfSupported();
-	backcontext=backcv.getContext2d();
 	setCanvasSize();
 	layoutPanel.add(cv);
 	verticalPanel.add(buttonPanel);
@@ -1250,7 +1240,7 @@ MouseOutHandler, MouseWheelHandler {
 	    stopElm.setMouseElm(true);
 	setupScopes();
 
-	Graphics g=new Graphics(backcontext);
+	Graphics g=new Graphics(cvcontext);
 	
 	CircuitElm.selectColor = Color.cyan;
 	if (printableCheckItem.getState()) {
@@ -1317,8 +1307,7 @@ MouseOutHandler, MouseWheelHandler {
 	    g.drawLock(20, 30);
 	g.setColor(Color.white);
 	// draw elements
-	backcontext.setTransform(transform[0], transform[1], transform[2],
-				 transform[3], transform[4], transform[5]);
+	cvcontext.setTransform(transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
 	for (i = 0; i != elmList.size(); i++) {
 	    if (powerCheckItem.getState())
 	    	g.setColor(Color.gray);
@@ -1385,7 +1374,7 @@ MouseOutHandler, MouseWheelHandler {
 	}
 
 	
-	backcontext.setTransform(1, 0, 0, 1, 0, 0);
+	cvcontext.setTransform(1, 0, 0, 1, 0, 0);
 
 	if (printableCheckItem.getState())
 	    g.setColor(Color.white);
@@ -1472,8 +1461,6 @@ MouseOutHandler, MouseWheelHandler {
 //	g.drawString("ms per frame (other): "+ CircuitElm.showFormat.format((mytime-myruntime-mydrawtime)/myframes),10,110);
 //	g.drawString("ms per frame (sim): "+ CircuitElm.showFormat.format((myruntime)/myframes),10,130);
 //	g.drawString("ms per frame (draw): "+ CircuitElm.showFormat.format((mydrawtime)/myframes),10,150);
-	
-	cvcontext.drawImage(backcontext.getCanvas(), 0.0, 0.0);
 	
 	// if we did DC analysis, we need to re-analyze the circuit with that flag cleared. 
 	if (dcAnalysisFlag) {
