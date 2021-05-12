@@ -220,7 +220,6 @@ switchfilter.txt Switchable Filter
 voltinvert.txt Voltage Inverter
 invertamp.txt Inverter Amplifier
 inv-osc.txt Inverter Oscillator
-analogrecip.txt Analog Reciprocal
 crystalosc.txt CMOS Crystal Oscillator
 -
 +555 Timer Chip
