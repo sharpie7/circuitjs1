@@ -205,7 +205,7 @@ class DCMotorElm extends CircuitElm {
 	if (n == 3)
 	    return new EditInfo("Back emf constant (Vs/rad)", Kb, 0, 0);
 	if (n == 4)
-	    return new EditInfo("Moment of inertia (Kg.m^2", J, 0, 0);
+	    return new EditInfo("Moment of inertia (Kg.m^2)", J, 0, 0);
 	if (n == 5)
 	    return new EditInfo("Friction coefficient (Nms/rad)", b, 0, 0);
 	if (n == 6)
