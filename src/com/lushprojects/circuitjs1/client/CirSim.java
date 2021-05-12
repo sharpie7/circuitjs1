@@ -58,8 +58,10 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestException;
@@ -419,6 +421,7 @@ MouseOutHandler, MouseWheelHandler {
 	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	fileMenuBar.addItem(exportAsTextItem);
 	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
+	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -2883,6 +2886,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasimage")
 		doExportAsImage();
+    	if (item=="exportassvg")
+		doExportAsSVG();
     	if (item=="createsubcircuit")
 		doCreateSubcircuit();
     	if (item=="dcanalysis")
@@ -3264,7 +3269,7 @@ MouseOutHandler, MouseWheelHandler {
 
     void doExportAsImage()
     {
-    	dialogShowing = new ExportAsImageDialog();
+    	dialogShowing = new ExportAsImageDialog(CAC_IMAGE);
     	dialogShowing.show();
     }
     
@@ -5567,11 +5572,36 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	void doPrint() {
-	    Canvas cv = getCircuitAsCanvas(true);
+	    Canvas cv = getCircuitAsCanvas(CAC_PRINT);
 	    printCanvas(cv.getCanvasElement());
 	}
 	
-	public Canvas getCircuitAsCanvas(boolean print) {
+	boolean loadedCanvas2SVG = false;
+	
+	void doExportAsSVG() {
+	    // load canvas2svg if we haven't already
+	    if (!loadedCanvas2SVG) {
+		ScriptInjector.fromUrl("canvas2svg.js").setCallback(
+			new Callback<Void,Exception>() {
+			    public void onFailure(Exception reason) {
+				Window.alert("Can't load canvas2svg.js.");
+			    }
+			    public void onSuccess(Void result) {
+				loadedCanvas2SVG = true;
+				doExportAsSVG();
+			    }
+			}).inject();
+		return;
+	    }
+	    dialogShowing = new ExportAsImageDialog(CAC_SVG);
+	    dialogShowing.show();
+	}
+	
+	static final int CAC_PRINT = 0;
+	static final int CAC_IMAGE = 1;
+	static final int CAC_SVG   = 2;
+	
+	public Canvas getCircuitAsCanvas(int type) {
 	    	// create canvas to draw circuit into
 	    	Canvas cv = Canvas.createIfSupported();
 	    	Rectangle bounds = getCircuitBounds();
@@ -5583,17 +5613,45 @@ MouseOutHandler, MouseWheelHandler {
 	    	int h = (bounds.height+hmargin) ;
 	    	cv.setCoordinateSpaceWidth(w);
 	    	cv.setCoordinateSpaceHeight(h);
-	    	double oldTransform[] = Arrays.copyOf(transform, 6);
 	    
 		Context2d context = cv.getContext2d();
+		drawCircuitInContext(context, type, bounds, w, h);
+		return cv;
+	}
+	
+	// create SVG context using canvas2svg
+	native static Context2d createSVGContext(int w, int h) /*-{
+	    return new C2S(w, h);
+	}-*/;
+	
+	native static String getSerializedSVG(Context2d context) /*-{
+	    return context.getSerializedSvg();
+	}-*/;
+	
+	public String getCircuitAsSVG() {
+	    Rectangle bounds = getCircuitBounds();
+
+	    // add some space on edges because bounds calculation is not perfect
+	    int wmargin = 140;
+	    int hmargin = 100;
+	    int w = (bounds.width+wmargin) ;
+	    int h = (bounds.height+hmargin) ;
+	    Context2d context = createSVGContext(w, h);
+	    drawCircuitInContext(context, CAC_SVG, bounds, w, h);
+	    return getSerializedSVG(context);
+	}
+	
+	void drawCircuitInContext(Context2d context, int type, Rectangle bounds, int w, int h) {
 		Graphics g = new Graphics(context);
 		context.setTransform(1, 0, 0, 1, 0, 0);
+	    	double oldTransform[] = Arrays.copyOf(transform, 6);
 	        
 	        double scale = 1;
 	        
 		// turn on white background, turn off current display
 		boolean p = printableCheckItem.getState();
 		boolean c = dotsCheckItem.getState();
+		boolean print = (type == CAC_PRINT);
 		if (print)
 		    printableCheckItem.setState(true);
 	        if (printableCheckItem.getState()) {
@@ -5608,6 +5666,8 @@ MouseOutHandler, MouseWheelHandler {
 	        }
 		dotsCheckItem.setState(false);
 
+	    	int wmargin = 140;
+	    	int hmargin = 100;
 	        if (bounds != null)
 	            scale = Math.min(w /(double)(bounds.width+wmargin),
 	                             h/(double)(bounds.height+hmargin));
@@ -5633,7 +5693,6 @@ MouseOutHandler, MouseWheelHandler {
 		printableCheckItem.setState(p);
 		dotsCheckItem.setState(c);
 		transform = oldTransform;
-		return cv;
 	}
 	
 	boolean isSelection() {
