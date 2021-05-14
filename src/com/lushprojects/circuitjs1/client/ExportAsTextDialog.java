@@ -41,7 +41,7 @@ public class ExportAsTextDialog extends DialogBox {
 		sim = asim;
 	//	RichTextArea tb;
 		TextArea ta;
-		Button okButton, importButton;
+		Button okButton, importButton, copyButton;
 		Label  la2;
 		SafeHtml html;
 		vp=new VerticalPanel();
@@ -53,18 +53,19 @@ public class ExportAsTextDialog extends DialogBox {
 //		html=SafeHtmlUtils.fromTrustedString(html.asString().replace("\n", "<BR>"));
 //		tb.setHTML(html);
 		vp.add(ta= new TextArea());
-		ta.setWidth("300px");
-		ta.setHeight("200px");
+		ta.setWidth("400px");
+		ta.setHeight("300px");
 		ta.setText(s);
 		textArea = ta;
-		vp.add(la2 = new Label(sim.LS("To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file."), true));
-		la2.setWidth("300px");
+	//	vp.add(la2 = new Label(sim.LS("To save this file select it all (eg click in text and type control-A) and copy to your clipboard (eg control-C) before pasting to an empty text file (eg on Windows Notepad) and saving as a new file."), true));
+	//	la2.setWidth("300px");
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setWidth("100%");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
 		hp.add(okButton = new Button(sim.LS("OK")));
+		hp.add(copyButton = new Button(CirSim.LS("Copy to Clipboard")));
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		hp.add(importButton = new Button(sim.LS("Re-Import")));
 		okButton.addClickHandler(new ClickHandler() {
@@ -86,6 +87,14 @@ public class ExportAsTextDialog extends DialogBox {
 				}
 			}
 		});
+		copyButton.addClickHandler(new ClickHandler() {
+		    public void onClick(ClickEvent event) {
+			textArea.setFocus(true);
+			textArea.selectAll();
+			copyToClipboard();
+			textArea.setSelectionRange(0,0);
+		    }
+		});
 		this.center();
 	}
 	
@@ -93,5 +102,9 @@ public class ExportAsTextDialog extends DialogBox {
 	{
 		this.hide();
 	}
+	
+	private static native boolean copyToClipboard() /*-{
+	    return $doc.execCommand('copy');
+	}-*/;
 
 }

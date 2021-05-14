@@ -27,6 +27,7 @@ public class Graphics {
 	int currentFontSize;
 	Font currentFont= null;
 	Color lastColor;
+	static boolean isFullScreen=false;
 	
 	  public Graphics(Context2d context) {
 		    this.context = context;
@@ -167,4 +168,45 @@ public class Graphics {
 	       else
 	       	   context.setLineDash([a, b]);
 	   }-*/;
+	   
+	   
+	   public static void viewFullScreen() {
+	       requestFullScreen();
+	       isFullScreen=true;
+	   }
+	   
+	   private native static void requestFullScreen() /*-{
+	   var element = $doc.documentElement;
+
+	   if (element.requestFullscreen) {
+	     element.requestFullscreen();
+	   } else if (element.mozRequestFullScreen) {
+	     element.mozRequestFullScreen();
+	   } else if (element.webkitRequestFullscreen) {
+	     element.webkitRequestFullscreen();
+	   } else if (element.msRequestFullscreen) {
+	     element.msRequestFullscreen();
+	   }
+	 }-*/;
+	   
+	   public static void exitFullScreen() {
+	       requestExitFullScreen();
+	       isFullScreen=false;
+	   }
+	   
+	   private native static void requestExitFullScreen() /*-{
+	   var d = $doc;
+
+	   if (d.exitFullscreen) {
+	     d.exitFullscreen();
+	   } else if (d.mozExitFullScreen) {
+	     d.mozExitFullScreen();
+	   } else if (d.webkitExitFullscreen) {
+	     d.webkitExitFullscreen();
+	   } else if (d.msExitFullscreen) {
+	     d.msExitFullscreen();
+	   }
+	 }-*/;
+	   
+	   
 }

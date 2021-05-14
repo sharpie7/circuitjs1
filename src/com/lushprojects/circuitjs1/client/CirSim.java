@@ -401,6 +401,7 @@ MouseOutHandler, MouseWheelHandler {
 	fileMenuBar = new MenuBar(true);
 	if (isElectron())
 	    fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
+	fileMenuBar.addItem(LS("New Blank Circuit"), new MyCommand("file", "newblankcircuit"));
 	importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
 	importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	fileMenuBar.addItem(importFromLocalFileItem);
@@ -429,6 +430,8 @@ MouseOutHandler, MouseWheelHandler {
 	fileMenuBar.addItem(recoverItem);
 	printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
 	fileMenuBar.addItem(printItem);
+	fileMenuBar.addSeparator();
+	fileMenuBar.addItem(LS("Toggle Full Screen"), new MyCommand("view", "fullscreen"));
 	fileMenuBar.addSeparator();
 	aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
 	fileMenuBar.addItem(aboutItem);
@@ -3069,6 +3072,10 @@ MouseOutHandler, MouseWheelHandler {
     		int sp = item.indexOf(' ', 6);
     		readSetupFile(item.substring(6, sp), item.substring(sp+1));
     	}
+    	if (item=="newblankcircuit") {
+    	    pushUndo();
+    	    readSetupFile("blank.txt", "Blank Circuit");
+    	}
     		
     	//	if (ac.indexOf("setup ") == 0) {
     	//	    pushUndo();
@@ -3109,6 +3116,14 @@ MouseOutHandler, MouseWheelHandler {
     		//			setMouseMode(prevMouseMode);
     		tempMouseMode = mouseMode;
     	}
+    	if (item=="fullscreen") {
+    	    if (! Graphics.isFullScreen)
+    		Graphics.viewFullScreen();
+    	    else
+    		Graphics.exitFullScreen();
+    	    centreCircuit();
+    	}
+    
 	repaint();
     }
     

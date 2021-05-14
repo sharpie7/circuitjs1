@@ -36,7 +36,6 @@ class ScopePlot {
     double minValues[], maxValues[];
     int scopePointCount;
     int ptr; // ptr is pointer to the current sample
-    int ctr; // ctr is counts each timestep going in to a sample
     int value; // Value - the property being shown - e.g. VAL_CURRENT
     // scopePlotSpeed is in sim timestep units per pixel
     int scopePlotSpeed, units;
