@@ -400,8 +400,9 @@ MouseOutHandler, MouseWheelHandler {
 
 	fileMenuBar = new MenuBar(true);
 	if (isElectron())
-	    fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
-	fileMenuBar.addItem(LS("New Blank Circuit"), new MyCommand("file", "newblankcircuit"));
+	    fileMenuBar.addItem(iconMenuItem("window", "New Window...", new MyCommand("file", "newwindow")));
+	
+	fileMenuBar.addItem(iconMenuItem("doc-new", "New Blank Circuit", new MyCommand("file", "newblankcircuit")));
 	importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
 	importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	fileMenuBar.addItem(importFromLocalFileItem);
@@ -431,7 +432,7 @@ MouseOutHandler, MouseWheelHandler {
 	printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
 	fileMenuBar.addItem(printItem);
 	fileMenuBar.addSeparator();
-	fileMenuBar.addItem(LS("Toggle Full Screen"), new MyCommand("view", "fullscreen"));
+	fileMenuBar.addItem(iconMenuItem("resize-full-alt", "Toggle Full Screen", new MyCommand("view", "fullscreen")));
 	fileMenuBar.addSeparator();
 	aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
 	fileMenuBar.addItem(aboutItem);
