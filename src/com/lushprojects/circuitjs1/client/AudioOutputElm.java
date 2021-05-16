@@ -139,7 +139,7 @@ public class AudioOutputElm extends CircuitElm {
 	    nextDataSample = sim.t+sampleStep;
 	}
 	
-	int samplingRateChoices[] = { 8000, 11025, 16000, 22050, 44100 };
+	int samplingRateChoices[] = { 8000, 11025, 16000, 22050, 44100, 48000 };
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
