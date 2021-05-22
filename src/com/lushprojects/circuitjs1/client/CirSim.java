@@ -856,6 +856,8 @@ MouseOutHandler, MouseWheelHandler {
   		var etype = "mousedown";
   		lastScale = 1;
   		clearTimeout(tmout);
+  		e.preventDefault();
+  		
   		if (e.timeStamp-lastTap < 300) {
      		    etype = "dblclick";
   		} else {
@@ -865,12 +867,15 @@ MouseOutHandler, MouseWheelHandler {
   		}
   		lastTap = e.timeStamp;
   		
+  		var touch1 = e.touches[0];
+  		var touch2 = e.touches[e.touches.length-1];
   		var mouseEvent = new MouseEvent(etype, {
-    			clientX: touch.clientX,
-    			clientY: touch.clientY
+    			clientX: .5*(touch1.clientX+touch2.clientX),
+    			clientY: .5*(touch1.clientY+touch2.clientY)
   		});
-  		e.preventDefault();
   		cv.dispatchEvent(mouseEvent);
+  		if (e.touches.length > 1)
+  		    sim.@com.lushprojects.circuitjs1.client.CirSim::twoFingerTouch(II)(mouseEvent.clientX, mouseEvent.clientY);
 	}, false);
 	cv.addEventListener("touchend", function (e) {
   		var mouseEvent = new MouseEvent("mouseup", {});
@@ -882,14 +887,14 @@ MouseOutHandler, MouseWheelHandler {
   		e.preventDefault();
   		clearTimeout(tmout);
 	        if (e.touches.length > 1) {
-	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(e.scale-lastScale));
+	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(Math.log(e.scale)-Math.log(lastScale)));
 	            lastScale = e.scale;
-	            return;
 	        }
-  		var touch = e.touches[0];
+  		var touch1 = e.touches[0];
+  		var touch2 = e.touches[e.touches.length-1];
   		var mouseEvent = new MouseEvent("mousemove", {
-    			clientX: touch.clientX,
-    			clientY: touch.clientY
+    			clientX: .5*(touch1.clientX+touch2.clientX),
+    			clientY: .5*(touch1.clientY+touch2.clientY)
   		});
   		cv.dispatchEvent(mouseEvent);
 	}, false);
@@ -4242,6 +4247,12 @@ MouseOutHandler, MouseWheelHandler {
 
     void longPress() {
 	doPopupMenu();
+    }
+    
+    void twoFingerTouch(int x, int y) {
+	tempMouseMode = MODE_DRAG_ALL;
+	dragScreenX = x;
+	dragScreenY = y;
     }
     
 //    public void mouseClicked(MouseEvent e) {
