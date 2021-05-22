@@ -848,10 +848,13 @@ MouseOutHandler, MouseWheelHandler {
 	var lastTap;
 	var tmout;
 	var sim = this;
+	var lastScale;
+	
 	cv.addEventListener("touchstart", function (e) {
         	mousePos = getTouchPos(cv, e);
   		var touch = e.touches[0];
   		var etype = "mousedown";
+  		lastScale = 1;
   		clearTimeout(tmout);
   		if (e.timeStamp-lastTap < 300) {
      		    etype = "dblclick";
@@ -876,13 +879,18 @@ MouseOutHandler, MouseWheelHandler {
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 	cv.addEventListener("touchmove", function (e) {
+  		e.preventDefault();
+  		clearTimeout(tmout);
+	        if (e.touches.length > 1) {
+	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(e.scale-lastScale));
+	            lastScale = e.scale;
+	            return;
+	        }
   		var touch = e.touches[0];
   		var mouseEvent = new MouseEvent("mousemove", {
     			clientX: touch.clientX,
     			clientY: touch.clientY
   		});
-  		e.preventDefault();
-  		clearTimeout(tmout);
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 
@@ -4462,7 +4470,7 @@ MouseOutHandler, MouseWheelHandler {
     	repaint();
     }
 
-    void zoomCircuit(int dy) {
+    void zoomCircuit(double dy) {
 	double newScale;
     	double oldScale = transform[0];
     	double val = dy*.01;
