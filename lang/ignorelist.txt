@@ -1,0 +1,177 @@
+yyyyMMdd-HHmm
+mac
+sans-serif
+scopeDefaults
+setup 
+shortcuts
+showaverage
+showcurrent
+showduty
+showfft
+showfreq
+showib
+showic
+showie
+shownegpeak
+showpeak
+showpower
+showresistance
+showrms
+showscale
+showvbc
+showvbe
+showvce
+showvcevsic
+showvoltage
+showvvsi
+www.dropbox.com
+x2n2646-emitter
+xlm324v2-qnq 0 1e-16 200 0 1.5 0 0 2 1 1 0 0 1
+xlm324v2-qpa 0 1.01e-16 333.3333333333333 0 1.5 0 0 2 1 1 0.004081632653061225 0 1
+xlm324v2-qpi 0 1.01e-16 333.3333333333333 0 1.5 0 0 2 1 1 0.0034482758620689655 0 1
+xlm324v2-qpq 0 1e-16 333.3333333333333 0 1.5 0 0 2 1 1 0 0 1
+Čeština
+&nbsp;
+'+img+'
+(linear)
+(log)
+.1*(a-b)
+/div
+1N34
+1N4004
+1N4148
+1N5711
+1N5712
+2 7.9e-13 0 0/0 2 2*(a-b)/2 5e-14 0 0/0 25/0 1 0 0 100 xlm324v2-qnq/0 2 0.0003*(a-b)/0 0.001/0 0 0 -0.25/0 1000000/0 2 1*(a-b)/0 1000000/0 0 0 -0.55/0 1000000
+2*(a-b)
+2*a
+ (I)
+ (P)
+ (R)
+ (V)
+A
+A,B
+B
+C
+C+
+C,D
+C-
+CA
+CE
+circuitClipboard
+circuitRecovery
+conventionalCurrent
+cursorCross
+cursorPointer
+cursorSplitter
+default-led
+default-zener
+height=500,width=500,status=yes,location=no
+image.png
+image/png
+logspectrum
+mA/V
+max(0,min(.0001, select(i-.003, (-80000000000*(i)^5+800000000*(i)^4-3000000*(i)^3+5177.2*(i)^2+.2453*(i)-.00005)*1.04/700, (9000000*(i)^5-998113*(i)^4+42174*(i)^3-861.32*(i)^2+9.0836*(i)-.0078)*.945/700)))
+maxscale
+topButton
+topButton-red
+true
+vMode
+versionString
+whiteBackground
+old-default-led
+negativeColor
+Polski
+Português
+SansSerif
+positiveColor
+[A-Za-z0-9]+ 0 0 0 0 
+euroGates
+euroResistors
+manualscale
+dblclick
+o_
+mA
+mV
+gnd
+dl.dropboxusercontent.com
+https://www.dropbox.com/
+A\qB
+A<B
+A=B
+A>B
+Cn\p4
+DragAll
+DragColumn
+DragPost
+DragRow
+DragSelected
+Norsk bokmål
+Italiano
+Dansk
+Deutsch
+%2b
+GroundElm 1
+LoadFileElement
+addToScope
+acdc
+_blank
+plotxy
+Uout=0.85*Uoutsaturation
+Qu=100 QL=50
+Ctrl
+Cmd
+100k
+101.7k
+125.2k
+53.2k
+65.0k
+72.1k
+74181 ALU
+78.8k
+93.9k
+DT)
+bold 
+elm
+en-US
+Ant
+spice-default
+download
+export
+default
+diodemodel
+print
+mousedown
+language
+label
+key
+copy
+cut
+Irms
+Vmax
+Vmin
+Vsd = 
+Vd = 
+Vds = 
+Vbc
+Vbe
+Vce
+JFET
+NOR
+MOSFET
+MT1
+MT2
+fo=71.2Hz
+V(rms)
+V = 
+Ids = 
+Isd = 
+NPN
+NPN)
+Français
+PNP
+PNP)
+GET
+English
+Español
+CLK
