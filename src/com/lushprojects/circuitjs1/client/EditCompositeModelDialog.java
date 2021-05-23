@@ -118,6 +118,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 		canvas.setCoordinateSpaceWidth(400);
 		canvas.setCoordinateSpaceHeight(400);
 		vp.add(canvas);
+		CirSim.doTouchHandlers(null, canvas.getCanvasElement());
 		context = canvas.getContext2d();
 		
 		chip = new CustomCompositeChipElm(50, 50);
@@ -273,11 +274,15 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	int selectedPin;
 	
 	public void onMouseMove(MouseMoveEvent event) {
+	    mouseMoved(event.getX(), event.getY());
+	}
+	
+	void mouseMoved(int x, int y) {
 	    if (dragging) {
 		if (selectedPin < 0)
 		    return;
 		int pos[] = new int[2];
-		if (chip.getPinPos((int)(event.getX()*scale), (int)(event.getY()*scale), selectedPin, pos)) {
+		if (chip.getPinPos((int)(x*scale), (int)(y*scale), selectedPin, pos)) {
 		    ExtListEntry p = model.extList.get(selectedPin);
 		    p.pos  = pos[0];
 		    p.side = pos[1];
@@ -290,8 +295,8 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 		selectedPin = -1;
 		for (i = 0; i != postCount; i++) {
 		    Pin p = chip.pins[i];
-		    int dx = (int)(event.getX()*scale) - p.textloc.x;
-		    int dy = (int)(event.getY()*scale) - p.textloc.y;
+		    int dx = (int)(x*scale) - p.textloc.x;
+		    int dy = (int)(y*scale) - p.textloc.y;
 		    double dist = Math.hypot(dx, dy);
 		    if (dist < bestdist) {
 			bestdist = dist;
@@ -306,6 +311,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	}
 
 	public void onMouseDown(MouseDownEvent event) {
+	    mouseMoved(event.getX(), event.getY());
 	    dragging = true;
 	}
 

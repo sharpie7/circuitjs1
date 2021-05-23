@@ -708,7 +708,7 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addMouseUpHandler(this);
 	cv.addClickHandler(this);
 	cv.addDoubleClickHandler(this);
-	doTouchHandlers(cv.getCanvasElement());
+	doTouchHandlers(this, cv.getCanvasElement());
 	cv.addDomHandler(this, ContextMenuEvent.getType());	
 	menuBar.addDomHandler(new ClickHandler() {
 	    public void onClick(ClickEvent event) {
@@ -843,11 +843,10 @@ MouseOutHandler, MouseWheelHandler {
     // install touch handlers
     // don't feel like rewriting this in java.  Anyway, java doesn't let us create mouse
     // events and dispatch them.
-    native void doTouchHandlers(CanvasElement cv) /*-{
+    native static void doTouchHandlers(CirSim sim, CanvasElement cv) /*-{
 	// Set up touch events for mobile, etc
 	var lastTap;
 	var tmout;
-	var sim = this;
 	var lastScale;
 	
 	cv.addEventListener("touchstart", function (e) {
