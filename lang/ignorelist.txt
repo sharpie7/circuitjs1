@@ -175,3 +175,10 @@ GET
 English
 Español
 CLK
+.png
+.svg
+.txt
+blank.txt
+canvas2svg.js
+zh-cht
+zh-tw
