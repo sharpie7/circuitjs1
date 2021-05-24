@@ -2,7 +2,4 @@
 "Can't load canvas2svg.js."
 "Copy to Clipboard"
 "Download last played audio"
-"Export As SVG..."
 "File name:"
-"New Blank Circuit"
-"Toggle Full Screen"
