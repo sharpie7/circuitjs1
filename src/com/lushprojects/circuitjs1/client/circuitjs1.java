@@ -109,8 +109,13 @@ public class circuitjs1 implements EntryPoint {
 		lang = language();
 	}
   	GWT.log("got language " + lang);
-//  	lang = "pl";
-  	lang = lang.replaceFirst("-.*", "");
+  	
+  	// check for Taiwan Chinese.  Otherwise, strip the region code
+  	if (lang.equalsIgnoreCase("zh-tw") || lang.equalsIgnoreCase("zh-cht"))
+  	    lang = "zh-tw";
+  	else
+  	    lang = lang.replaceFirst("-.*", "");
+  	
   	if (lang.startsWith("en")) {
   	    // no need to load locale file for English
   	    loadSimulator();
