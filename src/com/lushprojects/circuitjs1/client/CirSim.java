@@ -361,6 +361,8 @@ MouseOutHandler, MouseWheelHandler {
 	    String cct=qp.getValue("cct");
 	    if (cct!=null)
 		startCircuitText = cct.replace("%24", "$");
+	    if (startCircuitText == null)
+		startCircuitText = getElectronStartCircuitText();
 	    String ctz=qp.getValue("ctz");
 	    if (ctz!= null)
 		startCircuitText = decompress(ctz);
@@ -2854,6 +2856,10 @@ MouseOutHandler, MouseWheelHandler {
     
     static native boolean isElectron() /*-{
         return ($wnd.openFile != undefined);
+    }-*/;    
+
+    static native String getElectronStartCircuitText() /*-{
+    	return $wnd.startCircuitText;
     }-*/;    
     
     void allowSave(boolean b) {
