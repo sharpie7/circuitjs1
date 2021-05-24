@@ -386,7 +386,7 @@ MouseOutHandler, MouseWheelHandler {
 	else if (usRes)
 	    euroSetting = false;
 	else
-	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
+	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS(true));
 	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 
 	transform = new double[6];
@@ -466,7 +466,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
-	m.addItem(iconMenuItem("target", weAreInUS() ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
+	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("zoom", "zoomout")));
@@ -5506,12 +5506,12 @@ MouseOutHandler, MouseWheelHandler {
 
     
     
-    native boolean weAreInUS() /*-{
+    native boolean weAreInUS(boolean orCanada) /*-{
     try {
 	l = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;  
     	if (l.length > 2) {
     		l = l.slice(-2).toUpperCase();
-    		return (l == "US" || l=="CA");
+    		return (l == "US" || (l=="CA" && orCanada));
     	} else {
     		return 0;
     	}
