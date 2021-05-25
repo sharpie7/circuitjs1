@@ -44,7 +44,7 @@ class DecimalDisplayElm extends ChipElm {
         int yl = y-cspc + sizeY*cspc; 
         g.context.save();
         g.setFont(new Font("SansSerif", 0, 15*csize));
-        g.setColor(Color.white);
+        g.setColor(whiteColor);
         g.context.setTextBaseline("middle");
         int i;
         int value = 0;

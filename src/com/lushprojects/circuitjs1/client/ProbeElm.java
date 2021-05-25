@@ -163,7 +163,7 @@ class ProbeElm extends CircuitElm {
 	        }
 	    drawValues(g, s, 4);
 	}
-	   g.setColor(Color.white);
+	   g.setColor(whiteColor);
            g.setFont(unitsFont);
            Point plusPoint = interpPoint(point1, point2, (dn/2-len/2-4)/dn, -10*dsign );
            if (y2 > y)

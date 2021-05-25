@@ -162,7 +162,7 @@ class SCRElm extends CircuitElm {
 	}
 	
 	if ((needsHighlight() || sim.dragElm == this) && point1.x == point2.x && point2.y > point1.y) {
-	    g.setColor(Color.white);
+	    g.setColor(whiteColor);
 	    int ds = sign(dx);
 	    g.drawString("C", lead2.x+((ds < 0) ? 5 : -15), lead2.y+12);
 	    g.drawString("A", lead1.x+5, lead1.y-4); // x+6 if ds=1, -12 if -1

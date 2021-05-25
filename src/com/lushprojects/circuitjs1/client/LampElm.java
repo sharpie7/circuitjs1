@@ -108,7 +108,7 @@ package com.lushprojects.circuitjs1.client;
 	    setPowerColor(g, true);
 	    g.setColor(getTempColor());
 	    g.fillOval(bulb.x-bulbR, bulb.y-bulbR, bulbR*2, bulbR*2);
-	    g.setColor(Color.white);
+	    g.setColor(whiteColor);
 	    drawThickCircle(g, bulb.x, bulb.y, bulbR);
 	    setVoltageColor(g, v1);
 	    drawThickLine(g, lead1, filament[0]);

@@ -185,7 +185,7 @@ package com.lushprojects.circuitjs1.client;
 		
 		// label pins when highlighted
 		if (needsHighlight() || sim.dragElm == this) {
-		    g.setColor(Color.white);
+		    g.setColor(whiteColor);
 		    g.setFont(unitsFont);
 
 		    // make fiddly adjustments to pin label locations depending on orientation
