@@ -1,5 +1,1 @@
 "<Strong>RUN</Strong>&nbsp;/&nbsp;Stop"
-"Can't load canvas2svg.js."
-"Copy to Clipboard"
-"Download last played audio"
-"File name:"
