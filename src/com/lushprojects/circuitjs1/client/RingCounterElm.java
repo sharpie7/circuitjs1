@@ -46,7 +46,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[0] = new Pin(1, SIDE_W, "");
 	    pins[0].clock = true;
 	    pins[1] = new Pin(sizeX-1, SIDE_S, "R");
-	    pins[1].bubble = true;
+	    pins[1].lineOver = true;
 	    int i;
 	    for (i = 0; i != bits; i++) {
 		int ii = i+2;
