@@ -226,6 +226,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	    double scaleh = context.getCanvas().getHeight() / (double)(chip.boundingBox.height + chip.boundingBox.y*2);
 	    scale = 1/Math.min(scalew, scaleh);
 	    context.setFillStyle(CirSim.theSim.getBackgroundColor().getHexValue());
+		context.setTransform(1, 0, 0, 1, 0, 0);
 	    context.fillRect(0, 0, context.getCanvas().getWidth(), context.getCanvas().getHeight());
 	    context.setTransform(1/scale, 0, 0, 1/scale, 0, 0);
 	    chip.draw(g);
