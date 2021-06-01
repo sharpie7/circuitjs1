@@ -52,5 +52,22 @@ class DACElm extends ChipElm {
     int getVoltageSourceCount() { return 1; }
     int getPostCount() { return bits+2; }
     int getDumpType() { return 166; }
+    public EditInfo getEditInfo(int n) {
+        if (n < 2)
+            return super.getEditInfo(n);
+        if (n == 2)
+            return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
+        return null;
+    }
+    public void setEditValue(int n, EditInfo ei) {
+        if (n < 2) {
+            super.setEditValue(n,  ei);
+            return;
+        }
+        if (n == 2 && ei.value >= 2) {
+            bits = (int)ei.value;
+            setupPins();
+            setPoints();
+        }
+    }
 }
-    
