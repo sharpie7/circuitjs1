@@ -77,17 +77,21 @@ package com.lushprojects.circuitjs1.client;
 	    boolean running = true;
 	    if (hasClockInhibit() && pins[clockInhibit].value)
 		running = false;
+
+	    // find which output is high
+	    for (i = 0; i != bits; i++)
+		if (pins[i+2].value)
+		    break;
 	    
 	    if (pins[0].value && !lastClock && running) {
-		for (i = 0; i != bits; i++)
-		    if (pins[i+2].value)
-			break;
 		if (i < bits)
 		    pins[i++ +2].value = false;
 		i %= bits;
 		pins[i+2].value = true;
 	    }
-	    if (pins[1].value != hasInvertReset()) {
+	    
+	    // reset if requested, or if all outputs are low
+	    if (pins[1].value != hasInvertReset() || i == bits) {
 		for (i = 1; i != bits; i++)
 		    pins[i+2].value = false;
 		pins[2].value = true;
