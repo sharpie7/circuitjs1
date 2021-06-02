@@ -22,6 +22,7 @@ package com.lushprojects.circuitjs1.client;
     class RingCounterElm extends ChipElm {
 	boolean justLoaded;
 	final int FLAG_CLOCK_INHIBIT = 2;
+	final int FLAG_RESET_HIGH = 4;
 	
 	public RingCounterElm(int xx, int yy) {
 	    super(xx, yy);
@@ -36,6 +37,7 @@ package com.lushprojects.circuitjs1.client;
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
 	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
+	boolean hasInvertReset() { return (flags & FLAG_RESET_HIGH) == 0; }
 	
 	int clockInhibit;
 	
@@ -46,7 +48,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[0] = new Pin(1, SIDE_W, "");
 	    pins[0].clock = true;
 	    pins[1] = new Pin(sizeX-1, SIDE_S, "R");
-	    pins[1].lineOver = true;
+	    pins[1].lineOver = hasInvertReset();
 	    int i;
 	    for (i = 0; i != bits; i++) {
 		int ii = i+2;
@@ -75,17 +77,21 @@ package com.lushprojects.circuitjs1.client;
 	    boolean running = true;
 	    if (hasClockInhibit() && pins[clockInhibit].value)
 		running = false;
+
+	    // find which output is high
+	    for (i = 0; i != bits; i++)
+		if (pins[i+2].value)
+		    break;
 	    
 	    if (pins[0].value && !lastClock && running) {
-		for (i = 0; i != bits; i++)
-		    if (pins[i+2].value)
-			break;
 		if (i < bits)
 		    pins[i++ +2].value = false;
 		i %= bits;
 		pins[i+2].value = true;
 	    }
-	    if (!pins[1].value) {
+	    
+	    // reset if requested, or if all outputs are low
+	    if (pins[1].value != hasInvertReset() || i == bits) {
 		for (i = 1; i != bits; i++)
 		    pins[i+2].value = false;
 		pins[2].value = true;
@@ -95,7 +101,12 @@ package com.lushprojects.circuitjs1.client;
 	public EditInfo getEditInfo(int n) {
 	    if (n < 2)
 		return super.getEditInfo(n);
-	    if (n == 2)
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Invert reset pin", hasInvertReset());
+		return ei;
+	    }
+	    if (n == 3)
 		return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
 	    return null;
 	}
@@ -104,7 +115,16 @@ package com.lushprojects.circuitjs1.client;
 		super.setEditValue(n,  ei);
 		return;
 	    }
-	    if (n == 2 && ei.value >= 2) {
+	    if (n == 2) {
+		if (ei.checkbox.getState())
+		    flags &= ~FLAG_RESET_HIGH;
+		else
+		    flags |= FLAG_RESET_HIGH;
+		setupPins();
+		setPoints();
+		return;
+	    }
+	    if (n == 3 && ei.value >= 2) {
 		bits = (int)ei.value;
 		setupPins();
 		setPoints();
