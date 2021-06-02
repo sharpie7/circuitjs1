@@ -24,7 +24,10 @@ package com.lushprojects.circuitjs1.client;
 	final int FLAG_SET = 4;
 	boolean hasReset() { return (flags & FLAG_RESET) != 0 || hasSet(); }
 	boolean hasSet() { return (flags & FLAG_SET) != 0; }
-	public DFlipFlopElm(int xx, int yy) { super(xx, yy); }
+	public DFlipFlopElm(int xx, int yy) {
+            super(xx, yy);
+	    pins[2].value = !pins[1].value;
+        }
 	public DFlipFlopElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
