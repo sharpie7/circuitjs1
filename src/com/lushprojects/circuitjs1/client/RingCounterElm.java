@@ -22,12 +22,11 @@ package com.lushprojects.circuitjs1.client;
     class RingCounterElm extends ChipElm {
 	boolean justLoaded;
 	final int FLAG_CLOCK_INHIBIT = 2;
-	final int FLAG_INVERT_RESET = 4;
+	final int FLAG_RESET_HIGH = 4;
 	
 	public RingCounterElm(int xx, int yy) {
 	    super(xx, yy);
 	    flags |= FLAG_CLOCK_INHIBIT;
-	    flags |= FLAG_INVERT_RESET;
 	    setupPins();
 	}
 	public RingCounterElm(int xa, int ya, int xb, int yb, int f,
@@ -38,7 +37,7 @@ package com.lushprojects.circuitjs1.client;
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
 	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
-	boolean hasInvertReset() { return (flags & FLAG_INVERT_RESET) != 0; }
+	boolean hasInvertReset() { return (flags & FLAG_RESET_HIGH) == 0; }
 	
 	int clockInhibit;
 	
@@ -114,9 +113,9 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    if (n == 2) {
 		if (ei.checkbox.getState())
-		    flags |= FLAG_INVERT_RESET;
+		    flags &= ~FLAG_RESET_HIGH;
 		else
-		    flags &= ~FLAG_INVERT_RESET;
+		    flags |= FLAG_RESET_HIGH;
 		setupPins();
 		setPoints();
 		return;
