@@ -40,7 +40,7 @@ class UnijunctionElm extends CompositeElm {
 	
 	private static String ujtModelString = "DiodeElm 1 4\rVoltageElm 4 5\rCCVSElm 4 5 6 0\rResistorElm 0 6\rVCCSElm 5 7 5 7 6 7 5\rCapacitorElm 5 7\rResistorElm 7 2\rResistorElm 3 5";
 	private static int ujtExternalNodes[] = { 1, 2, 3 };
-	private static String ujtModelDump = "2 x2n2646-emitter/0 0 0 0/2 2 1000*a/0 1000000/0 5 0.00028*(a-b)\\p0.00575*(c-d)*e/2 3.5e-11 0 0/0 38.15/0 2518";
+	private static String ujtModelDump = "2 x2n2646-emitter/0 0 0 0 0 0 0/2 2 1000*a/0 1000000/0 5 0.00028*(a-b)\\p0.00575*(c-d)*e/2 3.5e-11 0 0/0 38.15/0 2518";
 	void setup() {
 	    noDiagonal = true;
 	    flags |= FLAG_ESCAPE;
