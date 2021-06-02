@@ -22,29 +22,23 @@ package com.lushprojects.circuitjs1.client;
     class RingCounterElm extends ChipElm {
 	boolean justLoaded;
 	final int FLAG_CLOCK_INHIBIT = 2;
-	boolean invertreset;
+	final int FLAG_INVERT_RESET = 4;
 	
 	public RingCounterElm(int xx, int yy) {
 	    super(xx, yy);
 	    flags |= FLAG_CLOCK_INHIBIT;
+	    flags |= FLAG_INVERT_RESET;
 	    setupPins();
 	}
 	public RingCounterElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	    justLoaded = true;
-	    invertreset = true;
-	    try {
-	   	invertreset = Boolean.parseBoolean(st.nextToken());
-	    } catch (Exception e) {}
-	    updateResetVisuals();
-	}
-	String dump() {
-	    return super.dump() + " " + invertreset;
 	}
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
 	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
+	boolean hasInvertReset() { return (flags & FLAG_INVERT_RESET) != 0; }
 	
 	int clockInhibit;
 	
@@ -55,7 +49,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[0] = new Pin(1, SIDE_W, "");
 	    pins[0].clock = true;
 	    pins[1] = new Pin(sizeX-1, SIDE_S, "R");
-	    updateResetVisuals();
+	    pins[1].lineOver = hasInvertReset();
 	    int i;
 	    for (i = 0; i != bits; i++) {
 		int ii = i+2;
@@ -94,7 +88,7 @@ package com.lushprojects.circuitjs1.client;
 		i %= bits;
 		pins[i+2].value = true;
 	    }
-	    if (pins[1].value != invertreset) {
+	    if (pins[1].value != hasInvertReset()) {
 		for (i = 1; i != bits; i++)
 		    pins[i+2].value = false;
 		pins[2].value = true;
@@ -106,7 +100,7 @@ package com.lushprojects.circuitjs1.client;
 		return super.getEditInfo(n);
 	    if (n == 2) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Invert reset pin", invertreset);
+		ei.checkbox = new Checkbox("Invert reset pin", hasInvertReset());
 		return ei;
 	    }
 	    if (n == 3)
@@ -119,8 +113,12 @@ package com.lushprojects.circuitjs1.client;
 		return;
 	    }
 	    if (n == 2) {
-		invertreset = ei.checkbox.getState();
-		updateResetVisuals();
+		if (ei.checkbox.getState())
+		    flags |= FLAG_INVERT_RESET;
+		else
+		    flags &= ~FLAG_INVERT_RESET;
+		setupPins();
+		setPoints();
 		return;
 	    }
 	    if (n == 3 && ei.value >= 2) {
@@ -131,13 +129,4 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	int getDumpType() { return 163; }
-	
-	void updateResetVisuals() {
-	    //Style 1 (lineOver reflects "invert pin" option, no bubble)
-	    pins[1].lineOver = invertreset;
-	    
-	    //Style 2 (lineOver always, bubble reflects "invert pin" option):
-	    //pins[1].lineOver = true;
-	    //pins[1].bubble = !invertreset;
-	}
     }
