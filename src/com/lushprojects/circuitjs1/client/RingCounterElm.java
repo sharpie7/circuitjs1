@@ -22,6 +22,7 @@ package com.lushprojects.circuitjs1.client;
     class RingCounterElm extends ChipElm {
 	boolean justLoaded;
 	final int FLAG_CLOCK_INHIBIT = 2;
+	boolean invertreset;
 	
 	public RingCounterElm(int xx, int yy) {
 	    super(xx, yy);
@@ -32,6 +33,14 @@ package com.lushprojects.circuitjs1.client;
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	    justLoaded = true;
+	    invertreset = true;
+	    try {
+	   	invertreset = Boolean.parseBoolean(st.nextToken());
+	    } catch (Exception e) {}
+	    updateResetVisuals();
+	}
+	String dump() {
+	    return super.dump() + " " + invertreset;
 	}
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
@@ -46,7 +55,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins[0] = new Pin(1, SIDE_W, "");
 	    pins[0].clock = true;
 	    pins[1] = new Pin(sizeX-1, SIDE_S, "R");
-	    pins[1].bubble = true;
+	    updateResetVisuals();
 	    int i;
 	    for (i = 0; i != bits; i++) {
 		int ii = i+2;
@@ -85,7 +94,7 @@ package com.lushprojects.circuitjs1.client;
 		i %= bits;
 		pins[i+2].value = true;
 	    }
-	    if (!pins[1].value) {
+	    if (pins[1].value != invertreset) {
 		for (i = 1; i != bits; i++)
 		    pins[i+2].value = false;
 		pins[2].value = true;
@@ -95,7 +104,12 @@ package com.lushprojects.circuitjs1.client;
 	public EditInfo getEditInfo(int n) {
 	    if (n < 2)
 		return super.getEditInfo(n);
-	    if (n == 2)
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Invert reset pin", invertreset);
+		return ei;
+	    }
+	    if (n == 3)
 		return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
 	    return null;
 	}
@@ -104,7 +118,12 @@ package com.lushprojects.circuitjs1.client;
 		super.setEditValue(n,  ei);
 		return;
 	    }
-	    if (n == 2 && ei.value >= 2) {
+	    if (n == 2) {
+		invertreset = ei.checkbox.getState();
+		updateResetVisuals();
+		return;
+	    }
+	    if (n == 3 && ei.value >= 2) {
 		bits = (int)ei.value;
 		setupPins();
 		setPoints();
@@ -112,4 +131,13 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	int getDumpType() { return 163; }
+	
+	void updateResetVisuals() {
+	    //Style 1 (lineOver reflects "invert pin" option, no bubble)
+	    pins[1].lineOver = invertreset;
+	    
+	    //Style 2 (lineOver always, bubble reflects "invert pin" option):
+	    //pins[1].lineOver = true;
+	    //pins[1].bubble = !invertreset;
+	}
     }
