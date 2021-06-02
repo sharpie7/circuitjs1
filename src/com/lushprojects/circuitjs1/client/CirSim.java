@@ -5051,10 +5051,14 @@ MouseOutHandler, MouseWheelHandler {
 	    // keep track of row interchanges
 	    ipvt[j] = largestRow;
 
-	    // avoid zeros
+	    // check for zeroes; if we find one, it's a singular matrix.
+	    // we used to avoid them, but that caused weird bugs.  For example,
+	    // two inverters with outputs connected together should be flagged
+	    // as a singular matrix, but it was allowed (with weird currents)
 	    if (a[j][j] == 0.0) {
-		System.out.println("avoided zero");
-		a[j][j]=1e-18;
+		console("didn't avoid zero");
+//		a[j][j]=1e-18;
+		return false;
 	    }
 
 	    if (j != n-1) {
