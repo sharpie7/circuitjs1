@@ -110,31 +110,46 @@ class LabeledNodeElm extends CircuitElm {
 	return nodeList == null ? null : nodeList.get(n);
     }
     
-    void draw(Graphics g) {
-	setVoltageColor(g, volts[0]);
-	drawThickLine(g, point1, lead1);
-	g.setColor(needsHighlight() ? selectColor : whiteColor);
-	setPowerColor(g, false);
-	String str = text;
+    void drawLabeledNode(Graphics g, String str, Point pt1, Point pt2) {
 	boolean lineOver = false;
 	if (str.startsWith("/")) {
 	    lineOver = true;
 	    str = str.substring(1);
 	}
-	drawCenteredText(g, str, x2, y2, true);
+        int w=(int)g.context.measureText(str).getWidth();
+        int h=(int)g.currentFontSize;
+        g.context.save();
+        g.context.setTextBaseline("middle");
+        int x = pt2.x, y = pt2.y;
+        if (pt1.y != pt2.y) {
+            x -= w/2;
+            y += sign(pt2.y-pt1.y)*h;
+        } else {
+            if (pt2.x > pt1.x)
+        	x += 4;
+            else
+        	x -= 4+w;
+        }
+        g.drawString(str, x, y);
+        adjustBbox(x, y-h/2, x+w, y+h/2);
+        g.context.restore();
 	if (lineOver) {
-	    int asc=(int)g.currentFontSize;
-	    if (lineOver) {
-		int ya = y2-asc;
-                int sw=(int)g.context.measureText(str).getWidth();
-                g.drawLine(x2-sw/2, ya, x2+sw/2, ya);
-	    }
-	}
+	    int ya = y-h/2-3;
+	    g.drawLine(x, ya, x+w, ya);
+	}	
+    }
+    
+    void draw(Graphics g) {
+	setVoltageColor(g, volts[0]);
+	drawThickLine(g, point1, lead1);
+	g.setColor(needsHighlight() ? selectColor : whiteColor);
+	setPowerColor(g, false);
+	setBbox(point1, ps2, circleSize);
+	drawLabeledNode(g, text, point1, lead1);
 
 	curcount = updateDotCount(current, curcount);
 	drawDots(g, point1, lead1, curcount);
 	interpPoint(point1, point2, ps2, 1+11./dn);
-	setBbox(point1, ps2, circleSize);
 	drawPosts(g);
     }
     double getCurrentIntoNode(int n) { return -current; }

@@ -44,17 +44,17 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() { return 1; }
 	void setPoints() {
 	    super.setPoints();
-	    lead1 = new Point();
+	    lead1 = interpPoint(point1, point2, 1-8/dn);
 	}
+		
 	void draw(Graphics g) {
 	    boolean selected = needsHighlight() || stopped;
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
-	    String s = "trigger";
-	    interpPoint(point1, point2, lead1, 1-((int)g.context.measureText(s).getWidth()/2+8)/dn);
 	    setBbox(point1, lead1, 0);
-	    drawCenteredText(g, s, x2, y2, true);
+	    String s = sim.LS("trigger");
+	    drawLabeledNode(g, s, point1, lead1);
 	    setVoltageColor(g, volts[0]);
 	    if (selected)
 		g.setColor(selectColor);

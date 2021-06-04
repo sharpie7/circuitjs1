@@ -233,7 +233,7 @@ class VoltageElm extends CircuitElm {
 	{
 	    g.setColor(needsHighlight() ? selectColor : whiteColor);
 	    setPowerColor(g, false);
-	    drawCenteredText(g, sim.LS("Noise"), xc, yc, true);
+	    drawLabeledNode(g, sim.LS("Noise"), point1, lead1);
 	    break;
 	}
 	case WF_AC:
