@@ -52,6 +52,7 @@ package com.lushprojects.circuitjs1.client;
 	    } catch (Exception e) { }
 	    lastOutput = lastOutputVoltage > highVoltage*.5;
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
+	    allocNodes();
 	}
 	boolean isInverting() { return false; }
 	int gsize, gwidth, gwidth2, gheight, hs2;

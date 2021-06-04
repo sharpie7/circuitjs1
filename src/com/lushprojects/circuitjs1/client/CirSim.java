@@ -3611,9 +3611,17 @@ MouseOutHandler, MouseWheelHandler {
 		    
 		    CircuitElm newce = createCe(tint, x1, y1, x2, y2, f, st);
 		    if (newce==null) {
-				System.out.println("unrecognized dump type: " + type);
-				break;
-			    }
+			System.out.println("unrecognized dump type: " + type);
+			break;
+		    }
+		    /*
+		     * debug code to check if allocNodes() is called in constructor.  It gets called in
+		     * setPoints() but that doesn't get called for subcircuits.
+		    double vv[] = newce.volts;
+		    int vc = newce.getPostCount() + newce.getInternalNodeCount();
+		    if (vv.length != vc)
+			console("allocnodes not called! " + tint);
+		     */
 		    newce.setPoints();
 		    elmList.addElement(newce);
 		} catch (Exception ee) {

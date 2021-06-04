@@ -33,7 +33,7 @@ package com.lushprojects.circuitjs1.client;
 	    try {
 		selectBitCount = Integer.parseInt(st.nextToken());
 		setupPins();
-		setPoints();
+		allocNodes();
 	    } catch (Exception e) {}
 	}
 	String getChipName() { return "demultiplexer"; }
