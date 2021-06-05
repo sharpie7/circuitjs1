@@ -25,6 +25,7 @@ package com.lushprojects.circuitjs1.client;
 
 class TriStateElm extends CircuitElm {
     double resistance, r_on, r_off;
+    final int FLAG_FLIP = 1;
 
     public TriStateElm(int xx, int yy) {
 	super(xx, yy);
@@ -72,8 +73,9 @@ class TriStateElm extends CircuitElm {
 	triPoints[2] = interpPoint(point1, point2, .5 + (ww - 2) / dn);
 	gatePoly = createPolygon(triPoints);
 
-	point3 = interpPoint(point1, point2, .5, -hs);
-	lead3 = interpPoint(point1, point2, .5, -hs / 2);
+	int sign = ((flags & FLAG_FLIP) == 0) ? -1 : 1;
+	point3 = interpPoint(point1, point2, .5, sign*hs);
+	lead3 = interpPoint(point1, point2, .5, sign*hs/2);
     }
 
     void draw(Graphics g) {
@@ -120,18 +122,24 @@ class TriStateElm extends CircuitElm {
     }
 
     void drag(int xx, int yy) {
+	// use mouse to select which side the buffer enable should be on
+	boolean flip = (xx < x) == (yy < y);
+	
 	xx = sim.snapGrid(xx);
 	yy = sim.snapGrid(yy);
 	if (abs(x - xx) < abs(y - yy))
 	    xx = x;
-	else
+	else {
+	    flip = !flip;
 	    yy = y;
+	}
 	int q1 = abs(x - xx) + abs(y - yy);
 	int q2 = (q1 / 2) % sim.gridSize;
 	if (q2 != 0)
 	    return;
 	x2 = xx;
 	y2 = yy;
+	flags = flip ? (flags | FLAG_FLIP) : (flags & ~FLAG_FLIP);
 	setPoints();
     }
 
