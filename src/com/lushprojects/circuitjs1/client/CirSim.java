@@ -976,6 +976,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Stop Trigger"), "StopTriggerElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add DC Motor"), "DCMotorElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Wattmeter"), "WattmeterElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -5258,6 +5259,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 417: return new UnijunctionElm(x1, y1, x2, y2, f, st);
     	case 418: return new ExtVoltageElm(x1, y1, x2, y2, f, st);
     	case 419: return new DecimalDisplayElm(x1, y1, x2, y2, f, st);
+    	case 420: return new WattmeterElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5512,6 +5514,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new ExtVoltageElm(x1, y1);
     	if (n=="DecimalDisplayElm")
 		return (CircuitElm) new DecimalDisplayElm(x1, y1);
+    	if (n=="WattmeterElm")
+		return (CircuitElm) new WattmeterElm(x1, y1);
     	return null;
     }
     
