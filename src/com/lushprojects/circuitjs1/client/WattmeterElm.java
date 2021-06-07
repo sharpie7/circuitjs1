@@ -160,6 +160,12 @@ class WattmeterElm extends CircuitElm {
     void setCurrent(int vn, double c) {
 	currents[vn == voltSources[0] ? 0 : 1] = c;
     }
+    double getCurrentIntoNode(int n) {
+	if (n % 2 == 0)
+	    return -currents[n/2];
+	else
+	    return currents[n/2];
+    }
 
     boolean getConnection(int n1, int n2) { return (n1/2) == (n2/2); }
     boolean hasGroundConnection(int n1) { return false; }
