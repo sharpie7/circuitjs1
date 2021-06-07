@@ -25,7 +25,7 @@ class TextElm extends GraphicElm {
     String text;
     Vector<String> lines;
     int size;
-    final int FLAG_CENTER = 1;
+//    final int FLAG_CENTER = 1;
     final int FLAG_BAR = 2;
     final int FLAG_ESCAPE = 4;
     public TextElm(int xx, int yy) {
@@ -105,8 +105,6 @@ class TextElm extends GraphicElm {
 	    String s = (String) (lines.elementAt(i));
 	    s = CirSim.LS(s);
 	    int sw=(int)g.context.measureText(s).getWidth();
-	    if ((flags & FLAG_CENTER) != 0)
-		x = (g.context.getCanvas().getWidth()-sw)/2;
 	    g.drawString(s, x, cury);
 	    if ((flags & FLAG_BAR) != 0) {
 		int by = cury-g.currentFontSize;
@@ -131,12 +129,6 @@ class TextElm extends GraphicElm {
 	if (n == 2) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
 	    ei.checkbox =
-		new Checkbox("Center", (flags & FLAG_CENTER) != 0);
-	    return ei;
-	}
-	if (n == 3) {
-	    EditInfo ei = new EditInfo("", 0, -1, -1);
-	    ei.checkbox =
 		new Checkbox("Draw Bar On Top", (flags & FLAG_BAR) != 0);
 	    return ei;
 	}
@@ -149,20 +141,14 @@ class TextElm extends GraphicElm {
 	}
 	if (n == 1)
 	    size = (int) ei.value;
-	if (n == 3) {
+	if (n == 2) {
 	    if (ei.checkbox.getState())
 		flags |= FLAG_BAR;
 	    else
 		flags &= ~FLAG_BAR;
 	}
-	if (n == 2) {
-	    if (ei.checkbox.getState())
-		flags |= FLAG_CENTER;
-	    else
-		flags &= ~FLAG_CENTER;
-	}
     }
-    boolean isCenteredText() { return (flags & FLAG_CENTER) != 0; }
+//    boolean isCenteredText() { return (flags & FLAG_CENTER) != 0; }
     void getInfo(String arr[]) {
 	arr[0] = text;
     }
