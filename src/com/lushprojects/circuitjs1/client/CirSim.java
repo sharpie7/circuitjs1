@@ -271,6 +271,10 @@ MouseOutHandler, MouseWheelHandler {
 	
     Canvas cv;
     Context2d cvcontext;
+    
+    // canvas width/height in px (before device pixel ratio scaling) 
+    int canvasWidth, canvasHeight;
+    
     static final int MENUBARHEIGHT=30;
     static int VERTICALPANELWIDTH=166; // default
     static final int POSTGRABSQ=25;
@@ -289,7 +293,10 @@ MouseOutHandler, MouseWheelHandler {
 		return q % x;
 	}
 	
-	
+    static native float devicePixelRatio() /*-{ 
+	return window.devicePixelRatio;
+    }-*/;
+    
     public void setCanvasSize(){
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
@@ -299,20 +306,23 @@ MouseOutHandler, MouseWheelHandler {
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
-			cv.setCoordinateSpaceWidth(width);
-			cv.setCoordinateSpaceHeight(height);
+			canvasWidth = width;
+			canvasHeight = height;
+			float scale = devicePixelRatio();
+			cv.setCoordinateSpaceWidth((int)(width*scale));
+			cv.setCoordinateSpaceHeight((int)(height*scale));
 		}
 
     	setCircuitArea();
     }
     
     void setCircuitArea() {
-    	int height = cv.getCanvasElement().getHeight();
-    	int width = cv.getCanvasElement().getWidth();
-		int h = (int) ((double)height * scopeHeightFraction);
-		/*if (h < 128 && winSize.height > 300)
+    	int height = canvasHeight;
+    	int width = canvasWidth;
+    	int h = (int) ((double)height * scopeHeightFraction);
+    	/*if (h < 128 && winSize.height > 300)
 		  h = 128;*/
-		circuitArea = new Rectangle(0, 0, width, height-h);
+    	circuitArea = new Rectangle(0, 0, width, height-h);
     }
     
     native String decompress(String dump) /*-{
@@ -1274,7 +1284,7 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitElm.lightGrayColor = Color.lightGray;
 	    g.setColor(Color.black);
 	}
-	g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
+	g.fillRect(0, 0, canvasWidth, canvasHeight);
 	myrunstarttime=System.currentTimeMillis();
 	if (simRunning) {
 	    try {
@@ -1329,7 +1339,9 @@ MouseOutHandler, MouseWheelHandler {
 	    g.drawLock(20, 30);
 	g.setColor(Color.white);
 	// draw elements
-	cvcontext.setTransform(transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
+	double scale = devicePixelRatio();
+	cvcontext.setTransform(transform[0]*scale, 0, 0, transform[3]*scale,
+		transform[4]*scale, transform[5]*scale);
 	for (i = 0; i != elmList.size(); i++) {
 	    if (powerCheckItem.getState())
 	    	g.setColor(Color.gray);
@@ -1396,13 +1408,13 @@ MouseOutHandler, MouseWheelHandler {
 	}
 
 	
-	cvcontext.setTransform(1, 0, 0, 1, 0, 0);
+	cvcontext.setTransform(scale, 0, 0, scale, 0, 0);
 
 	if (printableCheckItem.getState())
 	    g.setColor(Color.white);
 	else
 	    g.setColor(Color.black);
-	g.fillRect(0, circuitArea.height, circuitArea.width, cv.getCoordinateSpaceHeight()-circuitArea.height);
+	g.fillRect(0, circuitArea.height, circuitArea.width, canvasHeight-circuitArea.height);
 //	g.restore();
 	g.setFont(oldfont);
 	int ct = scopeCount;
@@ -1454,7 +1466,7 @@ MouseOutHandler, MouseWheelHandler {
 	    int x = 0;
 	    if (ct != 0)
 		x = scopes[ct-1].rightEdge() + 20;
-	    x = max(x, cv.getCoordinateSpaceWidth()*2/3);
+	    x = max(x, canvasWidth*2/3);
 	  //  x=cv.getCoordinateSpaceWidth()*2/3;
 	    
 	    // count lines of data
@@ -1523,7 +1535,7 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	while (scopeCount > 0 && scopes[scopeCount-1].getElm() == null)
     		scopeCount--;
-    	int h = cv.getCoordinateSpaceHeight() - circuitArea.height;
+    	int h = canvasHeight - circuitArea.height;
     	pos = 0;
     	for (i = 0; i != scopeCount; i++)
     		scopeColCount[i] = 0;
@@ -1535,7 +1547,7 @@ MouseOutHandler, MouseWheelHandler {
     	int iw = infoWidth;
     	if (colct <= 2)
     		iw = iw*3/2;
-    	int w = (cv.getCoordinateSpaceWidth()-iw) / colct;
+    	int w = (canvasWidth-iw) / colct;
     	int marg = 10;
     	if (w < marg*2)
     		w = marg*2;
@@ -1556,8 +1568,7 @@ MouseOutHandler, MouseWheelHandler {
     			s.speed = speed;
     			s.resetGraph();
     		}
-    		Rectangle r = new Rectangle(pos*w, cv.getCoordinateSpaceHeight()-h+colh*row,
-    				w-marg, colh);
+    		Rectangle r = new Rectangle(pos*w, canvasHeight-h+colh*row, w-marg, colh);
     		row++;
     		if (!r.equals(s.rect))
     			s.setRect(r);
@@ -3800,7 +3811,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void dragSplitter(int x, int y) {
-    	double h = (double) cv.getCanvasElement().getHeight();
+    	double h = (double) canvasHeight;
     	if (h<1)
     		h=1;
     	scopeHeightFraction=1.0-(((double)y)/h);
@@ -4184,7 +4195,7 @@ MouseOutHandler, MouseWheelHandler {
     	    		    canUnstackScope(scopeSelected), scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(scopePopupMenu.getMenuBar());
-    	    	    y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-160));
+    	    	    y=Math.max(0, Math.min(menuClientY,canvasHeight-160));
     	    	    contextPanel.setPopupPosition(menuClientX, y);
     	    	    contextPanel.show();
     		}
@@ -4226,8 +4237,8 @@ MouseOutHandler, MouseWheelHandler {
     		doMainMenuChecks();
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(mainMenuBar);
-    		x=Math.max(0, Math.min(menuClientX, cv.getCoordinateSpaceWidth()-400));
-    		y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-450));
+    		x=Math.max(0, Math.min(menuClientX, canvasWidth-400));
+    		y=Math.max(0, Math.min(menuClientY, canvasHeight-450));
     		contextPanel.setPopupPosition(x,y);
     		contextPanel.show();
     	}
@@ -5718,7 +5729,7 @@ MouseOutHandler, MouseWheelHandler {
 	            CircuitElm.whiteColor = Color.white;
 	            CircuitElm.lightGrayColor = Color.lightGray;
 	            g.setColor(Color.black);
-	            g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
+	            g.fillRect(0, 0, canvasWidth, canvasHeight);
 	        }
 		dotsCheckItem.setState(false);
 

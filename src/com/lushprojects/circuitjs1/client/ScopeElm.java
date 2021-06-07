@@ -98,7 +98,7 @@ class ScopeElm extends CircuitElm {
     void draw(Graphics g) {
 	g.setColor(needsHighlight() ? selectColor : whiteColor);
 	g.context.save();
-	g.context.setTransform(1, 0, 0, 1, 0, 0);
+	g.context.setTransform(sim.devicePixelRatio(), 0, 0, sim.devicePixelRatio(), 0, 0);
 	setScopeRect();
 	elmScope.draw(g);
 	g.context.restore();
