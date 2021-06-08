@@ -1,1 +1,3 @@
 "<Strong>RUN</Strong>&nbsp;/&nbsp;Stop"
+"Add Wattmeter"
+"wattmeter"

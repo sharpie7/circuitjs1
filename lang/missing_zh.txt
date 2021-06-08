@@ -7,6 +7,7 @@
 "Add External Voltage (JavaScript)"
 "Add Sliders"
 "Add Unijunction Transistor"
+"Add Wattmeter"
 "Add to Existing Scope"
 "Adjust timestep for best audio quality and performance?"
 "Are you sure?"
@@ -185,4 +186,5 @@
 "transistor"
 "trigger"
 "unijunction transistor"
+"wattmeter"
 "Ćuk Converter"

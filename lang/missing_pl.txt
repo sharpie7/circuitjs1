@@ -34,6 +34,7 @@
 "Add Time Delay Relay"
 "Add Unijunction Transistor"
 "Add Varactor/Varicap"
+"Add Wattmeter"
 "Add to Existing Scope"
 "Adjust timestep for best audio quality and performance?"
 "Are you sure?"
@@ -283,4 +284,5 @@
 "trigger"
 "unijunction transistor"
 "varactor"
+"wattmeter"
 "Ćuk Converter"

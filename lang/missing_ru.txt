@@ -10,6 +10,7 @@
 "Add Thermistor"
 "Add Time Delay Relay"
 "Add Unijunction Transistor"
+"Add Wattmeter"
 "Add to Existing Scope"
 "Adjust timestep for best audio quality and performance?"
 "Are you sure?"
@@ -166,3 +167,4 @@
 "transistor"
 "trigger"
 "unijunction transistor"
+"wattmeter"

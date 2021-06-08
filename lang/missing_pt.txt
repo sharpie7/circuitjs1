@@ -1,4 +1,5 @@
 "<Strong>RUN</Strong>&nbsp;/&nbsp;Stop"
+"Add Wattmeter"
 "Can't load canvas2svg.js."
 "Copy to Clipboard"
 "Download last played audio"
@@ -6,3 +7,4 @@
 "File name:"
 "New Blank Circuit"
 "Toggle Full Screen"
+"wattmeter"
