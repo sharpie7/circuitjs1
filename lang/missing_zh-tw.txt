@@ -1,3 +1,5 @@
 "<Strong>RUN</Strong>&nbsp;/&nbsp;Stop"
 "Add Wattmeter"
+"Parse error in expression"
+"unexpected end of input"
 "wattmeter"

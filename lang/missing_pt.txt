@@ -6,5 +6,7 @@
 "Export As SVG..."
 "File name:"
 "New Blank Circuit"
+"Parse error in expression"
 "Toggle Full Screen"
+"unexpected end of input"
 "wattmeter"
