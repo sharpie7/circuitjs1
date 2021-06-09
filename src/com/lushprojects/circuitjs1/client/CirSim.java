@@ -297,6 +297,11 @@ MouseOutHandler, MouseWheelHandler {
 	return window.devicePixelRatio;
     }-*/;
     
+    void checkCanvasSize() {
+	if (cv.getCoordinateSpaceWidth() != (int)(canvasWidth*devicePixelRatio()))
+	    setCanvasSize();
+    }
+    
     public void setCanvasSize(){
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
@@ -1260,6 +1265,7 @@ MouseOutHandler, MouseWheelHandler {
     long mydrawstarttime;
 //	if (winSize == null || winSize.width == 0)
 //	    return;
+    	checkCanvasSize();
 	mystarttime=System.currentTimeMillis();
 	boolean didAnalyze = analyzeFlag;
 	if (analyzeFlag || dcAnalysisFlag) {
