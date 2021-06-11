@@ -211,10 +211,11 @@ class RelayElm extends CircuitElm {
 	lines = newPointArray(poleCount*2);
 	
 	// outline
-	interpPoint(lead1, lead2, outline[0], -1.0, -60.0 * dsign);
-	interpPoint(lead1, lead2, outline[1], 2.0, -60.0 * dsign);
-	interpPoint(lead1, lead2, outline[2], 2.0, -(openhs*3*poleCount) - (16 * dsign));
-	interpPoint(lead1, lead2, outline[3], -1.0, -(openhs*3*poleCount) - (16 * dsign));
+	double boxWScale = Math.min(0.4, 48.0 / dn);
+	interpPoint(point1, point2, outline[0], 0.5 - boxWScale, -64.0 * dsign);
+	interpPoint(point1, point2, outline[1], 0.5 + boxWScale, -64.0 * dsign);
+	interpPoint(point1, point2, outline[2], 0.5 + boxWScale, -(openhs*3*poleCount) - (16 * dsign));
+	interpPoint(point1, point2, outline[3], 0.5 - boxWScale, -(openhs*3*poleCount) - (16 * dsign));
     }
     Point getPost(int n) {
 	if (n < 3*poleCount)
