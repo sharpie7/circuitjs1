@@ -217,7 +217,7 @@ class RelayElm extends CircuitElm {
 	lines = newPointArray(poleCount*2);
 	
 	// outline
-	double boxWScale = Math.min(0.4, 40.0 / dn);
+	double boxWScale = Math.min(0.4, 25.0 / dn);
 	interpPoint(point1, point2, outline[0], 0.5 - boxWScale, -56.0 * dsign);
 	interpPoint(point1, point2, outline[1], 0.5 + boxWScale, -56.0 * dsign);
 	interpPoint(point1, point2, outline[2], 0.5 + boxWScale, -(openhs*3*poleCount) - (24.0 * dsign));
