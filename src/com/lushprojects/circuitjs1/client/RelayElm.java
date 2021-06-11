@@ -33,6 +33,7 @@ class RelayElm extends CircuitElm {
     double r_on, r_off, onCurrent;
     Point coilPosts[], coilLeads[], swposts[][], swpoles[][], ptSwitch[];
     Point lines[];
+    Point outline[] = newPointArray(4);
     double coilCurrent, switchCurrent[], coilCurCount, switchCurCount[];
     double d_position, coilR;
     int i_position;
@@ -104,8 +105,14 @@ class RelayElm extends CircuitElm {
 	drawCoil(g, dsign*6, coilLeads[x], coilLeads[1-x],
 		 volts[nCoil1+x], volts[nCoil2-x]);
 
+	// draw rectangle
+	g.setColor(needsHighlight() ? selectColor : lightGrayColor);
+	drawThickLine(g, outline[0], outline[1]);
+	drawThickLine(g, outline[1], outline[2]);
+	drawThickLine(g, outline[2], outline[3]);
+	drawThickLine(g, outline[3], outline[0]);
+	
 	// draw lines
-	g.setColor(Color.darkGray);
 	for (i = 0; i != poleCount; i++) {
 	    if (i == 0)
 		interpPoint(point1, point2, lines[i*2  ], .5,
@@ -202,6 +209,12 @@ class RelayElm extends CircuitElm {
 
 	// lines
 	lines = newPointArray(poleCount*2);
+	
+	// outline
+	interpPoint(lead1, lead2, outline[0], -1.0, -60.0 * dsign);
+	interpPoint(lead1, lead2, outline[1], 2.0, -60.0 * dsign);
+	interpPoint(lead1, lead2, outline[2], 2.0, -(openhs*3*poleCount) - (16 * dsign));
+	interpPoint(lead1, lead2, outline[3], -1.0, -(openhs*3*poleCount) - (16 * dsign));
     }
     Point getPost(int n) {
 	if (n < 3*poleCount)
