@@ -27,7 +27,7 @@ class SeqGenElm extends ChipElm {
 	
 	public SeqGenElm(int xx, int yy) {
 		super(xx, yy);
-		flags |= FLAG_HAS_RESET;
+		//flags |= FLAG_HAS_RESET; // Uncomment this if somebody asks for a RESET pin on the SeqGen
 		setupPins();
 		allocNodes();
 	}
