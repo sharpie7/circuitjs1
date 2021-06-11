@@ -29,7 +29,7 @@ package com.lushprojects.circuitjs1.client;
 
 class RelayElm extends CircuitElm {
 	final int FLAG_SWAP_COIL = 1;
-	final int FLAG_SHOW_OUTLINE = 2;
+	final int FLAG_SHOW_BOX = 2;
 	
     double inductance;
     Inductor ind;
@@ -59,7 +59,7 @@ class RelayElm extends CircuitElm {
 	coilR = 20;
 	coilCurrent = coilCurCount = 0;
 	poleCount = 1;
-	flags |= FLAG_SHOW_OUTLINE;
+	flags |= FLAG_SHOW_BOX;
 	setupPoles();
     }
     public RelayElm(int xa, int ya, int xb, int yb, int f,
@@ -109,7 +109,7 @@ class RelayElm extends CircuitElm {
 		 volts[nCoil1+x], volts[nCoil2-x]);
 
 	// draw rectangle
-	if ((flags & FLAG_SHOW_OUTLINE) != 0) {
+	if ((flags & FLAG_SHOW_BOX) != 0) {
 		g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 		drawThickLine(g, outline[0], outline[1]);
 		drawThickLine(g, outline[1], outline[2]);
@@ -332,7 +332,7 @@ class RelayElm extends CircuitElm {
 	}
 	if (n == 7) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
-	    ei.checkbox = new Checkbox("Show outline", (flags & FLAG_SHOW_OUTLINE) != 0);
+	    ei.checkbox = new Checkbox("Show box", (flags & FLAG_SHOW_BOX) != 0);
 	    return ei;
 	}
 	return null;
@@ -362,7 +362,7 @@ class RelayElm extends CircuitElm {
 	    setPoints();
 	}
 	if (n == 7)
-		flags = ei.changeFlag(flags, FLAG_SHOW_OUTLINE);
+		flags = ei.changeFlag(flags, FLAG_SHOW_BOX);
     }
     boolean getConnection(int n1, int n2) {
 	return (n1 / 3 == n2 / 3);
