@@ -33,9 +33,9 @@ class SeqGenElm extends ChipElm {
 	}
 	public SeqGenElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
-		data = (short)(new Integer(st.nextToken()).intValue());
+		data = (short)Integer.parseInt(st.nextToken());
 		if (st.hasMoreTokens()) {
-			if (new Boolean(st.nextToken()).booleanValue()) { //Backwards compatibility
+			if (Boolean.parseBoolean(st.nextToken())) { //Backwards compatibility
 				flags |= FLAG_ONE_SHOT;
 				setupPins();
 				allocNodes();
