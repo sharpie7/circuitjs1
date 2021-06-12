@@ -26,16 +26,12 @@ import com.google.gwt.user.client.ui.TextArea;
 
 class SeqGenElm extends ChipElm {
 	final int FLAG_NEW_VERSION = 2;
-	final int FLAG_ONE_SHOT = 4;
-	final int FLAG_HAS_RESET = 8;
+	final int FLAG_HAS_RESET = 4;
 	
 	int bitPosition = 0;
 	int bitCount = 0;
 	int data[];
-	double lastchangetime = 0;
 	boolean clockstate = false;
-	double baud = 1000;
-	double oneShotInterval;
 	
 	public SeqGenElm(int xx, int yy) {
 		super(xx, yy);
@@ -45,7 +41,6 @@ class SeqGenElm extends ChipElm {
 		//flags |= FLAG_HAS_RESET; // Uncomment this if somebody asks for a RESET pin on the SeqGen
 		setupPins();
 		allocNodes();
-		oneShotInterval = 1.0 / baud;
 	}
 	public SeqGenElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
@@ -62,18 +57,8 @@ class SeqGenElm extends ChipElm {
 				
 				bitCount = 8;
 				data = new int[] { newData };
-				baud = 200;
-				
-				if (st.hasMoreTokens()) {
-					if (Boolean.parseBoolean(st.nextToken())) {
-						flags |= FLAG_ONE_SHOT;
-						setupPins();
-						allocNodes();
-					}
-				}
 			} else {
 				// Load normally
-				baud = Double.parseDouble(st.nextToken());
 				bitCount = Integer.parseInt(st.nextToken());
 				data = new int[(bitCount / Integer.SIZE) + (bitCount % Integer.SIZE != 0 ? 1 : 0)]; //Allocate enough bytes to fit the requested number of bits
 				for (int i = 0; i < data.length; i++)
@@ -82,14 +67,10 @@ class SeqGenElm extends ChipElm {
 		} catch (NoSuchElementException e) {
 			// Corrupted element: Data is incomplete
 		}
-		oneShotInterval = 1.0 / baud;
 		
 		// Ensure bitCount does not exceed the amount of data we have. (This can happen if there was an error)
 		if (bitCount > data.length * Integer.SIZE)
 			bitCount = data.length * Integer.SIZE;
-		
-		if (hasOneShot())
-			bitPosition = bitCount; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
 	}
 	
 	String getChipName() { return "sequence generator"; }
@@ -110,7 +91,6 @@ class SeqGenElm extends ChipElm {
 	}
 	int getPostCount() { return hasReset() ? 3 : 2; }
 	int getVoltageSourceCount() { return 1; }
-	boolean hasOneShot() { return (flags & FLAG_ONE_SHOT) != 0; }
 	boolean hasReset() { return (flags & FLAG_HAS_RESET) != 0; }
 	
 	void nextBit() {
@@ -138,23 +118,7 @@ class SeqGenElm extends ChipElm {
 				if (clockstate) {
 					// Rising-edge event
 					clockstate = true;
-					if (hasOneShot())
-						bitPosition = 0;
-					else
-						nextBit();
-				}
-			}
-			if (hasOneShot()) {
-				// One-shot mode
-				if (lastchangetime > sim.t)
-					lastchangetime = 0.0;
-				if (sim.t - lastchangetime >= oneShotInterval) {
-					if (bitPosition < bitCount)
-						nextBit();
-					if (sim.t - lastchangetime >= oneShotInterval * 2.0)
-						lastchangetime = sim.t; // Internal timer is falling behind (is the circuit clock going too fast for the given baud?)
-					else
-						lastchangetime += oneShotInterval;  // Increment internal timer (ensuring timing remains very consistent)
+					nextBit();
 				}
 			}
 		}
@@ -164,8 +128,6 @@ class SeqGenElm extends ChipElm {
 	String dump(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.dump());
-		sb.append(' ');
-		sb.append(baud);
 		sb.append(' ');
 		sb.append(bitCount);
 		for (int i = 0; i < data.length; i++) {
@@ -178,13 +140,6 @@ class SeqGenElm extends ChipElm {
 		if (n < 2)
 			return super.getEditInfo(n);
 		if (n == 2) {
-			EditInfo ei = new EditInfo("", 0, -1, -1);
-			ei.checkbox = new Checkbox("One shot", hasOneShot());
-			return ei;
-		}
-		if (n == 3)
-			return new EditInfo("Baud rate (one shot)", baud, 1, -1);
-		if (n == 4) {
 			EditInfo ei = new EditInfo("Sequence", 0, -1, -1);
 			ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
@@ -202,21 +157,7 @@ class SeqGenElm extends ChipElm {
 			return;
 		}
 		if (n == 2) {
-			if (ei.checkbox.getState() != ((flags & FLAG_ONE_SHOT) != 0)) { //value changed
-				flags = ei.changeFlag(flags, FLAG_ONE_SHOT);
-				if (hasOneShot())
-					bitPosition = bitCount; //Ditto
-			}
-			return;
-		}
-		if (n == 3) {
-			baud = ei.value;
-			oneShotInterval = 1.0 / baud;
-			return;
-		}
-		if (n == 4) {
 			String s = ei.textArea.getText();
-			boolean wasEmpty = data.length == 0;
 			
 			// First count the number of bits so we can initialize the data array
 			bitCount = 0;
@@ -237,9 +178,6 @@ class SeqGenElm extends ChipElm {
 					bitCount++;
 				}
 			}
-			
-			if (hasOneShot() && wasEmpty)
-				bitPosition = bitCount; //Ditto
 			
 			return;
 		}
