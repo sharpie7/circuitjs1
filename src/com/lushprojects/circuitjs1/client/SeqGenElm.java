@@ -81,6 +81,9 @@ class SeqGenElm extends ChipElm {
 		// Ensure bitCount does not exceed the amount of data we have. (This can happen if there was an error)
 		if (bitCount > data.length * Byte.SIZE)
 			bitCount = data.length * Byte.SIZE;
+		
+		if (hasOneShot())
+			bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
 	}
 	
 	String getChipName() { return "sequence generator"; }
@@ -189,7 +192,7 @@ class SeqGenElm extends ChipElm {
 			if (ei.checkbox.getState() != ((flags & FLAG_ONE_SHOT) != 0)) { //value changed
 				flags = ei.changeFlag(flags, FLAG_ONE_SHOT);
 				if (hasOneShot())
-					bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
+					bitPosition = data.length * Byte.SIZE; //Ditto
 			}
 			return;
 		}
@@ -218,7 +221,7 @@ class SeqGenElm extends ChipElm {
 			}
 			
 			if (hasOneShot() && wasEmpty)
-				bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
+				bitPosition = data.length * Byte.SIZE; //Ditto
 			
 			return;
 		}
