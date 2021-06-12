@@ -34,6 +34,8 @@ class SeqGenElm extends ChipElm {
 	int data[];
 	double lastchangetime = 0;
 	boolean clockstate = false;
+	double baud = 1000;
+	double oneShotInterval;
 	
 	public SeqGenElm(int xx, int yy) {
 		super(xx, yy);
@@ -43,6 +45,7 @@ class SeqGenElm extends ChipElm {
 		//flags |= FLAG_HAS_RESET; // Uncomment this if somebody asks for a RESET pin on the SeqGen
 		setupPins();
 		allocNodes();
+		oneShotInterval = 1.0 / baud;
 	}
 	public SeqGenElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
@@ -59,6 +62,7 @@ class SeqGenElm extends ChipElm {
 				
 				bitCount = 8;
 				data = new int[] { newData };
+				baud = 200;
 				
 				if (st.hasMoreTokens()) {
 					if (Boolean.parseBoolean(st.nextToken())) {
@@ -69,6 +73,7 @@ class SeqGenElm extends ChipElm {
 				}
 			} else {
 				// Load normally
+				baud = Double.parseDouble(st.nextToken());
 				bitCount = Integer.parseInt(st.nextToken());
 				data = new int[(bitCount / Integer.SIZE) + (bitCount % Integer.SIZE != 0 ? 1 : 0)]; //Allocate enough bytes to fit the requested number of bits
 				for (int i = 0; i < data.length; i++)
@@ -77,6 +82,7 @@ class SeqGenElm extends ChipElm {
 		} catch (NoSuchElementException e) {
 			// Corrupted element: Data is incomplete
 		}
+		oneShotInterval = 1.0 / baud;
 		
 		// Ensure bitCount does not exceed the amount of data we have. (This can happen if there was an error)
 		if (bitCount > data.length * Integer.SIZE)
@@ -129,23 +135,21 @@ class SeqGenElm extends ChipElm {
 				if (clockstate) {
 					// Rising-edge event
 					clockstate = true;
-					if (hasOneShot()) {
-						CirSim.console("Setting bit position (from "+bitPosition+" to 0)");
+					if (hasOneShot())
 						bitPosition = 0;
-					} else
+					else
 						nextBit();
 				}
 			}
 			if (hasOneShot()) {
 				// One-shot mode
-				if (sim.t - lastchangetime > 0.005) {
-					CirSim.console("Tick");
+				if (sim.t - lastchangetime >= oneShotInterval) {
 					if (bitPosition < bitCount)
 						nextBit();
-					if (sim.t - lastchangetime > 0.005 * 2.0)
-						lastchangetime = sim.t;
+					if (sim.t - lastchangetime >= oneShotInterval * 2.0)
+						lastchangetime = sim.t; // Internal timer is falling behind (is the circuit clock going too fast for the given baud?)
 					else
-						lastchangetime += 0.005;
+						lastchangetime += oneShotInterval;  // Increment internal timer (ensuring timing remains very consistent)
 				}
 			}
 		}
@@ -155,6 +159,8 @@ class SeqGenElm extends ChipElm {
 	String dump(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.dump());
+		sb.append(' ');
+		sb.append(baud);
 		sb.append(' ');
 		sb.append(bitCount);
 		for (int i = 0; i < data.length; i++) {
@@ -171,7 +177,9 @@ class SeqGenElm extends ChipElm {
 			ei.checkbox = new Checkbox("One shot", hasOneShot());
 			return ei;
 		}
-		if (n == 3) {
+		if (n == 3)
+			return new EditInfo("Baud rate (one shot)", baud, 1, -1);
+		if (n == 4) {
 			EditInfo ei = new EditInfo("Sequence", 0, -1, -1);
 			ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
@@ -197,6 +205,11 @@ class SeqGenElm extends ChipElm {
 			return;
 		}
 		if (n == 3) {
+			baud = ei.value;
+			oneShotInterval = 1.0 / baud;
+			return;
+		}
+		if (n == 4) {
 			String s = ei.textArea.getText();
 			boolean wasEmpty = data.length == 0;
 			
