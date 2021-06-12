@@ -21,7 +21,6 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.NoSuchElementException;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 
 // contributed by Edward Calver
 
