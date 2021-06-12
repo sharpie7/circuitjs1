@@ -105,6 +105,9 @@ class SeqGenElm extends ChipElm {
 		if (hasReset())
 			pins[2] = new Pin(1, SIDE_W, "R");
 	}
+	double getVoltageDiff() {
+		return volts[1];
+	}
 	int getPostCount() { return hasReset() ? 3 : 2; }
 	int getVoltageSourceCount() { return 1; }
 	boolean hasOneShot() { return (flags & FLAG_ONE_SHOT) != 0; }
