@@ -26,7 +26,8 @@ import com.google.gwt.user.client.ui.TextArea;
 
 class SeqGenElm extends ChipElm {
 	final int FLAG_NEW_VERSION = 2;
-	final int FLAG_HAS_RESET = 4;
+	final int FLAG_PLAY_ONCE = 4;
+	final int FLAG_HAS_RESET = 8;
 	
 	int bitPosition = 0;
 	int bitCount = 0;
@@ -91,12 +92,18 @@ class SeqGenElm extends ChipElm {
 	}
 	int getPostCount() { return hasReset() ? 3 : 2; }
 	int getVoltageSourceCount() { return 1; }
+	boolean hasPlayOnce() { return (flags & FLAG_PLAY_ONCE) != 0; }
 	boolean hasReset() { return (flags & FLAG_HAS_RESET) != 0; }
 	
 	void nextBit() {
 		if (data.length > 0 && bitCount > 0) {
-			if (bitPosition >= bitCount)
+			if (bitPosition >= bitCount) {
+				if (hasPlayOnce()) {
+					pins[1].value = false;
+					return; //Stopped
+				}
 				bitPosition = 0;
+			}
 			pins[1].value = (data[bitPosition / Integer.SIZE] & (1 << (bitPosition % Integer.SIZE))) != 0;
 			bitPosition++;
 		} else {
@@ -140,6 +147,11 @@ class SeqGenElm extends ChipElm {
 		if (n < 2)
 			return super.getEditInfo(n);
 		if (n == 2) {
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Play Once", hasPlayOnce());
+			return ei;
+		}
+		if (n == 3) {
 			EditInfo ei = new EditInfo("Sequence", 0, -1, -1);
 			ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
@@ -157,6 +169,10 @@ class SeqGenElm extends ChipElm {
 			return;
 		}
 		if (n == 2) {
+			flags = ei.changeFlag(flags, FLAG_PLAY_ONCE);
+			return;
+		}
+		if (n == 3) {
 			String s = ei.textArea.getText();
 			
 			// First count the number of bits so we can initialize the data array
