@@ -19,35 +19,71 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import java.util.NoSuchElementException;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
+
 // contributed by Edward Calver
 
 class SeqGenElm extends ChipElm {
-	final int FLAG_HAS_RESET = 2; //Flag for backwards compatibility
+	final int FLAG_NEW_VERSION = 2;
 	final int FLAG_ONE_SHOT = 4;
+	final int FLAG_HAS_RESET = 8;
+	
+	int bitPosition = 0;
+	int bitCount = 0;
+	byte data[];
+	double lastchangetime = 0;
+	boolean clockstate = false;
 	
 	public SeqGenElm(int xx, int yy) {
 		super(xx, yy);
+		bitCount = 8;
+		data = new byte[] { 0 };
+		flags |= FLAG_NEW_VERSION;
 		//flags |= FLAG_HAS_RESET; // Uncomment this if somebody asks for a RESET pin on the SeqGen
 		setupPins();
 		allocNodes();
 	}
 	public SeqGenElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
-		data = (short)Integer.parseInt(st.nextToken());
-		if (st.hasMoreTokens()) {
-			if (Boolean.parseBoolean(st.nextToken())) { //Backwards compatibility
-				flags |= FLAG_ONE_SHOT;
-				setupPins();
-				allocNodes();
+		try {
+			if ((flags & FLAG_NEW_VERSION) == 0) {
+				// This is an old sequence generator. Upgrade it to the new, flexible version.
+				flags |= FLAG_NEW_VERSION;
+				
+				//The old sequence generator read bytes backwards, from right to left, and this needs to be corrected.
+				byte oldData = (byte)Integer.parseInt(st.nextToken());
+				byte newData = 0;
+				for (int i = 0; i < Byte.SIZE; i++)
+					newData |= oldData & ((~(Byte.MAX_VALUE - 1) >> i) != 0 ? (1 << i) : 0);
+				
+				bitCount = 8;
+				data = new byte[] { newData };
+				
+				if (st.hasMoreTokens()) {
+					if (Boolean.parseBoolean(st.nextToken())) {
+						flags |= FLAG_ONE_SHOT;
+						setupPins();
+						allocNodes();
+					}
+				}
+			} else {
+				// Load normally
+				bitCount = Integer.parseInt(st.nextToken());
+				data = new byte[(int)(bitCount / Byte.SIZE) + (bitCount % Byte.SIZE != 0 ? 1 : 0)]; //Allocate enough bytes to fit the requested number of bits
+				for (int i = 0; i < data.length; i++)
+					data[i] = Byte.parseByte(st.nextToken());
 			}
-			position = 8;
+		} catch (NoSuchElementException e) {
+			// Corrupted element: Data is incomplete
 		}
+		
+		// Ensure bitCount does not exceed the amount of data we have. (This can happen if there was an error)
+		if (bitCount > data.length * Byte.SIZE)
+			bitCount = data.length * Byte.SIZE;
 	}
 	
-	short data = 0;
-	byte position = 0;
-	double lastchangetime = 0;
-	boolean clockstate = false;
 	String getChipName() { return "sequence generator"; }
 	void setupPins() {
 		sizeX = 2;
@@ -66,23 +102,22 @@ class SeqGenElm extends ChipElm {
 	boolean hasOneShot() { return (flags & FLAG_ONE_SHOT) != 0; }
 	boolean hasReset() { return (flags & FLAG_HAS_RESET) != 0; }
 	
-	void getNextBit() {
-		pins[1].value = ((data >>> position) & 1) != 0;
-		position++;
+	void nextBit() {
+		if (data.length > 0 && bitCount > 0) {
+			if (bitPosition / Byte.SIZE >= data.length)
+				bitPosition = 0;
+			pins[1].value = (data[bitPosition / Byte.SIZE] & (1 << (bitPosition % Byte.SIZE))) != 0;
+			bitPosition++;
+		} else {
+			pins[1].value = false;
+		}
 	}
 	
 	void execute() {
-		if (hasOneShot()) {
-			if (sim.t - lastchangetime > 0.005) {
-				if (position <= 8)
-					getNextBit();
-				lastchangetime = sim.t;
-			}
-		}
 		if (hasReset() && pins[2].value) {
 			// Suspended state (RESET raised)
-			position = (byte) (hasOneShot() ? 8 : 0);
-			pins[1].value = false;
+			bitPosition = 0;
+			pins[1].value = data.length > 0 && (data[0] & 1) != 0;
 			clockstate = pins[0].value;
 		} else {
 			// Normal operation
@@ -93,12 +128,22 @@ class SeqGenElm extends ChipElm {
 					// Rising-edge event
 					clockstate = true;
 					if (hasOneShot()) {
-						position = 0;
-					} else {
-						getNextBit();
-						if(position >= 8)
-							position = 0;
-					}
+						CirSim.console("Setting bit position (from "+bitPosition+" to 0)");
+						bitPosition = 0;
+					} else
+						nextBit();
+				}
+			}
+			if (hasOneShot()) {
+				// One-shot mode
+				if (sim.t - lastchangetime > 0.005) {
+					CirSim.console("Tick");
+					if (bitPosition / Byte.SIZE < data.length)
+						nextBit();
+					if (sim.t - lastchangetime > 0.005 * 2.0)
+						lastchangetime = sim.t;
+					else
+						lastchangetime += 0.005;
 				}
 			}
 		}
@@ -106,20 +151,32 @@ class SeqGenElm extends ChipElm {
 	int getDumpType() { return 188; }
 	
 	String dump(){
-		return super.dump() + " " + data;
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.dump());
+		sb.append(' ');
+		sb.append(bitCount);
+		for (int i = 0; i < data.length; i++) {
+			sb.append(' ');
+			sb.append(Byte.toString(data[i]));
+		}
+		return sb.toString();
 	}
 	public EditInfo getEditInfo(int n) {
 		if (n < 2)
 			return super.getEditInfo(n);
-		if (n < 10) {
-			int bitIndex = n - 2;
-			EditInfo ei = new EditInfo("", 0, -1, -1);
-			ei.checkbox = new Checkbox("Bit "+(bitIndex+1)+" set", (data & (1<<bitIndex)) != 0);
-			return ei;
-		}
-		if (n == 10) {
+		if (n == 2) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("One shot", hasOneShot());
+			return ei;
+		}
+		if (n == 3) {
+			EditInfo ei = new EditInfo("Sequence", 0, -1, -1);
+			ei.textArea = new TextArea();
+        	ei.textArea.setVisibleLines(5);
+        	StringBuilder sb = new StringBuilder(bitCount);
+        	for (int i = 0; i < bitCount; i++)
+        		sb.append((data[i / Byte.SIZE] & (1 << (i % Byte.SIZE))) != 0 ? '1' : '0');
+        	ei.textArea.setText(sb.toString());
 			return ei;
 		}
 		return null;
@@ -129,24 +186,41 @@ class SeqGenElm extends ChipElm {
 			super.setEditValue(n, ei);
 			return;
 		}
-		if (n < 10) {
-			int bitIndex = n - 2;
-			int bit = 1 << bitIndex;
-			if (ei.checkbox.getState())
-				data |= bit;
-			else
-				data &= ~bit;
-			setPoints();
+		if (n == 2) {
+			if (ei.checkbox.getState() != ((flags & FLAG_ONE_SHOT) != 0)) { //value changed
+				flags = ei.changeFlag(flags, FLAG_ONE_SHOT);
+				if (hasOneShot())
+					bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
+			}
 			return;
 		}
-		if (n == 10) {
-			if (ei.checkbox.getState()) {
-				flags |= FLAG_ONE_SHOT;
-				position = 8;
-			} else {
-				flags &= ~FLAG_ONE_SHOT;
-				position = 0;
+		if (n == 3) {
+			String s = ei.textArea.getText();
+			boolean wasEmpty = data.length == 0;
+			
+			// First count the number of bits so we can initialize the data array
+			bitCount = 0;
+			for (int i = 0; i < s.length(); i++) {
+				char c = s.charAt(i);
+				if (c == '0' || c == '1')
+					bitCount++;
 			}
+			data = new byte[bitCount / Byte.SIZE];
+			
+			// Fill the data array
+			bitCount = 0;
+			for (int i = 0; i < s.length(); i++) {
+				char c = s.charAt(i);
+				if (c == '0' || c == '1') {
+					if (c == '1')
+						data[bitCount / Byte.SIZE] = (byte) (data[bitCount / Byte.SIZE] | (1 << (bitCount % Byte.SIZE)));
+					bitCount++;
+				}
+			}
+			
+			if (hasOneShot() && wasEmpty)
+				bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
+			
 			return;
 		}
 	}
