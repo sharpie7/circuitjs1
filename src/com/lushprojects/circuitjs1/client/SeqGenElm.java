@@ -83,7 +83,7 @@ class SeqGenElm extends ChipElm {
 			bitCount = data.length * Byte.SIZE;
 		
 		if (hasOneShot())
-			bitPosition = data.length * Byte.SIZE; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
+			bitPosition = bitCount; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
 	}
 	
 	String getChipName() { return "sequence generator"; }
@@ -106,7 +106,7 @@ class SeqGenElm extends ChipElm {
 	
 	void nextBit() {
 		if (data.length > 0 && bitCount > 0) {
-			if (bitPosition / Byte.SIZE >= data.length)
+			if (bitPosition >= bitCount)
 				bitPosition = 0;
 			pins[1].value = (data[bitPosition / Byte.SIZE] & (1 << (bitPosition % Byte.SIZE))) != 0;
 			bitPosition++;
@@ -140,7 +140,7 @@ class SeqGenElm extends ChipElm {
 				// One-shot mode
 				if (sim.t - lastchangetime > 0.005) {
 					CirSim.console("Tick");
-					if (bitPosition / Byte.SIZE < data.length)
+					if (bitPosition < bitCount)
 						nextBit();
 					if (sim.t - lastchangetime > 0.005 * 2.0)
 						lastchangetime = sim.t;
@@ -192,7 +192,7 @@ class SeqGenElm extends ChipElm {
 			if (ei.checkbox.getState() != ((flags & FLAG_ONE_SHOT) != 0)) { //value changed
 				flags = ei.changeFlag(flags, FLAG_ONE_SHOT);
 				if (hasOneShot())
-					bitPosition = data.length * Byte.SIZE; //Ditto
+					bitPosition = bitCount; //Ditto
 			}
 			return;
 		}
@@ -221,7 +221,7 @@ class SeqGenElm extends ChipElm {
 			}
 			
 			if (hasOneShot() && wasEmpty)
-				bitPosition = data.length * Byte.SIZE; //Ditto
+				bitPosition = bitCount; //Ditto
 			
 			return;
 		}
