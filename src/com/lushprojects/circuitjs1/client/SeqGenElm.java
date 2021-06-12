@@ -31,14 +31,14 @@ class SeqGenElm extends ChipElm {
 	
 	int bitPosition = 0;
 	int bitCount = 0;
-	byte data[];
+	int data[];
 	double lastchangetime = 0;
 	boolean clockstate = false;
 	
 	public SeqGenElm(int xx, int yy) {
 		super(xx, yy);
 		bitCount = 8;
-		data = new byte[] { 0 };
+		data = new int[] { 0 };
 		flags |= FLAG_NEW_VERSION;
 		//flags |= FLAG_HAS_RESET; // Uncomment this if somebody asks for a RESET pin on the SeqGen
 		setupPins();
@@ -54,11 +54,11 @@ class SeqGenElm extends ChipElm {
 				//The old sequence generator read bytes backwards, from right to left, and this needs to be corrected.
 				byte oldData = (byte)Integer.parseInt(st.nextToken());
 				byte newData = 0;
-				for (int i = 0; i < Byte.SIZE; i++)
-					newData |= oldData & ((~(Byte.MAX_VALUE - 1) >> i) != 0 ? (1 << i) : 0);
+				for (int i = 0; i < Integer.SIZE; i++)
+					newData |= oldData & ((~(Integer.MAX_VALUE - 1) >> i) != 0 ? (1 << i) : 0);
 				
 				bitCount = 8;
-				data = new byte[] { newData };
+				data = new int[] { newData };
 				
 				if (st.hasMoreTokens()) {
 					if (Boolean.parseBoolean(st.nextToken())) {
@@ -70,17 +70,17 @@ class SeqGenElm extends ChipElm {
 			} else {
 				// Load normally
 				bitCount = Integer.parseInt(st.nextToken());
-				data = new byte[(int)(bitCount / Byte.SIZE) + (bitCount % Byte.SIZE != 0 ? 1 : 0)]; //Allocate enough bytes to fit the requested number of bits
+				data = new int[(bitCount / Integer.SIZE) + (bitCount % Integer.SIZE != 0 ? 1 : 0)]; //Allocate enough bytes to fit the requested number of bits
 				for (int i = 0; i < data.length; i++)
-					data[i] = Byte.parseByte(st.nextToken());
+					data[i] = Integer.parseInt(st.nextToken());
 			}
 		} catch (NoSuchElementException e) {
 			// Corrupted element: Data is incomplete
 		}
 		
 		// Ensure bitCount does not exceed the amount of data we have. (This can happen if there was an error)
-		if (bitCount > data.length * Byte.SIZE)
-			bitCount = data.length * Byte.SIZE;
+		if (bitCount > data.length * Integer.SIZE)
+			bitCount = data.length * Integer.SIZE;
 		
 		if (hasOneShot())
 			bitPosition = bitCount; //Set the pos to the end so that this seqgen's one-shot mode doesn't trigger immediately
@@ -108,7 +108,7 @@ class SeqGenElm extends ChipElm {
 		if (data.length > 0 && bitCount > 0) {
 			if (bitPosition >= bitCount)
 				bitPosition = 0;
-			pins[1].value = (data[bitPosition / Byte.SIZE] & (1 << (bitPosition % Byte.SIZE))) != 0;
+			pins[1].value = (data[bitPosition / Integer.SIZE] & (1 << (bitPosition % Integer.SIZE))) != 0;
 			bitPosition++;
 		} else {
 			pins[1].value = false;
@@ -159,7 +159,7 @@ class SeqGenElm extends ChipElm {
 		sb.append(bitCount);
 		for (int i = 0; i < data.length; i++) {
 			sb.append(' ');
-			sb.append(Byte.toString(data[i]));
+			sb.append(Integer.toString(data[i]));
 		}
 		return sb.toString();
 	}
@@ -177,7 +177,7 @@ class SeqGenElm extends ChipElm {
         	ei.textArea.setVisibleLines(5);
         	StringBuilder sb = new StringBuilder(bitCount);
         	for (int i = 0; i < bitCount; i++)
-        		sb.append((data[i / Byte.SIZE] & (1 << (i % Byte.SIZE))) != 0 ? '1' : '0');
+        		sb.append((data[i / Integer.SIZE] & (1 << (i % Integer.SIZE))) != 0 ? '1' : '0');
         	ei.textArea.setText(sb.toString());
 			return ei;
 		}
@@ -207,7 +207,7 @@ class SeqGenElm extends ChipElm {
 				if (c == '0' || c == '1')
 					bitCount++;
 			}
-			data = new byte[bitCount / Byte.SIZE];
+			data = new int[bitCount / Integer.SIZE];
 			
 			// Fill the data array
 			bitCount = 0;
@@ -215,7 +215,7 @@ class SeqGenElm extends ChipElm {
 				char c = s.charAt(i);
 				if (c == '0' || c == '1') {
 					if (c == '1')
-						data[bitCount / Byte.SIZE] = (byte) (data[bitCount / Byte.SIZE] | (1 << (bitCount % Byte.SIZE)));
+						data[bitCount / Integer.SIZE] = (byte) (data[bitCount / Integer.SIZE] | (1 << (bitCount % Integer.SIZE)));
 					bitCount++;
 				}
 			}
