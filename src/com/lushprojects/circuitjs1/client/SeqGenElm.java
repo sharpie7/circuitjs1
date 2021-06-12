@@ -143,6 +143,8 @@ class SeqGenElm extends ChipElm {
 			}
 			if (hasOneShot()) {
 				// One-shot mode
+				if (lastchangetime > sim.t)
+					lastchangetime = 0.0;
 				if (sim.t - lastchangetime >= oneShotInterval) {
 					if (bitPosition < bitCount)
 						nextBit();
