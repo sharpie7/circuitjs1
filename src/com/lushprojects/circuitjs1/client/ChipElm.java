@@ -28,7 +28,7 @@ abstract class ChipElm extends CircuitElm {
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
-		bits = (this instanceof RingCounterElm) ? 10 : 4;
+		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
@@ -37,7 +37,10 @@ abstract class ChipElm extends CircuitElm {
 		       StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    if (needsBits())
-		bits = new Integer(st.nextToken()).intValue();
+	    	if (st.hasMoreTokens())
+	    		bits = new Integer(st.nextToken()).intValue();
+	    	else
+	    		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
@@ -52,6 +55,7 @@ abstract class ChipElm extends CircuitElm {
 	    }
 	}
 	boolean needsBits() { return false; }
+	int defaultBitCount() { return 4; }
 	void setSize(int s) {
 	    csize = s;
 	    cspc = 8*s;

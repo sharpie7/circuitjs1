@@ -21,69 +21,90 @@ package com.lushprojects.circuitjs1.client;
 
 // contributed by Edward Calver
 
-    class PisoShiftElm extends ChipElm {
-	boolean hasReset() {return false;}
-	public PisoShiftElm(int xx, int yy) { super(xx, yy); }
-	public PisoShiftElm(int xa, int ya, int xb, int yb, int f,
-			    StringTokenizer st) {
-	    super(xa, ya, xb, yb, f, st);
+class PisoShiftElm extends ChipElm {
+	boolean[] data = new boolean[0];
+	int dataIndex = 0;
+	boolean clockstate = false;
+	boolean loadstate = false;
+	
+	public PisoShiftElm(int xx, int yy) {
+		super(xx, yy);
+		data = new boolean[bits];
 	}
-	short data=0;//Lack of unsigned types sucks
-	boolean clockstate=false;
-	boolean modestate=false;
-	String getChipName() { return "PISO shift register"; }
-
-	void setupPins() {
-	    sizeX = 10;
-	    sizeY = 3;
-	    pins = new Pin[getPostCount()];
-
-	    pins[0] = new Pin(1, SIDE_W, "L");
-	    pins[1] = new Pin(2, SIDE_W, "");
-	    pins[1].clock=true;
-
-	    pins[2] = new Pin(1, SIDE_N, "I7");
-	    pins[3] = new Pin(2, SIDE_N, "I6");
-	    pins[4] = new Pin(3, SIDE_N, "I5");
-	    pins[5] = new Pin(4, SIDE_N, "I4");
-	    pins[6] = new Pin(5, SIDE_N, "I3");
-	    pins[7] = new Pin(6, SIDE_N, "I2");
-	    pins[8] = new Pin(7, SIDE_N, "I1");
-	    pins[9] = new Pin(8, SIDE_N, "I0");
-
-	    pins[10] = new Pin(1, SIDE_E, "Q");
-	    pins[10].output=true;
-
+	public PisoShiftElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
+		super(xa, ya, xb, yb, f, st);
+		data = new boolean[bits];
 	}
-	int getPostCount() {
-	    return 11;
-	}
-	int getVoltageSourceCount() {return 1;}
-
-	void execute() {
-		if(pins[0].value&&!modestate)
-		{
-		modestate=true;
-		data=0;
-		if(pins[2].value)data+=128;
-		if(pins[3].value)data+=64;
-		if(pins[4].value)data+=32;
-		if(pins[5].value)data+=16;
-		if(pins[6].value)data+=8;
-		if(pins[7].value)data+=4;
-		if(pins[8].value)data+=2;
-		if(pins[9].value)data+=1;
-		}
-		else if(pins[1].value&&!clockstate)
-		{
-		clockstate=true;
-		if((data&1)==0)pins[10].value=false;
-		else pins[10].value=true;
-		data=(byte)(data>>>1);
-		}
-		if(!pins[0].value)modestate=false;
-		if(!pins[1].value)clockstate=false;
-	}
+	
 	int getDumpType() { return 186; }
-
-    }
+	String getChipName() { return "PISO shift register"; }
+	
+	boolean needsBits() { return true; }
+	int defaultBitCount() { return 8; }
+	
+	void setupPins() {
+		sizeX = bits + 2;
+		sizeY = 3;
+		pins = new Pin[getPostCount()];
+		
+		pins[0] = new Pin(1, SIDE_W, "L");
+		pins[1] = new Pin(2, SIDE_W, "");
+		pins[1].clock = true;
+		
+		pins[2] = new Pin(1, SIDE_E, "Q");
+		pins[2].output = true;
+		
+		for (int i = 0; i < bits; i++)
+			pins[3 + i] = new Pin(bits - i, SIDE_N, "D" + i);
+		
+		allocNodes();
+	}
+	int getPostCount() { return 3 + bits; }
+	int getVoltageSourceCount() { return 1; }
+	
+	void execute() {
+		//LOAD raised
+		if (pins[0].value != loadstate) {
+			loadstate = pins[0].value;
+			if (loadstate && bits > 0) {
+				dataIndex = 0;
+				for (int i = 0; i < bits; i++)
+					data[i] = pins[3 + i].value;
+			}
+		}
+		
+		//CLK raised: Rotate the circular array
+		if (pins[1].value != clockstate) {
+			clockstate = pins[1].value;
+			if (clockstate) {
+				if (dataIndex < bits)
+					pins[2].value = data[dataIndex++]; //Write then shift
+				else
+					pins[2].value = false; //Out of data
+			}
+		}
+	}
+	
+	public EditInfo getEditInfo(int n) {
+		if (n < 2)
+			return super.getEditInfo(n);
+		if (n == 2)
+			return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
+		return null;
+	}
+	public void setEditValue(int n, EditInfo ei) {
+		if (n < 2) {
+			super.setEditValue(n,  ei);
+			return;
+		}
+		if (n == 2) {
+			if (ei.value != bits && ei.value >= 1) {
+				bits = (int)ei.value;
+				data = new boolean[bits];
+				setupPins();
+				setPoints();
+			}
+			return;
+		}
+	}
+}
