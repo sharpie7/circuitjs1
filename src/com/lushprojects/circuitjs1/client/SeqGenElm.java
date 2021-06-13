@@ -122,11 +122,8 @@ class SeqGenElm extends ChipElm {
 			if (pins[0].value != clockstate) {
 				// Edge transition
 				clockstate = pins[0].value;
-				if (clockstate) {
-					// Rising-edge event
-					clockstate = true;
+				if (clockstate) // Rising-edge event
 					nextBit();
-				}
 			}
 		}
 	}
