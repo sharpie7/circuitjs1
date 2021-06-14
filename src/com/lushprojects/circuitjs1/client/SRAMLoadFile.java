@@ -79,8 +79,7 @@ public class SRAMLoadFile extends FileUpload implements  ChangeHandler {
 		SRAMElm.contentsOverride += " " + data;
 	}
 	static public void finishLoadCallback() {
-		CirSim.console("Done");
 		CirSim.editDialog.resetDialog();
-		SRAMElm.contentsOverride = "";
+		SRAMElm.contentsOverride = null;
 	}
 }
