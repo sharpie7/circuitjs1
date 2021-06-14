@@ -267,6 +267,7 @@ MouseOutHandler, MouseWheelHandler {
 	Vector<String> mainMenuItemNames = new Vector<String>();
 
 	LoadFile loadFileInput;
+	SRAMLoadFile sramLoadFileInput;
 	Frame iFrame;
 	
     Canvas cv;
