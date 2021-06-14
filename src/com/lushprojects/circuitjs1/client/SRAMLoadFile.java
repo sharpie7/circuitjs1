@@ -73,7 +73,7 @@ public class SRAMLoadFile extends FileUpload implements  ChangeHandler {
 		}
 	 }-*/;
 	static public void startLoadCallback() {
-		SRAMElm.contentsOverride = "";
+		SRAMElm.contentsOverride = "0:";
 	}
 	static public void doLoadCallback(Integer data) {
 		SRAMElm.contentsOverride += " " + data;
