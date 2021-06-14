@@ -34,46 +34,11 @@ class PisoShiftElm extends ChipElm {
 	public PisoShiftElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
 		data = new boolean[bits];
-		
-		int integer = 0;
-		int bitIndex = Integer.MAX_VALUE;
-		for (int i = 0; i < bits; i++) {
-			if (bitIndex >= Integer.SIZE)
-				if (st.hasMoreTokens()) {
-					integer = Integer.parseInt(st.nextToken()); //Load next integer
-					bitIndex = 0;
-				} else
-					break; //Data is absent
-			
-			data[i] = (integer & (1 << bitIndex)) != 0;
-			bitIndex++;
-		}
+		readBits(st, data);
 	}
 	
 	String dump() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(super.dump());
-		{
-			int integer = 0;
-			int bitIndex = 0;
-			for (int i = 0; i < data.length; i++) {
-				if (bitIndex >= Integer.SIZE) {
-					//Flush completed integer
-					sb.append(' ');
-					sb.append(integer);
-					integer = 0;
-					bitIndex = 0;
-				}
-				if (i + dataIndex < data.length && data[i + dataIndex])
-					integer |= 1 << bitIndex;
-				bitIndex++;
-			}
-			if (bitIndex > 0) {
-				sb.append(' ');
-				sb.append(integer);
-			}
-		}
-		return sb.toString();
+		return super.dump() + writeBits(data, dataIndex, bits - dataIndex, dataIndex);
 	}
 	
 	int getDumpType() { return 186; }
