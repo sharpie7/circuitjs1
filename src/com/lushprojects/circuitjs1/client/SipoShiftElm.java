@@ -86,9 +86,9 @@ class SipoShiftElm extends ChipElm {
 		pins[1] = new Pin(2, SIDE_W, "");
 		pins[1].clock = true;
 		
-		for (int i = 1; i <= bits; i++) {
-			boolean value = pins[1 + i] != null ? pins[1 + i].value : false;
-			Pin pin = pins[1 + i] = new Pin(i, SIDE_N, "Q" + (bits - i));
+		for (int i = 0; i < bits; i++) {
+			boolean value = pins[2 + i] != null ? pins[2 + i].value : false;
+			Pin pin = pins[2 + i] = new Pin(i + 1, SIDE_N, "Q" + i);
 			pin.value = value;
 			pin.output = true;
 		}

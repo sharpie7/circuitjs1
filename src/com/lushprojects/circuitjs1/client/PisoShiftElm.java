@@ -87,11 +87,11 @@ class PisoShiftElm extends ChipElm {
 		sizeY = 3;
 		pins = new Pin[getPostCount()];
 		
-		pins[0] = new Pin(1, SIDE_W, "L");
+		pins[0] = new Pin(1, SIDE_W, "LD");
 		pins[1] = new Pin(2, SIDE_W, "");
 		pins[1].clock = true;
 		
-		pins[2] = new Pin(1, SIDE_E, "Q");
+		pins[2] = new Pin(1, SIDE_E, "Q" + bits);
 		pins[2].output = true;
 		
 		for (int i = 0; i < bits; i++)
