@@ -332,7 +332,7 @@ class RelayElm extends CircuitElm {
 	}
 	if (n == 7) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
-	    ei.checkbox = new Checkbox("Show box", (flags & FLAG_SHOW_BOX) != 0);
+	    ei.checkbox = new Checkbox("Show Box", (flags & FLAG_SHOW_BOX) != 0);
 	    return ei;
 	}
 	return null;
