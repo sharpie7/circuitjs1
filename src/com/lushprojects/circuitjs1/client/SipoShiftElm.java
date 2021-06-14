@@ -29,6 +29,46 @@ class SipoShiftElm extends ChipElm {
 	}
 	public SipoShiftElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
+		
+		int integer = 0;
+		int bitIndex = Integer.MAX_VALUE;
+		for (int i = 0; i < bits; i++) {
+			if (bitIndex >= Integer.SIZE)
+				if (st.hasMoreTokens()) {
+					integer = Integer.parseInt(st.nextToken()); //Load next integer
+					bitIndex = 0;
+				} else
+					break; //Data is absent
+
+			pins[2 + i].value = (integer & (1 << bitIndex)) != 0;
+			bitIndex++;
+		}
+	}
+	
+	String dump() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.dump());
+		{
+			int integer = 0;
+			int bitIndex = 0;
+			for (int i = 0; i < bits; i++) {
+				if (bitIndex >= Integer.SIZE) {
+					//Flush completed integer
+					sb.append(' ');
+					sb.append(integer);
+					integer = 0;
+					bitIndex = 0;
+				}
+				if (pins[2 + i].value)
+					integer |= 1 << bitIndex;
+				bitIndex++;
+			}
+			if (bitIndex > 0) {
+				sb.append(' ');
+				sb.append(integer);
+			}
+		}
+		return sb.toString();
 	}
 	
 	int getDumpType() { return 189; }
