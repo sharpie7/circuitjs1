@@ -192,7 +192,7 @@ class SeqGenElm extends ChipElm {
 				char c = s.charAt(i);
 				if (c == '0' || c == '1') {
 					if (c == '1')
-						data[bitCount / Integer.SIZE] = (byte) (data[bitCount / Integer.SIZE] | (1 << (bitCount % Integer.SIZE)));
+						data[bitCount / Integer.SIZE] |= (1 << (bitCount % Integer.SIZE));
 					bitCount++;
 				}
 			}
