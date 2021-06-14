@@ -25,13 +25,12 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 
 public class SRAMLoadFile extends FileUpload implements  ChangeHandler {
 	
-	static CirSim sim;
+	static SRAMLoadFile singlet;
 	
 	static public final boolean isSupported() { return LoadFile.isSupported(); }
 	
-	SRAMLoadFile(CirSim s) {
+	SRAMLoadFile() {
 		super();
-		sim=s;
 		this.setName("Load File Into SRAM");
 		this.getElement().setId("LoadSRAMElement");
 		this.addChangeHandler(this);

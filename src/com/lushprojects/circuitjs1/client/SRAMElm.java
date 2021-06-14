@@ -192,10 +192,10 @@ import com.google.gwt.user.client.ui.TextArea;
 		}
 	    }
 	    if (n == 5 && SRAMLoadFile.isSupported()) {
-	    	if (sim.sramLoadFileInput != null)
-	    		CirSim.editDialog.hp.remove(sim.sramLoadFileInput);
-	    	CirSim.editDialog.hp.add(sim.sramLoadFileInput = new SRAMLoadFile(sim));
-	    	sim.sramLoadFileInput.click();
+	    	if (SRAMLoadFile.singlet != null)
+	    		CirSim.editDialog.hp.remove(SRAMLoadFile.singlet);
+	    	CirSim.editDialog.hp.add(SRAMLoadFile.singlet = new SRAMLoadFile());
+	    	SRAMLoadFile.singlet.click();
 	    }
 	}
 	int getVoltageSourceCount() { return dataBits; }
