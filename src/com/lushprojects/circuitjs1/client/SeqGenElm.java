@@ -95,6 +95,11 @@ class SeqGenElm extends ChipElm {
 	boolean hasPlayOnce() { return (flags & FLAG_PLAY_ONCE) != 0; }
 	boolean hasReset() { return (flags & FLAG_HAS_RESET) != 0; }
 	
+	void reset() {
+	    super.reset();
+	    bitPosition = 0;
+	}
+	
 	void nextBit() {
 		if (data.length > 0 && bitCount > 0) {
 			if (bitPosition >= bitCount) {
