@@ -19,66 +19,41 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.user.client.ui.FileUpload;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
 
-public class SRAMLoadFile extends FileUpload implements  ChangeHandler {
+public class SRAMLoadFile extends GenericLoadFile {
 	
-	static SRAMLoadFile singlet;
-	
-	static public final boolean isSupported() { return LoadFile.isSupported(); }
-	
-	SRAMLoadFile() {
-		super();
-		this.setName("Load File Into SRAM");
-		this.getElement().setId("LoadSRAMElement");
-		this.addChangeHandler(this);
-		this.addStyleName("offScreen");
-		this.setPixelSize(0, 0);
-	}
-	
-	
-	
-	public void onChange(ChangeEvent e) {
-		doLoad();
-	}
-	
-	
-	public final native void click() 
+	public final native void open() 
 	/*-{
-		$doc.getElementById("LoadSRAMElement").click();
-	 }-*/;
-	static public final native void doLoad()
-	/*-{
-		var oFiles = $doc.getElementById("LoadSRAMElement").files,
-		nFiles = oFiles.length;
-		if (nFiles>=1) {
-			if (oFiles[0].size >= 128000) {
-				$wnd.alert("Cannot load: That file is too large!");
-				return;
+		var inputElm = $doc.getElementById("GenericLoadFileElement");
+		inputElm.addEventListener("input", function() {
+			var oFiles = inputElm.files,
+			nFiles = oFiles.length;
+			if (nFiles>=1) {
+				if (oFiles[0].size >= 128000) {
+					@com.lushprojects.circuitjs1.client.SRAMLoadFile::doErrorCallback(Ljava/lang/String;)("Cannot load: That file is too large!");
+					return;
+				}
+				
+				var reader = new FileReader();
+				reader.onload = function(e) {
+					var arr = new Int8Array(reader.result);
+					var str = "0:";
+					for (var i = 0; i < arr.length; i++)
+						str += " " + arr[i];
+					@com.lushprojects.circuitjs1.client.SRAMLoadFile::doLoadCallback(Ljava/lang/String;)(str);
+				};
+		
+				reader.readAsArrayBuffer(oFiles[0]);
 			}
-			
-    		var reader = new FileReader();
-			reader.onload = function(e) {
-  				var arr = new Int8Array(reader.result);
-  				@com.lushprojects.circuitjs1.client.SRAMLoadFile::startLoadCallback()();
-  				for (var i = 0; i < arr.length; i++) {
-  					@com.lushprojects.circuitjs1.client.SRAMLoadFile::doLoadCallback(Ljava/lang/Integer;)(arr[i]);
-  				}
-  				@com.lushprojects.circuitjs1.client.SRAMLoadFile::finishLoadCallback()();
-    		};
-
-			reader.readAsArrayBuffer(oFiles[0]);
-		}
-	 }-*/;
-	static public void startLoadCallback() {
-		SRAMElm.contentsOverride = "0:";
+		});
+		inputElm.click();
+	}-*/;
+	static public void doErrorCallback(String msg) {
+		Window.alert(CirSim.LS(msg));
 	}
-	static public void doLoadCallback(Integer data) {
-		SRAMElm.contentsOverride += " " + data;
-	}
-	static public void finishLoadCallback() {
+	static public void doLoadCallback(String data) {
+		SRAMElm.contentsOverride = data;
 		CirSim.editDialog.resetDialog();
 		SRAMElm.contentsOverride = null;
 	}

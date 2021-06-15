@@ -153,7 +153,9 @@ import com.google.gwt.user.client.ui.TextArea;
             }
             if (n == 5 && SRAMLoadFile.isSupported()) {
             	EditInfo ei = new EditInfo("", 0, -1, -1);
+            	ei.loadFile = new SRAMLoadFile();
             	ei.button = new Button("Load Contents From File");
+            	ei.newDialog = true;
             	return ei;
             }
 	    return super.getEditInfo(n);
@@ -190,12 +192,6 @@ import com.google.gwt.user.client.ui.TextArea;
 			}
 		    } catch (Exception e) {}
 		}
-	    }
-	    if (n == 5 && SRAMLoadFile.isSupported()) {
-	    	if (SRAMLoadFile.singlet != null)
-	    		CirSim.editDialog.hp.remove(SRAMLoadFile.singlet);
-	    	CirSim.editDialog.hp.add(SRAMLoadFile.singlet = new SRAMLoadFile());
-	    	SRAMLoadFile.singlet.click();
 	    }
 	}
 	int getVoltageSourceCount() { return dataBits; }
