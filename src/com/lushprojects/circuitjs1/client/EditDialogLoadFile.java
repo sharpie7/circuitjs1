@@ -19,23 +19,39 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FileUpload;
 
 /*
  * An abstract class for circuitjs which allows components to prompt for files from the user.
- * TODO: Abstract away the "GenericLoadFileElement" stuff so inheritors can get a file blob and not have to manage events themselves.
  */
-public abstract class GenericLoadFile extends FileUpload {
+public abstract class EditDialogLoadFile extends FileUpload implements ChangeHandler  {
 	
 	static public final boolean isSupported() { return LoadFile.isSupported(); }
 	
-	GenericLoadFile() {
+	static public void doErrorCallback(String msg) {
+		Window.alert(CirSim.LS(msg));
+	}
+	
+	EditDialogLoadFile() {
 		super();
 		this.setName(CirSim.LS("Load File"));
-		this.getElement().setId("GenericLoadFileElement");
+		this.getElement().setId("EditDialogLoadFileElement");
+		this.addChangeHandler(this);
 		this.addStyleName("offScreen");
 		this.setPixelSize(0, 0);
 	}
 	
-	public abstract void open();
+	public void onChange(ChangeEvent e) {
+		handle();
+	}
+	
+	public final native void open() 
+	/*-{
+		$doc.getElementById("EditDialogLoadFileElement").click();
+	}-*/;
+	
+	public abstract void handle();
 }
