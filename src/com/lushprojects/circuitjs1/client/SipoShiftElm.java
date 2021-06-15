@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 // contributed by Edward Calver
 
 class SipoShiftElm extends ChipElm {
+	final int DATA_PIN_INDEX = 2; // the initial index of the register pins in the "pins" array
+	
 	boolean clockstate = false;
 	
 	public SipoShiftElm(int xx, int yy) {
@@ -34,17 +36,16 @@ class SipoShiftElm extends ChipElm {
 		readBits(st, data);
 		
 		for (int i = 0; i < bits; i++)
-			pins[2 + i].value = data[i];
+			pins[DATA_PIN_INDEX + i].value = data[i];
 	}
 	
 	String dump() {
 		boolean[] data = new boolean[bits];
 		for (int i = 0; i < bits; i++)
-			data[i] = pins[2 + i].value;
+			data[i] = pins[DATA_PIN_INDEX + i].value;
 		
 		return super.dump() + writeBits(data);
 	}
-	
 	int getDumpType() { return 189; }
 	String getChipName() { return "SIPO shift register"; }
 	
@@ -61,8 +62,8 @@ class SipoShiftElm extends ChipElm {
 		pins[1].clock = true;
 		
 		for (int i = 0; i < bits; i++) {
-			boolean value = pins[2 + i] != null ? pins[2 + i].value : false;
-			Pin pin = pins[2 + i] = new Pin(i + 1, SIDE_N, "Q" + i);
+			boolean value = pins[DATA_PIN_INDEX + i] != null ? pins[DATA_PIN_INDEX + i].value : false;
+			Pin pin = pins[DATA_PIN_INDEX + i] = new Pin(i + 1, SIDE_N, "Q" + i);
 			pin.value = value;
 			pin.output = true;
 		}
@@ -75,8 +76,8 @@ class SipoShiftElm extends ChipElm {
 		if (pins[1].value != clockstate) {
 			clockstate = pins[1].value;
 			if (clockstate && bits > 0) {
-				for (int i = bits - 1; i > 0; i--)
-					pins[2 + i].value = pins[1 + i].value; //Shift
+				for (int i = bits - 2; i >= 0; i--)
+					pins[DATA_PIN_INDEX + i + 1].value = pins[DATA_PIN_INDEX + i].value; //Shift
 				
 				pins[2].value = pins[0].value; //Load
 			}

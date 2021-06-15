@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 // contributed by Edward Calver
 
 class PisoShiftElm extends ChipElm {
+	final int DATA_PIN_INDEX = 3; // the register pins' starting index. increase this if you want to add more control pins.
+	
 	boolean[] data = new boolean[0];
 	int dataIndex = 0;
 	boolean clockstate = false;
@@ -40,7 +42,6 @@ class PisoShiftElm extends ChipElm {
 	String dump() {
 		return super.dump() + writeBits(data, dataIndex, bits - dataIndex, dataIndex);
 	}
-	
 	int getDumpType() { return 186; }
 	String getChipName() { return "PISO shift register"; }
 	
@@ -60,7 +61,7 @@ class PisoShiftElm extends ChipElm {
 		pins[2].output = true;
 		
 		for (int i = 0; i < bits; i++)
-			pins[3 + i] = new Pin(bits - i, SIDE_N, "D" + i);
+			pins[DATA_PIN_INDEX + i] = new Pin(bits - i, SIDE_N, "D" + i);
 		
 		allocNodes();
 	}
@@ -74,7 +75,7 @@ class PisoShiftElm extends ChipElm {
 			if (loadstate && data.length > 0) {
 				dataIndex = 0;
 				for (int i = 0; i < data.length; i++)
-					data[i] = pins[3 + i].value;
+					data[i] = pins[DATA_PIN_INDEX + i].value;
 			}
 		}
 		
