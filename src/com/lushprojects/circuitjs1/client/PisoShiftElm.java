@@ -61,7 +61,7 @@ class PisoShiftElm extends ChipElm {
 		pins[2].output = true;
 		
 		for (int i = 0; i < bits; i++)
-			pins[DATA_PIN_INDEX + i] = new Pin(bits - i, SIDE_N, "D" + i);
+			pins[DATA_PIN_INDEX + i] = new Pin(bits - i, SIDE_N, "D" + (bits - (i + 1)));
 		
 		allocNodes();
 	}
