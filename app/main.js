@@ -14,6 +14,9 @@ var windows = [];
 
 Menu.setApplicationMenu(false);
 
+// save arguments
+global.sharedObject = {prop1: process.argv};
+
 function createWindow () {
   // Create the browser window.
   var mainWindow = new BrowserWindow({width: 800, 

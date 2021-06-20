@@ -72,6 +72,7 @@ class RelayElm extends CircuitElm {
 	ind = new Inductor(sim);
 	ind.setup(inductance, coilCurrent, Inductor.FLAG_BACK_EULER);
 	setupPoles();
+        allocNodes();
     }
     
     void setupPoles() {

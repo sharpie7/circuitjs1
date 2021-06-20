@@ -88,7 +88,7 @@ public abstract class CircuitElm implements Editable {
 	
 	throw new IllegalStateException(); // Seems necessary to work-around what appears to be a compiler
 	// bug affecting OTAElm to make sure this method (which should really be abstract) throws
-	// an exception
+	// an exception.  If you're getting this, try making small update to CompositeElm.java and try again
  }
     
     // leftover from java, doesn't do anything anymore. 
@@ -640,6 +640,36 @@ public abstract class CircuitElm implements Editable {
 	    g.drawString(s, xx, yc+dpy+ya);
 	}
     }
+    
+    void drawLabeledNode(Graphics g, String str, Point pt1, Point pt2) {
+	boolean lineOver = false;
+	if (str.startsWith("/")) {
+	    lineOver = true;
+	    str = str.substring(1);
+	}
+        int w=(int)g.context.measureText(str).getWidth();
+        int h=(int)g.currentFontSize;
+        g.context.save();
+        g.context.setTextBaseline("middle");
+        int x = pt2.x, y = pt2.y;
+        if (pt1.y != pt2.y) {
+            x -= w/2;
+            y += sign(pt2.y-pt1.y)*h;
+        } else {
+            if (pt2.x > pt1.x)
+        	x += 4;
+            else
+        	x -= 4+w;
+        }
+        g.drawString(str, x, y);
+        adjustBbox(x, y-h/2, x+w, y+h/2);
+        g.context.restore();
+	if (lineOver) {
+	    int ya = y-h/2-3;
+	    g.drawLine(x, ya, x+w, ya);
+	}	
+    }    
+    
     void drawCoil(Graphics g, int hs, Point p1, Point p2,
 		  double v1, double v2) {
 	double len = distance(p1, p2);

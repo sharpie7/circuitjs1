@@ -1,9 +1,13 @@
 package com.lushprojects.circuitjs1.client;
 
+import java.util.Date;
+
 import com.google.gwt.core.client.JsArrayInteger;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 
 public class AudioOutputElm extends CircuitElm {
@@ -135,7 +139,7 @@ public class AudioOutputElm extends CircuitElm {
 	    nextDataSample = sim.t+sampleStep;
 	}
 	
-	int samplingRateChoices[] = { 8000, 11025, 16000, 22050, 44100 };
+	int samplingRateChoices[] = { 8000, 11025, 16000, 22050, 44100, 48000 };
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
@@ -153,6 +157,20 @@ public class AudioOutputElm extends CircuitElm {
 		}
 		return ei;
 	    }
+            if (n == 2) {
+                EditInfo ei = new EditInfo("", 0, -1, -1);
+                String url=getLastBlob();
+                if (url == null)
+                    return null;
+                Date date = new Date();
+                DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
+                String fname = "audio-"+ dtf.format(date) + ".circuitjs.wav";
+                Anchor a=new Anchor(CirSim.LS("Download last played audio"), url);
+                a.getElement().setAttribute("Download", fname);
+                ei.widget = a;
+                return ei;
+            }
+	    
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -329,6 +347,10 @@ public class AudioOutputElm extends CircuitElm {
 	audio.play();
 }-*/;
 
+        static native String getLastBlob() /*-{
+            return $doc.audioBlob;
+        }-*/;
+        
         void play() {
             int i;
             JsArrayInteger arr = (JsArrayInteger)JsArrayInteger.createArray();

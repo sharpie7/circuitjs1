@@ -308,7 +308,7 @@ labelledGridManager gridLabels;
 		});
 		vScaleGrid.setWidget(0, 1, acButton);
 		
-		positionLabel= new Label("Position");
+		positionLabel= new Label(CirSim.LS("Position"));
 		vScaleGrid.setWidget(1,0, positionLabel);
 		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		positionBar = new Scrollbar(Scrollbar.HORIZONTAL,0, 1, -Scope.V_POSITION_STEPS, Scope.V_POSITION_STEPS, new Command() {

@@ -28,16 +28,26 @@ public class Adjustable implements Command {
 	int e = new Integer(st.nextToken()).intValue();
 	if (e == -1)
 	    return;
-	elm = sim.getElm(e);
-	editItem = new Integer(st.nextToken()).intValue();
-	minValue = new Double(st.nextToken()).doubleValue();
-	maxValue = new Double(st.nextToken()).doubleValue();
-	sliderText = CustomLogicModel.unescape(st.nextToken());
+	try {
+	    editItem = new Integer(st.nextToken()).intValue();
+	    minValue = new Double(st.nextToken()).doubleValue();
+	    maxValue = new Double(st.nextToken()).doubleValue();
+	    sliderText = CustomLogicModel.unescape(st.nextToken());
+	} catch (Exception ex) {}
+	try {
+	    elm = sim.getElm(e);
+	} catch (Exception ex) {}
     }
     
-    void createSlider(CirSim sim) {
-	double value = elm.getEditInfo(editItem).value;
+    boolean createSlider(CirSim sim) {
+	if (elm == null)
+	    return false;
+	EditInfo ei = elm.getEditInfo(editItem);
+	if (ei == null)
+	    return false;
+	double value = ei.value;
 	createSlider(sim, value);
+	return true;
     }
 
     void createSlider(CirSim sim, double value) {
@@ -69,8 +79,10 @@ public class Adjustable implements Command {
     }
     
     void deleteSlider(CirSim sim) {
-        sim.removeWidgetFromVerticalPanel(label);
-        sim.removeWidgetFromVerticalPanel(slider);
+	try {
+	    sim.removeWidgetFromVerticalPanel(label);
+	    sim.removeWidgetFromVerticalPanel(slider);
+	} catch (Exception e) {}
     }
     
     String dump() {

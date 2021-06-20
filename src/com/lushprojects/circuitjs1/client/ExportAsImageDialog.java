@@ -33,7 +33,12 @@ public class ExportAsImageDialog extends DialogBox {
 	
 	VerticalPanel vp;
 	
-	public ExportAsImageDialog() {
+	private static native String b64encode(String a) /*-{
+	  // string may have unicode text strings in it, so we don't just call btoa() 
+	  return window.btoa(unescape(encodeURIComponent(a)));
+	}-*/;
+
+	public ExportAsImageDialog(int type) {
 		super();
 		Button okButton;
 		Anchor a;
@@ -43,9 +48,17 @@ public class ExportAsImageDialog extends DialogBox {
 		vp.add(new Label(CirSim.LS("Click on the link below to save your image")));
 		Date date = new Date();
 		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
-		String dataURL = CirSim.theSim.getCircuitAsCanvas(false).toDataUrl();
-		a=new Anchor("image.png", dataURL);
-		String fname = "circuit-"+ dtf.format(date) + ".png";
+		String dataURL;
+		String ext = ".png";
+		if (type == CirSim.CAC_IMAGE) {
+		    dataURL = CirSim.theSim.getCircuitAsCanvas(type).toDataUrl();
+		} else {
+		    String data = CirSim.theSim.getCircuitAsSVG();
+		    dataURL = "data:text/plain;base64," + b64encode(data);
+		    ext = ".svg";
+		}
+		a=new Anchor("image" + ext, dataURL);
+		String fname = "circuit-"+ dtf.format(date) + ext;
 		a.getElement().setAttribute("Download", fname);
 		vp.add(a);
 		vp.add(okButton = new Button(CirSim.LS("OK")));

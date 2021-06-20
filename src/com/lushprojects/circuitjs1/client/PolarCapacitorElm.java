@@ -36,8 +36,8 @@ public class PolarCapacitorElm extends CapacitorElm {
 	}
 	
 	void draw(Graphics g) {
-	    super.draw(g);;
-            g.setColor(Color.white);
+	    super.draw(g);
+            g.setColor(whiteColor);
             g.setFont(unitsFont);
             int w = (int)g.context.measureText("+").getWidth();;
             g.drawString("+", plusPoint.x-w/2, plusPoint.y);

@@ -35,3 +35,11 @@ window.toggleDevTools = function () {
   remote.getCurrentWindow().toggleDevTools();
 }
 
+const arguments = remote.getGlobal('sharedObject').prop1;
+if (arguments.length > 1) {
+  fs.readFile(arguments[1], 'utf-8', function (err, data) {
+    if (err) { if (err) window.alert(err); return; }
+    window.startCircuitText = data;
+  });
+}
+

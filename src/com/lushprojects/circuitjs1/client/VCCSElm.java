@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class VCCSElm extends ChipElm {
+import com.google.gwt.user.client.Window;
+
+class VCCSElm extends ChipElm {
 	double gain;
 	int inputCount;
 	Expr expr;
@@ -200,6 +202,9 @@ package com.lushprojects.circuitjs1.client;
         void parseExpr() {
             ExprParser parser = new ExprParser(exprString);
             expr = parser.parseExpression();
+            String err = parser.gotError();
+            if (err != null)
+        	Window.alert(sim.LS("Parse error in expression") + ": " + exprString + ": " + err);
         }
         
         void getInfo(String arr[]) {

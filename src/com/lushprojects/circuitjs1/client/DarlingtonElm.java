@@ -78,7 +78,7 @@ public class DarlingtonElm extends CompositeElm {
 	g.fillPolygon(rectPoly);
 
 	if ((needsHighlight() || sim.dragElm == this) && dy == 0) {
-	    g.setColor(Color.white);
+	    g.setColor(whiteColor);
 	    // IES
 	    // g.setFont(unitsFont);
 	    int ds = sign(dx);

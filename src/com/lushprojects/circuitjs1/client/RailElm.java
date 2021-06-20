@@ -77,7 +77,7 @@ class RailElm extends VoltageElm {
 	    	s = getShortUnitText(v, "V");
 	    if (getVoltage() > 0)
 		s = "+" + s;
-	    drawCenteredText(g, s, x2, y2, true);
+	    drawLabeledNode(g, s, point1, lead1);
 	} else {
 	    drawWaveform(g, point2);
 	}
@@ -86,7 +86,7 @@ class RailElm extends VoltageElm {
     void drawRailText(Graphics g, String s) {
 	g.setColor(needsHighlight() ? selectColor : whiteColor);
 	setPowerColor(g, false);
-	drawCenteredText(g, s, x2, y2, true);
+	drawLabeledNode(g, s, point1, lead1);
     }
     
     double getVoltageDiff() { return volts[0]; }

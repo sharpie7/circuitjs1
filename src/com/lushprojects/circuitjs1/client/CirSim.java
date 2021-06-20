@@ -58,8 +58,10 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestException;
@@ -269,8 +271,10 @@ MouseOutHandler, MouseWheelHandler {
 	
     Canvas cv;
     Context2d cvcontext;
-    Canvas backcv;
-    Context2d backcontext;
+    
+    // canvas width/height in px (before device pixel ratio scaling) 
+    int canvasWidth, canvasHeight;
+    
     static final int MENUBARHEIGHT=30;
     static int VERTICALPANELWIDTH=166; // default
     static final int POSTGRABSQ=25;
@@ -289,7 +293,15 @@ MouseOutHandler, MouseWheelHandler {
 		return q % x;
 	}
 	
-	
+    static native float devicePixelRatio() /*-{ 
+	return window.devicePixelRatio;
+    }-*/;
+    
+    void checkCanvasSize() {
+	if (cv.getCoordinateSpaceWidth() != (int)(canvasWidth*devicePixelRatio()))
+	    setCanvasSize();
+    }
+    
     public void setCanvasSize(){
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
@@ -299,26 +311,23 @@ MouseOutHandler, MouseWheelHandler {
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
-			cv.setCoordinateSpaceWidth(width);
-			cv.setCoordinateSpaceHeight(height);
-		}
-		if (backcv != null) {
-			backcv.setWidth(width + "PX");
-			backcv.setHeight(height + "PX");
-			backcv.setCoordinateSpaceWidth(width);
-			backcv.setCoordinateSpaceHeight(height);
+			canvasWidth = width;
+			canvasHeight = height;
+			float scale = devicePixelRatio();
+			cv.setCoordinateSpaceWidth((int)(width*scale));
+			cv.setCoordinateSpaceHeight((int)(height*scale));
 		}
 
     	setCircuitArea();
     }
     
     void setCircuitArea() {
-    	int height = cv.getCanvasElement().getHeight();
-    	int width = cv.getCanvasElement().getWidth();
-		int h = (int) ((double)height * scopeHeightFraction);
-		/*if (h < 128 && winSize.height > 300)
+    	int height = canvasHeight;
+    	int width = canvasWidth;
+    	int h = (int) ((double)height * scopeHeightFraction);
+    	/*if (h < 128 && winSize.height > 300)
 		  h = 128;*/
-		circuitArea = new Rectangle(0, 0, width, height-h);
+    	circuitArea = new Rectangle(0, 0, width, height-h);
     }
     
     native String decompress(String dump) /*-{
@@ -367,6 +376,8 @@ MouseOutHandler, MouseWheelHandler {
 	    String cct=qp.getValue("cct");
 	    if (cct!=null)
 		startCircuitText = cct.replace("%24", "$");
+	    if (startCircuitText == null)
+		startCircuitText = getElectronStartCircuitText();
 	    String ctz=qp.getValue("ctz");
 	    if (ctz!= null)
 		startCircuitText = decompress(ctz);
@@ -392,7 +403,7 @@ MouseOutHandler, MouseWheelHandler {
 	else if (usRes)
 	    euroSetting = false;
 	else
-	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
+	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS(true));
 	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 
 	transform = new double[6];
@@ -406,7 +417,9 @@ MouseOutHandler, MouseWheelHandler {
 
 	fileMenuBar = new MenuBar(true);
 	if (isElectron())
-	    fileMenuBar.addItem(iconMenuItem("clone", "New Window...", new MyCommand("file", "newwindow")));
+	    fileMenuBar.addItem(iconMenuItem("window", "New Window...", new MyCommand("file", "newwindow")));
+	
+	fileMenuBar.addItem(iconMenuItem("doc-new", "New Blank Circuit", new MyCommand("file", "newblankcircuit")));
 	importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
 	importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	fileMenuBar.addItem(importFromLocalFileItem);
@@ -427,6 +440,7 @@ MouseOutHandler, MouseWheelHandler {
 	exportAsTextItem = iconMenuItem("export", "Export As Text...", new MyCommand("file","exportastext"));
 	fileMenuBar.addItem(exportAsTextItem);
 	fileMenuBar.addItem(iconMenuItem("export", "Export As Image...", new MyCommand("file","exportasimage")));
+	fileMenuBar.addItem(iconMenuItem("export", "Export As SVG...", new MyCommand("file","exportassvg")));
 	fileMenuBar.addItem(iconMenuItem("microchip", "Create Subcircuit...", new MyCommand("file","createsubcircuit")));
 	fileMenuBar.addItem(iconMenuItem("magic", "Find DC Operating Point", new MyCommand("file", "dcanalysis")));
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
@@ -434,6 +448,8 @@ MouseOutHandler, MouseWheelHandler {
 	fileMenuBar.addItem(recoverItem);
 	printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
 	fileMenuBar.addItem(printItem);
+	fileMenuBar.addSeparator();
+	fileMenuBar.addItem(iconMenuItem("resize-full-alt", "Toggle Full Screen", new MyCommand("view", "fullscreen")));
 	fileMenuBar.addSeparator();
 	aboutItem = iconMenuItem("info-circled", "About...", (Command)null);
 	fileMenuBar.addItem(aboutItem);
@@ -467,7 +483,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
-	m.addItem(iconMenuItem("target", weAreInUS() ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
+	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("zoom", "zoomin")));
 	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("zoom", "zoomout")));
@@ -582,8 +598,6 @@ MouseOutHandler, MouseWheelHandler {
 
 
 	cvcontext=cv.getContext2d();
-	backcv=Canvas.createIfSupported();
-	backcontext=backcv.getContext2d();
 	setCanvasSize();
 	layoutPanel.add(cv);
 	verticalPanel.add(buttonPanel);
@@ -711,7 +725,7 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addMouseUpHandler(this);
 	cv.addClickHandler(this);
 	cv.addDoubleClickHandler(this);
-	doTouchHandlers(cv.getCanvasElement());
+	doTouchHandlers(this, cv.getCanvasElement());
 	cv.addDomHandler(this, ContextMenuEvent.getType());	
 	menuBar.addDomHandler(new ClickHandler() {
 	    public void onClick(ClickEvent event) {
@@ -846,16 +860,20 @@ MouseOutHandler, MouseWheelHandler {
     // install touch handlers
     // don't feel like rewriting this in java.  Anyway, java doesn't let us create mouse
     // events and dispatch them.
-    native void doTouchHandlers(CanvasElement cv) /*-{
+    native static void doTouchHandlers(CirSim sim, CanvasElement cv) /*-{
 	// Set up touch events for mobile, etc
 	var lastTap;
 	var tmout;
-	var sim = this;
+	var lastScale;
+	
 	cv.addEventListener("touchstart", function (e) {
         	mousePos = getTouchPos(cv, e);
   		var touch = e.touches[0];
   		var etype = "mousedown";
+  		lastScale = 1;
   		clearTimeout(tmout);
+  		e.preventDefault();
+  		
   		if (e.timeStamp-lastTap < 300) {
      		    etype = "dblclick";
   		} else {
@@ -865,12 +883,15 @@ MouseOutHandler, MouseWheelHandler {
   		}
   		lastTap = e.timeStamp;
   		
+  		var touch1 = e.touches[0];
+  		var touch2 = e.touches[e.touches.length-1];
   		var mouseEvent = new MouseEvent(etype, {
-    			clientX: touch.clientX,
-    			clientY: touch.clientY
+    			clientX: .5*(touch1.clientX+touch2.clientX),
+    			clientY: .5*(touch1.clientY+touch2.clientY)
   		});
-  		e.preventDefault();
   		cv.dispatchEvent(mouseEvent);
+  		if (e.touches.length > 1)
+  		    sim.@com.lushprojects.circuitjs1.client.CirSim::twoFingerTouch(II)(mouseEvent.clientX, mouseEvent.clientY - cv.getBoundingClientRect().y);
 	}, false);
 	cv.addEventListener("touchend", function (e) {
   		var mouseEvent = new MouseEvent("mouseup", {});
@@ -879,13 +900,18 @@ MouseOutHandler, MouseWheelHandler {
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 	cv.addEventListener("touchmove", function (e) {
-  		var touch = e.touches[0];
-  		var mouseEvent = new MouseEvent("mousemove", {
-    			clientX: touch.clientX,
-    			clientY: touch.clientY
-  		});
   		e.preventDefault();
   		clearTimeout(tmout);
+	        if (e.touches.length > 1) {
+	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(Math.log(e.scale)-Math.log(lastScale)));
+	            lastScale = e.scale;
+	        }
+  		var touch1 = e.touches[0];
+  		var touch2 = e.touches[e.touches.length-1];
+  		var mouseEvent = new MouseEvent("mousemove", {
+    			clientX: .5*(touch1.clientX+touch2.clientX),
+    			clientY: .5*(touch1.clientY+touch2.clientY)
+  		});
   		cv.dispatchEvent(mouseEvent);
 	}, false);
 
@@ -959,11 +985,13 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Labeled Node"), "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Test Point"), "TestPointElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ammeter"), "AmmeterElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Decimal Display"), "DecimalDisplayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Data Export"), "DataRecorderElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Audio Output"), "AudioOutputElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add LED Array"), "LEDArrayElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Stop Trigger"), "StopTriggerElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add DC Motor"), "DCMotorElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Wattmeter"), "WattmeterElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Outputs and Labels")), outputMenuBar);
     	
     	MenuBar activeMenuBar = new MenuBar(true);
@@ -1237,6 +1265,7 @@ MouseOutHandler, MouseWheelHandler {
     long mydrawstarttime;
 //	if (winSize == null || winSize.width == 0)
 //	    return;
+    	checkCanvasSize();
 	mystarttime=System.currentTimeMillis();
 	boolean didAnalyze = analyzeFlag;
 	if (analyzeFlag || dcAnalysisFlag) {
@@ -1249,7 +1278,7 @@ MouseOutHandler, MouseWheelHandler {
 	    stopElm.setMouseElm(true);
 	setupScopes();
 
-	Graphics g=new Graphics(backcontext);
+	Graphics g=new Graphics(cvcontext);
 	
 	CircuitElm.selectColor = Color.cyan;
 	if (printableCheckItem.getState()) {
@@ -1261,7 +1290,7 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitElm.lightGrayColor = Color.lightGray;
 	    g.setColor(Color.black);
 	}
-	g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
+	g.fillRect(0, 0, canvasWidth, canvasHeight);
 	myrunstarttime=System.currentTimeMillis();
 	if (simRunning) {
 	    try {
@@ -1272,8 +1301,8 @@ MouseOutHandler, MouseWheelHandler {
 		e.printStackTrace();
 		return;
 	    }
-	 myruntime+=System.currentTimeMillis()-myrunstarttime;
-}
+	    myruntime+=System.currentTimeMillis()-myrunstarttime;
+	}
 	long sysTime = System.currentTimeMillis();
 		if (simRunning) {
 			
@@ -1309,15 +1338,16 @@ MouseOutHandler, MouseWheelHandler {
 //	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
 	
 	mydrawstarttime=System.currentTimeMillis();
-	
+
 	g.context.setLineCap(LineCap.ROUND);
 
 	if (noEditCheckItem.getState())
 	    g.drawLock(20, 30);
 	g.setColor(Color.white);
 	// draw elements
-	backcontext.setTransform(transform[0], transform[1], transform[2],
-				 transform[3], transform[4], transform[5]);
+	double scale = devicePixelRatio();
+	cvcontext.setTransform(transform[0]*scale, 0, 0, transform[3]*scale,
+		transform[4]*scale, transform[5]*scale);
 	for (i = 0; i != elmList.size(); i++) {
 	    if (powerCheckItem.getState())
 	    	g.setColor(Color.gray);
@@ -1354,7 +1384,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (tempMouseMode==MODE_SELECT && mouseElm!=null) {
 		mouseElm.drawHandles(g, Color.cyan);
 	}
-	
+
 	// draw handles for elm we're dragging
 	if (dragElm != null &&
 		      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
@@ -1384,13 +1414,13 @@ MouseOutHandler, MouseWheelHandler {
 	}
 
 	
-	backcontext.setTransform(1, 0, 0, 1, 0, 0);
+	cvcontext.setTransform(scale, 0, 0, scale, 0, 0);
 
 	if (printableCheckItem.getState())
 	    g.setColor(Color.white);
 	else
 	    g.setColor(Color.black);
-	g.fillRect(0, circuitArea.height, circuitArea.width, cv.getCoordinateSpaceHeight()-circuitArea.height);
+	g.fillRect(0, circuitArea.height, circuitArea.width, canvasHeight-circuitArea.height);
 //	g.restore();
 	g.setFont(oldfont);
 	int ct = scopeCount;
@@ -1442,7 +1472,7 @@ MouseOutHandler, MouseWheelHandler {
 	    int x = 0;
 	    if (ct != 0)
 		x = scopes[ct-1].rightEdge() + 20;
-	    x = max(x, cv.getCoordinateSpaceWidth()*2/3);
+	    x = max(x, canvasWidth*2/3);
 	  //  x=cv.getCoordinateSpaceWidth()*2/3;
 	    
 	    // count lines of data
@@ -1471,8 +1501,6 @@ MouseOutHandler, MouseWheelHandler {
 //	g.drawString("ms per frame (other): "+ CircuitElm.showFormat.format((mytime-myruntime-mydrawtime)/myframes),10,110);
 //	g.drawString("ms per frame (sim): "+ CircuitElm.showFormat.format((myruntime)/myframes),10,130);
 //	g.drawString("ms per frame (draw): "+ CircuitElm.showFormat.format((mydrawtime)/myframes),10,150);
-	
-	cvcontext.drawImage(backcontext.getCanvas(), 0.0, 0.0);
 	
 	// if we did DC analysis, we need to re-analyze the circuit with that flag cleared. 
 	if (dcAnalysisFlag) {
@@ -1513,7 +1541,7 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	while (scopeCount > 0 && scopes[scopeCount-1].getElm() == null)
     		scopeCount--;
-    	int h = cv.getCoordinateSpaceHeight() - circuitArea.height;
+    	int h = canvasHeight - circuitArea.height;
     	pos = 0;
     	for (i = 0; i != scopeCount; i++)
     		scopeColCount[i] = 0;
@@ -1525,7 +1553,7 @@ MouseOutHandler, MouseWheelHandler {
     	int iw = infoWidth;
     	if (colct <= 2)
     		iw = iw*3/2;
-    	int w = (cv.getCoordinateSpaceWidth()-iw) / colct;
+    	int w = (canvasWidth-iw) / colct;
     	int marg = 10;
     	if (w < marg*2)
     		w = marg*2;
@@ -1546,8 +1574,7 @@ MouseOutHandler, MouseWheelHandler {
     			s.speed = speed;
     			s.resetGraph();
     		}
-    		Rectangle r = new Rectangle(pos*w, cv.getCoordinateSpaceHeight()-h+colh*row,
-    				w-marg, colh);
+    		Rectangle r = new Rectangle(pos*w, canvasHeight-h+colh*row, w-marg, colh);
     		row++;
     		if (!r.equals(s.rect))
     			s.setRect(r);
@@ -2715,8 +2742,8 @@ MouseOutHandler, MouseWheelHandler {
 	    tm = System.currentTimeMillis();
 	    lit = tm;
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
-	    // those we have already completed.
-	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
+	    // those we have already completed.  But limit total computation time to 50ms (20fps)
+	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 50))
 		break;
 	    if (!simRunning)
 		break;
@@ -2848,6 +2875,10 @@ MouseOutHandler, MouseWheelHandler {
     static native boolean isElectron() /*-{
         return ($wnd.openFile != undefined);
     }-*/;    
+
+    static native String getElectronStartCircuitText() /*-{
+    	return $wnd.startCircuitText;
+    }-*/;    
     
     void allowSave(boolean b) {
 	if (saveFileItem != null)
@@ -2895,6 +2926,8 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	if (item=="exportasimage")
 		doExportAsImage();
+    	if (item=="exportassvg")
+		doExportAsSVG();
     	if (item=="createsubcircuit")
 		doCreateSubcircuit();
     	if (item=="dcanalysis")
@@ -3076,6 +3109,10 @@ MouseOutHandler, MouseWheelHandler {
     		int sp = item.indexOf(' ', 6);
     		readSetupFile(item.substring(6, sp), item.substring(sp+1));
     	}
+    	if (item=="newblankcircuit") {
+    	    pushUndo();
+    	    readSetupFile("blank.txt", "Blank Circuit");
+    	}
     		
     	//	if (ac.indexOf("setup ") == 0) {
     	//	    pushUndo();
@@ -3116,6 +3153,14 @@ MouseOutHandler, MouseWheelHandler {
     		//			setMouseMode(prevMouseMode);
     		tempMouseMode = mouseMode;
     	}
+    	if (item=="fullscreen") {
+    	    if (! Graphics.isFullScreen)
+    		Graphics.viewFullScreen();
+    	    else
+    		Graphics.exitFullScreen();
+    	    centreCircuit();
+    	}
+    
 	repaint();
     }
     
@@ -3276,7 +3321,7 @@ MouseOutHandler, MouseWheelHandler {
 
     void doExportAsImage()
     {
-    	dialogShowing = new ExportAsImageDialog();
+    	dialogShowing = new ExportAsImageDialog(CAC_IMAGE);
     	dialogShowing.show();
     }
     
@@ -3380,7 +3425,7 @@ MouseOutHandler, MouseWheelHandler {
     	for (p = 0; p < len; ) {
     		int l;
     		for (l = 0; l != len-p; l++)
-    			if (b[l+p] == '\n') {
+    			if (b[l+p] == '\n' || b[l+p] == '\r') {
     				l++;
     				break;
     			}
@@ -3568,7 +3613,8 @@ MouseOutHandler, MouseWheelHandler {
 		    }
 		    if (tint == 38) {
 			Adjustable adj = new Adjustable(st, this);
-			adjustables.add(adj);
+			if (adj.elm != null)
+			    adjustables.add(adj);
 			break;
 		    }
 		    if (tint == '.') {
@@ -3583,9 +3629,17 @@ MouseOutHandler, MouseWheelHandler {
 		    
 		    CircuitElm newce = createCe(tint, x1, y1, x2, y2, f, st);
 		    if (newce==null) {
-				System.out.println("unrecognized dump type: " + type);
-				break;
-			    }
+			System.out.println("unrecognized dump type: " + type);
+			break;
+		    }
+		    /*
+		     * debug code to check if allocNodes() is called in constructor.  It gets called in
+		     * setPoints() but that doesn't get called for subcircuits.
+		    double vv[] = newce.volts;
+		    int vc = newce.getPostCount() + newce.getInternalNodeCount();
+		    if (vv.length != vc)
+			console("allocnodes not called! " + tint);
+		     */
 		    newce.setPoints();
 		    elmList.addElement(newce);
 		} catch (Exception ee) {
@@ -3602,8 +3656,10 @@ MouseOutHandler, MouseWheelHandler {
 	enableItems();
 	if ((flags & RC_RETAIN) == 0) {
 	    // create sliders as needed
-	    for (i = 0; i != adjustables.size(); i++)
-		adjustables.get(i).createSlider(this);
+	    for (i = 0; i < adjustables.size(); i++) {
+		if (!adjustables.get(i).createSlider(this))
+		    adjustables.remove(i--);
+	    }
 	}
 //	if (!retain)
 	//    handleResize(); // for scopes
@@ -3761,7 +3817,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     void dragSplitter(int x, int y) {
-    	double h = (double) cv.getCanvasElement().getHeight();
+    	double h = (double) canvasHeight;
     	if (h<1)
     		h=1;
     	scopeHeightFraction=1.0-(((double)y)/h);
@@ -4145,7 +4201,7 @@ MouseOutHandler, MouseWheelHandler {
     	    		    canUnstackScope(scopeSelected), scopes[scopeSelected]);
     	    	    contextPanel=new PopupPanel(true);
     	    	    contextPanel.add(scopePopupMenu.getMenuBar());
-    	    	    y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-160));
+    	    	    y=Math.max(0, Math.min(menuClientY,canvasHeight-160));
     	    	    contextPanel.setPopupPosition(menuClientX, y);
     	    	    contextPanel.show();
     		}
@@ -4187,8 +4243,8 @@ MouseOutHandler, MouseWheelHandler {
     		doMainMenuChecks();
     		contextPanel=new PopupPanel(true);
     		contextPanel.add(mainMenuBar);
-    		x=Math.max(0, Math.min(menuClientX, cv.getCoordinateSpaceWidth()-400));
-    		y=Math.max(0, Math.min(menuClientY,cv.getCoordinateSpaceHeight()-450));
+    		x=Math.max(0, Math.min(menuClientX, canvasWidth-400));
+    		y=Math.max(0, Math.min(menuClientY, canvasHeight-450));
     		contextPanel.setPopupPosition(x,y);
     		contextPanel.show();
     	}
@@ -4222,6 +4278,12 @@ MouseOutHandler, MouseWheelHandler {
 
     void longPress() {
 	doPopupMenu();
+    }
+    
+    void twoFingerTouch(int x, int y) {
+	tempMouseMode = MODE_DRAG_ALL;
+	dragScreenX = x;
+	dragScreenY = y;
     }
     
 //    public void mouseClicked(MouseEvent e) {
@@ -4450,7 +4512,7 @@ MouseOutHandler, MouseWheelHandler {
     	repaint();
     }
 
-    void zoomCircuit(int dy) {
+    void zoomCircuit(double dy) {
 	double newScale;
     	double oldScale = transform[0];
     	double val = dy*.01;
@@ -5015,10 +5077,14 @@ MouseOutHandler, MouseWheelHandler {
 	    // keep track of row interchanges
 	    ipvt[j] = largestRow;
 
-	    // avoid zeros
+	    // check for zeroes; if we find one, it's a singular matrix.
+	    // we used to avoid them, but that caused weird bugs.  For example,
+	    // two inverters with outputs connected together should be flagged
+	    // as a singular matrix, but it was allowed (with weird currents)
 	    if (a[j][j] == 0.0) {
-		System.out.println("avoided zero");
-		a[j][j]=1e-18;
+		console("didn't avoid zero");
+//		a[j][j]=1e-18;
+		return false;
 	    }
 
 	    if (j != n-1) {
@@ -5209,6 +5275,8 @@ MouseOutHandler, MouseWheelHandler {
 	case 416: return new MBBSwitchElm(x1, y1, x2, y2, f, st);
     	case 417: return new UnijunctionElm(x1, y1, x2, y2, f, st);
     	case 418: return new ExtVoltageElm(x1, y1, x2, y2, f, st);
+    	case 419: return new DecimalDisplayElm(x1, y1, x2, y2, f, st);
+    	case 420: return new WattmeterElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5461,6 +5529,10 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new UnijunctionElm(x1, y1);
     	if (n=="ExtVoltageElm")
 		return (CircuitElm) new ExtVoltageElm(x1, y1);
+    	if (n=="DecimalDisplayElm")
+		return (CircuitElm) new DecimalDisplayElm(x1, y1);
+    	if (n=="WattmeterElm")
+		return (CircuitElm) new WattmeterElm(x1, y1);
     	return null;
     }
     
@@ -5473,12 +5545,12 @@ MouseOutHandler, MouseWheelHandler {
 
     
     
-    native boolean weAreInUS() /*-{
+    native boolean weAreInUS(boolean orCanada) /*-{
     try {
 	l = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage) ;  
     	if (l.length > 2) {
     		l = l.slice(-2).toUpperCase();
-    		return (l == "US" || l=="CA");
+    		return (l == "US" || (l=="CA" && orCanada));
     	} else {
     		return 0;
     	}
@@ -5573,11 +5645,36 @@ MouseOutHandler, MouseWheelHandler {
 	}
 	
 	void doPrint() {
-	    Canvas cv = getCircuitAsCanvas(true);
+	    Canvas cv = getCircuitAsCanvas(CAC_PRINT);
 	    printCanvas(cv.getCanvasElement());
 	}
 	
-	public Canvas getCircuitAsCanvas(boolean print) {
+	boolean loadedCanvas2SVG = false;
+	
+	void doExportAsSVG() {
+	    // load canvas2svg if we haven't already
+	    if (!loadedCanvas2SVG) {
+		ScriptInjector.fromUrl("canvas2svg.js").setCallback(
+			new Callback<Void,Exception>() {
+			    public void onFailure(Exception reason) {
+				Window.alert("Can't load canvas2svg.js.");
+			    }
+			    public void onSuccess(Void result) {
+				loadedCanvas2SVG = true;
+				doExportAsSVG();
+			    }
+			}).inject();
+		return;
+	    }
+	    dialogShowing = new ExportAsImageDialog(CAC_SVG);
+	    dialogShowing.show();
+	}
+	
+	static final int CAC_PRINT = 0;
+	static final int CAC_IMAGE = 1;
+	static final int CAC_SVG   = 2;
+	
+	public Canvas getCircuitAsCanvas(int type) {
 	    	// create canvas to draw circuit into
 	    	Canvas cv = Canvas.createIfSupported();
 	    	Rectangle bounds = getCircuitBounds();
@@ -5589,17 +5686,45 @@ MouseOutHandler, MouseWheelHandler {
 	    	int h = (bounds.height+hmargin) ;
 	    	cv.setCoordinateSpaceWidth(w);
 	    	cv.setCoordinateSpaceHeight(h);
-	    	double oldTransform[] = Arrays.copyOf(transform, 6);
 	    
 		Context2d context = cv.getContext2d();
+		drawCircuitInContext(context, type, bounds, w, h);
+		return cv;
+	}
+	
+	// create SVG context using canvas2svg
+	native static Context2d createSVGContext(int w, int h) /*-{
+	    return new C2S(w, h);
+	}-*/;
+	
+	native static String getSerializedSVG(Context2d context) /*-{
+	    return context.getSerializedSvg();
+	}-*/;
+	
+	public String getCircuitAsSVG() {
+	    Rectangle bounds = getCircuitBounds();
+
+	    // add some space on edges because bounds calculation is not perfect
+	    int wmargin = 140;
+	    int hmargin = 100;
+	    int w = (bounds.width+wmargin) ;
+	    int h = (bounds.height+hmargin) ;
+	    Context2d context = createSVGContext(w, h);
+	    drawCircuitInContext(context, CAC_SVG, bounds, w, h);
+	    return getSerializedSVG(context);
+	}
+	
+	void drawCircuitInContext(Context2d context, int type, Rectangle bounds, int w, int h) {
 		Graphics g = new Graphics(context);
 		context.setTransform(1, 0, 0, 1, 0, 0);
+	    	double oldTransform[] = Arrays.copyOf(transform, 6);
 	        
 	        double scale = 1;
 	        
 		// turn on white background, turn off current display
 		boolean p = printableCheckItem.getState();
 		boolean c = dotsCheckItem.getState();
+		boolean print = (type == CAC_PRINT);
 		if (print)
 		    printableCheckItem.setState(true);
 	        if (printableCheckItem.getState()) {
@@ -5610,10 +5735,12 @@ MouseOutHandler, MouseWheelHandler {
 	            CircuitElm.whiteColor = Color.white;
 	            CircuitElm.lightGrayColor = Color.lightGray;
 	            g.setColor(Color.black);
-	            g.fillRect(0, 0, g.context.getCanvas().getWidth(), g.context.getCanvas().getHeight());
+	            g.fillRect(0, 0, canvasWidth, canvasHeight);
 	        }
 		dotsCheckItem.setState(false);
 
+	    	int wmargin = 140;
+	    	int hmargin = 100;
 	        if (bounds != null)
 	            scale = Math.min(w /(double)(bounds.width+wmargin),
 	                             h/(double)(bounds.height+hmargin));
@@ -5639,7 +5766,6 @@ MouseOutHandler, MouseWheelHandler {
 		printableCheckItem.setState(p);
 		dotsCheckItem.setState(c);
 		transform = oldTransform;
-		return cv;
 	}
 	
 	boolean isSelection() {
@@ -5745,7 +5871,15 @@ MouseOutHandler, MouseWheelHandler {
 		    return null;
 		}
 	    }
-		    
+	
+	    for (i = 0; i != unconnectedNodes.size(); i++) {
+		int q = unconnectedNodes.get(i);
+		if (nodeNumberHash.get(q) == null && used[q]) {
+		    Window.alert("Some nodes are unconnected!");
+		    return null;
+		}
+	    }	    
+
 	    CustomCompositeModel ccm = new CustomCompositeModel();
 	    ccm.nodeList = nodeDump;
 	    ccm.elmDump = dump;

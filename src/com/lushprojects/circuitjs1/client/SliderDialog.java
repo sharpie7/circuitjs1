@@ -112,13 +112,13 @@ class SliderDialog extends DialogBox  {
                         });
 
 			if (adj != null) {
-			    vp.insert(new Label("Min Value"), idx++);
+			    vp.insert(new Label(sim.LS("Min Value")), idx++);
 			    ei.minBox = new TextBox();
 			    vp.insert(ei.minBox, idx++);
-			    vp.insert(new Label("Max Value"), idx++);
+			    vp.insert(new Label(sim.LS("Max Value")), idx++);
 			    ei.maxBox = new TextBox();
 			    vp.insert(ei.maxBox, idx++);
-			    vp.insert(new Label("Label"), idx++);
+			    vp.insert(new Label(sim.LS("Label")), idx++);
 			    ei.labelBox = new TextBox();
 			    ei.labelBox.setText(adj.sliderText);
 			    vp.insert(ei.labelBox, idx++);

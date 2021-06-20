@@ -145,92 +145,10 @@
 	margin-right: 15px;
 }
 
-@font-face {
-  font-family: 'fontello';
-  src: url('font/fontello.eot?69975236');
-  src: url('font/fontello.eot?69975236#iefix') format('embedded-opentype'),
-       url('font/fontello.woff2?69975236') format('woff2'),
-       url('font/fontello.woff?69975236') format('woff'),
-       url('font/fontello.ttf?69975236') format('truetype'),
-       url('font/fontello.svg?69975236#fontello') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-/* Chrome hack: SVG is rendered more smooth in Windows. 100% magic, uncomment if you need it. */
-/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
-/*
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  @font-face {
-    font-family: 'fontello';
-    src: url('../font/fontello.svg?69975236#fontello') format('svg');
-  }
-}
-*/
-
- [class^="cirjsicon-"]:before, [class*=" cirjsicon-"]:before {
-  font-family: "fontello";
-  font-style: normal;
-  font-weight: normal;
-  speak: never;
-
-  display: inline-block;
-  text-decoration: inherit;
-  width: 1em;
-  margin-right: .2em;
-  text-align: center;
-  /* opacity: .8; */
-
-  /* For safety - reset parent styles, that can break glyph codes*/
-  font-variant: normal;
-  text-transform: none;
-
-  /* fix buttons height, for twitter bootstrap */
-  line-height: 1em;
-
-  /* Animation center compensation - margins should be symmetric */
-  /* remove if not needed */
-  margin-left: .2em;
-
-  /* you can be more comfortable with increased icons size */
-  /* font-size: 120%; */
-
-  /* Font smoothing. That was taken from TWBS */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* Uncomment for 3D effect */
-  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
-}
-
-.cirjsicon-floppy:before { content: '\e800'; } /* 'î €' */
-.cirjsicon-back-in-time:before { content: '\e801'; } /* 'î �' */
-.cirjsicon-ccw:before { content: '\e802'; } /* 'î ‚' */
-.cirjsicon-export:before { content: '\e803'; } /* 'î ƒ' */
-.cirjsicon-print:before { content: '\e804'; } /* 'î „' */
-.cirjsicon-cw:before { content: '\e805'; } /* 'î …' */
-.cirjsicon-scissors:before { content: '\e806'; } /* 'î †' */
-.cirjsicon-zoom-11:before { content: '\e807'; } /* 'î ‡' */
-.cirjsicon-target:before { content: '\e808'; } /* 'î ˆ' */
-.cirjsicon-info-circled:before { content: '\e809'; } /* 'î ‰' */
-.cirjsicon-zoom-in:before { content: '\e80a'; } /* 'î Š' */
-.cirjsicon-zoom-out:before { content: '\e80b'; } /* 'î ‹' */
-.cirjsicon-chart-line:before { content: '\e80c'; } /* 'î Œ' */
-.cirjsicon-columns:before { content: '\e80d'; } /* 'î �' */
-.cirjsicon-lines:before { content: '\e80e'; } /* 'î Ž' */
-.cirjsicon-docsx:before { content: '\e80f'; } /* 'î �' */
-.cirjsicon-select-all:before { content: '\e810'; } /* 'î �' */
-.cirjsicon-copy:before { content: '\f0c5'; } /* 'ïƒ…' */
-.cirjsicon-magic:before { content: '\f0d0'; } /* 'ïƒ�' */
-.cirjsicon-paste:before { content: '\f0ea'; } /* 'ïƒª' */
-.cirjsicon-doc-text:before { content: '\f0f6'; } /* 'ïƒ¶' */
-.cirjsicon-folder:before { content: '\f115'; } /* 'ï„•' */
-.cirjsicon-object-group:before { content: '\f247'; } /* 'ï‰‡' */
-.cirjsicon-object-ungroup:before { content: '\f248'; } /* 'ï‰ˆ' */
-.cirjsicon-clone:before { content: '\f24d'; } /* 'ï‰�' */
-.cirjsicon-microchip:before { content: '\f2db'; } /* 'ï‹›' */
-.cirjsicon-dropbox:before { content: '\f330'; } /* 'ïŒ°' */
-
 </style>
+
+<link rel="stylesheet" href="font/fontello.css">
+
 </head>
   <body>
   <!-- Include the next line to allow support for dropbox import/export. You will need your own app key. -->

@@ -17,21 +17,25 @@ The function can use arithmetic like <tt>a+b</tt>, <tt>a*b</tt>, <tt>a^2/(b-1)</
 <tt>log(x)</tt>,
 <tt>sqrt(x)</tt>,
 <tt>tan(x)</tt>,
+<tt>floor(x)</tt>,
+<tt>ceil(x)</tt>,
 <tt>mod(x,y)</tt>,
 <tt>max(x,y,...)</tt>,
 and
 <tt>min(x,y,...)</tt>.
 </p><p>
+It can also use conditional expressions like <tt>(a > 5) ? a+1 : b-2</tt>.
+</p><p>
 The <tt>tri(x)</tt> function is like <tt>sin(x)</tt>, but generates a triangle waveform.
 </p><p>
 The <tt>saw(x)</tt> function is like <tt>sin(x)</tt>, but generates a sawtooth waveform.
 </p><p>
-The <tt>step(x)</tt> function is 0 if <tt>x</tt> < 0, and 1 otherwise.
-The <tt>step(x,y)</tt> function is 1 if 0 < <tt>x</tt> < <tt>y</tt>, and 0 otherwise.
+The <tt>step(x)</tt> function is 0 if <tt>x</tt> < 0, and 1 otherwise.  (Equivalent to <tt>x >= 0</tt>).
+The <tt>step(x,y)</tt> function is 1 if 0 < <tt>x</tt> < <tt>y</tt>, and 0 otherwise.  (Equivalent to <tt>0 < x && x < y</tt>).
 </p><p>
 The <tt>clamp(x,lo,hi)</tt> function is equal to <tt>min(max(x, lo), hi)</tt>.
 </p><p>
-The <tt>select(x,a,b)</tt> function is equal to <tt>b</tt> if <tt>x</tt> is greater than zero, and <tt>a</tt> otherwise.
+The <tt>select(x,a,b)</tt> function is equal to <tt>b</tt> if <tt>x</tt> is greater than zero, and <tt>a</tt> otherwise.  So it's the same as <tt>(x > 0) ? b : a</tt>.
 </p><p>
 The <tt>pwl(x,x0,y0,x1,y1,x2,y2,...,xn,yn)</tt> function is short for piece-wise linear, and works as follows.  If <tt>x < x0</tt>, then
 the result is <tt>y0</tt>.  If <tt>x0 < x < x1</tt>, then the result is a linear interpolation between <tt>y0</tt> and <tt>y1</tt>.

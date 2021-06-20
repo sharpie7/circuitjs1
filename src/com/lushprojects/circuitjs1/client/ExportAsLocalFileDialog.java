@@ -25,11 +25,14 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-public class ExportAsLocalFileDialog extends DialogBox {
+public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHandler<String> {
 	
 	VerticalPanel vp;
 	
@@ -51,19 +54,27 @@ public class ExportAsLocalFileDialog extends DialogBox {
 		return url;
 	}-*/;
 	
+	TextBox textBox;
+	Anchor a;
+	
 	public ExportAsLocalFileDialog(String data) {
 		super();
 		Button okButton;
-		Anchor a;
 		String url;
 		vp=new VerticalPanel();
 		setWidget(vp);
 		setText(CirSim.LS("Export as Local File"));
+		vp.add(new Label(CirSim.LS("File name:")));
+		textBox = new TextBox();
+                textBox.addValueChangeHandler(this);
+		textBox.setWidth("90%");
+		vp.add(textBox);
 		vp.add(new Label(CirSim.LS("Click on the link below to save your circuit")));
 		url=getBlobUrl(data);
 		Date date = new Date();
 		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
 		String fname = "circuit-"+ dtf.format(date) + ".circuitjs.txt";
+		textBox.setText(fname);
 		a=new Anchor(fname, url);
 		a.getElement().setAttribute("Download", fname);
 		vp.add(a);
@@ -74,6 +85,17 @@ public class ExportAsLocalFileDialog extends DialogBox {
 			}
 		});
 		this.center();
+	}
+	
+	public void onValueChange(ValueChangeEvent<String> event) {
+	    // update filename
+	    String fname = textBox.getText();
+	    if (fname.length() == 0)
+		return;
+	    if (!fname.contains("."))
+		fname += ".txt";
+	    a.getElement().setAttribute("Download", fname);
+	    a.setText(fname);
 	}
 	
 	protected void closeDialog()

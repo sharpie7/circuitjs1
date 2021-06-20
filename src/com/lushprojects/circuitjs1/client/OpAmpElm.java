@@ -148,6 +148,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	void doStep() {
 	    double vd = volts[1] - volts[0];
+	    double midpoint = (maxOut+minOut)*.5;
 	    if (Math.abs(lastvd-vd) > .1)
 		sim.converged = false;
 	    else if (volts[2] > maxOut+.1 || volts[2] < minOut-.1)
@@ -155,14 +156,18 @@ package com.lushprojects.circuitjs1.client;
 	    double x = 0;
 	    int vn = sim.nodeList.size()+voltSource;
 	    double dx = 0;
-	    if (vd >= maxOut/gain && (lastvd >= 0 || sim.getrand(4) == 1)) {
+	    double maxAdj = maxOut-midpoint;
+	    double minAdj = minOut-midpoint;
+	    if (vd >= maxAdj/gain && (lastvd >= 0 || sim.getrand(4) == 1)) {
 		dx = 1e-4;
-		x = maxOut - dx*maxOut/gain;
-	    } else if (vd <= minOut/gain && (lastvd <= 0 || sim.getrand(4) == 1)) {
+		x = maxOut - dx*maxAdj/gain;
+	    } else if (vd <= minAdj/gain && (lastvd <= 0 || sim.getrand(4) == 1)) {
 		dx = 1e-4;
-		x = minOut - dx*minOut/gain;
-	    } else
+		x = minOut - dx*minAdj/gain;
+	    } else {
 		dx = gain;
+		x = midpoint;
+	    }
 	    //System.out.println("opamp " + vd + " " + volts[2] + " " + dx + " "  + x + " " + lastvd + " " + sim.converged);
 	    
 	    // newton-raphson

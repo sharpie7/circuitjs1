@@ -24,8 +24,30 @@ public class OpAmpRealElm extends CompositeElm {
 	    "0 -1 -0 0 10000/0 0.000006/0 1 0 0 100/0 1 0 0 100/0 1e-11 0/0 0.000004/0 0.0001/0 1 0 0 100/0 1 0 0 100/0 1 0 0 100/0 1 0 0 100/0 25/0 -1 0 0 100/0 0.00005/" +
 	    "0 -1 0 0 100/0 10000/0 1 0 0 100/0 -1 0 0 10000";
     
+    // from LM324 spice model, ON SEMICONDUCTOR NEXT GEN MODEL 9/27/2018
+    private static String lm324v2ModelString =
+	    "ResistorElm 4 6\rCurrentElm 4 7\rResistorElm 4 29\rResistorElm 8 30\rResistorElm 9 31\rTransistorElm 30 29 31 \rResistorElm 4 32\rResistorElm 2 33\rResistorElm 10 34\r" +
+            "TransistorElm 33 32 34 \rResistorElm 9 35\rResistorElm 9 36\rResistorElm 11 37\rTransistorElm 36 35 37 \rResistorElm 10 38\rResistorElm 10 39\rResistorElm 11 40\r" +
+            "TransistorElm 39 38 40 \rResistorElm 12 41\rTransistorElm 13 41 4 \rResistorElm 13 42\rTransistorElm 13 42 4 \rResistorElm 4 43\rTransistorElm 12 43 14 \rResistorElm 3 44\r" +
+            "TransistorElm 14 44 6 \rResistorElm 15 45\rTransistorElm 6 45 4 \rResistorElm 3 46\rTransistorElm 15 46 16 \rResistorElm 3 47\rTransistorElm 16 47 17 \rResistorElm 17 16\r" +
+            "ResistorElm 5 17\rResistorElm 4 48\rTransistorElm 15 48 5 \rResistorElm 15 49\rTransistorElm 17 49 5 \rCurrentElm 18 3\rCurrentElm 19 3\rCurrentElm 20 3\rResistorElm 11 50\r" +
+            "TransistorElm 18 50 3 \rResistorElm 14 51\rTransistorElm 19 51 3 \rResistorElm 5 52\rTransistorElm 7 52 4 \rResistorElm 15 53\rTransistorElm 20 53 3 \rCapacitorElm 21 22\r" +
+            "ResistorElm 12 21\rResistorElm 12 15\rVCVSElm 3 0 23 8\rVoltageElm 23 1\rCurrentElm 3 4\rResistorElm 4 3\rResistorElm 12 54\rTransistorElm 9 54 11 \rResistorElm 13 55\r" +
+            "TransistorElm 10 55 11 \rCapacitorElm 12 13\rCapacitorElm 6 15\rCapacitorElm 3 24\rResistorElm 11 24\rCapacitorElm 1 2\rCapacitorElm 2 0\rCapacitorElm 1 0\r" +
+            "VCVSElm 15 0 22 0\rCapacitorElm 5 0\rResistorElm 25 56\rTransistorElm 25 56 0 \rVCCSElm 27 0 4 3\rCurrentElm 0 25\rVoltageElm 25 26\rResistorElm 0 26\r" +
+            "VCVSElm 28 26 27 0\rResistorElm 0 27\rVoltageElm 28 0\rResistorElm 0 28";
+    private static int[] lm324v2ExternalNodes = { 2, 1, 5, 3, 4 };
+    private static String lm324v2ModelDump =
+	    "0 40000/0 5e-7/0 380/0 1700/0 5/0 -1 0 0 306 xlm324v2-qpi/0 380/0 1700/0 5/0 -1 0 0 300 xlm324v2-qpa/0 380/0 1700/0 5/0 -1 0 0 306 xlm324v2-qpi/0 380/0 1700/0 5/" +
+	    "0 -1 0 0 306 xlm324v2-qpi/0 25/0 1 0 0 100 xlm324v2-qnq/0 25/0 1 0 0 100 xlm324v2-qnq/0 300/0 -1 0 0 100 xlm324v2-qpq/0 25/0 1 0 0 100 xlm324v2-qnq/0 25/0 1 0 0 100 xlm324v2-qnq/" +
+	    "0 25/0 1 0 0 100 xlm324v2-qnq/0 25/0 1 0 0 100 xlm324v2-qnq/0 40000/0 18/0 300/0 -1 0 0 100 xlm324v2-qpq/0 25/0 1 0 0 100 xlm324v2-qnq/0 1.2e-7/0 6e-8/0 0.000001/0 300/" +
+	    "0 -1 0 0 100 xlm324v2-qpq/0 300/0 -1 0 0 100 xlm324v2-qpq/0 25/0 1 0 0 100 xlm324v2-qnq/0 300/0 -1 0 0 100 xlm324v2-qpq/2 4.8e-12 0 0/0 3/0 3000000000/0 2 -0.00001*(a-b)/" +
+	    "0 0 0 -0.00156/0 0.000005/0 450000/0 300/0 -1 0 0 100 xlm324v2-qpq/0 300/0 -1 0 0 100 xlm324v2-qpq/2 8e-12 0 0/2 1e-12 0 0/2 1e-13 0 0/0 300000/2 2.3e-13 0 0/2 7.9e-13 0 0/" +
+	    "2 7.9e-13 0 0/0 2 2*(a-b)/2 5e-14 0 0/0 25/0 1 0 0 100 xlm324v2-qnq/0 2 0.0003*(a-b)/0 0.001/0 0 0 -0.25/0 1000000/0 2 1*(a-b)/0 1000000/0 0 0 -0.55/0 1000000";	    
+
     static final int MODEL_741 = 0;
     static final int MODEL_324 = 1;
+    static final int MODEL_324v2 = 2;
     
     private static double[] model741resistances = { 50, 25, 1e3, 50e3, 1e3, 5e3, 50e3, 50, 39e3, 7500, 4500 }; 
 
@@ -64,10 +86,11 @@ public class OpAmpRealElm extends CompositeElm {
 
     private void initModel() {
 	flags |= FLAG_ESCAPE;
-	if (modelType == MODEL_741)
-	    init741();
-	else
-	    init324();
+	switch (modelType) {
+	case MODEL_741: init741(); break;
+	case MODEL_324: init324(); break;
+	case MODEL_324v2: init324v2(); break;
+	}
 	curCounts = new double[5];
 	setPoints();
     }
@@ -110,15 +133,26 @@ public class OpAmpRealElm extends CompositeElm {
 	((TransistorElm) compElmList.get(16)).setBeta(currentMult * 100);
     }
     
+    private void init324v2() {
+	StringTokenizer st = new StringTokenizer(lm324v2ModelDump, "/");
+	loadComposite(st, lm324v2ModelString, lm324v2ExternalNodes);
+    }
+    
     public void reset() {
 	super.reset();
 	curCounts = new double[5];
     }
 
-    CapacitorElm getCapacitor() { return ((CapacitorElm) compElmList.get(modelType == MODEL_741 ? 20 : 4)); }
+    CapacitorElm getCapacitor() {
+	if (modelType == MODEL_324v2)
+	    return null;
+	return ((CapacitorElm) compElmList.get(modelType == MODEL_741 ? 20 : 4));
+    }
     
     public String dump() {
-	return super.dumpWithMask(0) + " " + slewRate + " " + getCapacitor().voltdiff + " " + currentLimit + " " + modelType;
+	CapacitorElm elm = getCapacitor();
+	double voltdiff = (elm == null) ? 0 : elm.voltdiff;
+	return super.dumpWithMask(0) + " " + slewRate + " " + voltdiff + " " + currentLimit + " " + modelType;
     }
     
     public boolean getConnection(int n1, int n2) {
@@ -210,42 +244,45 @@ public class OpAmpRealElm extends CompositeElm {
     }
     
     public EditInfo getEditInfo(int n) {
-	if (n == 0)
-	    return new EditInfo("Slew Rate (V/usec)", slewRate);
-	if (n == 1)
-	    return new EditInfo("Output Current Limit (A)", currentLimit);
-        if (n == 2) {
+        if (n == 0) {
+            EditInfo ei =  new EditInfo(EditInfo.makeLink("opampreal.html", "Model"), modelType);
+            ei.choice = new Choice();
+            ei.choice.add("LM741");
+            ei.choice.add("LM324 v1");
+            ei.choice.add("LM324 v2");
+            ei.choice.select(modelType);
+            return ei;
+        }
+        if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.checkbox = new Checkbox("Swap Inputs", (flags & FLAG_SWAP) != 0);
             return ei;
         }
-        if (n == 3) {
-            EditInfo ei =  new EditInfo(EditInfo.makeLink("opampreal.html", "Model"), modelType);
-            ei.choice = new Choice();
-            ei.choice.add("LM741");
-            ei.choice.add("LM324");
-            ei.choice.select(modelType);
-            return ei;
-
-        }
+        if (modelType == MODEL_324v2)
+            return null;
+	if (n == 2)
+	    return new EditInfo("Slew Rate (V/usec)", slewRate);
+	if (n == 3)
+	    return new EditInfo("Output Current Limit (A)", currentLimit);
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
-	    slewRate = ei.value;
+	    modelType = ei.choice.getSelectedIndex();
+	    capValue = 0;
 	    initModel();
+	    ei.newDialog = true;
 	}
 	if (n == 1) {
-	    currentLimit = ei.value;
-	    initModel();
-	}
-	if (n == 2) {
 	    flags = ei.changeFlag(flags, FLAG_SWAP);
 	    setPoints();
 	}
+	if (n == 2) {
+	    slewRate = ei.value;
+	    initModel();
+	}
 	if (n == 3) {
-	    modelType = ei.choice.getSelectedIndex();
-	    capValue = 0;
+	    currentLimit = ei.value;
 	    initModel();
 	}
     }

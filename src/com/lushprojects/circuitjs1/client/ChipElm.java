@@ -66,8 +66,15 @@ abstract class ChipElm extends CircuitElm {
 	void drawChip(Graphics g) {
 	    int i;
 	    Font oldfont = g.getFont();
-	    Font f = new Font("SansSerif", 0, 10*csize);
+	    Font f = new Font("normal", 0, 10*csize);
 //	    FontMetrics fm = g.getFontMetrics();
+	    boolean hasVertical = false;
+	    // check if there are any vertical pins.  if not, we can make the labels wider
+	    for (i = 0; i != getPostCount(); i++)
+		if (pins[i].side == SIDE_N || pins[i].side == SIDE_S) {
+		    hasVertical = true;
+		    break;
+		}
 	    for (i = 0; i != getPostCount(); i++) {
 		g.setFont(f);
 		Pin p = pins[i];
@@ -78,29 +85,42 @@ abstract class ChipElm extends CircuitElm {
 		p.curcount = updateDotCount(p.current, p.curcount);
 		drawDots(g, b, a, p.curcount);
 		if (p.bubble) {
-		    g.setColor(sim.printableCheckItem.getState() ?
-			       Color.white : Color.black);
+		    g.setColor(sim.getBackgroundColor());
 		    drawThickCircle(g, p.bubbleX, p.bubbleY, 1);
 		    g.setColor(lightGrayColor);
 		    drawThickCircle(g, p.bubbleX, p.bubbleY, 3);
 		}
 		g.setColor(p.selected ? selectColor : whiteColor);
 		int fsz = 10*csize;
+		double availSpace = cspc*2-8;
+		// allow a little more space if the chip is wide and there are no vertical pins
+		// (we could still do this if vertical pins are present but then we would have to do
+		// more work to avoid overlaps)
+		if (!hasVertical && sizeX > 2)
+		    availSpace = cspc*2.5+cspc*(sizeX-3);
 		while (true) {
 		    int sw=(int)g.context.measureText(p.text).getWidth();
 		    // scale font down if it's too big
-		    if (sw > 10*csize) {
-			fsz -= 2;
-			Font f2 = new Font("SansSerif", 0, fsz);
+		    if (sw > availSpace) {
+			fsz -= 1;
+			Font f2 = new Font("normal", 0, fsz);
 			g.setFont(f2);
 			continue;
 		    }
 		    int asc=(int)g.currentFontSize;
-		    g.drawString(p.text, p.textloc.x-sw/2,
-			    p.textloc.y+asc/2);
+		    int tx;
+		    // put text closer to edge if it's on left or right.
+		    // we could do extra work to handle flipped case, but we don't
+		    if (p.side == SIDE_W && !isFlippedX())
+			tx = p.textloc.x-(cspc-5);
+		    else if (p.side == SIDE_E && !isFlippedX())
+			tx = p.textloc.x+(cspc-5)-sw;
+		    else
+			tx = p.textloc.x-sw/2;
+		    g.drawString(p.text, tx, p.textloc.y+asc/2);
 		    if (p.lineOver) {
 			int ya = p.textloc.y-asc/2;
-			g.drawLine(p.textloc.x-sw/2, ya, p.textloc.x+sw/2, ya);
+			g.drawLine(tx, ya, tx+sw, ya);
 		    }
 		    break;
 		}
@@ -285,6 +305,8 @@ abstract class ChipElm extends CircuitElm {
 	double getCurrentIntoNode(int n) {
 	    return pins[n].current;
 	}
+	
+	boolean isFlippedX() { return (flags & FLAG_FLIP_X) != 0; }
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
