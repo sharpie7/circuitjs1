@@ -58,6 +58,7 @@ class EditInfo {
 	Choice choice;
 	Checkbox checkbox;
 	Button button;
+	EditDialogLoadFile loadFile = null; //if non-null, the button will open a file dialog
 	TextArea textArea;
 	Widget widget;
 	boolean newDialog;

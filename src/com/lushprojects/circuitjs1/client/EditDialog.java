@@ -106,7 +106,7 @@ class EditDialog extends DialogBox  {
 			einfos[i] = elm.getEditInfo(i);
 			if (einfos[i] == null)
 				break;
-			EditInfo ei = einfos[i];
+			final EditInfo ei = einfos[i];
 			idx = vp.getWidgetIndex(hp);
 			String name = CirSim.LS(ei.name);
 			if (ei.name.startsWith("<"))
@@ -132,11 +132,22 @@ class EditDialog extends DialogBox  {
 				});
 			} else if (ei.button != null) {
 			    vp.insert(ei.button, idx);
-			    ei.button.addClickHandler( new ClickHandler() {
-				public void onClick(ClickEvent event) {
-				    itemStateChanged(event);
-				}
-			    });
+			    if (ei.loadFile != null) {
+			    	//Open file dialog
+			    	vp.add(ei.loadFile);
+				    ei.button.addClickHandler( new ClickHandler() {
+						public void onClick(ClickEvent event) {
+					    	ei.loadFile.open();
+						}
+				    });
+			    } else {
+			    	//Normal button press
+				    ei.button.addClickHandler( new ClickHandler() {
+						public void onClick(ClickEvent event) {
+						    itemStateChanged(event);
+						}
+				    });
+			    }
 			} else if (ei.textArea != null) {
 			    vp.insert(ei.textArea, idx);
 			    closeOnEnter = false;
