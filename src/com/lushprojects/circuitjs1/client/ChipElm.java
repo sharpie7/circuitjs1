@@ -200,14 +200,17 @@ abstract class ChipElm extends CircuitElm {
 		return false;
 	    if ((pos[1] == SIDE_W || pos[1] == SIDE_E) && pos[0] >= sizeY)
 		return false;
-		
+	    return true;
+	}
+	
+	int getOverlappingPin(int p1, int p2, int pin) {
 	    for (int i = 0; i != getPostCount(); i++) {
 		if (pin == i)
 		    continue;
-		if (pins[i].overlaps(pos[0], pos[1]))
-		    return false;
+		if (pins[i].overlaps(p1, p2))
+		    return i;
 	    }
-	    return true;
+	    return -1;
 	}
 	
 	Point getPost(int n) {

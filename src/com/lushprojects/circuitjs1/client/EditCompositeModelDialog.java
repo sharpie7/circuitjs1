@@ -283,13 +283,20 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 		if (selectedPin < 0)
 		    return;
 		int pos[] = new int[2];
-		if (chip.getPinPos((int)(x*scale), (int)(y*scale), selectedPin, pos)) {
-		    ExtListEntry p = model.extList.get(selectedPin);
-		    p.pos  = pos[0];
-		    p.side = pos[1];
-		    createPinsFromModel();
-		    drawChip();
+		if (!chip.getPinPos((int)(x*scale), (int)(y*scale), selectedPin, pos))
+		    return;
+		ExtListEntry p = model.extList.get(selectedPin);
+		int pn = chip.getOverlappingPin(pos[0], pos[1], selectedPin);
+		if (pn != -1) {
+		    // swap positions with overlapping pin
+		    ExtListEntry p2 = model.extList.get(pn);
+		    p2.pos = p.pos;
+		    p2.side = p.side;
 		}
+		p.pos  = pos[0];
+		p.side = pos[1];
+		createPinsFromModel();
+		drawChip();
 	    } else {
 		int i;
 		double bestdist = 20;
