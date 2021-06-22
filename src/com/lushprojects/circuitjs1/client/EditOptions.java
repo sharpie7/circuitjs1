@@ -114,40 +114,32 @@ class EditOptions implements Editable {
 		            Window.Location.reload();
 		}
 		if (n == 3) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("positiveColor", txt);
-		    CircuitElm.positiveColor = (txt.length() == 0) ? Color.green : new Color(txt);
+		    CircuitElm.positiveColor = setColor("positiveColor", ei, Color.green);
 		    CircuitElm.setColorScale();
 		}
 		if (n == 4) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("negativeColor", txt);
-		    CircuitElm.negativeColor = (txt.length() == 0) ? Color.red : new Color(txt);
+		    CircuitElm.negativeColor = setColor("negativeColor", ei, Color.red);
 		    CircuitElm.setColorScale();
 		}
-		if (n == 5) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("selectColor", txt);
-		    CircuitElm.selectColor = (txt.length() == 0) ? Color.cyan : new Color(txt);
-		}
-		if (n == 6) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("currentColor", txt);
-		    CircuitElm.currentColor = (txt.length() == 0) ? Color.yellow : new Color(txt);
-		}
+		if (n == 5)
+		    CircuitElm.selectColor = setColor("selectColor", ei, Color.cyan);
+		if (n == 6)
+		    CircuitElm.currentColor = setColor("currentColor", ei, Color.yellow);
 		if (n == 7) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
 		    ei.newDialog = true;
 		}
 		if (n == 8 && ei.value > 0)
 			sim.minTimeStep = ei.value;
+	}
+	
+	Color setColor(String name, EditInfo ei, Color def) {
+	    String val = ei.textf.getText();
+	    if (val.length() == 0)
+		val = def.getHexValue();
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    if (stor != null)
+		stor.setItem(name, val);
+	    return new Color(val);
 	}
 };
