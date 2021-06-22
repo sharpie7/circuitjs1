@@ -22,9 +22,9 @@ package com.lushprojects.circuitjs1.client;
 abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;
-	final int FLAG_SMALL = 1;
-	final int FLAG_FLIP_X = 1024;
-	final int FLAG_FLIP_Y = 2048;
+	static final int FLAG_SMALL = 1;
+	static final int FLAG_FLIP_X = 1024;
+	static final int FLAG_FLIP_Y = 2048;
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
@@ -323,17 +323,11 @@ abstract class ChipElm extends CircuitElm {
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_X;
-		else
-		    flags &= ~FLAG_FLIP_X;
+		ei.changeFlag(flags, FLAG_FLIP_X);
 		setPoints();
 	    }
 	    if (n == 1) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_Y;
-		else
-		    flags &= ~FLAG_FLIP_Y;
+		ei.changeFlag(flags, FLAG_FLIP_Y);
 		setPoints();
 	    }
 	}

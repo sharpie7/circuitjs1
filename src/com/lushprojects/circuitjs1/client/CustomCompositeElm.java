@@ -81,6 +81,7 @@ public class CustomCompositeElm extends CompositeElm {
 	chip = new CustomCompositeChipElm(x, y);
 	chip.x2 = x2;
 	chip.y2 = y2;
+	chip.flags = (flags & (ChipElm.FLAG_FLIP_X | ChipElm.FLAG_FLIP_Y));
 	
 	chip.sizeX = model.sizeX;
 	chip.sizeY = model.sizeY;
@@ -139,6 +140,16 @@ public class CustomCompositeElm extends CompositeElm {
             ei.button = new Button(sim.LS("Edit Model"));
             return ei;
         }
+        if (n == 2) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip X", (flags & ChipElm.FLAG_FLIP_X) != 0);
+            return ei;
+        }
+        if (n == 3) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip Y", (flags & ChipElm.FLAG_FLIP_Y) != 0);
+            return ei;
+        }
 	return null;
     }
     
@@ -161,6 +172,14 @@ public class CustomCompositeElm extends CompositeElm {
             CirSim.dialogShowing = dlg;
             dlg.show();
             return;
+        }
+        if (n == 2) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_X);
+            setPoints();
+        }
+        if (n == 3) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_Y);
+            setPoints();
         }
     }
     
