@@ -766,7 +766,7 @@ class Scope {
 	if (showSettingsWheel()) {
 	    g.context.save();
 	    if (cursorInSettingsWheel())
-		g.setColor(Color.cyan);
+		g.setColor(CircuitElm.selectColor);
 	    else
 		g.setColor(Color.dark_gray);
 	    g.context.translate(rect.x+18, rect.y+rect.height-18);
@@ -1052,7 +1052,7 @@ class Scope {
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
 	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
-    	    color = "#00FFFF";
+    	    color = CircuitElm.selectColor.getHexValue();
 	else if (selected)
 	    color = plot.color;
     	int ipa = plot.startIndex(rect.width);

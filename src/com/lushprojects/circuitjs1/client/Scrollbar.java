@@ -139,7 +139,7 @@ public class Scrollbar extends  Composite implements
 		double p=HMARGIN+SCROLLHEIGHT+BARMARGIN+((CirSim.VERTICALPANELWIDTH-2*(HMARGIN+SCROLLHEIGHT+BARMARGIN))*((double)(val-min)))/(max-min);
 		if (enabled) {
 			if (attachedElm!=null && attachedElm.needsHighlight())
-				g.setStrokeStyle("cyan");
+				g.setStrokeStyle(CircuitElm.selectColor.getHexValue());
 			else
 				g.setStrokeStyle("red");
 			g.beginPath();

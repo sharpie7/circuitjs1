@@ -57,12 +57,16 @@ class EditOptions implements Editable {
 		    return new EditInfo("Positive Color", CircuitElm.positiveColor.getHexValue());
 		if (n == 4)
 		    return new EditInfo("Negative Color", CircuitElm.negativeColor.getHexValue());
-		if (n == 5) {
+		if (n == 5)
+		    return new EditInfo("Selection Color", CircuitElm.selectColor.getHexValue());
+		if (n == 6)
+		    return new EditInfo("Current Color", CircuitElm.currentColor.getHexValue());
+		if (n == 7) {
 		    EditInfo ei = new EditInfo("", 0, -1, -1);
 		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
 		    return ei;
 		}
-		if (n == 6 && sim.adjustTimeStep)
+		if (n == 8 && sim.adjustTimeStep)
 		    return new EditInfo("Minimum time step size (s)", sim.minTimeStep, 0, 0);
 
 		return null;
@@ -114,7 +118,7 @@ class EditOptions implements Editable {
 		    Storage stor = Storage.getLocalStorageIfSupported();
 		    if (stor != null)
 			stor.setItem("positiveColor", txt);
-		    CircuitElm.positiveColor = new Color(txt);
+		    CircuitElm.positiveColor = (txt.length() == 0) ? Color.green : new Color(txt);
 		    CircuitElm.setColorScale();
 		}
 		if (n == 4) {
@@ -122,14 +126,28 @@ class EditOptions implements Editable {
 		    Storage stor = Storage.getLocalStorageIfSupported();
 		    if (stor != null)
 			stor.setItem("negativeColor", txt);
-		    CircuitElm.negativeColor = new Color(txt);
+		    CircuitElm.negativeColor = (txt.length() == 0) ? Color.red : new Color(txt);
 		    CircuitElm.setColorScale();
 		}
 		if (n == 5) {
+		    String txt = ei.textf.getText();
+		    Storage stor = Storage.getLocalStorageIfSupported();
+		    if (stor != null)
+			stor.setItem("selectColor", txt);
+		    CircuitElm.selectColor = (txt.length() == 0) ? Color.cyan : new Color(txt);
+		}
+		if (n == 6) {
+		    String txt = ei.textf.getText();
+		    Storage stor = Storage.getLocalStorageIfSupported();
+		    if (stor != null)
+			stor.setItem("currentColor", txt);
+		    CircuitElm.currentColor = (txt.length() == 0) ? Color.yellow : new Color(txt);
+		}
+		if (n == 7) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
 		    ei.newDialog = true;
 		}
-		if (n == 6 && ei.value > 0)
+		if (n == 8 && ei.value > 0)
 			sim.minTimeStep = ei.value;
 	}
 };

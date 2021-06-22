@@ -85,6 +85,10 @@ public class Adjustable implements Command {
 	} catch (Exception e) {}
     }
     
+    void setMouseElm(CircuitElm e) {
+	slider.draw();
+    }
+    
     String dump() {
 	return elm.sim.locateElm(elm) + " " + editItem + " " + minValue + " " + maxValue + " " + CustomLogicModel.escape(sliderText);
     }

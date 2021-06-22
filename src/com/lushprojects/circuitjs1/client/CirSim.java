@@ -368,6 +368,8 @@ MouseOutHandler, MouseWheelHandler {
 	QueryParameters qp = new QueryParameters();
 	String positiveColor = null;
 	String negativeColor = null;
+	String selectColor = null;
+	String currentColor = null;
 
 	try {
 	    //baseURL = applet.getDocumentBase().getFile();
@@ -395,6 +397,8 @@ MouseOutHandler, MouseWheelHandler {
 	    noEditing = !qp.getBooleanValue("editable", true);
 	    positiveColor = qp.getValue("positiveColor");
 	    negativeColor = qp.getValue("negativeColor");
+	    selectColor = qp.getValue("selectColor");
+	    currentColor = qp.getValue("currentColor");
 	} catch (Exception e) { }
 
 	boolean euroSetting = false;
@@ -562,6 +566,10 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(conventionCheckItem = new CheckboxMenuItem(LS("Conventional Current Motion"),
 		new Command() { public void execute(){
 		    setOptionInStorage("conventionalCurrent", conventionCheckItem.getState());
+		    String cc = CircuitElm.currentColor.getHexValue();
+		    // change the current color if it hasn't changed from the default
+		    if (cc.equals("#ffff00") || cc.equals("#00ffff"))
+			CircuitElm.currentColor = conventionCheckItem.getState() ? Color.yellow : Color.cyan;
 		}
 	}));
 	conventionCheckItem.setState(convention);
@@ -690,7 +698,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	scopePopupMenu = new ScopePopupMenu();
 
-	setColors(positiveColor, negativeColor);
+	setColors(positiveColor, negativeColor, selectColor, currentColor);
 
 	if (startCircuitText != null) {
 	    getSetupList(false);
@@ -747,20 +755,36 @@ MouseOutHandler, MouseWheelHandler {
 	setSimRunning(running);
     }
 
-    void setColors(String positiveColor, String negativeColor) {
+    void setColors(String positiveColor, String negativeColor, String selectColor, String currentColor) {
         Storage stor = Storage.getLocalStorageIfSupported();
         if (stor != null) {
             if (positiveColor == null)
         	positiveColor = stor.getItem("positiveColor");
             if (negativeColor == null)
         	negativeColor = stor.getItem("negativeColor");
+            if (selectColor == null)
+        	selectColor = stor.getItem("selectColor");
+            if (currentColor == null)
+        	currentColor = stor.getItem("currentColor");
         }
+        
 	if (positiveColor != null)
 	    CircuitElm.positiveColor = new Color(URL.decodeQueryString(positiveColor));
 	else if (getOptionFromStorage("alternativeColor", false))
 	    CircuitElm.positiveColor = Color.blue;
+	
 	if (negativeColor != null)
 	    CircuitElm.negativeColor = new Color(URL.decodeQueryString(negativeColor));
+	
+	if (selectColor != null)
+	    CircuitElm.selectColor = new Color(URL.decodeQueryString(selectColor));
+	else
+	    CircuitElm.selectColor = Color.cyan;
+	
+	if (currentColor != null)
+	    CircuitElm.currentColor = new Color(URL.decodeQueryString(currentColor));
+	else
+	    CircuitElm.currentColor = conventionCheckItem.getState() ? Color.yellow : Color.cyan;
 	    
 	CircuitElm.setColorScale();
     }
@@ -1280,7 +1304,6 @@ MouseOutHandler, MouseWheelHandler {
 
 	Graphics g=new Graphics(cvcontext);
 	
-	CircuitElm.selectColor = Color.cyan;
 	if (printableCheckItem.getState()) {
   	    CircuitElm.whiteColor = Color.black;
   	    CircuitElm.lightGrayColor = Color.black;
@@ -1377,19 +1400,19 @@ MouseOutHandler, MouseWheelHandler {
 				g.fillOval(ce.x-3, ce.y-3, 7, 7);
 				g.fillOval(ce.x2-3, ce.y2-3, 7, 7);
 			} else {
-				ce.drawHandles(g, Color.cyan);
+				ce.drawHandles(g, CircuitElm.selectColor);
 			}
 		}
 	// draw handles for elm we're creating
 	if (tempMouseMode==MODE_SELECT && mouseElm!=null) {
-		mouseElm.drawHandles(g, Color.cyan);
+		mouseElm.drawHandles(g, CircuitElm.selectColor);
 	}
 
 	// draw handles for elm we're dragging
 	if (dragElm != null &&
 		      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
 		    	dragElm.draw(g);
-		    	dragElm.drawHandles(g, Color.cyan);
+		    	dragElm.drawHandles(g, CircuitElm.selectColor);
 		}
 
 	// draw bad connections.  do this last so they will not be overdrawn.
@@ -1429,7 +1452,7 @@ MouseOutHandler, MouseWheelHandler {
 	for (i = 0; i != ct; i++)
 	    scopes[i].draw(g);
 	if (mouseWasOverSplitter) {
-		g.setColor(Color.cyan);
+		g.setColor(CircuitElm.selectColor);
 		g.setLineWidth(4.0);
 		g.drawLine(0, circuitArea.height-2, circuitArea.width, circuitArea.height-2);
 		g.setLineWidth(1.0);
@@ -3998,6 +4021,9 @@ MouseOutHandler, MouseWheelHandler {
     		if (ce!=null)
     			ce.setMouseElm(true);
     		mouseElm=ce;
+    		int i;
+    		for (i = 0; i < adjustables.size(); i++)
+    		    adjustables.get(i).setMouseElm(ce);
     	}
     }
 

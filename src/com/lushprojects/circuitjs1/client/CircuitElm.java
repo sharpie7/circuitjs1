@@ -36,7 +36,8 @@ public abstract class CircuitElm implements Editable {
     static Point ps1, ps2;
     
     static CirSim sim;
-    static Color whiteColor, selectColor, lightGrayColor;
+    static public Color whiteColor, lightGrayColor, selectColor;
+    static public Color positiveColor, negativeColor, neutralColor, currentColor;
     static Font unitsFont;
 
     static NumberFormat showFormat, shortFormat;//, noCommaFormat;
@@ -110,9 +111,7 @@ public abstract class CircuitElm implements Editable {
 
 	shortFormat=NumberFormat.getFormat("####.#");
     }
-
-    static public Color positiveColor, negativeColor, neutralColor;
-    
+   
     static void setColorScale() {
 
 	int i;
@@ -328,7 +327,7 @@ public abstract class CircuitElm implements Editable {
 	int dx = pb.x-pa.x;
 	int dy = pb.y-pa.y;
 	double dn = Math.sqrt(dx*dx+dy*dy);
-	g.setColor(sim.conventionCheckItem.getState()?Color.yellow:Color.cyan);
+	g.setColor(currentColor);
 	int ds = 16;
 	pos %= ds;
 	if (pos < 0)
