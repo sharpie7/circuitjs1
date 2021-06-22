@@ -65,6 +65,8 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 		g.context.setStrokeStyle(grad);
 	    } else
 		setPowerColor(g, true);
+	    if (dn < 30)
+		hs = 2;
 	    if (!sim.euroResistorCheckItem.getState()) {
 		g.context.beginPath();
 		g.context.moveTo(0,0);
