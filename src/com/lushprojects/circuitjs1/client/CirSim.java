@@ -145,6 +145,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem separateAllItem;
     MenuBar mainMenuBar;
     MenuBar selectScopeMenuBar;
+    MenuBar subcircuitMenuBar[];
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     ScopePopupMenu scopePopupMenu;
@@ -584,8 +585,8 @@ MouseOutHandler, MouseWheelHandler {
 
 	mainMenuBar = new MenuBar(true);
 	mainMenuBar.setAutoOpen(true);
-	composeMainMenu(mainMenuBar);
-	composeMainMenu(drawMenuBar);
+	composeMainMenu(mainMenuBar, 0);
+	composeMainMenu(drawMenuBar, 1);
 	loadShortcuts();
 
 	if (!hideMenu)
@@ -952,7 +953,8 @@ MouseOutHandler, MouseWheelHandler {
     
     boolean shown = false;
     
-    public void composeMainMenu(MenuBar mainMenuBar) {
+    // this is called twice, once for the Draw menu, once for the right mouse popup menu
+    public void composeMainMenu(MenuBar mainMenuBar, int num) {
     	mainMenuBar.addItem(getClassCheckItem(LS("Add Wire"), "WireElm"));
     	mainMenuBar.addItem(getClassCheckItem(LS("Add Resistor"), "ResistorElm"));
 
@@ -1100,6 +1102,11 @@ MouseOutHandler, MouseWheelHandler {
     	achipMenuBar.addItem(getClassCheckItem(LS("Add Monostable"), "MonostableElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Analog and Hybrid Chips")), achipMenuBar);
     	
+    	if (subcircuitMenuBar == null)
+    	    subcircuitMenuBar = new MenuBar[2];
+    	subcircuitMenuBar[num] = new MenuBar(true);
+    	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Subcircuits")), subcircuitMenuBar[num]);
+    	
     	MenuBar otherMenuBar = new MenuBar(true);
     	CheckboxMenuItem mi;
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag All"), "DragAll"));
@@ -1116,6 +1123,25 @@ MouseOutHandler, MouseWheelHandler {
 
     	mainMenuBar.addItem(mi=getClassCheckItem(LS("Select/Drag Sel"), "Select"));
     	mi.setShortcut(LS("(space or Shift-drag)"));
+    }
+    
+    void composeSubcircuitMenu() {
+	if (subcircuitMenuBar == null)
+	    return;
+	int mi;
+	
+	// there are two menus to update: the one in the Draw menu, and the one in the right mouse menu
+	for (mi = 0; mi != 2; mi++) {
+	    MenuBar menu = subcircuitMenuBar[mi];
+	    menu.clearItems();
+	    Vector<CustomCompositeModel> list = CustomCompositeModel.getModelList();
+	    int i;
+	    for (i = 0; i != list.size(); i++) {
+		String name = list.get(i).name;
+		menu.addItem(getClassCheckItem(LS("Add ") + name, "CustomCompositeElm:" + name));
+	    }
+	}
+	lastSubcircuitMenuUpdate = CustomCompositeModel.sequenceNumber;
     }
     
     public void composeSelectScopeMenu(MenuBar sb) {
@@ -4448,6 +4474,8 @@ MouseOutHandler, MouseWheelHandler {
 	}
     }
 
+    static int lastSubcircuitMenuUpdate;
+    
     // check/uncheck/enable/disable menu items as appropriate when menu bar clicked on, or when
     // right mouse menu accessed.  also displays shortcuts as a side effect
     void doMainMenuChecks() {
@@ -4466,6 +4494,10 @@ MouseOutHandler, MouseWheelHandler {
     	unstackAllItem.setEnabled(scopeCount > 1 && scopes[scopeCount-1].position != scopeCount -1);
     	combineAllItem.setEnabled(scopeCount > 1);
     	separateAllItem.setEnabled(scopeCount > 0);
+    	
+    	// also update the subcircuit menu if necessary
+    	if (lastSubcircuitMenuUpdate != CustomCompositeModel.sequenceNumber)
+    	    composeSubcircuitMenu();
     }
     
  
@@ -5560,6 +5592,13 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DecimalDisplayElm(x1, y1);
     	if (n=="WattmeterElm")
 		return (CircuitElm) new WattmeterElm(x1, y1);
+    	
+    	// handle CustomCompositeElm:modelname
+    	if (n.startsWith("CustomCompositeElm:")) {
+    	    int ix = n.indexOf(':')+1;
+    	    String name = n.substring(ix);
+    	    return (CircuitElm) new CustomCompositeElm(x1, y1, name);
+    	}
     	return null;
     }
     

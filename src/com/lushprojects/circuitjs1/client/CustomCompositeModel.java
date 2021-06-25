@@ -29,11 +29,13 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     Vector<ExtListEntry> extList;
     String elmDump;
     boolean dumped;
+    static int sequenceNumber;
     
     void setName(String n) {
 	modelMap.remove(name);
 	name = n;
 	modelMap.put(name, this);
+	sequenceNumber++;
     }
 
     static void initModelMap() {
@@ -45,6 +47,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
 	d.sizeX = d.sizeY = 1;
 	modelMap.put(d.name, d);
+	sequenceNumber = 1;
 	
 	// get models from local storage
         Storage stor = Storage.getLocalStorageIfSupported();
@@ -77,6 +80,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	lm.nodeList = nodeList;
 	lm.extList = extList;
         modelMap.put(name, lm);
+        sequenceNumber++;
         return lm;
     }
 
@@ -117,6 +121,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	    model = new CustomCompositeModel();
 	    model.name = name;
 	    modelMap.put(name, model);
+	    sequenceNumber++;
 	}
 	model.undump(st);
     }

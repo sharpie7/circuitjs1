@@ -27,6 +27,13 @@ public class CustomCompositeElm extends CompositeElm {
 	updateModels();
     }
 
+    public CustomCompositeElm(int xx, int yy, String name) {
+	super(xx, yy);
+	modelName = name;
+	flags |= FLAG_ESCAPE;
+	updateModels();
+    }
+    
     public CustomCompositeElm(int xa, int ya, int xb, int yb, int f,
             StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
