@@ -102,6 +102,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	}
 	
 	TextBox modelNameTextBox = null;
+	Checkbox saveCheck = null;
 
 	void createDialog() {
 		Button okButton;
@@ -163,6 +164,8 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
                     }
                 });
 		vp.add(hp);
+		hp.addStyleName("topSpace");
+		vp.add(saveCheck = new Checkbox(CirSim.LS("Save Across Sessions")));
 	
                 canvas.addMouseDownHandler(this);
                 canvas.addMouseUpHandler(this);
@@ -196,6 +199,8 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 				}
 				model.setName(CustomCompositeElm.lastModelName = name);
 			    }
+			    if (saveCheck.getState())
+				model.save();
 			    CirSim.theSim.updateModels();
 			    CirSim.theSim.needAnalyze(); // will get singular matrix if we don't do this
 			    closeDialog();

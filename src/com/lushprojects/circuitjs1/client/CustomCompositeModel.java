@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextArea;
 
@@ -34,18 +35,37 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	name = n;
 	modelMap.put(name, this);
     }
+
+    static void initModelMap() {
+	modelMap = new HashMap<String,CustomCompositeModel>();
+
+	// create default stub model
+	Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
+	extList.add(new ExtListEntry("gnd", 1));
+	CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
+	d.sizeX = d.sizeY = 1;
+	modelMap.put(d.name, d);
+	
+	// get models from local storage
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor != null) {
+            int len = stor.getLength();
+            int i;
+            for (i = 0; i != len; i++) {
+        	String key = stor.key(i);
+        	if (!key.startsWith("subcircuit:"))
+        	    continue;
+        	String data = stor.getItem(key);
+        	StringTokenizer st = new StringTokenizer(data, " ");
+        	if (st.nextToken() == ".")
+        	    undumpModel(st);
+            }
+        }
+    }
     
     static CustomCompositeModel getModelWithName(String name) {
-	if (modelMap == null) {
-	    modelMap = new HashMap<String,CustomCompositeModel>();
-	    
-	    // create default stub model
-	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
-	    extList.add(new ExtListEntry("gnd", 1));
-	    CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
-	    d.sizeX = d.sizeY = 1;
-	    modelMap.put(d.name, d);
-	}
+	if (modelMap == null)
+	    initModelMap();
 	CustomCompositeModel lm = modelMap.get(name);
 	return lm;
     }
@@ -91,7 +111,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     
     static void undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
-	CustomCompositeElm.lastModelName = name;
+//	CustomCompositeElm.lastModelName = name;
 	CustomCompositeModel model = getModelWithName(name);
 	if (model == null) {
 	    model = new CustomCompositeModel();
@@ -117,6 +137,14 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	}
 	nodeList = CustomLogicModel.unescape(st.nextToken());
 	elmDump = CustomLogicModel.unescape(st.nextToken());
+    }
+    
+    void save() {
+	String d = dump();
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        stor.setItem("subcircuit:" + name, d);
     }
     
     String arrayToList(String arr[]) {
