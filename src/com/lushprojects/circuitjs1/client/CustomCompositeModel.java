@@ -139,12 +139,23 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	elmDump = CustomLogicModel.unescape(st.nextToken());
     }
     
-    void save() {
-	String d = dump();
+    boolean isSaved() {
+	if (name == null)
+	    return false;
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return false;
+        return stor.getItem("subcircuit:" + name) != null;
+    }
+    
+    void setSaved(boolean sv) {
         Storage stor = Storage.getLocalStorageIfSupported();
         if (stor == null)
             return;
-        stor.setItem("subcircuit:" + name, d);
+        if (sv)
+            stor.setItem("subcircuit:" + name, dump());
+        else
+            stor.removeItem("subcircuit:" + name);
     }
     
     String arrayToList(String arr[]) {
