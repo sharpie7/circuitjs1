@@ -61,6 +61,11 @@ class PisoShiftElm extends ChipElm {
 	
 	boolean hasNewBhvr() { return (flags & FLAG_NEW_BEHAVIOR) != 0; }
 	
+	void reset() {
+		super.reset();
+		data = new boolean[bits];
+	}
+
 	void setupPins() {
 		sizeX = bits + 2;
 		sizeY = 3;
