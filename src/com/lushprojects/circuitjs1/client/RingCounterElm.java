@@ -36,6 +36,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
+	int defaultBitCount() { return 10; }
 	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
 	boolean hasInvertReset() { return (flags & FLAG_RESET_HIGH) == 0; }
 	

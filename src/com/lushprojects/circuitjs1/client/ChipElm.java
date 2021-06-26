@@ -28,7 +28,7 @@ abstract class ChipElm extends CircuitElm {
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
-		bits = (this instanceof RingCounterElm) ? 10 : 4;
+		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
@@ -37,7 +37,10 @@ abstract class ChipElm extends CircuitElm {
 		       StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    if (needsBits())
-		bits = new Integer(st.nextToken()).intValue();
+	    	if (st.hasMoreTokens())
+	    		bits = new Integer(st.nextToken()).intValue();
+	    	else
+	    		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
@@ -52,6 +55,7 @@ abstract class ChipElm extends CircuitElm {
 	    }
 	}
 	boolean needsBits() { return false; }
+	int defaultBitCount() { return 4; }
 	void setSize(int s) {
 	    csize = s;
 	    cspc = 8*s;
@@ -333,6 +337,44 @@ abstract class ChipElm extends CircuitElm {
 		ei.changeFlag(flags, FLAG_FLIP_Y);
 		setPoints();
 	    }
+	}
+	
+	static String writeBits(boolean[] data) {
+		StringBuilder sb = new StringBuilder();
+		int integer = 0;
+		int bitIndex = 0;
+		for (int i = 0; i < data.length; i++) {
+			if (bitIndex >= Integer.SIZE) {
+				//Flush completed integer
+				sb.append(' ');
+				sb.append(integer);
+				integer = 0;
+				bitIndex = 0;
+			}
+			if (data[i])
+				integer |= 1 << bitIndex;
+			bitIndex++;
+		}
+		if (bitIndex > 0) {
+			sb.append(' ');
+			sb.append(integer);
+		}
+		return sb.toString();
+	}
+	static void readBits(StringTokenizer st, boolean[] output) {
+		int integer = 0;
+		int bitIndex = Integer.MAX_VALUE;
+		for (int i = 0; i < output.length; i++) {
+			if (bitIndex >= Integer.SIZE)
+				if (st.hasMoreTokens()) {
+					integer = Integer.parseInt(st.nextToken()); //Load next integer
+					bitIndex = 0;
+				} else
+					break; //Data is absent
+			
+			output[i] = (integer & (1 << bitIndex)) != 0;
+			bitIndex++;
+		}
 	}
 
 	static final int SIDE_N = 0;
