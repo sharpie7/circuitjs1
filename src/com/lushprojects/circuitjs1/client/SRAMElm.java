@@ -21,12 +21,14 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.HashMap;
 
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
 
     class SRAMElm extends ChipElm {
 	int addressNodes, dataNodes, internalNodes;
 	int addressBits, dataBits;
 	HashMap<Integer, Integer> map;
+	static String contentsOverride = null;
 
 	public SRAMElm(int xx, int yy) {
 	    super(xx, yy);
@@ -122,6 +124,10 @@ import com.google.gwt.user.client.ui.TextArea;
         	ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
         	String s = "";
+        	if (contentsOverride != null) {
+        		s = contentsOverride;
+        		contentsOverride = null;
+        	} else {
         	int i;
         	int maxI = 1<<addressBits;
         	for (i = 0; i < maxI; i++) {
@@ -141,8 +147,16 @@ import com.google.gwt.user.client.ui.TextArea;
     	    	    s += "\n";
 //    	    	    sim.console("got " + i + " " + s);
     	    	}
+        	}
     	    	ei.textArea.setText(s);
     	    	return ei;
+            }
+            if (n == 5 && SRAMLoadFile.isSupported()) {
+            	EditInfo ei = new EditInfo("", 0, -1, -1);
+            	ei.loadFile = new SRAMLoadFile();
+            	ei.button = new Button("Load Contents From File");
+            	ei.newDialog = true;
+            	return ei;
             }
 	    return super.getEditInfo(n);
 	}

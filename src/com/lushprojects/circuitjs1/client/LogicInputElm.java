@@ -77,10 +77,13 @@ package com.lushprojects.circuitjs1.client;
 
 	void setCurrent(int vs, double c) { current = c; }
 	void stamp() {
+	    sim.stampVoltageSource(0, nodes[0], voltSource);
+	}
+	void doStep() {
 	    double v = (position == 0) ? loV : hiV;
 	    if (isTernary())
 		v = position * 2.5;
-	    sim.stampVoltageSource(0, nodes[0], voltSource, v);
+	    sim.updateVoltageSource(0, nodes[0], voltSource, v);
 	}
 	int getVoltageSourceCount() { return 1; }
 	double getVoltageDiff() { return volts[0]; }

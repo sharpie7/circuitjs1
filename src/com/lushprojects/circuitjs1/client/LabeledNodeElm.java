@@ -115,12 +115,12 @@ class LabeledNodeElm extends CircuitElm {
 	drawThickLine(g, point1, lead1);
 	g.setColor(needsHighlight() ? selectColor : whiteColor);
 	setPowerColor(g, false);
+	interpPoint(point1, point2, ps2, 1+11./dn);
 	setBbox(point1, ps2, circleSize);
 	drawLabeledNode(g, text, point1, lead1);
 
 	curcount = updateDotCount(current, curcount);
 	drawDots(g, point1, lead1, curcount);
-	interpPoint(point1, point2, ps2, 1+11./dn);
 	drawPosts(g);
     }
     double getCurrentIntoNode(int n) { return -current; }

@@ -28,11 +28,15 @@ package com.lushprojects.circuitjs1.client;
 // 3n+2 = end of coil resistor
 
 class RelayElm extends CircuitElm {
+	final int FLAG_SWAP_COIL = 1;
+	final int FLAG_SHOW_BOX = 2;
+	
     double inductance;
     Inductor ind;
     double r_on, r_off, onCurrent;
     Point coilPosts[], coilLeads[], swposts[][], swpoles[][], ptSwitch[];
     Point lines[];
+    Point outline[] = newPointArray(4);
     double coilCurrent, switchCurrent[], coilCurCount, switchCurCount[];
     double d_position, coilR;
     int i_position;
@@ -42,7 +46,6 @@ class RelayElm extends CircuitElm {
     final int nSwitch1 = 1;
     final int nSwitch2 = 2;
     int nCoil1, nCoil2, nCoil3;
-    final int FLAG_SWAP_COIL = 1;
     
     public RelayElm(int xx, int yy) {
 	super(xx, yy);
@@ -56,6 +59,7 @@ class RelayElm extends CircuitElm {
 	coilR = 20;
 	coilCurrent = coilCurCount = 0;
 	poleCount = 1;
+	flags |= FLAG_SHOW_BOX;
 	setupPoles();
     }
     public RelayElm(int xa, int ya, int xb, int yb, int f,
@@ -104,6 +108,15 @@ class RelayElm extends CircuitElm {
 	drawCoil(g, dsign*6, coilLeads[x], coilLeads[1-x],
 		 volts[nCoil1+x], volts[nCoil2-x]);
 
+	// draw rectangle
+	if ((flags & FLAG_SHOW_BOX) != 0) {
+		g.setColor(needsHighlight() ? selectColor : lightGrayColor);
+		drawThickLine(g, outline[0], outline[1]);
+		drawThickLine(g, outline[1], outline[2]);
+		drawThickLine(g, outline[2], outline[3]);
+		drawThickLine(g, outline[3], outline[0]);
+	}
+	
 	// draw lines
 	g.setColor(Color.darkGray);
 	for (i = 0; i != poleCount; i++) {
@@ -202,6 +215,13 @@ class RelayElm extends CircuitElm {
 
 	// lines
 	lines = newPointArray(poleCount*2);
+	
+	// outline
+	double boxWScale = Math.min(0.4, 25.0 / dn);
+	interpPoint(point1, point2, outline[0], 0.5 - boxWScale, -56.0 * dsign);
+	interpPoint(point1, point2, outline[1], 0.5 + boxWScale, -56.0 * dsign);
+	interpPoint(point1, point2, outline[2], 0.5 + boxWScale, -(openhs*3*poleCount) - (24.0 * dsign));
+	interpPoint(point1, point2, outline[3], 0.5 - boxWScale, -(openhs*3*poleCount) - (24.0 * dsign));
     }
     Point getPost(int n) {
 	if (n < 3*poleCount)
@@ -310,6 +330,11 @@ class RelayElm extends CircuitElm {
 				       (flags & FLAG_SWAP_COIL) != 0);
 	    return ei;
 	}
+	if (n == 7) {
+	    EditInfo ei = new EditInfo("", 0, -1, -1);
+	    ei.checkbox = new Checkbox("Show Box", (flags & FLAG_SHOW_BOX) != 0);
+	    return ei;
+	}
 	return null;
     }
     public void setEditValue(int n, EditInfo ei) {
@@ -336,6 +361,8 @@ class RelayElm extends CircuitElm {
 		flags &= ~FLAG_SWAP_COIL;
 	    setPoints();
 	}
+	if (n == 7)
+		flags = ei.changeFlag(flags, FLAG_SHOW_BOX);
     }
     boolean getConnection(int n1, int n2) {
 	return (n1 / 3 == n2 / 3);
