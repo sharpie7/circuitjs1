@@ -342,13 +342,11 @@ abstract class ChipElm extends CircuitElm {
 	    }
 	}
 	
-	static String writeBits(boolean[] data) { return writeBits(data, 0, data.length, 0); }
-	static String writeBits(boolean[] data, int index, int count) { return writeBits(data, index, count, 0); }
-	static String writeBits(boolean[] data, int index, int count, int zeroPadding) {
+	static String writeBits(boolean[] data) {
 		StringBuilder sb = new StringBuilder();
-		int integer = zeroPadding / Integer.SIZE;
-		int bitIndex = zeroPadding % Integer.SIZE;
-		for (int i = 0; i < count; i++) {
+		int integer = 0;
+		int bitIndex = 0;
+		for (int i = 0; i < data.length; i++) {
 			if (bitIndex >= Integer.SIZE) {
 				//Flush completed integer
 				sb.append(' ');
@@ -356,7 +354,7 @@ abstract class ChipElm extends CircuitElm {
 				integer = 0;
 				bitIndex = 0;
 			}
-			if (data[i + index])
+			if (data[i])
 				integer |= 1 << bitIndex;
 			bitIndex++;
 		}

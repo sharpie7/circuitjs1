@@ -22,16 +22,19 @@ package com.lushprojects.circuitjs1.client;
 // contributed by Edward Calver
 
 class PisoShiftElm extends ChipElm {
-	final int DATA_PIN_INDEX = 3; // the register pins' starting index. increase this if you want to add more control pins.
+	final int FLAG_NEW_BEHAVIOR = 2; //SER and no extra output register
 	
 	boolean[] data = new boolean[0];
 	int dataIndex = 0;
-	boolean clockstate = false;
-	boolean loadstate = false;
+	boolean clockState = false;
+	boolean loadState = false;
+	int dataPinIndex; // the register pins' starting index
 	
 	public PisoShiftElm(int xx, int yy) {
 		super(xx, yy);
 		data = new boolean[bits];
+		flags |= FLAG_NEW_BEHAVIOR;
+		setupPins();
 	}
 	public PisoShiftElm(int xa, int ya, int xb, int yb, int f, StringTokenizer st) {
 		super(xa, ya, xb, yb, f, st);
@@ -40,13 +43,22 @@ class PisoShiftElm extends ChipElm {
 	}
 	
 	String dump() {
-		return super.dump() + writeBits(data, dataIndex, bits - dataIndex, dataIndex);
+		//Normalize the circular array before exporting
+		boolean[] newData = new boolean[data.length];
+		for (int i = 0; i < data.length; i++)
+			newData[i] = data[(i + dataIndex) % data.length];
+		dataIndex = 0;
+		data = newData;
+		
+		return super.dump() + writeBits(data);
 	}
 	int getDumpType() { return 186; }
 	String getChipName() { return "PISO shift register"; }
 	
 	boolean needsBits() { return true; }
 	int defaultBitCount() { return 8; }
+	
+	boolean hasNewBhvr() { return (flags & FLAG_NEW_BEHAVIOR) != 0; }
 	
 	void setupPins() {
 		sizeX = bits + 2;
@@ -57,36 +69,53 @@ class PisoShiftElm extends ChipElm {
 		pins[1] = new Pin(2, SIDE_W, "");
 		pins[1].clock = true;
 		
-		pins[2] = new Pin(1, SIDE_E, "Q" + bits);
+		pins[2] = new Pin(1, SIDE_E, "Q" + (hasNewBhvr() ?  bits-1 : bits));
 		pins[2].output = true;
 		
+		if (hasNewBhvr()) {
+			pins[3] = new Pin(0, SIDE_W, "SER");
+			dataPinIndex = 4;
+		} else {
+			dataPinIndex = 3;
+		}
+		
 		for (int i = 0; i < bits; i++)
-			pins[DATA_PIN_INDEX + i] = new Pin(bits - i, SIDE_N, "D" + (bits - (i + 1)));
+			pins[dataPinIndex + i] = new Pin(bits - i, SIDE_N, "D" + (bits - (i + 1)));
 		
 		allocNodes();
 	}
-	int getPostCount() { return 3 + bits; }
+	int getPostCount() { return (hasNewBhvr() ? 4 : 3) + bits; }
 	int getVoltageSourceCount() { return 1; }
 	
 	void execute() {
 		//LOAD raised
-		if (pins[0].value != loadstate) {
-			loadstate = pins[0].value;
-			if (loadstate && data.length > 0) {
-				dataIndex = 0;
+		if (pins[0].value != loadState) {
+			loadState = pins[0].value;
+			if (loadState && data.length > 0) {
+				if (hasNewBhvr()) {
+					pins[2].value = pins[dataPinIndex].value; //Set output immediately
+					dataIndex = 0;
+				} else {
+					dataIndex = -1;
+				}
 				for (int i = 0; i < data.length; i++)
-					data[i] = pins[DATA_PIN_INDEX + i].value;
+					data[i] = pins[dataPinIndex + i].value;
 			}
 		}
 		
 		//CLK raised: Rotate the circular array
-		if (pins[1].value != clockstate) {
-			clockstate = pins[1].value;
-			if (clockstate) {
-				if (dataIndex < data.length)
-					pins[2].value = data[dataIndex++]; //Write then shift
-				else
-					pins[2].value = false; //Out of data
+		if (pins[1].value != clockState) {
+			clockState = pins[1].value;
+			if (clockState) {
+				//Shift
+				if (dataIndex >= 0)
+					data[dataIndex] = hasNewBhvr() && pins[3].value;
+				dataIndex++;
+				if (dataIndex >= data.length)
+					dataIndex = 0;
+				
+				//Write
+				pins[2].value = data[dataIndex];
 			}
 		}
 	}
