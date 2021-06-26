@@ -40,6 +40,7 @@ class PisoShiftElm extends ChipElm {
 		super(xa, ya, xb, yb, f, st);
 		data = new boolean[bits];
 		readBits(st, data);
+		setupPins();
 	}
 	
 	String dump() {
@@ -74,6 +75,8 @@ class PisoShiftElm extends ChipElm {
 		
 		if (hasNewBhvr()) {
 			pins[3] = new Pin(0, SIDE_W, "SER");
+			if (data != null && data.length > 0)
+				pins[2].value = data[0];
 			dataPinIndex = 4;
 		} else {
 			dataPinIndex = 3;
