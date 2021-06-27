@@ -252,7 +252,7 @@ MouseOutHandler, MouseWheelHandler {
     String clipboard;
     String recovery;
     Rectangle circuitArea;
-    Vector<String> undoStack, redoStack;
+    Vector<UndoItem> undoStack, redoStack;
     double transform[];
     boolean unsavedChanges;
 
@@ -670,8 +670,8 @@ MouseOutHandler, MouseWheelHandler {
 	elmList = new Vector<CircuitElm>();
 	adjustables = new Vector<Adjustable>();
 	//	setupList = new Vector();
-	undoStack = new Vector<String>();
-	redoStack = new Vector<String>();
+	undoStack = new Vector<UndoItem>();
+	redoStack = new Vector<UndoItem>();
 
 
 	scopes = new Scope[20];
@@ -4623,32 +4623,37 @@ MouseOutHandler, MouseWheelHandler {
     	redoStack.removeAllElements();
     	String s = dumpCircuit();
     	if (undoStack.size() > 0 &&
-    			s.compareTo(undoStack.lastElement()) == 0)
-    		return;
-    	undoStack.add(s);
+    			s.compareTo(undoStack.lastElement().dump) == 0)
+    	    return;
+    	undoStack.add(new UndoItem(s));
     	enableUndoRedo();
     }
 
     void doUndo() {
     	if (undoStack.size() == 0)
     		return;
-    	redoStack.add(dumpCircuit());
-    	String s = undoStack.remove(undoStack.size()-1);
-    	// need to center circuit here because undo could change everything and
-        // circuit may be completely offscreen afterwards
-    	readCircuit(s);
+    	redoStack.add(new UndoItem(dumpCircuit()));
+    	UndoItem ui = undoStack.remove(undoStack.size()-1);
+    	loadUndoItem(ui);
     	enableUndoRedo();
     }
 
     void doRedo() {
     	if (redoStack.size() == 0)
     		return;
-    	undoStack.add(dumpCircuit());
-    	String s = redoStack.remove(redoStack.size()-1);
-    	readCircuit(s, RC_NO_CENTER);
+    	undoStack.add(new UndoItem(dumpCircuit()));
+    	UndoItem ui = redoStack.remove(redoStack.size()-1);
+    	loadUndoItem(ui);
     	enableUndoRedo();
     }
 
+    void loadUndoItem(UndoItem ui) {
+	readCircuit(ui.dump, RC_NO_CENTER);
+	transform[0] = transform[3] = ui.scale;
+	transform[4] = ui.transform4;
+	transform[5] = ui.transform5;
+    }
+    
     void doRecover() {
 	pushUndo();
 	readCircuit(recovery);
@@ -6026,5 +6031,18 @@ MouseOutHandler, MouseWheelHandler {
 	    var hook = $wnd.CircuitJS1.ontimestep;
 	    if (hook)
 	    	hook($wnd.CircuitJS1);
-	}-*/;	
+	}-*/;
+	
+	class UndoItem {
+	    public String dump;
+	    public double scale, transform4, transform5;
+	    UndoItem(String d) {
+		dump = d;
+		scale = transform[0];
+		transform4 = transform[4];
+		transform5 = transform[5];
+	    }
+	}
+
 }
+
