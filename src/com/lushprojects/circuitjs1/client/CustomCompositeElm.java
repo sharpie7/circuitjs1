@@ -144,7 +144,7 @@ public class CustomCompositeElm extends CompositeElm {
 	}
         if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Edit Model"));
+            ei.button = new Button(sim.LS("Edit Pin Layout"));
             return ei;
         }
         if (n == 2) {
@@ -155,6 +155,11 @@ public class CustomCompositeElm extends CompositeElm {
         if (n == 3) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.checkbox = new Checkbox("Flip Y", (flags & ChipElm.FLAG_FLIP_Y) != 0);
+            return ei;
+        }
+        if (n == 4 && model.canLoadModelCircuit()) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Load Model Circuit"));
             return ei;
         }
 	return null;
@@ -187,6 +192,10 @@ public class CustomCompositeElm extends CompositeElm {
         if (n == 3) {
             flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_Y);
             setPoints();
+        }
+        if (n == 4) {
+            sim.readCircuit(model.modelCircuit);
+            sim.editDialog.closeDialog();
         }
     }
     

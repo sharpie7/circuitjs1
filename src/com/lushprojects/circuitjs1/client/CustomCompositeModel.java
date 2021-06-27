@@ -28,6 +28,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     String nodeList;
     Vector<ExtListEntry> extList;
     String elmDump;
+    String modelCircuit;
     boolean dumped;
     static int sequenceNumber;
     
@@ -59,9 +60,16 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
         	if (!key.startsWith("subcircuit:"))
         	    continue;
         	String data = stor.getItem(key);
-        	StringTokenizer st = new StringTokenizer(data, " ");
-        	if (st.nextToken() == ".")
-        	    undumpModel(st);
+        	String firstLine = data;
+        	int lineLen = data.indexOf('\n');
+        	if (lineLen != -1)
+        	    firstLine = data.substring(0, lineLen);
+        	StringTokenizer st = new StringTokenizer(firstLine, " ");
+        	if (st.nextToken() == ".") {
+        	    CustomCompositeModel model = undumpModel(st);
+        	    if (lineLen != -1)
+        		model.modelCircuit = data.substring(lineLen+1);
+        	}
             }
         }
     }
@@ -113,7 +121,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     CustomCompositeModel() {
     }
     
-    static void undumpModel(StringTokenizer st) {
+    static CustomCompositeModel undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
 //	CustomCompositeElm.lastModelName = name;
 	CustomCompositeModel model = getModelWithName(name);
@@ -124,6 +132,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	    sequenceNumber++;
 	}
 	model.undump(st);
+	return model;
     }
     
     void undump(StringTokenizer st) {
@@ -157,9 +166,10 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
         Storage stor = Storage.getLocalStorageIfSupported();
         if (stor == null)
             return;
-        if (sv)
-            stor.setItem("subcircuit:" + name, dump());
-        else
+        if (sv) {
+            String cir = (modelCircuit == null) ? "" : modelCircuit;
+            stor.setItem("subcircuit:" + name, dump() + "\n" + cir);
+        } else
             stor.removeItem("subcircuit:" + name);
     }
     
@@ -191,5 +201,9 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
         }
         str += " " + CustomLogicModel.escape(nodeList) + " " + CustomLogicModel.escape(elmDump);
         return str;
+    }
+    
+    boolean canLoadModelCircuit() {
+	return modelCircuit != null && modelCircuit.length() > 0;
     }
 }

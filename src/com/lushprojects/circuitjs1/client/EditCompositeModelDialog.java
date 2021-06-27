@@ -94,6 +94,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
         	}
         	nodeSet.add(pin.node);
             }
+            model.modelCircuit = CirSim.theSim.dumpCircuit();
             return true;
         }
         
@@ -109,7 +110,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 		Anchor a;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText(CirSim.LS("Edit Subcircuit Model"));
+		setText(CirSim.LS("Edit Subcircuit Pin Layout"));
 		vp.add(new Label(CirSim.LS("Drag the pins to the desired position")));
 		Date date = new Date();
 
