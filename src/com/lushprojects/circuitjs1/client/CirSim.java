@@ -4539,8 +4539,10 @@ MouseOutHandler, MouseWheelHandler {
     		}
     		dragElm = null;
     	}
-    	if (circuitChanged)
-    		needAnalyze();
+    	if (circuitChanged) {
+    	    needAnalyze();
+    	    pushUndo();
+    	}
     	if (dragElm != null)
     		dragElm.delete();
     	dragElm = null;
@@ -4632,7 +4634,9 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	redoStack.add(dumpCircuit());
     	String s = undoStack.remove(undoStack.size()-1);
-    	readCircuit(s, RC_NO_CENTER);
+    	// need to center circuit here because undo could change everything and
+        // circuit may be completely offscreen afterwards
+    	readCircuit(s);
     	enableUndoRedo();
     }
 
@@ -4847,8 +4851,10 @@ MouseOutHandler, MouseWheelHandler {
     	int flags = RC_RETAIN;
     	
     	// don't recenter circuit if we're going to paste in place because that will change the transform
-	if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY))
-	    flags |= RC_NO_CENTER;
+//	if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY))
+    	
+    	// in fact, don't ever recenter circuit
+	flags |= RC_NO_CENTER;
 	
     	if (dump != null)
     	    readCircuit(dump, flags);
