@@ -3827,7 +3827,7 @@ MouseOutHandler, MouseWheelHandler {
     		break;
     	case MODE_DRAG_POST:
     		if (mouseElm != null) {
-    		    dragPost(snapGrid(gx), snapGrid(gy));
+    		    dragPost(snapGrid(gx), snapGrid(gy), e.isShiftKeyDown());
     		    changed = true;
     		}
     		break;
@@ -3978,7 +3978,7 @@ MouseOutHandler, MouseWheelHandler {
     	return allowed;
     }
 
-    void dragPost(int x, int y) {
+    void dragPost(int x, int y, boolean all) {
     	if (draggingPost == -1) {
     		draggingPost =
     				(Graphics.distanceSq(mouseElm.x , mouseElm.y , x, y) >
@@ -3988,7 +3988,26 @@ MouseOutHandler, MouseWheelHandler {
     	int dy = y-dragGridY;
     	if (dx == 0 && dy == 0)
     		return;
-    	mouseElm.movePoint(draggingPost, dx, dy);
+    	
+    	if (all) {
+    	    // go through all elms
+    	    int i;
+    	    for (i = 0; i != elmList.size(); i++) {
+    		// can't use nodeList because 0 is missing
+    		CircuitElm e = elmList.get(i);
+    		
+    		// which post do we move?
+    		int p = 0;
+    		if (e.x == dragGridX && e.y == dragGridY)
+    		    p = 0;
+    		else if (e.x2 == dragGridX && e.y2 == dragGridY)
+    		    p = 1;
+    		else
+    		    continue;
+    		e.movePoint(p, dx, dy);
+    	    }
+    	} else
+    	    mouseElm.movePoint(draggingPost, dx, dy);
     	needAnalyze();
     }
 
