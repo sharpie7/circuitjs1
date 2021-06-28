@@ -130,6 +130,10 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	    model.name = name;
 	    modelMap.put(name, model);
 	    sequenceNumber++;
+	} else if (model.modelCircuit != null) {
+	    // if model has an associated model circuit, don't overwrite it.  keep the old one.
+	    CirSim.console("ignoring model " + name + ", using stored version instead");
+	    return model;
 	}
 	model.undump(st);
 	return model;
