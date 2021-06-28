@@ -3993,7 +3993,6 @@ MouseOutHandler, MouseWheelHandler {
     	    // go through all elms
     	    int i;
     	    for (i = 0; i != elmList.size(); i++) {
-    		// can't use nodeList because 0 is missing
     		CircuitElm e = elmList.get(i);
     		
     		// which post do we move?
