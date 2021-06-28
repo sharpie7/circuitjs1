@@ -302,10 +302,11 @@ class RelayElm extends CircuitElm {
 	    return;
 	}
 	ind.startIteration(volts[nCoil1]-volts[nCoil3]);
-
+	double absCurrent = Math.abs(coilCurrent);
+	
 	if (onState) {
 	    // on or turning on.  check if we need to turn off
-	    if (coilCurrent < offCurrent) {
+	    if (absCurrent < offCurrent) {
 		// turning off, set switch to intermediate position
 		onState = false;
 		i_position = 2;
@@ -316,7 +317,7 @@ class RelayElm extends CircuitElm {
 	    }
 	} else {
 	    // off or turning off.  check if we need to turn on
-	    if (coilCurrent > onCurrent) {
+	    if (absCurrent > onCurrent) {
 		// turning on, set switch to intermediate position
 		onState = true;
 		i_position = 2;
