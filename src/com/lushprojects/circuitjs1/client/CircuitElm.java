@@ -435,6 +435,12 @@ public abstract class CircuitElm implements Editable {
     	int oldy=y;
     	int oldx2=x2;
     	int oldy2=y2;
+    	if (noDiagonal) {
+    	    if (x == x2)
+    		dx = 0;
+    	    else
+    		dy = 0;
+    	}
     	if (n == 0) {
     		x += dx; y += dy;
     	} else {
