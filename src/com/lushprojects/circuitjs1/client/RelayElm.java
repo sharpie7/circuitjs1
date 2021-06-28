@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.user.client.ui.Button;
+
 // 0 = switch
 // 1 = switch end 1
 // 2 = switch end 2
@@ -33,15 +35,26 @@ class RelayElm extends CircuitElm {
 	
     double inductance;
     Inductor ind;
-    double r_on, r_off, onCurrent;
+    double r_on, r_off, onCurrent, offCurrent;
     Point coilPosts[], coilLeads[], swposts[][], swpoles[][], ptSwitch[];
     Point lines[];
     Point outline[] = newPointArray(4);
     double coilCurrent, switchCurrent[], coilCurCount, switchCurCount[];
-    double d_position, coilR;
+    
+    // fractional position, between 0 and 1 inclusive
+    double d_position;
+    
+    // integer position, can be 0 (off), 1 (on), 2 (in between)
     int i_position;
+    
+    double coilR;
+    
+    // time to switch in seconds, or 0 for old model where switching time was not constant
+    double switchingTime;
+    
     int poleCount;
     int openhs;
+    boolean onState;
     final int nSwitch0 = 0;
     final int nSwitch1 = 1;
     final int nSwitch2 = 2;
@@ -54,9 +67,11 @@ class RelayElm extends CircuitElm {
 	ind.setup(inductance, 0, Inductor.FLAG_BACK_EULER);
 	noDiagonal = true;
 	onCurrent = .02;
+	offCurrent = .015;
 	r_on = .05;
 	r_off = 1e6;
 	coilR = 20;
+	switchingTime = 2e-3;
 	coilCurrent = coilCurCount = 0;
 	poleCount = 1;
 	flags |= FLAG_SHOW_BOX;
@@ -72,6 +87,15 @@ class RelayElm extends CircuitElm {
 	r_off = new Double(st.nextToken()).doubleValue();
 	onCurrent = new Double(st.nextToken()).doubleValue();
 	coilR = new Double(st.nextToken()).doubleValue();
+	try {
+	    offCurrent = onCurrent;
+	    switchingTime = 0;
+	    offCurrent = new Double(st.nextToken()).doubleValue();
+	    switchingTime = Double.parseDouble(st.nextToken());
+	    d_position = i_position = Integer.parseInt(st.nextToken());
+	} catch (Exception e) {}	
+	if (i_position == 1)
+	    onState = true;
 	noDiagonal = true;
 	ind = new Inductor(sim);
 	ind.setup(inductance, coilCurrent, Inductor.FLAG_BACK_EULER);
@@ -94,7 +118,7 @@ class RelayElm extends CircuitElm {
     String dump() {
 	return super.dump() + " " + poleCount + " " +
 	    inductance + " " + coilCurrent + " " +
-	    r_on + " " + r_off + " " + onCurrent + " " + coilR;
+	    r_on + " " + r_off + " " + onCurrent + " " + coilR + " " + offCurrent + " " + switchingTime + " " + i_position;
     }
     
     void draw(Graphics g) {
@@ -249,13 +273,49 @@ class RelayElm extends CircuitElm {
 	for (i = 0; i != poleCount*3; i++)
 	    sim.stampNonLinear(nodes[nSwitch0+i]);
     }
+    
     void startIteration() {
+	// using old model?
+	if (switchingTime == 0) {
+	    startIterationOld();
+	    return;
+	}
 	ind.startIteration(volts[nCoil1]-volts[nCoil3]);
 
-	// magic value to balance operate speed with reset speed semi-realistically
+	if (onState) {
+	    // on or turning on.  check if we need to turn off
+	    if (coilCurrent < offCurrent) {
+		// turning off, set switch to intermediate position
+		onState = false;
+		i_position = 2;
+	    } else {
+		d_position += sim.timeStep/switchingTime;
+		if (d_position >= 1)
+		    d_position = i_position = 1;
+	    }
+	} else {
+	    // off or turning off.  check if we need to turn on
+	    if (coilCurrent > onCurrent) {
+		// turning on, set switch to intermediate position
+		onState = true;
+		i_position = 2;
+	    } else {
+		d_position -= sim.timeStep/switchingTime;
+		if (d_position <= 0)
+		    d_position = i_position = 0;
+	    }
+	    
+	}
+    }
+    
+    void startIterationOld() {
+	ind.startIteration(volts[nCoil1]-volts[nCoil3]);
+
+	// magic value to balance operate speed with reset speed not at all realistically
 	double magic = 1.3;
 	double pmult = Math.sqrt(magic+1);
-	double p = coilCurrent*pmult/onCurrent;
+	double c = onCurrent;
+	double p = coilCurrent*pmult/c;
 	d_position = Math.abs(p*p) - 1.3;
 	if (d_position < 0)
 	    d_position = 0;
@@ -300,14 +360,19 @@ class RelayElm extends CircuitElm {
 	}
     }
     void getInfo(String arr[]) {
-	arr[0] = i_position == 0 ? "relay (off)" :
-	    i_position == 1 ? "relay (on)" : "relay";
+	arr[0] = sim.LS("relay");
+	if (i_position == 0)
+	    arr[0] += " (" + sim.LS("off") + ")";
+	else if (i_position == 1)
+	    arr[0] += " (" + sim.LS("on") + ")";
+	if (switchingTime == 0)
+	    arr[0] += " (" + sim.LS("old model") + ")";
 	int i;
 	int ln = 1;
 	for (i = 0; i != poleCount; i++)
 	    arr[ln++] = "I" + (i+1) + " = " + getCurrentDText(switchCurrent[i]);
-	arr[ln++] = "coil I = " + getCurrentDText(coilCurrent);
-	arr[ln++] = "coil Vd = " +
+	arr[ln++] = sim.LS("coil I") + " = " + getCurrentDText(coilCurrent);
+	arr[ln++] = sim.LS("coil Vd") + " = " +
 	    getVoltageDText(volts[nCoil1] - volts[nCoil2]);
     }
     public EditInfo getEditInfo(int n) {
@@ -319,24 +384,39 @@ class RelayElm extends CircuitElm {
 	    return new EditInfo("Off Resistance (ohms)", r_off, 0, 0);
 	if (n == 3)
 	    return new EditInfo("On Current (A)", onCurrent, 0, 0);
-	if (n == 4)
+	if (n == 4) {
+	    if (switchingTime == 0) {
+		// still using old model, so hide off current which won't work.
+		// make button to switch to new model
+                EditInfo ei = new EditInfo("", 0, -1, -1);
+                ei.button = new Button(sim.LS("Use New Model"));
+                return ei;
+	    }
+	    return new EditInfo("Off Current (A)", offCurrent, 0, 0);
+	}
+	if (n == 5)
 	    return new EditInfo("Number of Poles", poleCount, 1, 4).
 		setDimensionless();
-	if (n == 5)
+	if (n == 6)
 	    return new EditInfo("Coil Resistance (ohms)", coilR, 0, 0);
-	if (n == 6) {
+	if (n == 7) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
 	    ei.checkbox = new Checkbox("Swap Coil Direction",
 				       (flags & FLAG_SWAP_COIL) != 0);
 	    return ei;
 	}
-	if (n == 7) {
+	if (n == 8) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);
 	    ei.checkbox = new Checkbox("Show Box", (flags & FLAG_SHOW_BOX) != 0);
 	    return ei;
 	}
+	
+	// show switching time only for new model, since it is meaningless for old one
+	if (n == 9 && switchingTime > 0)
+	    return new EditInfo("Switching Time (s)", switchingTime, 0, 0);
 	return null;
     }
+    
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0 && ei.value > 0) {
 	    inductance = ei.value;
@@ -348,25 +428,38 @@ class RelayElm extends CircuitElm {
 	    r_off = ei.value;
 	if (n == 3 && ei.value > 0)
 	    onCurrent = ei.value;
-	if (n == 4 && ei.value >= 1) {
+	if (n == 4) {
+	    // this could be a button or a text box for off current
+	    if (ei.button != null) {
+		// upgrading to new model
+		switchingTime = 2e-3;
+		ei.newDialog = true;
+	    } else if (ei.value > 0)
+		offCurrent = ei.value;
+	}
+	if (n == 5 && ei.value >= 1) {
 	    poleCount = (int) ei.value;
 	    setPoints();
 	}
-	if (n == 5 && ei.value > 0)
+	if (n == 6 && ei.value > 0)
 	    coilR = ei.value;
-	if (n == 6) {
+	if (n == 7) {
 	    if (ei.checkbox.getState())
 		flags |= FLAG_SWAP_COIL;
 	    else
 		flags &= ~FLAG_SWAP_COIL;
 	    setPoints();
 	}
-	if (n == 7)
-		flags = ei.changeFlag(flags, FLAG_SHOW_BOX);
+	if (n == 8)
+	    flags = ei.changeFlag(flags, FLAG_SHOW_BOX);
+	if (n == 9 && ei.value > 0)
+	    switchingTime = ei.value;
     }
+    
     boolean getConnection(int n1, int n2) {
 	return (n1 / 3 == n2 / 3);
     }
+    
     int getShortcut() { return 'R'; }
 }
     
