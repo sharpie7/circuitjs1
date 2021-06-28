@@ -76,6 +76,7 @@ package com.lushprojects.circuitjs1.client;
 	}	
 
 	void setCurrent(int vs, double c) { current = c; }
+	void calculateCurrent() {}
 	void stamp() {
 	    sim.stampVoltageSource(0, nodes[0], voltSource);
 	}
