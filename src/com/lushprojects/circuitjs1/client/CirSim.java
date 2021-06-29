@@ -1979,6 +1979,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     Vector<Integer> unconnectedNodes;
+    Vector<CircuitElm> nodesWithGroundConnection;
     
     void findUnconnectedNodes() {
 	int i, j;
@@ -1989,6 +1990,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean closure[] = new boolean[nodeList.size()];
 	boolean changed = true;
 	unconnectedNodes = new Vector<Integer>();
+	nodesWithGroundConnection = new Vector<CircuitElm>();
 	closure[0] = true;
 	while (changed) {
 	    changed = false;
@@ -1998,9 +2000,13 @@ MouseOutHandler, MouseWheelHandler {
 		    continue;
 		// loop through all ce's nodes to see if they are connected
 		// to other nodes not in closure
+		boolean hasGround = false;
 		for (j = 0; j < ce.getConnectionNodeCount(); j++) {
+		    boolean hg = ce.hasGroundConnection(j);
+		    if (hg)
+			hasGround = true;
 		    if (!closure[ce.getConnectionNode(j)]) {
-			if (ce.hasGroundConnection(j))
+			if (hg)
 			    closure[ce.getConnectionNode(j)] = changed = true;
 			continue;
 		    }
@@ -2015,6 +2021,8 @@ MouseOutHandler, MouseWheelHandler {
 			}
 		    }
 		}
+		if (hasGround)
+		    nodesWithGroundConnection.add(ce);
 	    }
 	    if (changed)
 		continue;
@@ -2096,8 +2104,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	    // look for path from rail to ground
 	    if (ce instanceof RailElm || ce instanceof LogicInputElm) {
-		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
-			    ce.getNode(0));
+		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce, ce.getNode(0));
 		if (fpi.findPath(0)) {
 		    stop("Path to ground with no resistance!", ce);
 		    return false;
@@ -2130,13 +2137,13 @@ MouseOutHandler, MouseWheelHandler {
     
     // analyze the circuit when something changes, so it can be simulated
     void analyzeCircuit() {
+	stopMessage = null;
+	stopElm = null;
 	if (elmList.isEmpty()) {
 	    postDrawList = new Vector<Point>();
 	    badConnectionList = new Vector<Point>();
 	    return;
 	}
-	stopMessage = null;
-	stopElm = null;
 	int i, j;
 	nodeList = new Vector<CircuitNode>();
 	postCountMap = new HashMap<Point,Integer>();
@@ -2186,6 +2193,9 @@ MouseOutHandler, MouseWheelHandler {
 	findUnconnectedNodes();
 	if (!validateCircuit())
 	    return;
+	
+	// only need this for validation
+	nodesWithGroundConnection = null;
 
 	timeStep = maxTimeStep;
 	try {
@@ -2419,28 +2429,44 @@ MouseOutHandler, MouseWheelHandler {
 		return false;
 
 	    visited[n1] = true;
+	    CircuitNode cn = getCircuitNode(n1);
 	    int i;
-	    for (i = 0; i != elmList.size(); i++) {
-		CircuitElm ce = getElm(i);
+	    if (cn == null)
+		return false;
+	    for (i = 0; i != cn.links.size(); i++) {
+		CircuitNodeLink cnl = cn.links.get(i);
+		CircuitElm ce = cnl.elm;
+		if (checkElm(n1, ce))
+		    return true;
+	    }
+	    if (n1 == 0) {
+		for (i = 0; i != nodesWithGroundConnection.size(); i++)
+		    if (checkElm(0, nodesWithGroundConnection.get(i)))
+			return true;
+	    }
+	    return false;
+	}
+	
+	boolean checkElm(int n1, CircuitElm ce) {
 		if (ce == firstElm)
-		    continue;
+		    return false;
 		if (type == INDUCT) {
 		    // inductors need a path free of current sources
 		    if (ce instanceof CurrentElm)
-			continue;
+			return false;
 		}
 		if (type == VOLTAGE) {
 		    // when checking for voltage loops, we only care about voltage sources/wires/ground
 		    if (!(ce.isWire() || ce instanceof VoltageElm || ce instanceof GroundElm))
-			continue;
+			return false;
 		}
 		// when checking for shorts, just check wires
 		if (type == SHORT && !ce.isWire())
-		    continue;
+		    return false;
 		if (type == CAP_V) {
 		    // checking for capacitor/voltage source loops
 		    if (!(ce.isWire() || ce instanceof CapacitorElm || ce instanceof VoltageElm))
-			continue;
+			return false;
 		}
 		if (n1 == 0) {
 		    // look for posts which have a ground connection;
@@ -2456,17 +2482,16 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		}
 		if (j == ce.getConnectionNodeCount())
-		    continue;
-		if (ce.hasGroundConnection(j) && findPath(0)) {
+		    return false;
+		if (ce.hasGroundConnection(j) && findPath(0))
 		    return true;
-		}
 		if (type == INDUCT && ce instanceof InductorElm) {
 		    // inductors can use paths with other inductors of matching current
 		    double c = ce.getCurrent();
 		    if (j == 0)
 			c = -c;
 		    if (Math.abs(c-firstElm.getCurrent()) > 1e-10)
-			continue;
+			return false;
 		}
 		int k;
 		for (k = 0; k != ce.getConnectionNodeCount(); k++) {
@@ -2477,7 +2502,6 @@ MouseOutHandler, MouseWheelHandler {
 			return true;
 		    }
 		}
-	    }
 	    return false;
 	}
     }
