@@ -1246,7 +1246,7 @@ MouseOutHandler, MouseWheelHandler {
     // the circuit, but this needs to be ready before we first draw it, so we use this crude method
     Rectangle getCircuitBounds() {
     	int i;
-    	int minx = 1000, maxx = 0, miny = 1000, maxy = 0;
+    	int minx = 30000, maxx = -30000, miny = 30000, maxy = -30000;
     	for (i = 0; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
     		// centered text causes problems when trying to center the circuit,
