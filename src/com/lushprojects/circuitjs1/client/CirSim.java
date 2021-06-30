@@ -2266,7 +2266,7 @@ MouseOutHandler, MouseWheelHandler {
 		continue;
 	    double rsadd = 0;
 
-	    // look for rows that can be removed
+	    // see if this row can be removed
 	    for (j = 0; j != matrixSize; j++) {
 		double q = circuitMatrix[i][j];
 		if (circuitRowInfo[j].type == RowInfo.ROW_CONST) {
@@ -2304,7 +2304,12 @@ MouseOutHandler, MouseWheelHandler {
 //		console("ROW_CONST " + i + " " + rsadd);
 		elt.value = (circuitRightSide[i]+rsadd)/qv;
 		circuitRowInfo[i].dropRow = true;
-		i = -1; // start over from scratch
+		// find first row that referenced the element we just deleted
+		for (j = 0; j != i; j++)
+		    if (circuitMatrix[j][qp] != 0)
+			break;
+		// start over just before that
+		i = j-1;
 	    }
 	}
 	//System.out.println("ac7");
