@@ -4935,15 +4935,21 @@ MouseOutHandler, MouseWheelHandler {
     			newbb = bb;
     	}
     	
-    	if (oldbb != null && newbb != null && oldbb.intersects(newbb)) {
+    	if (oldbb != null && newbb != null /*&& oldbb.intersects(newbb)*/) {
     		// find a place on the edge for new items
     		int dx = 0, dy = 0;
     		int spacew = circuitArea.width - oldbb.width - newbb.width;
     		int spaceh = circuitArea.height - oldbb.height - newbb.height;
-    		if (spacew > spaceh)
+    		
+    		// old coordinates may be really far away so move them to same origin as current circuit
+    		dx = snapGrid(oldbb.x - newbb.x);
+    		dy = snapGrid(oldbb.y - newbb.y);
+    		
+    		if (spacew > spaceh) {
     			dx = snapGrid(oldbb.x + oldbb.width  - newbb.x + gridSize);
-    		else
+    		} else {
     			dy = snapGrid(oldbb.y + oldbb.height - newbb.y + gridSize);
+    		}
     		
     		// move new items near the mouse if possible
     		if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY)) {
