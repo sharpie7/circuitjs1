@@ -181,7 +181,7 @@ MouseOutHandler, MouseWheelHandler {
     Rectangle selectedArea;
     int gridSize, gridMask, gridRound;
     boolean dragging;
-    boolean analyzeFlag;
+    boolean analyzeFlag, needsStamp;
     boolean dumpMatrix;
     boolean dcAnalysisFlag;
  //   boolean useBufferedImage;
@@ -1322,6 +1322,14 @@ MouseOutHandler, MouseWheelHandler {
 	    analyzeCircuit();
 	    analyzeFlag = false;
 	}
+	if (needsStamp && simRunning) {
+	    try {
+		stampCircuit();
+	    } catch (Exception e) {
+		stop("Exception in stampCircuit()", null);
+	    }
+	}
+	
 //	if (editDialog != null && editDialog.elm instanceof CircuitElm)
 //	    mouseElm = (CircuitElm) (editDialog.elm);
 	if (stopElm != null && stopElm != mouseElm)
@@ -1342,6 +1350,8 @@ MouseOutHandler, MouseWheelHandler {
 	g.fillRect(0, 0, canvasWidth, canvasHeight);
 	myrunstarttime=System.currentTimeMillis();
 	if (simRunning) {
+	    if (needsStamp)
+		console("needsStamp while simRunning?");
 	    try {
 		runCircuit(didAnalyze);
 	    } catch (Exception e) {
@@ -2196,15 +2206,11 @@ MouseOutHandler, MouseWheelHandler {
 	
 	// only need this for validation
 	nodesWithGroundConnection = null;
-
+	
 	timeStep = maxTimeStep;
-	try {
-	    stampCircuit();
-	} catch (Exception e) {
-	    stop("Exception in stampCircuit()", null);
-	}
+	needsStamp = true;
     }
-    
+
     // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
     void stampCircuit() {
 	int i;
@@ -2247,6 +2253,7 @@ MouseOutHandler, MouseWheelHandler {
 		return;
 	    }
 	}
+	needsStamp = false;
     }
 
     // simplify the matrix; this speeds things up quite a bit, especially for digital circuits.
