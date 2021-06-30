@@ -670,7 +670,7 @@ public abstract class CircuitElm implements Editable {
         adjustBbox(x, y-h/2, x+w, y+h/2);
         g.context.restore();
 	if (lineOver) {
-	    int ya = y-h/2-3;
+	    int ya = y-h/2-1;
 	    g.drawLine(x, ya, x+w, ya);
 	}	
     }    
