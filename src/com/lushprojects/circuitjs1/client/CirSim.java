@@ -4912,8 +4912,9 @@ MouseOutHandler, MouseWheelHandler {
     	// don't recenter circuit if we're going to paste in place because that will change the transform
 //	if (mouseCursorX > 0 && circuitArea.contains(mouseCursorX, mouseCursorY))
     	
-    	// in fact, don't ever recenter circuit
-	flags |= RC_NO_CENTER;
+    	// in fact, don't ever recenter circuit, unless old circuit was empty
+    	if (oldsz > 0)
+    	    flags |= RC_NO_CENTER;
 	
     	if (dump != null)
     	    readCircuit(dump, flags);
