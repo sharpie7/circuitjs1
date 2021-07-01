@@ -120,8 +120,6 @@ _blank
 plotxy
 Uout=0.85*Uoutsaturation
 Qu=100 QL=50
-Ctrl
-Cmd
 100k
 101.7k
 125.2k
@@ -183,3 +181,6 @@ blank.txt
 canvas2svg.js
 zh-cht
 zh-tw
+subcircuit:
+selectColor
+currentColor

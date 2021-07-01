@@ -414,7 +414,7 @@ MouseOutHandler, MouseWheelHandler {
 	transform = new double[6];
 	String os = Navigator.getPlatform();
 	isMac = (os.toLowerCase().contains("mac"));
-	ctrlMetaKey = (isMac) ? "Cmd" : "Ctrl";
+	ctrlMetaKey = (isMac) ? LS("Cmd-") : LS("Ctrl-");
 
 	shortcuts = new String[127];
 
@@ -475,18 +475,18 @@ MouseOutHandler, MouseWheelHandler {
 	buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 
 	m = new MenuBar(true);
-	m.addItem(undoItem = menuItemWithShortcut("ccw", LS("Undo"), LS("Ctrl-Z"), new MyCommand("edit","undo")));
-	m.addItem(redoItem = menuItemWithShortcut("cw", LS("Redo"), LS("Ctrl-Y"), new MyCommand("edit","redo")));
+	m.addItem(undoItem = menuItemWithShortcut("ccw", LS("Undo"), LS(ctrlMetaKey + "Z"), new MyCommand("edit","undo")));
+	m.addItem(redoItem = menuItemWithShortcut("cw", LS("Redo"), LS(ctrlMetaKey + "Y"), new MyCommand("edit","redo")));
 	m.addSeparator();
-	m.addItem(cutItem = menuItemWithShortcut("scissors", LS("Cut"), LS("Ctrl-X"), new MyCommand("edit","cut")));
-	m.addItem(copyItem = menuItemWithShortcut("copy", LS("Copy"), LS("Ctrl-C"), new MyCommand("edit","copy")));
-	m.addItem(pasteItem = menuItemWithShortcut("paste", LS("Paste"), LS("Ctrl-V"), new MyCommand("edit","paste")));
+	m.addItem(cutItem = menuItemWithShortcut("scissors", LS("Cut"), LS(ctrlMetaKey + "X"), new MyCommand("edit","cut")));
+	m.addItem(copyItem = menuItemWithShortcut("copy", LS("Copy"), LS(ctrlMetaKey + "C"), new MyCommand("edit","copy")));
+	m.addItem(pasteItem = menuItemWithShortcut("paste", LS("Paste"), LS(ctrlMetaKey + "V"), new MyCommand("edit","paste")));
 	pasteItem.setEnabled(false);
 
-	m.addItem(menuItemWithShortcut("clone", LS("Duplicate"), LS("Ctrl-D"), new MyCommand("edit","duplicate")));
+	m.addItem(menuItemWithShortcut("clone", LS("Duplicate"), LS(ctrlMetaKey + "D"), new MyCommand("edit","duplicate")));
 
 	m.addSeparator();
-	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS("Ctrl-A"), new MyCommand("edit","selectAll")));
+	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
 	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("zoom", "zoom100")));
@@ -694,7 +694,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
-	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", LS("Split Wire"), LS(ctrlMetaKey + "-click"), new MyCommand("elm","split")));
+	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", LS("Split Wire"), LS(ctrlMetaKey + "click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
 
 	scopePopupMenu = new ScopePopupMenu();
@@ -1117,7 +1117,7 @@ MouseOutHandler, MouseWheelHandler {
     	mi.setShortcut(isMac ? LS("(A-Cmd-drag)") : LS("(A-M-drag)"));
     	otherMenuBar.addItem(getClassCheckItem(LS("Drag Selected"), "DragSelected"));
     	otherMenuBar.addItem(mi=getClassCheckItem(LS("Drag Post"), "DragPost"));
-    	mi.setShortcut("(" + ctrlMetaKey + "-drag)");
+    	mi.setShortcut("(" + ctrlMetaKey + "drag)");
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Drag")), otherMenuBar);
 
