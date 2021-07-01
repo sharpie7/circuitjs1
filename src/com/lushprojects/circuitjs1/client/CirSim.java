@@ -1852,7 +1852,7 @@ MouseOutHandler, MouseWheelHandler {
 	    Vector<CircuitElm> neighbors1 = new Vector<CircuitElm>();
 	    
 	    // assume each end is ready
-	    boolean isReady0 = true, isReady1 = (wire.getPostCount() == 2);
+	    boolean isReady0 = true, isReady1 = !(wire instanceof GroundElm);
 	    
 	    // go through elements sharing a node with this wire (may be connected indirectly
 	    // by other wires, but at least it's faster than going through all elements)
