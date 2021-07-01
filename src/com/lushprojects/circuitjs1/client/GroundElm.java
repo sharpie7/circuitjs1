@@ -75,12 +75,21 @@ package com.lushprojects.circuitjs1.client;
 	    setBbox(point1, ps2, 11);
 	    drawPosts(g);
 	}
-	void setCurrent(int x, double c) { current = -c; }
-	void stamp() {
-	    sim.stampVoltageSource(0, nodes[0], voltSource, 0);
+	
+	boolean isWireEquivalent() { return true; }
+	static Point firstGround;
+	static void resetNodeList() {
+	    firstGround = null;
 	}
+	Point getConnectedPost() {
+	    if (firstGround != null)
+		return firstGround;
+	    firstGround = point1;
+	    return null;
+	}
+	
+//	void setCurrent(int x, double c) { current = -c; }
 	double getVoltageDiff() { return 0; }
-	int getVoltageSourceCount() { return 1; }
 	void getInfo(String arr[]) {
 	    arr[0] = "ground";
 	    arr[1] = "I = " + getCurrentText(getCurrent());

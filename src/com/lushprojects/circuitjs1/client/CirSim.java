@@ -1763,32 +1763,47 @@ MouseOutHandler, MouseWheelHandler {
     HashMap<Point,Integer> postCountMap;
     
     class WireInfo {
-	WireElm wire;
+	CircuitElm wire;
 	Vector<CircuitElm> neighbors;
 	int post;
-	WireInfo(WireElm w) {
+	WireInfo(CircuitElm w) {
 	    wire = w;
 	}
     }
+    
     // info about each wire and its neighbors, used to calculate wire currents
     Vector<WireInfo> wireInfoList;
     
-    // find groups of nodes connected by wires and map them to the same node.  this speeds things
-    // up considerably by reducing the size of the matrix
+    // find groups of nodes connected by wire equivalents and map them to the same node.  this speeds things
+    // up considerably by reducing the size of the matrix.  We do this for wires, labeled nodes, and ground.
+    // The actual node we map to is not assigned yet.  Instead we map to the same NodeMapEntry.
     void calculateWireClosure() {
 	int i;
+	LabeledNodeElm.resetNodeList();
+	GroundElm.resetNodeList();
 	nodeMap = new HashMap<Point,NodeMapEntry>();
 //	int mergeCount = 0;
 	wireInfoList = new Vector<WireInfo>();
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
-	    if (!(ce instanceof WireElm))
+	    if (!ce.isWireEquivalent())
 		continue;
-	    WireElm we = (WireElm) ce;
-	    we.hasWireInfo = false;
-	    wireInfoList.add(new WireInfo(we));
-	    NodeMapEntry cn  = nodeMap.get(ce.getPost(0));
-	    NodeMapEntry cn2 = nodeMap.get(ce.getPost(1));
+	    ce.hasWireInfo = false;
+	    wireInfoList.add(new WireInfo(ce));
+	    Point p0 = ce.getPost(0);
+	    NodeMapEntry cn  = nodeMap.get(p0);
+	    
+	    // what post are we connected to
+	    Point p1 = ce.getConnectedPost();
+	    if (p1 == null) {
+		// no connected post (true for labeled node the first time it's encountered, or ground)
+		if (cn == null) {
+		    cn = new NodeMapEntry();
+		    nodeMap.put(p0, cn);
+		}
+		continue;
+	    }
+	    NodeMapEntry cn2 = nodeMap.get(p1);
 	    if (cn != null && cn2 != null) {
 		// merge nodes; go through map and change all keys pointing to cn2 to point to cn
 		for (Map.Entry<Point, NodeMapEntry> entry : nodeMap.entrySet()) {
@@ -1799,17 +1814,17 @@ MouseOutHandler, MouseWheelHandler {
 		continue;
 	    }
 	    if (cn != null) {
-		nodeMap.put(ce.getPost(1), cn);
+		nodeMap.put(p1, cn);
 		continue;
 	    }
 	    if (cn2 != null) {
-		nodeMap.put(ce.getPost(0), cn2);
+		nodeMap.put(p0, cn2);
 		continue;
 	    }
 	    // new entry
 	    cn = new NodeMapEntry();
-	    nodeMap.put(ce.getPost(0), cn);
-	    nodeMap.put(ce.getPost(1), cn);
+	    nodeMap.put(p0, cn);
+	    nodeMap.put(p1, cn);
 	}
 	
 //	console("got " + (groupCount-mergeCount) + " groups with " + nodeMap.size() + " nodes " + mergeCount);
@@ -1821,19 +1836,23 @@ MouseOutHandler, MouseWheelHandler {
     // this easier, but this is very inefficient, since it makes the matrix 2 rows bigger for each wire.
     // We create a list of WireInfo objects instead to help us calculate the wire currents instead,
     // so we make the matrix less complex, and we only calculate the wire currents when we need them
-    // (once per frame, not once per subiteration)
+    // (once per frame, not once per subiteration).  We need the WireInfos arranged in the correct order,
+    // each one containing a list of neighbors and which end to use (since one end may be ready before
+    // the other)
     boolean calcWireInfo() {
 	int i;
 	int moved = 0;
 	for (i = 0; i != wireInfoList.size(); i++) {
 	    WireInfo wi = wireInfoList.get(i);
-	    WireElm wire = wi.wire;
+	    CircuitElm wire = wi.wire;
 	    CircuitNode cn1 = nodeList.get(wire.getNode(0));  // both ends of wire have same node #
 	    int j;
 
 	    Vector<CircuitElm> neighbors0 = new Vector<CircuitElm>();
 	    Vector<CircuitElm> neighbors1 = new Vector<CircuitElm>();
-	    boolean isReady0 = true, isReady1 = true;
+	    
+	    // assume each end is ready
+	    boolean isReady0 = true, isReady1 = (wire.getPostCount() == 2);
 	    
 	    // go through elements sharing a node with this wire (may be connected indirectly
 	    // by other wires, but at least it's faster than going through all elements)
@@ -1844,21 +1863,21 @@ MouseOutHandler, MouseWheelHandler {
 		    continue;
 		Point pt = cnl.elm.getPost(cnl.num);
 		
-		// is this a wire that doesn't have wire info yet?  If so we can't use it.
-		// That would create a circular dependency
-		boolean notReady = (ce instanceof WireElm && !((WireElm) ce).hasWireInfo);
+		// is this a wire that doesn't have wire info yet?  If so we can't use it yet.
+		// That would create a circular dependency.  So that side isn't ready.
+		boolean notReady = (ce.isWireEquivalent() && !ce.hasWireInfo);
 		
 		// which post does this element connect to, if any?
 		if (pt.x == wire.x && pt.y == wire.y) {
 		    neighbors0.add(ce);
 		    if (notReady) isReady0 = false;
-		} else if (pt.x == wire.x2 && pt.y == wire.y2) {
+		} else if (wire.getPostCount() > 1 && pt.x == wire.x2 && pt.y == wire.y2) {
 		    neighbors1.add(ce);
 		    if (notReady) isReady1 = false;
 		}
 	    }
 
-	    // does one of the posts have all information necessary to calculate current
+	    // does one of the posts have all information necessary to calculate current?
 	    if (isReady0) {
 		wi.neighbors = neighbors0;
 		wi.post = 0;
@@ -1870,7 +1889,7 @@ MouseOutHandler, MouseWheelHandler {
 		wire.hasWireInfo = true;
 		moved = 0;
 	    } else {
-		// move to the end of the list and try again later
+		// no, so move to the end of the list and try again later
 		wireInfoList.add(wireInfoList.remove(i--));
 		moved++; 
 		if (moved > wireInfoList.size() * 2) {
@@ -1896,6 +1915,10 @@ MouseOutHandler, MouseWheelHandler {
 	    CircuitElm ce = getElm(i);
 	    if (ce instanceof GroundElm) {
 		gotGround = true;
+		
+		// set ground node to 0
+		NodeMapEntry nme = nodeMap.get(ce.getPost(0));
+		nme.node = 0;
 		break;
 	    }
 	    if (ce instanceof RailElm)
@@ -2091,10 +2114,9 @@ MouseOutHandler, MouseWheelHandler {
 		    cur.broken = false;
 	    }
 	    
-	    // look for voltage source or wire loops.  we do this for voltage sources or wire-like elements (not actual wires
-	    // because those are optimized out, so the findPath won't work)
+	    // look for voltage source or wire loops.  we do this for voltage sources
 	    if (ce.getPostCount() == 2) {
-		if (ce instanceof VoltageElm || (ce.isWire() && !(ce instanceof WireElm))) {
+		if (ce instanceof VoltageElm) {
 		    FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce,
 						    ce.getNode(1));
 		    if (fpi.findPath(ce.getNode(0))) {
@@ -2102,14 +2124,6 @@ MouseOutHandler, MouseWheelHandler {
 			return false;
 		    }
 		}
-	    } else if (ce instanceof Switch2Elm) {
-		// for Switch2Elms we need to do extra work to look for wire loops
-		FindPathInfo fpi = new FindPathInfo(FindPathInfo.VOLTAGE, ce, ce.getNode(0));
-		for (j = 1; j < ce.getPostCount(); j++)
-		    if (ce.getConnection(0, j) && fpi.findPath(ce.getNode(j))) {
-			stop("Voltage source/wire loop with no resistance!", ce);
-			return false;
-		    }
 	    }
 
 	    // look for path from rail to ground
@@ -2162,7 +2176,6 @@ MouseOutHandler, MouseWheelHandler {
 	setGroundNode();
 
 	// allocate nodes and voltage sources
-	LabeledNodeElm.resetNodeList();
 	makeNodeList();
 	
 	makePostDrawList();
@@ -2469,15 +2482,15 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		if (type == VOLTAGE) {
 		    // when checking for voltage loops, we only care about voltage sources/wires/ground
-		    if (!(ce.isWire() || ce instanceof VoltageElm || ce instanceof GroundElm))
+		    if (!(ce.isWireEquivalent() || ce instanceof VoltageElm || ce instanceof GroundElm))
 			return false;
 		}
 		// when checking for shorts, just check wires
-		if (type == SHORT && !ce.isWire())
+		if (type == SHORT && !ce.isWireEquivalent())
 		    return false;
 		if (type == CAP_V) {
 		    // checking for capacitor/voltage source loops
-		    if (!(ce.isWire() || ce instanceof CapacitorElm || ce instanceof VoltageElm))
+		    if (!(ce.isWireEquivalent() || ce instanceof CapacitorElm || ce instanceof VoltageElm))
 			return false;
 		}
 		if (n1 == 0) {
@@ -5926,13 +5939,8 @@ MouseOutHandler, MouseWheelHandler {
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
 	    boolean sel = isSelection();
 	    
-	    // mapping of node labels -> node numbers
-	    HashMap<String, Integer> nodeNameHash = new HashMap<String, Integer>();
-	    
-	    // mapping of node numbers -> equivalent node numbers (if they both have the same label)
-	    HashMap<Integer, Integer> nodeNumberHash = new HashMap<Integer, Integer>();
-	    
 	    boolean used[] = new boolean[nodeList.size()];
+	    boolean extnodes[] = new boolean[nodeList.size()];
 	    
 	    // find all the labeled nodes, get a list of them, and create a node number map
 	    for (i = 0; i != elmList.size(); i++) {
@@ -5942,26 +5950,17 @@ MouseOutHandler, MouseWheelHandler {
 		if (ce instanceof LabeledNodeElm) {
 		    LabeledNodeElm lne = (LabeledNodeElm) ce;
 		    String label = lne.text;
-		    Integer map = nodeNameHash.get(label);
-		    
-		    // this node name already seen?  map the new node number to the old one
-		    if (map != null) {
-			Integer val = nodeNumberHash.get(lne.getNode(0));
-			if (val != null && !val.equals(map)) {
-			    Window.alert("Can't have a node with two labels!");
-			    return null;
-			}
-			nodeNumberHash.put(lne.getNode(0), map); 
-			continue;
-		    }
-		    nodeNameHash.put(label, lne.getNode(0));
-		    // put an entry in nodeNumberHash so we can detect if we try to map it to something else later
-		    nodeNumberHash.put(lne.getNode(0), lne.getNode(0));
 		    if (lne.isInternal())
 			continue;
+		    
+		    // already added to list?
+		    if (extnodes[ce.getNode(0)])
+			continue;
+		    
 		    // create ext list entry for external nodes
 		    ExtListEntry ent = new ExtListEntry(label, ce.getNode(0));
 		    extList.add(ent);
+		    extnodes[ce.getNode(0)] = true;
 		}
 	    }
 	    
@@ -5973,7 +5972,7 @@ MouseOutHandler, MouseWheelHandler {
 		// don't need these elements dumped
 		if (ce instanceof WireElm || ce instanceof LabeledNodeElm || ce instanceof ScopeElm)
 		    continue;
-		if (ce instanceof GraphicElm)
+		if (ce instanceof GraphicElm || ce instanceof GroundElm)
 		    continue;
 		int j;
 		if (nodeDump.length() > 0)
@@ -5981,10 +5980,8 @@ MouseOutHandler, MouseWheelHandler {
 		nodeDump += ce.getClass().getSimpleName();
 		for (j = 0; j != ce.getPostCount(); j++) {
 		    int n = ce.getNode(j);
-		    Integer nobj = nodeNumberHash.get(n);
-		    int n0 = (nobj == null) ? n : nobj;
-		    used[n0] = true;
-		    nodeDump += " " + n0;
+		    used[n] = true;
+		    nodeDump += " " + n;
 		}
 		
 	        // save positions
@@ -6014,7 +6011,7 @@ MouseOutHandler, MouseWheelHandler {
 	
 	    for (i = 0; i != unconnectedNodes.size(); i++) {
 		int q = unconnectedNodes.get(i);
-		if (nodeNumberHash.get(q) == null && used[q]) {
+		if (!extnodes[q] && used[q]) {
 		    Window.alert("Some nodes are unconnected!");
 		    return null;
 		}

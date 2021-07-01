@@ -84,6 +84,8 @@ public abstract class CircuitElm implements Editable {
     
     public boolean selected;
     
+    boolean hasWireInfo; // used in calcWireInfo()
+    
 //    abstract int getDumpType();
     int getDumpType() {
 	
@@ -531,6 +533,11 @@ public abstract class CircuitElm implements Editable {
 	return (n == 0) ? point1 : (n == 1) ? point2 : null;
     }
     
+    // return post we're connected to (for wires, so we can optimize them out in calculateWireClosure())
+    Point getConnectedPost() {
+	return point2;
+    }
+    
     int getNodeAtPoint(int xp, int yp) {
 	if (getPostCount() == 2)
 	    return (x == xp && y == yp) ? 0 : 1;
@@ -971,7 +978,7 @@ public abstract class CircuitElm implements Editable {
     boolean hasGroundConnection(int n1) { return false; }
     
     // is this a wire or equivalent to a wire?
-    boolean isWire() { return false; }
+    boolean isWireEquivalent() { return false; }
     
     boolean canViewInScope() { return getPostCount() <= 2; }
     boolean comparePair(int x1, int x2, int y1, int y2) {

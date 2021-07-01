@@ -48,8 +48,13 @@ class LabeledNodeElm extends CircuitElm {
     }
 
     String text;
-    static HashMap<String,Integer> nodeList;
-    int nodeNumber;
+    
+    class LabelEntry {
+	Point point;
+	int node;
+    }
+    
+    static HashMap<String,LabelEntry> labelList;
     boolean isInternal() { return (flags & FLAG_INTERNAL) != 0; }
 
     public static native void console(String text)
@@ -58,56 +63,49 @@ class LabeledNodeElm extends CircuitElm {
 	}-*/;
 
     static void resetNodeList() {
-	nodeList = new HashMap<String,Integer>();
+	labelList = new HashMap<String,LabelEntry>();
     }
     final int circleSize = 17;
     void setPoints() {
 	super.setPoints();
 	lead1 = interpPoint(point1, point2, 1-circleSize/dn);
     }
+    
+    // get post we're connected to
+    Point getConnectedPost() {
+	LabelEntry le = labelList.get(text);
+	if (le != null)
+	    return le.point;
+	
+	// this is the first time calcWireClosure() encountered this label.  so save point1 and
+	// return null for now, but return point1 the next time we see this label so that all nodes
+	// with the same label are connected
+	le = new LabelEntry();
+	le.point = point1;
+	labelList.put(text, le);
+	return null;
+    }
+    
     void setNode(int p, int n) {
 	super.setNode(p, n);
-	if (p == 1) {
-	    // assign new node
-	    nodeList.put(text, new Integer(n));
-	    nodeNumber = n;
-	}
+	
+	// save node number so we can return it in getByName()
+	LabelEntry le = labelList.get(text);
+	if (le != null) // should never happen
+	    le.node = n;
     }
-
+    
     int getDumpType() { return 207; }
     int getPostCount() { return 1; }
     
-    // this is basically a wire, since it just connects two nodes together
-    boolean isWire() { return true; }
-    
-    // get connection node (which is the same as regular nodes for all elements but this one).
-    // node 0 is the terminal, node 1 is the internal node shared by all nodes with same name
-    int getConnectionNode(int n) {
-	if (n == 0)
-	    return nodes[0];
-	return nodeNumber;
-    }
-    int getConnectionNodeCount() { return 2; }
-    
-    int getInternalNodeCount() {
-	// this can happen at startup
-	if (nodeList == null)
-	    return 0;
-
-	Integer nn = nodeList.get(text);
-
-	// node assigned already?
-	if (nn != null) {
-	    nodeNumber = nn.intValue();
-	    return 0;
-	}
-
-	// allocate a new one
-	return 1;
-    }
+    // this is basically a wire, since it just connects two or more nodes together
+    boolean isWireEquivalent() { return true; }
     
     static Integer getByName(String n) {
-	return nodeList == null ? null : nodeList.get(n);
+	LabelEntry le = labelList.get(n);
+	if (le == null)
+	    return null;
+	return le.node;
     }
     
     void draw(Graphics g) {
@@ -124,12 +122,8 @@ class LabeledNodeElm extends CircuitElm {
 	drawPosts(g);
     }
     double getCurrentIntoNode(int n) { return -current; }
-    void setCurrent(int x, double c) { current = -c; }
-    void stamp() {
-	sim.stampVoltageSource(nodeNumber, nodes[0], voltSource, 0);
-    }
+    void setCurrent(int x, double c) { current = c; }
     double getVoltageDiff() { return volts[0]; }
-    int getVoltageSourceCount() { return 1; }
     void getInfo(String arr[]) {
 	arr[0] = text;
 	arr[1] = "I = " + getCurrentText(getCurrent());

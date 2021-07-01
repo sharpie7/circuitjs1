@@ -93,13 +93,6 @@ class SwitchElm extends CircuitElm {
 	    current = 0;
     }
     
-    void stamp() {
-	if (position == 0)
-	    sim.stampVoltageSource(nodes[0], nodes[1], voltSource, 0);
-    }
-    int getVoltageSourceCount() {
-	return (position == 1) ? 0 : 1;
-    }
     void mouseUp() {
 	if (momentary)
 	    toggle();
@@ -121,7 +114,7 @@ class SwitchElm extends CircuitElm {
 	}
     }
     boolean getConnection(int n1, int n2) { return position == 0; }
-    boolean isWire() { return position == 0; }
+    boolean isWireEquivalent() { return position == 0; }
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);

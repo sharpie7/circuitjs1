@@ -168,7 +168,13 @@ package com.lushprojects.circuitjs1.client;
 		return true;
 	    return comparePair(n1, n2, 0, 1+position/2);
 	}
-	boolean isWire() { return true; }
+	
+	boolean isWireEquivalent() { return true; }
+	
+	// do not optimize out, even though isWireEquivalent() is true (because it may have 3 nodes to merge
+	// and calcWireClosure() doesn't handle that case)
+	Point getConnectedPost() { return null; }
+	
 	void getInfo(String arr[]) {
 	    arr[0] = "switch (" + (link == 0 ? "S" : "D") + "PDT, MBB)";
 	    arr[1] = "I = " + getCurrentDText(getCurrent());
