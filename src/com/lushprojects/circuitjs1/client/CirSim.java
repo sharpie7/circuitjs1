@@ -4941,9 +4941,11 @@ MouseOutHandler, MouseWheelHandler {
     		int spacew = circuitArea.width - oldbb.width - newbb.width;
     		int spaceh = circuitArea.height - oldbb.height - newbb.height;
     		
-    		// old coordinates may be really far away so move them to same origin as current circuit
-    		dx = snapGrid(oldbb.x - newbb.x);
-    		dy = snapGrid(oldbb.y - newbb.y);
+    		if (!oldbb.intersects(newbb)) {
+    		    // old coordinates may be really far away so move them to same origin as current circuit
+    		    dx = snapGrid(oldbb.x - newbb.x);
+    		    dy = snapGrid(oldbb.y - newbb.y);
+    		}
     		
     		if (spacew > spaceh) {
     			dx = snapGrid(oldbb.x + oldbb.width  - newbb.x + gridSize);
