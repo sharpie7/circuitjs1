@@ -77,6 +77,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	boolean isWireEquivalent() { return true; }
+	boolean isRemovableWire() { return true; }
 	static Point firstGround;
 	static void resetNodeList() {
 	    firstGround = null;

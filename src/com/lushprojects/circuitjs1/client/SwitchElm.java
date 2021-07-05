@@ -115,6 +115,7 @@ class SwitchElm extends CircuitElm {
     }
     boolean getConnection(int n1, int n2) { return position == 0; }
     boolean isWireEquivalent() { return position == 0; }
+    boolean isRemovableWire() { return position == 0; }
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
 	    EditInfo ei = new EditInfo("", 0, -1, -1);

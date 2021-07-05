@@ -61,6 +61,7 @@ package com.lushprojects.circuitjs1.client;
 	double getPower() { return 0; }
 	double getVoltageDiff() { return volts[0]; }
 	boolean isWireEquivalent() { return true; }
+	boolean isRemovableWire() { return true; }
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);

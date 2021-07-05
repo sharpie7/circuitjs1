@@ -1786,7 +1786,7 @@ MouseOutHandler, MouseWheelHandler {
 	wireInfoList = new Vector<WireInfo>();
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
-	    if (!ce.isWireEquivalent())
+	    if (!ce.isRemovableWire())
 		continue;
 	    ce.hasWireInfo = false;
 	    wireInfoList.add(new WireInfo(ce));
@@ -1865,15 +1865,18 @@ MouseOutHandler, MouseWheelHandler {
 		
 		// is this a wire that doesn't have wire info yet?  If so we can't use it yet.
 		// That would create a circular dependency.  So that side isn't ready.
-		boolean notReady = (ce.isWireEquivalent() && !ce.hasWireInfo);
+		boolean notReady = (ce.isRemovableWire() && !ce.hasWireInfo);
 		
 		// which post does this element connect to, if any?
 		if (pt.x == wire.x && pt.y == wire.y) {
 		    neighbors0.add(ce);
 		    if (notReady) isReady0 = false;
-		} else if (wire.getPostCount() > 1 && pt.x == wire.x2 && pt.y == wire.y2) {
-		    neighbors1.add(ce);
-		    if (notReady) isReady1 = false;
+		} else if (wire.getPostCount() > 1) {
+		    Point p2 = wire.getConnectedPost();
+		    if (pt.x == p2.x && pt.y == p2.y) { 
+			neighbors1.add(ce);
+			if (notReady) isReady1 = false;
+		    }
 		}
 	    }
 

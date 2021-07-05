@@ -100,6 +100,7 @@ class LabeledNodeElm extends CircuitElm {
     
     // this is basically a wire, since it just connects two or more nodes together
     boolean isWireEquivalent() { return true; }
+    boolean isRemovableWire() { return true; }
     
     static Integer getByName(String n) {
 	LabelEntry le = labelList.get(n);
