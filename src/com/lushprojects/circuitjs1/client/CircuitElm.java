@@ -215,6 +215,13 @@ public abstract class CircuitElm implements Editable {
 	calculateCurrent();
     }
     
+    // set voltage of ground node to 0, without doing any of the side effects that setNodeVoltage() has.
+    // (if we use setNodeVoltage() that causes bugs like the capacitor voltages getting reset, in colpitts example)
+    // setNodeVoltage() is usually called after an iteration; setGroundNodeVoltage() is called during circuit analysis
+    void setGroundNodeVoltage(int n) {
+	volts[n] = 0;
+    }
+    
     // calculate current in response to node voltages changing
     void calculateCurrent() {}
     
