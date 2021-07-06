@@ -41,10 +41,11 @@ package com.lushprojects.circuitjs1.client;
 	    } catch (Exception e) {}
 	}
 	boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
-	void setNodeVoltage(int n, double c) {
-	    super.setNodeVoltage(n, c);
+	
+	void stepFinished() {
 	    voltdiff = volts[0]-volts[1];
 	}
+	
 	void reset() {
 	    super.reset();
 	    current = curcount = curSourceValue = 0;

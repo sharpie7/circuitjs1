@@ -1993,7 +1993,7 @@ MouseOutHandler, MouseWheelHandler {
 		    // if it's the ground node, make sure the node voltage is 0,
 		    // cause it may not get set later
 		    if (n == 0)
-			ce.setGroundNodeVoltage(j);
+			ce.setNodeVoltage(j, 0);
 		}
 	    }
 	    for (j = 0; j != inodes; j++) {
