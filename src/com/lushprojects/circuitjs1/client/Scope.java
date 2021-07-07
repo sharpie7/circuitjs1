@@ -70,8 +70,8 @@ class ScopePlot {
 	value = v;
 	manScale = manS;
 	// ohms can only be positive, so move the v position to the bottom.
-	// (power can be negative for caps and inductors)
-	if (units == Scope.UNITS_OHMS)
+	// power can be negative for caps and inductors, but still move to the bottom (for backward compatibility)
+	if (units == Scope.UNITS_OHMS || units == Scope.UNITS_W)
 	    manVPosition = -Scope.V_POSITION_STEPS/2;
     }
 
