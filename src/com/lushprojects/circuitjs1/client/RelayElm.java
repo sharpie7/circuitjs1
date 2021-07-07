@@ -190,8 +190,9 @@ class RelayElm extends CircuitElm {
 	}
 	    
 	drawPosts(g);
-	setBbox(coilPosts[0], coilLeads[1], 0);
-	adjustBbox(swpoles[poleCount-1][0], swposts[poleCount-1][1]); // XXX
+	setBbox(outline[0], outline[2], 0);
+	adjustBbox(coilPosts[0], coilPosts[1]);
+	adjustBbox(swposts[0][0], swposts[0][1]);
     }
 	
     double getCurrentIntoNode(int n) {
