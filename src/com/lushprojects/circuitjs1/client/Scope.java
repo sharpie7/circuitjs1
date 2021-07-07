@@ -69,8 +69,9 @@ class ScopePlot {
 	units = u;
 	value = v;
 	manScale = manS;
-	// I *think* all units other than V and A can only be positive, so for these move the v position to the bottom.
-	if (units > Scope.UNITS_A)
+	// ohms can only be positive, so move the v position to the bottom.
+	// (power can be negative for caps and inductors)
+	if (units == Scope.UNITS_OHMS)
 	    manVPosition = -Scope.V_POSITION_STEPS/2;
     }
 
@@ -1114,6 +1115,8 @@ class Scope {
     	double ts = sim.maxTimeStep*speed;
     	gridStepX = calcGridStepX();
 
+    	boolean highlightCenter = !isManualScale();
+    	
     	if (drawGridLines) {
     	    // horizontal gridlines
     	    
@@ -1125,7 +1128,7 @@ class Scope {
     		int yl = maxy-(int) ((ll*gridStepY-gridMid)*plot.gridMult);
     		if (yl < 0 || yl >= rect.height-1)
     		    continue;
-    		col = ll == 0 ? majorDiv : minorDiv;
+    		col = ll == 0 && highlightCenter ? majorDiv : minorDiv;
     		g.setColor(col);
     		g.drawLine(0,yl,rect.width-1,yl);
     	    }
@@ -1159,6 +1162,7 @@ class Scope {
         g.setColor(color);
         
         if (isManualScale()) {
+            // draw zero point
             int y0= maxy-(int) (plot.gridMult*plot.plotOffset);
             g.drawLine(0, y0, 8, y0);
             g.drawString("0", 0, y0-2);
