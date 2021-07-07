@@ -80,6 +80,10 @@ package com.lushprojects.circuitjs1.client;
 	void stamp() {
 	    sim.stampVoltageSource(0, nodes[0], voltSource);
 	}
+	
+	boolean isWireEquivalent() { return false; }
+	boolean isRemovableWire() { return false; }
+
 	void doStep() {
 	    double v = (position == 0) ? loV : hiV;
 	    if (isTernary())

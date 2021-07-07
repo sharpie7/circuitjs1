@@ -171,6 +171,7 @@ package com.lushprojects.circuitjs1.client;
 	
 	// do not optimize out, even though isWireEquivalent() is true (because it may have 3 nodes to merge
 	// and calcWireClosure() doesn't handle that case)
+	boolean isRemovableWire() { return false; }
 	boolean isWireEquivalent() { return true; }
 	
 	void getInfo(String arr[]) {
