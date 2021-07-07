@@ -65,6 +65,7 @@ class SCRElm extends CircuitElm {
     void setup() {
 	diode = new Diode(sim);
 	diode.setupForDefaultModel();
+	aresistance = 1; // to avoid divide by zero
     }
     boolean nonLinear() { return true; }
     void reset() {
