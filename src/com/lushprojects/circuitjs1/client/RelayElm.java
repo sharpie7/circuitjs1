@@ -98,6 +98,9 @@ class RelayElm extends CircuitElm {
 	} catch (Exception e) {}	
 	if (i_position == 1)
 	    onState = true;
+	// intermediate state?
+	if (i_position == 2)
+	    d_position = .5;
 	noDiagonal = true;
 	ind = new Inductor(sim);
 	ind.setup(inductance, coilCurrent, Inductor.FLAG_BACK_EULER);
