@@ -35,8 +35,9 @@ package com.lushprojects.circuitjs1.client;
 	public MonostableElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	retriggerable=new Boolean(st.nextToken()).booleanValue();
-	delay=new Double(st.nextToken()).doubleValue();
+	    retriggerable=new Boolean(st.nextToken()).booleanValue();
+	    delay=new Double(st.nextToken()).doubleValue();
+	    reset();
 	}
 	String getChipName() { return "Monostable"; }
 	void setupPins() {
