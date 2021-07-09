@@ -28,7 +28,10 @@ package com.lushprojects.circuitjs1.client;
 	private double lastRisingEdge=0;
 	private double delay=0.01;
 
-	public MonostableElm(int xx, int yy) { super(xx, yy); }
+	public MonostableElm(int xx, int yy) {
+	    super(xx, yy);
+	    reset();
+	}
 	public MonostableElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
@@ -47,6 +50,12 @@ package com.lushprojects.circuitjs1.client;
 	    pins[2] = new Pin(1, SIDE_E, "Q");
 	    pins[2].output=true;
 	    pins[2].lineOver=true;
+	}
+	
+	void reset() {
+	    super.reset();
+	    pins[2].value = true;
+	    triggered = prevInputValue = false;
 	}
 	int getPostCount() {
 	return 3;
