@@ -181,7 +181,7 @@ MouseOutHandler, MouseWheelHandler {
     Rectangle selectedArea;
     int gridSize, gridMask, gridRound;
     boolean dragging;
-    boolean analyzeFlag, needsStamp;
+    boolean analyzeFlag, needsStamp, savedFlag;
     boolean dumpMatrix;
     boolean dcAnalysisFlag;
  //   boolean useBufferedImage;
@@ -422,10 +422,12 @@ MouseOutHandler, MouseWheelHandler {
 
 	fileMenuBar = new MenuBar(true);
 	if (isElectron())
-	    fileMenuBar.addItem(iconMenuItem("window", "New Window...", new MyCommand("file", "newwindow")));
+	    fileMenuBar.addItem(menuItemWithShortcut("window", "New Window...", LS(ctrlMetaKey + "N"),
+		    new MyCommand("file", "newwindow")));
 	
 	fileMenuBar.addItem(iconMenuItem("doc-new", "New Blank Circuit", new MyCommand("file", "newblankcircuit")));
-	importFromLocalFileItem = iconMenuItem("folder", "Open File...", new MyCommand("file","importfromlocalfile"));
+	importFromLocalFileItem = menuItemWithShortcut("folder", "Open File...", LS(ctrlMetaKey + "O"),
+		new MyCommand("file","importfromlocalfile"));
 	importFromLocalFileItem.setEnabled(LoadFile.isSupported());
 	fileMenuBar.addItem(importFromLocalFileItem);
 	importFromTextItem = iconMenuItem("doc-text", "Import From Text...", new MyCommand("file","importfromtext"));
@@ -433,10 +435,12 @@ MouseOutHandler, MouseWheelHandler {
 	importFromDropboxItem = iconMenuItem("dropbox", "Import From Dropbox...", new MyCommand("file", "importfromdropbox"));
 	fileMenuBar.addItem(importFromDropboxItem);
 	if (isElectron()) {
-	    saveFileItem = fileMenuBar.addItem(iconMenuItem("floppy", "Save", new MyCommand("file", "save")));
+	    saveFileItem = fileMenuBar.addItem(menuItemWithShortcut("floppy", "Save", LS(ctrlMetaKey + "S"),
+		    new MyCommand("file", "save")));
 	    fileMenuBar.addItem(iconMenuItem("floppy", "Save As...", new MyCommand("file", "saveas")));
 	} else {
-	    exportAsLocalFileItem = iconMenuItem("floppy", "Save As...", new MyCommand("file","exportaslocalfile"));
+	    exportAsLocalFileItem = menuItemWithShortcut("floppy", "Save As...", LS(ctrlMetaKey + "S"),
+		    new MyCommand("file","exportaslocalfile"));
 	    exportAsLocalFileItem.setEnabled(ExportAsLocalFileDialog.downloadIsSupported());
 	    fileMenuBar.addItem(exportAsLocalFileItem);
 	}
@@ -451,7 +455,7 @@ MouseOutHandler, MouseWheelHandler {
 	recoverItem = iconMenuItem("back-in-time", "Recover Auto-Save", new MyCommand("file","recover"));
 	recoverItem.setEnabled(recovery != null);
 	fileMenuBar.addItem(recoverItem);
-	printItem = iconMenuItem("print", "Print...", new MyCommand("file","print"));
+	printItem = menuItemWithShortcut("print", "Print...", LS(ctrlMetaKey + "P"), new MyCommand("file","print"));
 	fileMenuBar.addItem(printItem);
 	fileMenuBar.addSeparator();
 	fileMenuBar.addItem(iconMenuItem("resize-full-alt", "Toggle Full Screen", new MyCommand("view", "fullscreen")));
@@ -1498,6 +1502,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (stopMessage != null) {
 	    g.drawString(stopMessage, 10, circuitArea.height-10);
 	} else {
+	    // in JS it doesn't matter how big this is, there's no out-of-bounds exception
 	    String info[] = new String[10];
 	    if (mouseElm != null) {
 		if (mousePost == -1) {
@@ -1541,11 +1546,12 @@ MouseOutHandler, MouseWheelHandler {
 	    if (badnodes > 0)
 		info[i++] = badnodes + ((badnodes == 1) ?
 					LS(" bad connection") : LS(" bad connections"));
-	    
+	    if (savedFlag)
+		info[i++] = "(saved)";
+
 	    int ybase = circuitArea.height;
 	    for (i = 0; info[i] != null; i++)
-		g.drawString(info[i], x,
-			     ybase+15*(i+1));
+		g.drawString(info[i], x, ybase+15*(i+1));
 	}
 	if (stopElm != null && stopElm != mouseElm)
 	    stopElm.setMouseElm(false);
@@ -2943,8 +2949,15 @@ MouseOutHandler, MouseWheelHandler {
 	s = s.substring(s.lastIndexOf('\\')+1);
 	theSim.setCircuitTitle(s);
 	theSim.allowSave(true);
+	theSim.savedFlag = true;
+	theSim.repaint();
     }
-    
+
+    static void electronSaveCallback() {
+	theSim.savedFlag = true;
+	theSim.repaint();
+    }
+        
     static native void electronSaveAs(String dump) /*-{
         $wnd.showSaveDialog().then(function (file) {
             if (file.canceled)
@@ -2956,6 +2969,7 @@ MouseOutHandler, MouseWheelHandler {
 
     static native void electronSave(String dump) /*-{
         $wnd.saveFile(null, dump);
+        @com.lushprojects.circuitjs1.client.CirSim::electronSaveCallback()();
     }-*/;
     
     static void electronOpenFileCallback(String text, String name) {
@@ -4697,6 +4711,7 @@ MouseOutHandler, MouseWheelHandler {
     	    return;
     	undoStack.add(new UndoItem(s));
     	enableUndoRedo();
+    	savedFlag = false;
     }
 
     void doUndo() {
@@ -5144,6 +5159,25 @@ MouseOutHandler, MouseWheelHandler {
     				menuPerformed("key", "selectAll");
     				e.cancel();
     			}
+    			if (code==KEY_P) {
+				menuPerformed("key", "print");
+				e.cancel();
+			}
+    			if (code==KEY_N && isElectron()) {
+				menuPerformed("key", "newwindow");
+				e.cancel();
+			}
+    			if (code==KEY_S) {
+    			    	String cmd = "exportaslocalfile";
+    			    	if (isElectron())
+    			    	    cmd = saveFileItem.isEnabled() ? "save" : "saveas";
+				menuPerformed("key", cmd);
+				e.cancel();
+			}
+    			if (code==KEY_O) {
+				menuPerformed("key", "importfromlocalfile");
+				e.cancel();
+			}    			
     		}
     	}
     	if ((t&Event.ONKEYPRESS)!=0) {
