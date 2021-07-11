@@ -218,6 +218,8 @@ MouseOutHandler, MouseWheelHandler {
     Vector<Adjustable> adjustables;
 //    Vector setupList;
     CircuitElm dragElm, menuElm, stopElm;
+    CircuitElm elmArr[];
+    ScopeElm scopeElmArr[];
     private CircuitElm mouseElm=null;
     boolean didSwitch = false;
     int mousePost = -1;
@@ -2278,6 +2280,24 @@ MouseOutHandler, MouseWheelHandler {
 		return;
 	    }
 	}
+	
+	// copy elmList to an array to avoid a bunch of calls to canCast() when doing simulation
+	elmArr = new CircuitElm[elmList.size()];
+	int scopeElmCount = 0;
+	for (i = 0; i != elmList.size(); i++) {
+	    elmArr[i] = elmList.get(i);
+	    if (elmArr[i] instanceof ScopeElm)
+		scopeElmCount++;
+	}
+	
+	// copy ScopeElms to an array to avoid a second pass over entire list of elms during simulation
+	scopeElmArr = new ScopeElm[scopeElmCount];
+	int j = 0;
+	for (i = 0; i != elmList.size(); i++) {
+	    if (elmArr[i] instanceof ScopeElm)
+		scopeElmArr[j++] = (ScopeElm) elmArr[i];
+	}	
+
 	needsStamp = false;
     }
 
@@ -2742,10 +2762,8 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    
 	    int i, j, subiter;
-	    for (i = 0; i != elmList.size(); i++) {
-		CircuitElm ce = getElm(i);
-		ce.startIteration();
-	    }
+	    for (i = 0; i != elmArr.length; i++)
+		elmArr[i].startIteration();
 	    steps++;
 	    int subiterCount = (adjustTimeStep && timeStep/2 > minTimeStep) ? 100 : 5000;
 	    for (subiter = 0; subiter != subiterCount; subiter++) {
@@ -2760,21 +2778,22 @@ MouseOutHandler, MouseWheelHandler {
 			for (j = 0; j != circuitMatrixSize; j++)
 			    circuitMatrix[i][j] = origMatrix[i][j];
 		}
-		for (i = 0; i != elmList.size(); i++) {
-		    CircuitElm ce = getElm(i);
-		    ce.doStep();
-		}
+		for (i = 0; i != elmArr.length; i++)
+		    elmArr[i].doStep();
 		if (stopMessage != null)
 		    return;
 		boolean printit = debugprint;
 		debugprint = false;
-		for (j = 0; j != circuitMatrixSize; j++) {
-		    for (i = 0; i != circuitMatrixSize; i++) {
-			double x = circuitMatrix[i][j];
-			if (Double.isNaN(x) || Double.isInfinite(x)) {
-			    stop("nan/infinite matrix!", null);
-			    console("circuitMatrix " + i + " " + j + " is " + x);
-			    return;
+		if (circuitMatrixSize < 8) {
+		    // we only need this for debugging purposes, so skip it for large matrices 
+		    for (j = 0; j != circuitMatrixSize; j++) {
+			for (i = 0; i != circuitMatrixSize; i++) {
+			    double x = circuitMatrix[i][j];
+			    if (Double.isNaN(x) || Double.isInfinite(x)) {
+				stop("nan/infinite matrix!", null);
+				console("circuitMatrix " + i + " " + j + " is " + x);
+				return;
+			    }
 			}
 		    }
 		}
@@ -2834,15 +2853,14 @@ MouseOutHandler, MouseWheelHandler {
 		timeStepAccum -= maxTimeStep;
 		timeStepCount++;
 	    }
-	    for (i = 0; i != elmList.size(); i++)
-		getElm(i).stepFinished();
+	    for (i = 0; i != elmArr.length; i++)
+		elmArr[i].stepFinished();
 	    if (!delayWireProcessing)
 		calcWireCurrents();
 	    for (i = 0; i != scopeCount; i++)
 	    	scopes[i].timeStep();
-	    for (i=0; i != elmList.size(); i++)
-		if (getElm(i) instanceof ScopeElm)
-		    ((ScopeElm)getElm(i)).stepScope();
+	    for (i=0; i != scopeElmArr.length; i++)
+		scopeElmArr[i].stepScope();
 	    callTimeStepHook();
 	    // save last node voltages so we can restart the next iteration if necessary
 	    for (i = 0; i != lastNodeVoltages.length; i++)
@@ -2897,8 +2915,7 @@ MouseOutHandler, MouseWheelHandler {
 	    double res = nv[j];
 	    CircuitNode cn = getCircuitNode(j+1);
 	    for (k = 0; k != cn.links.size(); k++) {
-		CircuitNodeLink cnl = (CircuitNodeLink)
-			cn.links.elementAt(k);
+		CircuitNodeLink cnl = cn.links.elementAt(k);
 		cnl.elm.setNodeVoltage(cnl.num, res);
 	    }
 	}
