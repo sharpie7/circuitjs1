@@ -1196,7 +1196,10 @@ MouseOutHandler, MouseWheelHandler {
     	// try {
     	//   Class c = Class.forName(t);
     	String shortcut="";
-    	CircuitElm elm = constructElement(t, 0, 0);
+    	CircuitElm elm = null;
+    	try {
+    	    elm = constructElement(t, 0, 0);
+    	} catch (Exception e) {}
     	CheckboxMenuItem mi;
     	//  register(c, elm);
     	if ( elm!=null ) {
