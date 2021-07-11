@@ -330,11 +330,11 @@ abstract class ChipElm extends CircuitElm {
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
-		ei.changeFlag(flags, FLAG_FLIP_X);
+		flags = ei.changeFlag(flags, FLAG_FLIP_X);
 		setPoints();
 	    }
 	    if (n == 1) {
-		ei.changeFlag(flags, FLAG_FLIP_Y);
+		flags = ei.changeFlag(flags, FLAG_FLIP_Y);
 		setPoints();
 	    }
 	}
