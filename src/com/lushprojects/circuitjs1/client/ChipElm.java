@@ -234,11 +234,16 @@ abstract class ChipElm extends CircuitElm {
 	}
 	void stamp() {
 	    int i;
+	    int vsc = 0;
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
-		if (p.output)
+		if (p.output) {
 		    sim.stampVoltageSource(0, nodes[i], p.voltSource);
+		    vsc++;
+		}
 	    }
+	    if (vsc != getVoltageSourceCount())
+		sim.console("voltage source count does not match number of outputs");
 	}
 	void execute() {}
 	void doStep() {
@@ -276,6 +281,12 @@ abstract class ChipElm extends CircuitElm {
 		    s += " " + volts[i];
 	    }
 	    return s;
+	}
+	
+	void writeOutput(int n, boolean value) {
+	    if (!pins[n].output)
+		sim.console("pin " + n + " is not an output!");
+	    pins[n].value = value;
 	}
 	
 	void getInfo(String arr[]) {

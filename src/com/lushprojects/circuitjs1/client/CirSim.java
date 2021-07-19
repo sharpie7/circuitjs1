@@ -1090,10 +1090,11 @@ MouseOutHandler, MouseWheelHandler {
     	chipMenuBar.addItem(getClassCheckItem(LS("Add SIPO shift register"), "SipoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add PISO shift register"), "PisoShiftElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter"), "CounterElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Counter w/ Load"), "Counter2Elm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Ring Counter"), "DecadeElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Latch"), "LatchElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Sequence generator"), "SeqGenElm"));
-    	chipMenuBar.addItem(getClassCheckItem(LS("Add Full Adder"), "FullAdderElm"));
+    	chipMenuBar.addItem(getClassCheckItem(LS("Add Adder"), "FullAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Half Adder"), "HalfAdderElm"));
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Custom Logic"), "UserDefinedLogicElm")); // don't change this, it will break people's saved shortcuts
     	chipMenuBar.addItem(getClassCheckItem(LS("Add Static RAM"), "SRAMElm"));
@@ -5480,6 +5481,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 418: return new ExtVoltageElm(x1, y1, x2, y2, f, st);
     	case 419: return new DecimalDisplayElm(x1, y1, x2, y2, f, st);
     	case 420: return new WattmeterElm(x1, y1, x2, y2, f, st);
+    	case 421: return new Counter2Elm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5736,6 +5738,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new DecimalDisplayElm(x1, y1);
     	if (n=="WattmeterElm")
 		return (CircuitElm) new WattmeterElm(x1, y1);
+    	if (n=="Counter2Elm")
+		return (CircuitElm) new Counter2Elm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {
