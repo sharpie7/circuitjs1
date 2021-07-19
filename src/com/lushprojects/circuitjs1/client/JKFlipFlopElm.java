@@ -22,13 +22,16 @@ package com.lushprojects.circuitjs1.client;
     class JKFlipFlopElm extends ChipElm {
     	final int FLAG_RESET = 2;
     	final int FLAG_POSITIVE_EDGE = 4;
+    	final int FLAG_INVERT_RESET = 8;
     	boolean hasReset(){return (flags & FLAG_RESET)!= 0;}
     	boolean positiveEdgeTriggered() { return (flags & FLAG_POSITIVE_EDGE) != 0; }
+    	boolean invertReset() { return (flags & FLAG_INVERT_RESET) != 0; }
 	public JKFlipFlopElm(int xx, int yy) { super(xx, yy); }
 	public JKFlipFlopElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	    pins[4].value = !pins[3].value;
+	    justLoaded = true;
 	}
 	String getChipName() { return "JK flip-flop"; }
 	void setupPins() {
@@ -48,11 +51,21 @@ package com.lushprojects.circuitjs1.client;
 	    
 	    if(hasReset()){
 	    	pins[5] = new Pin(1, SIDE_E, "R");
+	    	pins[5].bubble = invertReset();
 	    }
 	}
 	int getPostCount() { return 5 + (hasReset() ? 1:0); }
 	int getVoltageSourceCount() { return 2; }
+	
+	boolean justLoaded;
+	
 	void execute() {
+            // if we just loaded then the volts[] array is likely to be all zeroes, which might force us to do a reset, so defer execution until the next iteration
+            if (justLoaded) {
+                justLoaded = false;
+                return;
+            }
+            	    
 	    boolean transition;
 	    if (positiveEdgeTriggered())
 		transition = pins[1].value && !lastClock;
@@ -67,17 +80,16 @@ package com.lushprojects.circuitjs1.client;
 			q = true;
 		} else if (pins[2].value)
 		    q = false;
-		pins[3].value = q;
-		pins[4].value = !q;
+		writeOutput(3, q);
 	    }
 	    lastClock = pins[1].value;
 	    
 	    if(hasReset()){
-	    	if(pins[5].value){
-	    		pins[3].value = false;
-	    		pins[4].value = true;
-	    	}
+	    	if(pins[5].value != invertReset())
+	    	    writeOutput(3, false);
 	    }
+	    
+	    writeOutput(4, !pins[3].value);
 	}
 	int getDumpType() { return 156; }
 	
@@ -91,6 +103,12 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 3){
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Positive Edge Triggered", positiveEdgeTriggered());
+			return ei;
+		}
+		
+		if (n == 4){
+			EditInfo ei = new EditInfo("", 0, -1, -1);
+			ei.checkbox = new Checkbox("Invert Reset", invertReset());
 			return ei;
 		}
 		
@@ -113,6 +131,11 @@ package com.lushprojects.circuitjs1.client;
 		if (n == 3) {
 		    flags = ei.changeFlag(flags, FLAG_POSITIVE_EDGE);
 		    pins[1].bubble = !positiveEdgeTriggered();
+		}
+		if (n == 4) {
+		    flags = ei.changeFlag(flags, FLAG_INVERT_RESET);
+		    setupPins();
+		    setPoints();
 		}
 		
 		super.setEditValue(n, ei);
