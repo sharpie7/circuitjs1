@@ -450,7 +450,9 @@ class Scope {
 	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(UNITS_V, false)));
 	    
 	    // create plot for current if applicable
-	    if (ce != null && !(ce instanceof OutputElm ||
+	    if (ce != null &&
+		    sim.dotsCheckItem.getState() &&
+		    !(ce instanceof OutputElm ||
 		    ce instanceof LogicOutputElm ||
 		    ce instanceof AudioOutputElm ||
 		    ce instanceof ProbeElm))
