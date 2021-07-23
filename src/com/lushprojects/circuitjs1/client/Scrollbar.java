@@ -37,6 +37,7 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Touch;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
@@ -204,9 +205,20 @@ public class Scrollbar extends  Composite implements
 	    }
 	}
 	
+	native boolean noButtonsDown(NativeEvent e) /*-{
+	    return e.buttons == 0;
+	}-*/;
+	
 	public void onMouseMove(MouseMoveEvent e){
 //		GWT.log("Move");
 		e.preventDefault();
+		
+		// we don't always get the mouse up event so make sure the button is still down
+		if (dragging && noButtonsDown(e.getNativeEvent())) {
+		    Event.releaseCapture(can.getElement());
+		    dragging = false;
+		    return;
+		}
 		doMouseMove(e.getX());
 	}
 	
