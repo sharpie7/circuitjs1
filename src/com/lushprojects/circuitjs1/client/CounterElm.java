@@ -44,7 +44,11 @@ package com.lushprojects.circuitjs1.client;
 	}
 
 	boolean needsBits() { return true; }
-	String getChipName() { return "Counter"; }
+	String getChipName() {
+	    if (modulus == 0)
+		return "Counter";
+	    return sim.LS("Counter") + sim.LS(" (mod ") + modulus + ")";
+	}
 	void setupPins() {
 	    sizeX = 2;
 	    sizeY = bits > 2 ? bits : 2;
