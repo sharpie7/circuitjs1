@@ -54,7 +54,7 @@ package com.lushprojects.circuitjs1.client;
 	    lead1 = interpPoint(point1, point2, 1-12/dn);
 	}
 	void draw(Graphics g) {
-		Font oldf=g.getFont();
+	    g.save();
 	    Font f = new Font("SansSerif", Font.BOLD, 20);
 	    g.setFont(f);
 	    g.setColor(needsHighlight() ? selectColor : whiteColor);
@@ -68,7 +68,7 @@ package com.lushprojects.circuitjs1.client;
 	    updateDotCount();
 	    drawDots(g, point1, lead1, -curcount);
 	    drawPosts(g);
-	    g.setFont(oldf);
+	    g.restore();
 	}
 	
 	Rectangle getSwitchRect() {

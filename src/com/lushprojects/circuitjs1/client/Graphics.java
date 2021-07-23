@@ -25,7 +25,6 @@ public class Graphics {
 	
 	Context2d context;
 	int currentFontSize;
-	Font currentFont= null;
 	Color lastColor;
 	static boolean isFullScreen=false;
 	
@@ -57,8 +56,12 @@ public class Graphics {
 	  }
 	  
 	  public void restore() {
-		  context.restore();
+	      context.restore();
 	  }
+	  public void save() {
+	      context.save();
+	  }
+	  
 	  
 	  public void fillRect(int x, int y, int width, int height) {
 		//  context.beginPath();
@@ -130,13 +133,13 @@ public class Graphics {
 		  if (f!=null){
 			  context.setFont(f.fontname);
 			  currentFontSize=f.size;
-			  currentFont=f;
 		  }
 	  }
-	  
-	  Font getFont(){
-		  return currentFont;
-	  }
+
+//	  Font getFont(){
+//	          // this may return wrong font if g.save/restore() is used.  just use that instead
+//		  return currentFont;
+//	  }
 	  
 	  public void drawLock(int x, int y) {
 	      context.save();

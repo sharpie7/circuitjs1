@@ -86,8 +86,8 @@ class TextElm extends GraphicElm {
 	//Graphics2D g2 = (Graphics2D)g;
 	//g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 	//	RenderingHints.VALUE_ANTIALIAS_ON);
-	Font oldfont = g.getFont();
-    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
+	g.save();
+	g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	Font f = new Font("SansSerif", 0, size);
 	g.setFont(f);
 //	FontMetrics fm = g.getFontMetrics();
@@ -116,7 +116,7 @@ class TextElm extends GraphicElm {
 	}
 	x2 = boundingBox.x + boundingBox.width;
 	y2 = boundingBox.y + boundingBox.height;
-	g.setFont(oldfont);
+	g.restore();
     }
     public EditInfo getEditInfo(int n) {
 	if (n == 0) {
