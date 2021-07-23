@@ -375,6 +375,7 @@ MouseOutHandler, MouseWheelHandler {
 	String negativeColor = null;
 	String selectColor = null;
 	String currentColor = null;
+	String mouseModeReq = null;
 
 	try {
 	    //baseURL = applet.getDocumentBase().getFile();
@@ -404,6 +405,7 @@ MouseOutHandler, MouseWheelHandler {
 	    negativeColor = qp.getValue("negativeColor");
 	    selectColor = qp.getValue("selectColor");
 	    currentColor = qp.getValue("currentColor");
+	    mouseModeReq = qp.getValue("mouseMode");
 	} catch (Exception e) { }
 
 	boolean euroSetting = false;
@@ -730,8 +732,8 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	}
 
-
-
+	if (mouseModeReq != null)
+	    menuPerformed("main", mouseModeReq);
 
 	enableUndoRedo();
 	enablePaste();
