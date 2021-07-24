@@ -636,9 +636,9 @@ class Scope {
     void clear2dView() {
     	if (imageContext!=null) {
     		if (sim.printableCheckItem.getState()) {
-    			imageContext.setFillStyle("#ffffff");
+    			imageContext.setFillStyle("#eee");
     		} else {
-    			imageContext.setFillStyle("#000000");
+    			imageContext.setFillStyle("#111");
     		}
     		imageContext.fillRect(0, 0, rect.width-1, rect.height-1);
     	}
