@@ -1059,6 +1059,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Tristate Buffer"), "TriStateElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger"), "SchmittElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Schmitt Trigger (Inverting)"), "InvertingSchmittElm"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Delay Buffer"), "DelayBufferElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII+"), "CC2Elm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add CCII-"), "CC2NegElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Comparator (Hi-Z/GND output)"), "ComparatorElm"));
@@ -5514,6 +5515,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 419: return new DecimalDisplayElm(x1, y1, x2, y2, f, st);
     	case 420: return new WattmeterElm(x1, y1, x2, y2, f, st);
     	case 421: return new Counter2Elm(x1, y1, x2, y2, f, st);
+    	case 422: return new DelayBufferElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5772,6 +5774,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new WattmeterElm(x1, y1);
     	if (n=="Counter2Elm")
 		return (CircuitElm) new Counter2Elm(x1, y1);
+    	if (n=="DelayBufferElm")
+		return (CircuitElm) new DelayBufferElm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {
