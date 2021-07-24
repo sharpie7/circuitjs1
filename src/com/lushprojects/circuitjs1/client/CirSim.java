@@ -3941,7 +3941,7 @@ MouseOutHandler, MouseWheelHandler {
     		break;
     	case MODE_SELECT:
     		if (mouseElm == null)
-    		    selectArea(gx, gy);
+    		    selectArea(gx, gy, e.isShiftKeyDown());
     		else if (!noEditCheckItem.getState()) {
     		    // wait short delay before dragging.  This is to fix problem where switches were accidentally getting
     		    // dragged when tapped on mobile devices
@@ -4144,7 +4144,7 @@ MouseOutHandler, MouseWheelHandler {
 	needAnalyze();
     }
     
-    void selectArea(int x, int y) {
+    void selectArea(int x, int y, boolean add) {
     	int x1 = min(x, initDragGridX);
     	int x2 = max(x, initDragGridX);
     	int y1 = min(y, initDragGridY);
@@ -4153,7 +4153,7 @@ MouseOutHandler, MouseWheelHandler {
     	int i;
     	for (i = 0; i != elmList.size(); i++) {
     		CircuitElm ce = getElm(i);
-    		ce.selectRect(selectedArea);
+    		ce.selectRect(selectedArea, add);
     	}
     }
 

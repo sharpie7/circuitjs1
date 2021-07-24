@@ -995,8 +995,11 @@ public abstract class CircuitElm implements Editable {
     boolean isSelected() { return selected; }
     boolean canShowValueInScope(int v) { return false; }
     void setSelected(boolean x) { selected = x; }
-    void selectRect(Rectangle r) {
-	selected = r.intersects(boundingBox);
+    void selectRect(Rectangle r, boolean add) {
+	if (r.intersects(boundingBox))
+	    selected = true;
+	else if (!add)
+	    selected = false;
     }
     static int abs(int x) { return x < 0 ? -x : x; }
     static int sign(int x) { return (x < 0) ? -1 : (x == 0) ? 0 : 1; }
