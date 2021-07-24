@@ -23,6 +23,7 @@ package com.lushprojects.circuitjs1.client;
 	boolean invertreset;
 	int modulus;
 	final int FLAG_UP_DOWN = 4;
+	final int FLAG_NEGATIVE_EDGE = 8;
 
 	public CounterElm(int xx, int yy) {
 	    super(xx, yy);
@@ -55,6 +56,7 @@ package com.lushprojects.circuitjs1.client;
 	    pins = new Pin[getPostCount()];
 	    pins[0] = new Pin(0, SIDE_W, "");
 	    pins[0].clock = true;
+	    pins[0].bubble = negativeEdgeTriggered();
 	    pins[1] = new Pin(sizeY-1, SIDE_W, "R");
 	    pins[1].bubble = invertreset;
 	    int i;
@@ -95,6 +97,11 @@ package com.lushprojects.circuitjs1.client;
 		ei.checkbox = new Checkbox("Up/Down Pin", hasUpDown());
 		return ei;
 	    }
+    	    if (n == 6) {
+    		EditInfo ei = new EditInfo("", 0, -1, -1);
+    		ei.checkbox = new Checkbox("Negative Edge Triggered", negativeEdgeTriggered());
+    		return ei;
+    	    }
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -129,11 +136,18 @@ package com.lushprojects.circuitjs1.client;
 		setupPins();
 		setPoints();
 	    }
+	    if (n == 6) {
+		flags = ei.changeFlag(flags, FLAG_NEGATIVE_EDGE);
+		setupPins();
+		setPoints();
+	    }
 	}
 	boolean hasUpDown() { return (flags & FLAG_UP_DOWN) != 0; }
+	boolean negativeEdgeTriggered() { return (flags & FLAG_NEGATIVE_EDGE) != 0; }
 	int getVoltageSourceCount() { return bits; }
 	void execute() {
-	    if (pins[0].value && !lastClock) {
+	    boolean neg = negativeEdgeTriggered();
+	    if (pins[0].value != neg && lastClock == neg) {
 		int i;
 		int value = 0;
 		
