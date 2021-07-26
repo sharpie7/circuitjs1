@@ -48,6 +48,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 		
 	void draw(Graphics g) {
+	    g.save();
 	    boolean selected = needsHighlight() || stopped;
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
@@ -60,6 +61,7 @@ package com.lushprojects.circuitjs1.client;
 		g.setColor(selectColor);
 	    drawThickLine(g, point1, lead1);
 	    drawPosts(g);
+	    g.restore();
 	}
 	void stepFinished() {
 	    stopped = false;

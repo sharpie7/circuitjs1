@@ -45,6 +45,7 @@ package com.lushprojects.circuitjs1.client;
 	    lead1 = new Point();
 	}
 	void draw(Graphics g) {
+	    g.save();
 	    boolean selected = needsHighlight();
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
@@ -63,6 +64,7 @@ package com.lushprojects.circuitjs1.client;
 		g.setColor(selectColor);
 	    drawThickLine(g, point1, lead1);
 	    drawPosts(g);
+	    g.restore();
 	}
 	double getVoltageDiff() { return volts[0]; }
 	void getInfo(String arr[]) {

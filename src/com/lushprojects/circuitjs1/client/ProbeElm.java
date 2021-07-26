@@ -108,6 +108,7 @@ class ProbeElm extends CircuitElm {
 	
 
     void draw(Graphics g) {
+	g.save();
 	int hs = 8;
 	setBbox(point1, point2, hs);
 	boolean selected = needsHighlight();
@@ -173,6 +174,7 @@ class ProbeElm extends CircuitElm {
            int w = (int)g.context.measureText("+").getWidth();;
            g.drawString("+", plusPoint.x-w/2, plusPoint.y);
 	drawPosts(g);
+	g.restore();
     }
 
     boolean mustShowVoltage() {

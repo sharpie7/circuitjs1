@@ -94,6 +94,7 @@ class TestPointElm extends CircuitElm {
         return "";
     }
     void draw(Graphics g) {
+	g.save();
         boolean selected = needsHighlight();
         Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
         g.setFont(f);
@@ -144,6 +145,7 @@ class TestPointElm extends CircuitElm {
             g.setColor(selectColor);
         drawThickLine(g, point1, lead1);
         drawPosts(g);
+        g.restore();
     }
     
     

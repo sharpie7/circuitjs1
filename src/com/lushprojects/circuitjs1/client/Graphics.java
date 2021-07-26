@@ -26,6 +26,7 @@ public class Graphics {
 	Context2d context;
 	int currentFontSize;
 	Color lastColor;
+	int savedFontSize;
 	static boolean isFullScreen=false;
 	
 	  public Graphics(Context2d context) {
@@ -57,9 +58,11 @@ public class Graphics {
 	  
 	  public void restore() {
 	      context.restore();
+	      currentFontSize = savedFontSize;
 	  }
 	  public void save() {
 	      context.save();
+	      savedFontSize = currentFontSize;
 	  }
 	  
 	  
