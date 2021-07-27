@@ -4280,9 +4280,10 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	}
     	
-    	if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE)>=0)) {
+    	if (circuitArea.contains(sx, sy)) {
+    	    if (mouseElm!=null && ( mouseElm.getHandleGrabbedClose(gx, gy, POSTGRABSQ, MINPOSTGRABSIZE)>=0)) {
     		newMouseElm=mouseElm;
-    	} else {
+    	    } else {
     		int bestDist = 100000000;
     		int bestArea = 100000000;
     		for (i = 0; i != elmList.size(); i++) {
@@ -4315,6 +4316,7 @@ MouseOutHandler, MouseWheelHandler {
     				}
     			}
     		} // for
+    	    }
     	}
     	scopeSelected = -1;
     	if (newMouseElm == null) {
