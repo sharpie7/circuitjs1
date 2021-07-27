@@ -4520,6 +4520,9 @@ MouseOutHandler, MouseWheelHandler {
 //    public void mousePressed(MouseEvent e) {
     	e.preventDefault();
     	
+    	// make sure canvas has focus, not stop button or something else, so all shortcuts work
+    	cv.setFocus(true);
+    	
 	stopElm = null; // if stopped, allow user to select other elements to fix circuit 
     	menuX = menuClientX = e.getX();
     	menuY = menuClientY = e.getY();
