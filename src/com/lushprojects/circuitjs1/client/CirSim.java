@@ -95,6 +95,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Navigator;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
 ClickHandler, DoubleClickHandler, ContextMenuHandler, NativePreviewHandler,
@@ -614,7 +616,11 @@ MouseOutHandler, MouseWheelHandler {
 	    return;
 	}
 
-
+	Window.addResizeHandler(new ResizeHandler() {
+	    public void onResize(ResizeEvent event) {
+		repaint();
+	    }
+	});
 
 	cvcontext=cv.getContext2d();
 	setCanvasSize();
@@ -1358,10 +1364,12 @@ MouseOutHandler, MouseWheelHandler {
   	    CircuitElm.whiteColor = Color.black;
   	    CircuitElm.lightGrayColor = Color.black;
   	    g.setColor(Color.white);
+  	    cv.getElement().getStyle().setBackgroundColor("#fff");
 	} else {
 	    CircuitElm.whiteColor = Color.white;
 	    CircuitElm.lightGrayColor = Color.lightGray;
 	    g.setColor(Color.black);
+  	    cv.getElement().getStyle().setBackgroundColor("#000");
 	}
 	g.fillRect(0, 0, canvasWidth, canvasHeight);
 	myrunstarttime=System.currentTimeMillis();
