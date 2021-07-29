@@ -170,7 +170,7 @@ MouseOutHandler, MouseWheelHandler {
     static final int MODE_DRAG_POST = 5;
     static final int MODE_SELECT = 6;
     static final int MODE_DRAG_SPLITTER = 7;
-    static final int infoWidth = 120;
+    static final int infoWidth = 160;
     long myframes =1;
     long mytime=0;
     long myruntime=0;
