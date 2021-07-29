@@ -137,6 +137,7 @@ package com.lushprojects.circuitjs1.client;
 		int i;
 		for (i = 0; i != bits; i++)
 		    writeOutput(i, false);
+		carry = false;
 	    }
 	    
 	    lastClock = pins[clk].value;
