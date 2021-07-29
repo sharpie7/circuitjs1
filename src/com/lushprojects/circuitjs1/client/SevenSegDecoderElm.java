@@ -47,7 +47,7 @@ package com.lushprojects.circuitjs1.client;
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
 	}
-	String getChipName() { return "Seven Segment LED Decoder"; }
+	String getChipName() { return "7-Segment Decoder"; }
 
 	void setupPins() {
 	    sizeX = 3;
