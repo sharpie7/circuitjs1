@@ -93,7 +93,7 @@ package com.lushprojects.circuitjs1.client;
 		drawThickLine(g, plate2[0], plate2[1]);
 	    else {
 		int i;
-		for (i = 0; i != 7; i++)
+		for (i = 0; i != platePoints.length-1; i++)
 		    drawThickLine(g,  platePoints[i], platePoints[i+1]);
 	    }
 	    
