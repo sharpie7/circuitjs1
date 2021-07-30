@@ -81,23 +81,22 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() {
 	    return bits*2+6;
 	}
-	public EditInfo getEditInfo(int n) {
-            if (n == 2)
+	public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
-            if (n == 3)
+            if (n == 1)
                 return new EditInfo("Modulus", modulus, 1, 1).setDimensionless();
-	    return super.getEditInfo(n);
+	    return null;
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 2 && ei.value >= 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0 && ei.value >= 2) {
 		bits = (int)ei.value;
 		setupPins();
 		setPoints();
 		allocNodes();
 	    }
-	    if (n == 3)
+	    if (n == 1)
 		modulus = (int)ei.value;
-	    super.setEditValue(n, ei);
 	}
 	int getVoltageSourceCount() { return bits+1; }
 	

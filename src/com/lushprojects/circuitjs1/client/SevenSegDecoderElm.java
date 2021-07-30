@@ -107,29 +107,29 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
-        public EditInfo getEditInfo(int n) {
-            if (n == 2) {
+        public EditInfo getChipEditInfo(int n) {
+            if (n == 0) {
                 EditInfo ei = new EditInfo("", 0, -1, -1);
                 ei.checkbox = new Checkbox("Blank Pin", hasBlank());
                 return ei;
             }
-            if (n == 3) {
+            if (n == 1) {
                 EditInfo ei = new EditInfo("", 0, -1, -1);
                 ei.checkbox = new Checkbox("Blank on 1111", blankOnF());
                 return ei;        	
             }
-            return super.getEditInfo(n);
+            return super.getChipEditInfo(n);
         }
-        public void setEditValue(int n, EditInfo ei) {
-            if (n == 2) {
+        public void setChipEditValue(int n, EditInfo ei) {
+            if (n == 0) {
         	flags = ei.changeFlag(flags, FLAG_ENABLE);
         	setupPins();
         	setPoints();
         	return;
             }
-            if (n == 3)
+            if (n == 1)
         	flags = ei.changeFlag(flags, FLAG_BLANK_F);
-            super.setEditValue(n, ei);
+            super.setChipEditValue(n, ei);
         }
 
 	int getDumpType() { return 197; }

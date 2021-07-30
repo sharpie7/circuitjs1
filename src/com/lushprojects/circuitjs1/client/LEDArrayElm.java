@@ -87,7 +87,10 @@ package com.lushprojects.circuitjs1.client;
 		for (iy = 0; iy != sizeY; iy++) {
 		    int i = ix+iy*sizeX;
 		    setColor(g, i);
-		    g.fillOval(pins[ix].post.x-cspc/2, pins[iy+sizeX].post.y-cspc/2, cspc, cspc);
+		    if (isFlippedXY())
+			g.fillOval(pins[iy+sizeX].post.x-cspc/2, pins[ix].post.y-cspc/2, cspc, cspc);
+		    else
+			g.fillOval(pins[ix].post.x-cspc/2, pins[iy+sizeX].post.y-cspc/2, cspc, cspc);
 		}
 	}
 	
@@ -143,30 +146,29 @@ package com.lushprojects.circuitjs1.client;
 	// this is true but it causes strange behavior with unconnected pins so we don't do it
 //	boolean getConnection(int n1, int n2) { return true; }
 	
-	public EditInfo getEditInfo(int n) {
-            if (n == 2)
+	public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("Grid Width", sizeX).setDimensionless();
-            if (n == 3)
-        		return new EditInfo("Grid Height", sizeY).setDimensionless();
-	    return super.getEditInfo(n);
+            if (n == 1)
+        	return new EditInfo("Grid Height", sizeY).setDimensionless();
+            return null;
 	}
 	
-	public void setEditValue(int n, EditInfo ei) {
-            if (n == 2 && ei.value >= 2 && ei.value <= 16) {
+	public void setChipEditValue(int n, EditInfo ei) {
+            if (n == 0 && ei.value >= 2 && ei.value <= 16) {
         		sizeX = (int)ei.value;
         		allocNodes();
                 setupPins();
                 setPoints();
                 return;
             }
-            if (n == 3 && ei.value >= 2 && ei.value <= 16) {
+            if (n == 1 && ei.value >= 2 && ei.value <= 16) {
         		sizeY = (int)ei.value;
         		allocNodes();
                 setupPins();
                 setPoints();
                 return;
             }
-	    super.setEditValue(n, ei);
 	}
 	
 	// default getInfo doesn't work because the pins are unlabeled

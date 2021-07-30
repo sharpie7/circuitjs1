@@ -82,21 +82,21 @@ package com.lushprojects.circuitjs1.client;
 	
 	int getDumpType() { return 184; }
 
-        public EditInfo getEditInfo(int n) {
-            if (n == 2)
+        public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("# of Select Bits", selectBitCount, 1, 8).
                     setDimensionless();
-            return super.getEditInfo(n);
+            return super.getChipEditInfo(n);
         }
         
-        public void setEditValue(int n, EditInfo ei) {
-            if (n == 2 && ei.value >= 1 && ei.value <= 6) {
+        public void setChipEditValue(int n, EditInfo ei) {
+            if (n == 0 && ei.value >= 1 && ei.value <= 6) {
                 selectBitCount = (int) ei.value;
                 setupPins();
                 setPoints();
                 return;
             }
-            super.setEditValue(n, ei);
+            super.setChipEditValue(n, ei);
         }
         
     }

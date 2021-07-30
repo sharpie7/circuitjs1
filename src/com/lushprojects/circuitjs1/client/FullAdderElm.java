@@ -75,13 +75,13 @@ package com.lushprojects.circuitjs1.client;
 	int getDumpType() { return 196; }
 	boolean needsBits() { return (flags & FLAG_BITS) != 0; }
 
-        public EditInfo getEditInfo(int n) {
-            if (n == 2)
+        public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
-            return super.getEditInfo(n);
+            return super.getChipEditInfo(n);
         }
-        public void setEditValue(int n, EditInfo ei) {
-            if (n == 2 && ei.value >= 2) {
+        public void setChipEditValue(int n, EditInfo ei) {
+            if (n == 0 && ei.value > 0) {
                 bits = (int)ei.value;
                 flags |= FLAG_BITS;
                 setupPins();
@@ -89,7 +89,7 @@ package com.lushprojects.circuitjs1.client;
                 allocNodes();
                 return;
             }
-            super.setEditValue(n, ei);
+            super.setChipEditValue(n, ei);
         }
 
     }

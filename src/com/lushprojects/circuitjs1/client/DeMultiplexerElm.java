@@ -74,19 +74,13 @@ package com.lushprojects.circuitjs1.client;
 	    pins[val].value = pins[qPin].value;
 	}
 
-	public EditInfo getEditInfo(int n) {
-            if (n < 2)
-		return super.getEditInfo(n);
-            if (n == 2)
+	public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("# of Select Bits", selectBitCount).setDimensionless();
             return null;
         }
-        public void setEditValue(int n, EditInfo ei) {
-            if (n < 2) {
-                super.setEditValue(n,  ei);
-                return;
-            }
-            if (n == 2 && ei.value >= 1 && ei.value <= 6) {
+        public void setChipEditValue(int n, EditInfo ei) {
+            if (n == 0 && ei.value >= 1 && ei.value <= 6) {
                 selectBitCount = (int)ei.value;
                 setupPins();
                 setPoints();

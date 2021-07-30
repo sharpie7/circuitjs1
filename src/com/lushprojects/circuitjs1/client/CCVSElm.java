@@ -177,7 +177,7 @@ class CCVSElm extends VCCSElm {
             }
         }
         
-        public void setEditValue(int n, EditInfo ei) {
+        public void setChipEditValue(int n, EditInfo ei) {
             if (n == 1) {
         	// make sure number of inputs is even
                 if (ei.value < 0 || ei.value > 8 || (ei.value % 2) == 1)
@@ -187,7 +187,7 @@ class CCVSElm extends VCCSElm {
                 allocNodes();
                 setPoints();
             } else
-        	super.setEditValue(n, ei);
+        	super.setChipEditValue(n, ei);
         }
 
         void setParentList(Vector<CircuitElm> elmList) {

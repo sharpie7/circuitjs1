@@ -89,26 +89,26 @@ package com.lushprojects.circuitjs1.client;
 	    lastClock = pins[3].value;
 	}
 	int getDumpType() { return 155; }
-	public EditInfo getEditInfo(int n) {
-	    if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Reset Pin", hasReset());
 		return ei;
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Set Pin", hasSet());
 		return ei;
 	    }
-	    if (n == 4) {
+	    if (n == 2) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Invert Set/Reset", invertSetReset());
 		return ei;
 	    }
-	    return super.getEditInfo(n);
+	    return super.getChipEditInfo(n);
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
 		if (ei.checkbox.getState())
 		    flags |= FLAG_RESET;
 		else
@@ -117,7 +117,7 @@ package com.lushprojects.circuitjs1.client;
 		allocNodes();
 		setPoints();
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		if (ei.checkbox.getState())
 		    flags |= FLAG_SET;
 		else
@@ -126,11 +126,11 @@ package com.lushprojects.circuitjs1.client;
 		allocNodes();
 		setPoints();
 	    }
-	    if (n == 4) {
+	    if (n == 2) {
 		flags = ei.changeFlag(flags, FLAG_INVERT_SET_RESET);
 		setupPins();
 		setPoints();
 	    }
-	    super.setEditValue(n, ei);
+	    super.setChipEditValue(n, ei);
 	}
     }

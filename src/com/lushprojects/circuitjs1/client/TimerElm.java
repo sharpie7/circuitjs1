@@ -114,22 +114,22 @@ class TimerElm extends ChipElm {
     int getPostCount() { return hasGroundPin() ? 8 : hasReset() ? 7 : 6; }
     int getVoltageSourceCount() { return 0; }
     int getDumpType() { return 165; }
-    public EditInfo getEditInfo(int n) {
-        if (n == 2) {
+    public EditInfo getChipEditInfo(int n) {
+        if (n == 0) {
             EditInfo ei = new EditInfo("", 0, 0, 0);
             ei.checkbox = new Checkbox("Ground Pin", hasGroundPin());
             return ei;
         }
-        return super.getEditInfo(n);
+        return super.getChipEditInfo(n);
     }
-    public void setEditValue(int n, EditInfo ei) {
-        if (n == 2) {
+    public void setChipEditValue(int n, EditInfo ei) {
+        if (n == 0) {
             flags = ei.changeFlag(flags, FLAG_GROUND);
             allocNodes();
             setPoints();
             return;
         }
-        super.setEditValue(n, ei);
+        super.setChipEditValue(n, ei);
     }
 
 }

@@ -23,8 +23,9 @@ abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;
 	static final int FLAG_SMALL = 1;
-	static final int FLAG_FLIP_X = 1024;
-	static final int FLAG_FLIP_Y = 2048;
+	static final int FLAG_FLIP_X = 1<<10;
+	static final int FLAG_FLIP_Y = 1<<11;
+	static final int FLAG_FLIP_XY = 1<<12;
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
@@ -114,10 +115,9 @@ abstract class ChipElm extends CircuitElm {
 		    int asc=(int)g.currentFontSize;
 		    int tx;
 		    // put text closer to edge if it's on left or right.
-		    // we could do extra work to handle flipped case, but we don't
-		    if (p.side == SIDE_W && !isFlippedX())
+		    if (p.side == flippedXSide(SIDE_W))
 			tx = p.textloc.x-(cspc-5);
-		    else if (p.side == SIDE_E && !isFlippedX())
+		    else if (p.side == flippedXSide(SIDE_E))
 			tx = p.textloc.x+(cspc-5)-sw;
 		    else
 			tx = p.textloc.x-sw/2;
@@ -139,7 +139,7 @@ abstract class ChipElm extends CircuitElm {
 	int rectPointsX[], rectPointsY[];
 	int clockPointsX[], clockPointsY[];
 	Pin pins[];
-	int sizeX, sizeY;
+	int sizeX, sizeY, flippedSizeX, flippedSizeY;
 	boolean lastClock;
 	void drag(int xx, int yy) {
 	    yy = sim.snapGrid(yy);
@@ -155,18 +155,23 @@ abstract class ChipElm extends CircuitElm {
 	    clockPointsX = null;
 	    if (x2-x > sizeX*cspc2 && this == sim.dragElm)
 		setSize(2);
-	    int hs = cspc;
 	    int x0 = x+cspc2; int y0 = y;
 	    int xr = x0-cspc;
 	    int yr = y0-cspc;
-	    int xs = sizeX*cspc2;
-	    int ys = sizeY*cspc2;
-	    rectPointsX = new int[] { xr, xr+xs, xr+xs, xr };
-	    rectPointsY = new int[] { yr, yr, yr+ys, yr+ys };
-	    setBbox(xr, yr, rectPointsX[2], rectPointsY[2]);
+	    flippedSizeX = sizeX;
+	    flippedSizeY = sizeY;
+	    if (isFlippedXY()) {
+		flippedSizeX = sizeY;
+		flippedSizeY = sizeX;
+	    }
+	    int xs = flippedSizeX*cspc2;
+	    int ys = flippedSizeY*cspc2;
 	    int i;
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
+		p.side = p.side0;
+		if ((flags & FLAG_FLIP_XY) != 0)
+		    p.side = sideFlipXY[p.side];
 		switch (p.side) {
 		case SIDE_N: p.setPoint(x0, y0, 1, 0, 0, -1, 0, 0); break;
 		case SIDE_S: p.setPoint(x0, y0, 1, 0, 0,  1, 0, ys-cspc2);break;
@@ -174,6 +179,9 @@ abstract class ChipElm extends CircuitElm {
 		case SIDE_E: p.setPoint(x0, y0, 0, 1,  1, 0, xs-cspc2, 0);break;
 		}
 	    }
+	    rectPointsX = new int[] { xr, xr+xs, xr+xs, xr };
+	    rectPointsY = new int[] { yr, yr, yr+ys, yr+ys };
+	    setBbox(xr, yr, rectPointsX[2], rectPointsY[2]);
 	}
 	
 	// see if we can move pin to position xp, yp, and return the new position
@@ -324,7 +332,7 @@ abstract class ChipElm extends CircuitElm {
 	    return pins[n].current;
 	}
 	
-	boolean isFlippedX() { return (flags & FLAG_FLIP_X) != 0; }
+	boolean isFlippedXY() { return (flags & FLAG_FLIP_XY) != 0; }
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
@@ -337,7 +345,12 @@ abstract class ChipElm extends CircuitElm {
 		ei.checkbox = new Checkbox("Flip Y", (flags & FLAG_FLIP_Y) != 0);
 		return ei;
 	    }
-	    return null;
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Flip X/Y", (flags & FLAG_FLIP_XY) != 0);
+		return ei;
+	    }
+	    return getChipEditInfo(n-3);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
@@ -348,7 +361,16 @@ abstract class ChipElm extends CircuitElm {
 		flags = ei.changeFlag(flags, FLAG_FLIP_Y);
 		setPoints();
 	    }
+	    if (n == 2) {
+		flags = ei.changeFlag(flags, FLAG_FLIP_XY);
+		setPoints();
+	    }
+	    if (n >= 3)
+		setChipEditValue(n-3, ei);
 	}
+	
+	public EditInfo getChipEditInfo(int n) { return null; }
+	public void setChipEditValue(int n, EditInfo ei) { }
 	
 	static String writeBits(boolean[] data) {
 		StringBuilder sb = new StringBuilder();
@@ -393,28 +415,39 @@ abstract class ChipElm extends CircuitElm {
 	static final int SIDE_W = 2;
 	static final int SIDE_E = 3;
 	
+	static final int sideFlipXY[] = { SIDE_W, SIDE_E, SIDE_N, SIDE_S };
+
+	int flippedXSide(int s) {
+	    if ((flags & FLAG_FLIP_X) == 0)
+		return s;
+	    if (s == SIDE_W)
+		return SIDE_E;
+	    if (s == SIDE_E)
+		return SIDE_W;
+	    return s;
+	}
+	
 	class Pin {
 	    Pin(int p, int s, String t) {
-		pos = p; side = s; text = t;
+		pos = p; side0 = side = s; text = t;
 	    }
 	    Point post, stub;
 	    Point textloc;
-	    int pos, side, voltSource, bubbleX, bubbleY;
+	    int pos, side, side0, voltSource, bubbleX, bubbleY;
 	    String text;
 	    boolean lineOver, bubble, clock, output, value, state, selected;
 	    double curcount, current;
-	    void setPoint(int px, int py, int dx, int dy, int dax, int day,
-			  int sx, int sy) {
+	    void setPoint(int px, int py, int dx, int dy, int dax, int day, int sx, int sy) {
 		if ((flags & FLAG_FLIP_X) != 0) {
 		    dx = -dx;
 		    dax = -dax;
-		    px += cspc2*(sizeX-1);
+		    px += cspc2*(flippedSizeX-1);
 		    sx = -sx;
 		}
 		if ((flags & FLAG_FLIP_Y) != 0) {
 		    dy = -dy;
 		    day = -day;
-		    py += cspc2*(sizeY-1);
+		    py += cspc2*(flippedSizeY-1);
 		    sy = -sy;
 		}
 		int xa = px+cspc2*dx*pos+sx;

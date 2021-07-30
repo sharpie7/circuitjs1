@@ -88,7 +88,7 @@ public class CustomCompositeElm extends CompositeElm {
 	chip = new CustomCompositeChipElm(x, y);
 	chip.x2 = x2;
 	chip.y2 = y2;
-	chip.flags = (flags & (ChipElm.FLAG_FLIP_X | ChipElm.FLAG_FLIP_Y));
+	chip.flags = (flags & (ChipElm.FLAG_FLIP_X | ChipElm.FLAG_FLIP_Y | ChipElm.FLAG_FLIP_XY));
 	
 	chip.sizeX = model.sizeX;
 	chip.sizeY = model.sizeY;
@@ -157,14 +157,19 @@ public class CustomCompositeElm extends CompositeElm {
             ei.checkbox = new Checkbox("Flip Y", (flags & ChipElm.FLAG_FLIP_Y) != 0);
             return ei;
         }
-        if (n == 4 && model.canLoadModelCircuit()) {
+        if (n == 4) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip X/Y", (flags & ChipElm.FLAG_FLIP_XY) != 0);
+            return ei;
+        }
+        if (n == 5 && model.canLoadModelCircuit()) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.button = new Button(sim.LS("Load Model Circuit"));
             return ei;
         }
 	return null;
     }
-    
+
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
             model = models.get(ei.choice.getSelectedIndex());
@@ -194,6 +199,10 @@ public class CustomCompositeElm extends CompositeElm {
             setPoints();
         }
         if (n == 4) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_XY);
+            setPoints();
+        }
+        if (n == 5) {
             sim.readCircuit(model.modelCircuit);
             sim.editDialog.closeDialog();
         }

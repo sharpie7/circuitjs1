@@ -93,31 +93,31 @@ package com.lushprojects.circuitjs1.client;
 	}
 	int getDumpType() { return 156; }
 	
-	public EditInfo getEditInfo(int n){
-		if (n == 2){
+	public EditInfo getChipEditInfo(int n){
+		if (n == 0){
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Reset Pin", hasReset());
 			return ei;
 		}
 		
-		if (n == 3){
+		if (n == 1){
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Positive Edge Triggered", positiveEdgeTriggered());
 			return ei;
 		}
 		
-		if (n == 4){
+		if (n == 2){
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Invert Reset", invertReset());
 			return ei;
 		}
 		
 		
-		return super.getEditInfo(n);
+		return super.getChipEditInfo(n);
 	}
 	
-	public void setEditValue(int n, EditInfo ei){
-		if (n == 2){
+	public void setChipEditValue(int n, EditInfo ei){
+		if (n == 0){
 			if(ei.checkbox.getState()){
 				flags |= FLAG_RESET;
 			} else {
@@ -128,16 +128,16 @@ package com.lushprojects.circuitjs1.client;
 			allocNodes();
 			setPoints();
 		}
-		if (n == 3) {
+		if (n == 1) {
 		    flags = ei.changeFlag(flags, FLAG_POSITIVE_EDGE);
 		    pins[1].bubble = !positiveEdgeTriggered();
 		}
-		if (n == 4) {
+		if (n == 2) {
 		    flags = ei.changeFlag(flags, FLAG_INVERT_RESET);
 		    setupPins();
 		    setPoints();
 		}
 		
-		super.setEditValue(n, ei);
+		super.setChipEditValue(n, ei);
 	}
     }

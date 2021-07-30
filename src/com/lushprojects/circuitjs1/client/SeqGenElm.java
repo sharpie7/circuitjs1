@@ -145,15 +145,13 @@ class SeqGenElm extends ChipElm {
 		}
 		return sb.toString();
 	}
-	public EditInfo getEditInfo(int n) {
-		if (n < 2)
-			return super.getEditInfo(n);
-		if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+		if (n == 0) {
 			EditInfo ei = new EditInfo("", 0, -1, -1);
 			ei.checkbox = new Checkbox("Play Once", hasPlayOnce());
 			return ei;
 		}
-		if (n == 3) {
+		if (n == 1) {
 			EditInfo ei = new EditInfo("Sequence", 0, -1, -1);
 			ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
@@ -165,16 +163,12 @@ class SeqGenElm extends ChipElm {
 		}
 		return null;
 	}
-	public void setEditValue(int n, EditInfo ei) {
-		if (n < 2) {
-			super.setEditValue(n, ei);
-			return;
-		}
-		if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+		if (n == 0) {
 			flags = ei.changeFlag(flags, FLAG_PLAY_ONCE);
 			return;
 		}
-		if (n == 3) {
+		if (n == 1) {
 			String s = ei.textArea.getText();
 			
 			// First count the number of bits so we can initialize the data array

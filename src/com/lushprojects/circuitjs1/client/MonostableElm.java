@@ -84,25 +84,25 @@ package com.lushprojects.circuitjs1.client;
 	   return super.dump() + " " + retriggerable + " " + delay;
 	}
 	int getDumpType() { return 194; }
-	public EditInfo getEditInfo(int n) {
-	    if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox=new Checkbox("Retriggerable",retriggerable);
 		return ei;
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		EditInfo ei = new EditInfo("Period (s)",delay, 0.001,0.1);
 		return ei;
 	    }
-	    return super.getEditInfo(n);
+	    return super.getChipEditInfo(n);
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
 		retriggerable=ei.checkbox.getState();
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		delay=ei.value;
 	    }
-	    super.setEditValue(n, ei);
+	    super.setChipEditValue(n, ei);
 	}
     }

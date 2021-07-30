@@ -71,20 +71,20 @@ class DecimalDisplayElm extends ChipElm {
     int getPostCount() { return bitCount; }
     int getDumpType() { return 419; }
     int getVoltageSourceCount() { return 0; }
-    public EditInfo getEditInfo(int n) {
-        if (n == 2)
+    public EditInfo getChipEditInfo(int n) {
+        if (n == 0)
             return new EditInfo("# of Bits", bitCount, 1, 8).
                 setDimensionless();
-        return super.getEditInfo(n);
+        return super.getChipEditInfo(n);
     }
-    public void setEditValue(int n, EditInfo ei) {
-        if (n == 2 && ei.value >= 1 && ei.value <= 16) {
+    public void setChipEditValue(int n, EditInfo ei) {
+        if (n == 0 && ei.value >= 1 && ei.value <= 16) {
             bitCount = (int) ei.value;
             setupPins();
             setPoints();
             return;
         }
-        super.setEditValue(n, ei);
+        super.setChipEditValue(n, ei);
     }
 
 }

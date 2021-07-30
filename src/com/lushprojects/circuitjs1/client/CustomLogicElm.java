@@ -216,23 +216,23 @@ public class CustomLogicElm extends ChipElm {
 	}
     }
     
-    public EditInfo getEditInfo(int n) {
-	if (n == 2) {
+    public EditInfo getChipEditInfo(int n) {
+	if (n == 0) {
 	    EditInfo ei = new EditInfo("Model Name", 0, -1, -1);
 	    ei.text = modelName;
 	    ei.disallowSliders();
 	    return ei;
 	}
-	if (n == 3) {
+	if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
             ei.button = new Button(sim.LS("Edit Model"));
             return ei;
 	}
-	return super.getEditInfo(n);
+	return null;
     }
     
-    public void setEditValue(int n, EditInfo ei) {
-	if (n == 2) {
+    public void setChipEditValue(int n, EditInfo ei) {
+	if (n == 0) {
 	    modelName = lastModelName = ei.textf.getText();
 	    model = CustomLogicModel.getModelWithNameOrCopy(modelName, model);
 	    setupPins();
@@ -240,15 +240,13 @@ public class CustomLogicElm extends ChipElm {
 	    setPoints();
 	    return;
 	}
-	if (n == 3)
+	if (n == 1)
 	{
 	    EditDialog editDialog = new EditDialog(model, sim);
 	    CirSim.customLogicEditDialog = editDialog;
 	    editDialog.show();
 	    return;
 	}
-	
-	super.setEditValue(n, ei);
     }
     
     int getDumpType() { return 208; }

@@ -114,12 +114,12 @@ import com.google.gwt.user.client.ui.TextArea;
 	int getPostCount() {
 	    return 2 + addressBits + dataBits;
 	}
-	public EditInfo getEditInfo(int n) {
-            if (n == 2)
+	public EditInfo getChipEditInfo(int n) {
+            if (n == 0)
                 return new EditInfo("# of Address Bits", addressBits, 1, 1).setDimensionless();
-            if (n == 3)
+            if (n == 1)
                 return new EditInfo("# of Data Bits", dataBits, 1, 1).setDimensionless();
-            if (n == 4) {
+            if (n == 2) {
         	EditInfo ei = new EditInfo("Contents", 0);
         	ei.textArea = new TextArea();
         	ei.textArea.setVisibleLines(5);
@@ -151,30 +151,28 @@ import com.google.gwt.user.client.ui.TextArea;
     	    	ei.textArea.setText(s);
     	    	return ei;
             }
-            if (n == 5 && SRAMLoadFile.isSupported()) {
+            if (n == 3 && SRAMLoadFile.isSupported()) {
             	EditInfo ei = new EditInfo("", 0, -1, -1);
             	ei.loadFile = new SRAMLoadFile();
             	ei.button = new Button("Load Contents From File");
             	ei.newDialog = true;
             	return ei;
             }
-	    return super.getEditInfo(n);
+	    return super.getChipEditInfo(n);
 	}
 	
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n < 2)
-		super.setEditValue(n, ei);
-	    if (n == 2 && ei.value >= 2 && ei.value <= 16) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0 && ei.value >= 2 && ei.value <= 16) {
 		addressBits = (int)ei.value;
 		setupPins();
 		setPoints();
 	    }
-	    if (n == 3 && ei.value >= 2 && ei.value <= 16) {
+	    if (n == 1 && ei.value >= 2 && ei.value <= 16) {
 		dataBits = (int)ei.value;
 		setupPins();
 		setPoints();
 	    }
-	    if (n == 4) {
+	    if (n == 2) {
 		String s = ei.textArea.getText();
 		String lines[] = s.split("\n");
 		int i;
