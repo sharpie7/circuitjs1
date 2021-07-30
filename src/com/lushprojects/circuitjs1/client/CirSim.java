@@ -4187,16 +4187,6 @@ MouseOutHandler, MouseWheelHandler {
     	}
     }
 
-    boolean matchesMouseElm(CircuitElm ce) {
-	if (mouseElm == null)
-	    return false;
-	if (ce instanceof LabeledNodeElm && mouseElm instanceof LabeledNodeElm &&
-		ce.getNode(0) == mouseElm.getNode(0)) {
-	    return true;
-	}
-	return false;
-    }
-    
     void removeZeroLengthElements() {
     	int i;
     	boolean changed = false;
