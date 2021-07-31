@@ -1248,11 +1248,20 @@ MouseOutHandler, MouseWheelHandler {
     	setCircuitArea();
 	
     	double scale = 1;
+    	int cheight = circuitArea.height;
+    	
+    	// if there's no scope, and the window isn't very wide, then don't use all of the circuit area when
+    	// centering, because the info in the corner might not get in the way.  We still want circuitArea to be the full
+    	// height though, to allow the user to put stuff there manually.
+    	if (scopeCount == 0 && circuitArea.width < 800) {
+    	    int h = (int) ((double)cheight * scopeHeightFraction);
+    	    cheight -= h;
+    	}
     	
     	if (bounds != null)
     	    // add some space on edges because bounds calculation is not perfect
     	    scale = Math.min(circuitArea.width /(double)(bounds.width+140),
-    			     circuitArea.height/(double)(bounds.height+100));
+    			     cheight/(double)(bounds.height+100));
     	scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
 
     	// calculate transform so circuit fills most of screen
@@ -1260,7 +1269,7 @@ MouseOutHandler, MouseWheelHandler {
     	transform[1] = transform[2] = transform[4] = transform[5] = 0;
     	if (bounds != null) {
     	    transform[4] = (circuitArea.width -bounds.width *scale)/2 - bounds.x*scale;
-    	    transform[5] = (circuitArea.height-bounds.height*scale)/2 - bounds.y*scale;
+    	    transform[5] = (cheight-bounds.height*scale)/2 - bounds.y*scale;
     	}
     }
 
