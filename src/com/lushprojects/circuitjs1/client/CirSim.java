@@ -1022,6 +1022,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Lamp"), "LampElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Text"), "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Box"), "BoxElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Line"), "LineElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Voltmeter/Scobe Probe"), "ProbeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ohmmeter"), "OhmMeterElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Labeled Node"), "LabeledNodeElm"));
@@ -5528,6 +5529,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 420: return new WattmeterElm(x1, y1, x2, y2, f, st);
     	case 421: return new Counter2Elm(x1, y1, x2, y2, f, st);
     	case 422: return new DelayBufferElm(x1, y1, x2, y2, f, st);
+    	case 423: return new LineElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5699,6 +5701,8 @@ MouseOutHandler, MouseWheelHandler {
     		return (CircuitElm) new VCOElm(x1, y1);
     	if (n=="BoxElm")
     		return (CircuitElm) new BoxElm(x1, y1);
+    	if (n=="LineElm")
+    		return (CircuitElm) new LineElm(x1, y1);
     	if (n=="TextElm")
     		return (CircuitElm) new TextElm(x1, y1);
     	if (n=="TFlipFlopElm")
