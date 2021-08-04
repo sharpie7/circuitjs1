@@ -150,4 +150,7 @@ class LabeledNodeElm extends CircuitElm {
 	if (n == 1)
 	    flags = ei.changeFlag(flags, FLAG_INTERNAL);
     }
+    @Override String getScopeText(int v) {
+	return text;
+    }
 }
