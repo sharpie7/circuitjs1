@@ -56,6 +56,7 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 	
 	TextBox textBox;
 	Anchor a;
+	static String lastFileName;
 	
 	public ExportAsLocalFileDialog(String data) {
 		super();
@@ -72,8 +73,13 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 		vp.add(new Label(CirSim.LS("Click on the link below to save your circuit")));
 		url=getBlobUrl(data);
 		Date date = new Date();
-		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
-		String fname = "circuit-"+ dtf.format(date) + ".circuitjs.txt";
+		String fname;
+		if (lastFileName != null)
+		    fname = lastFileName;
+		else {
+		    DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
+		    fname = "circuit-"+ dtf.format(date) + ".circuitjs.txt";
+		}
 		textBox.setText(fname);
 		a=new Anchor(fname, url);
 		a.getElement().setAttribute("Download", fname);
@@ -96,6 +102,7 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 		fname += ".txt";
 	    a.getElement().setAttribute("Download", fname);
 	    a.setText(fname);
+	    lastFileName = fname;
 	}
 	
 	protected void closeDialog()
