@@ -34,6 +34,14 @@ package com.lushprojects.circuitjs1.client;
 		f ^= getInput(i);
 	    return f;
 	}
+	
+	public EditInfo getEditInfo(int n) {
+	    // no invert inputs option
+	    if (n == 3)
+		return null;
+	    return super.getEditInfo(n);
+	}
+	
 	int getDumpType() { return 154; }
 	int getShortcut() { return '4'; }
     }

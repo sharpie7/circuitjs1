@@ -20,8 +20,9 @@
 package com.lushprojects.circuitjs1.client;
 
     abstract class GateElm extends CircuitElm {
-	final int FLAG_SMALL = 1;
-	final int FLAG_SCHMITT = 2;
+	final int FLAG_SMALL = 1<<0;
+	final int FLAG_SCHMITT = 1<<1;
+	final int FLAG_INVERT_INPUTS = 1<<2;
 	int inputCount = 2;
 	boolean lastOutput;
 	double highVoltage;
@@ -87,11 +88,17 @@ package com.lushprojects.circuitjs1.client;
 	    inGates = new Point[inputCount];
 	    allocNodes();
 	    int i0 = -inputCount/2;
+	    if (hasFlag(FLAG_INVERT_INPUTS))
+		icircles = new Point[inputCount];
+	    else
+		icircles = null;
 	    for (i = 0; i != inputCount; i++, i0++) {
 		if (i0 == 0 && (inputCount & 1) == 0)
 		    i0++;
 		inPosts[i] = interpPoint(point1, point2, 0, hs*i0);
-		inGates[i] = interpPoint(lead1,  lead2,  0, hs*i0);
+		inGates[i] = interpPoint(lead1,  lead2,  icircles != null ? -8/(ww*2.) : 0, hs*i0);
+		if (icircles != null)
+		    icircles[i] = interpPoint(lead1, lead2,  -4/(ww*2.), hs*i0);
 		volts[i] = (lastOutput ^ isInverting()) ? 5 : 0;
 	    }
 	    hs2 = gwidth*(inputCount/2+1);
@@ -133,12 +140,15 @@ package com.lushprojects.circuitjs1.client;
 		    drawThickLine(g, linePoints[i], linePoints[i+1]);
 	    if (isInverting())
 		drawThickCircle(g, pcircle.x, pcircle.y, 3);
+	    if (icircles != null)
+		for (i = 0; i != inputCount; i++)
+		    drawThickCircle(g, icircles[i].x, icircles[i].y, 3);
 	    curcount = updateDotCount(current, curcount);
 	    drawDots(g, lead2, point2, curcount);
 	    drawPosts(g);
 	}
 	Polygon gatePoly, schmittPoly;
-	Point pcircle, linePoints[];
+	Point pcircle, linePoints[], icircles[];
 	int getPostCount() { return inputCount+1; }
 	Point getPost(int n) {
 	    if (n == inputCount)
@@ -157,10 +167,11 @@ package com.lushprojects.circuitjs1.client;
 	}
 	boolean hasSchmittInputs() { return (flags & FLAG_SCHMITT) != 0; }
 	boolean getInput(int x) {
+	    boolean high = !hasFlag(FLAG_INVERT_INPUTS);
 	    if (!hasSchmittInputs())
-		return volts[x] > highVoltage*.5;
+		return (volts[x] > highVoltage*.5) ? high : !high;
 	    boolean res = volts[x] > highVoltage*(inputStates[x] ? .35 : .55);
-	    inputStates[x] = res;
+	    inputStates[x] = res ? high : !high;
 	    return res;
 	}
 	abstract boolean calcFunction();
@@ -193,13 +204,13 @@ package com.lushprojects.circuitjs1.client;
 		    setDimensionless();
 	    if (n == 1)
 		return new EditInfo("High Voltage (V)", highVoltage, 1, 10);
-	    if (n == 2) {
-                EditInfo ei = new EditInfo("", 0, -1, -1);
-                ei.checkbox = new Checkbox("Schmitt Inputs", hasSchmittInputs());
-                return ei;
-	    }
+	    if (n == 2)
+		return EditInfo.createCheckbox("Schmitt Inputs", hasSchmittInputs());
+	    if (n == 3)
+		return EditInfo.createCheckbox("Invert Inputs", hasFlag(FLAG_INVERT_INPUTS));
 	    return null;
 	}
+
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0 && ei.value >= 1) {
 		inputCount = (int) ei.value;
@@ -213,6 +224,10 @@ package com.lushprojects.circuitjs1.client;
 		else
 		    flags &= ~FLAG_SCHMITT;
 		lastSchmitt = hasSchmittInputs();
+		setPoints();
+	    }
+	    if (n == 3) {
+		flags = ei.changeFlag(flags, FLAG_INVERT_INPUTS);
 		setPoints();
 	    }
 	}
