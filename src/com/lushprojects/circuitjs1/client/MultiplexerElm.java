@@ -22,8 +22,12 @@ package com.lushprojects.circuitjs1.client;
 // contributed by Edward Calver
 
     class MultiplexerElm extends ChipElm {
+	final int FLAG_INVERTED_OUTPUT = 1<<1;
+	final int FLAG_STROBE = 1<<2;
 	int selectBitCount;
 	int outputCount;
+	int strobe;
+	int outputPin;
 	
 	boolean hasReset() {return false;}
 	public MultiplexerElm(int xx, int yy) {
@@ -42,7 +46,6 @@ package com.lushprojects.circuitjs1.client;
 	}
 	String getChipName() { return "Multiplexer"; }
 	String dump() { return super.dump() + " " + selectBitCount; }
-	
 	void setupPins() {
 	    sizeX = selectBitCount+1;
 	    outputCount = 1;
@@ -62,14 +65,27 @@ package com.lushprojects.circuitjs1.client;
 
 	    pins[n] = new Pin(0, SIDE_E, "Q");
 	    pins[n].output=true;
+	    outputPin = n;
+	    if (hasFlag(FLAG_INVERTED_OUTPUT)) {
+		n++;
+		pins[n] = new Pin(1, SIDE_E, "Q");
+		pins[n].lineOver = true;
+		pins[n].output=true;
+	    }
+	    if (hasFlag(FLAG_STROBE)) {
+		n++;
+		pins[n] = new Pin(0, SIDE_S, "STR");
+		strobe = n;
+	    } else
+		strobe = -1;
 	    
 	    allocNodes();
 
 	}
 	int getPostCount() {
-	    return outputCount + selectBitCount + 1;
+	    return outputCount + selectBitCount + 1 + (hasFlag(FLAG_INVERTED_OUTPUT) ? 1 : 0) + (hasFlag(FLAG_STROBE) ? 1 : 0);
 	}
-	int getVoltageSourceCount() {return 1;}
+	int getVoltageSourceCount() {return hasFlag(FLAG_INVERTED_OUTPUT) ? 2 : 1;}
 
 	void execute() {
 	    int selectedValue=0;
@@ -77,7 +93,12 @@ package com.lushprojects.circuitjs1.client;
 	    for (i = 0; i != selectBitCount; i++)
 		if (pins[outputCount+i].value)
 		    selectedValue |= 1<<i;
-	    pins[outputCount+selectBitCount].value=pins[selectedValue].value;
+	    boolean val = pins[selectedValue].value;
+	    if (strobe != -1 && pins[strobe].value)
+		val = false;
+	    pins[outputPin].value = val;
+	    if (hasFlag(FLAG_INVERTED_OUTPUT))
+		pins[outputPin+1].value = !val;	
 	}
 	
 	int getDumpType() { return 184; }
@@ -86,12 +107,29 @@ package com.lushprojects.circuitjs1.client;
             if (n == 0)
                 return new EditInfo("# of Select Bits", selectBitCount, 1, 8).
                     setDimensionless();
+            if (n == 1)
+        	return EditInfo.createCheckbox("Inverted Output", hasFlag(FLAG_INVERTED_OUTPUT));
+            if (n == 2)
+        	return EditInfo.createCheckbox("Strobe Pin", hasFlag(FLAG_STROBE));
+            
             return super.getChipEditInfo(n);
         }
         
         public void setChipEditValue(int n, EditInfo ei) {
             if (n == 0 && ei.value >= 1 && ei.value <= 6) {
                 selectBitCount = (int) ei.value;
+                setupPins();
+                setPoints();
+                return;
+            }
+            if (n == 1) {
+        	flags = ei.changeFlag(flags, FLAG_INVERTED_OUTPUT);
+                setupPins();
+                setPoints();
+                return;
+            }
+            if (n == 2) {
+        	flags = ei.changeFlag(flags, FLAG_STROBE);
                 setupPins();
                 setPoints();
                 return;

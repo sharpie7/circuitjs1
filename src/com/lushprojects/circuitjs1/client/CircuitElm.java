@@ -99,6 +99,8 @@ public abstract class CircuitElm implements Editable {
     
     int getDefaultFlags() { return 0; }
 
+    boolean hasFlag(int f) { return (flags & f) != 0; }
+    
     static void initClass(CirSim s) {
 	unitsFont = new Font("SansSerif", 0, 12);
 	sim = s;
