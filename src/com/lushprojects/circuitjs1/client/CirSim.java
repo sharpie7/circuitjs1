@@ -1585,6 +1585,9 @@ MouseOutHandler, MouseWheelHandler {
 		
 	    } else {
 	    	info[0] = "t = " + CircuitElm.getTimeText(t);
+	    	double timerate = 160*getIterCount()*timeStep;
+	    	if (timerate >= .1)
+	    	    info[0] += " (" + CircuitElm.showFormat.format(timerate) + "x)";
 	    	info[1] = LS("time step = ") + CircuitElm.getTimeText(timeStep);
 	    }
 	    if (hintType != -1) {
