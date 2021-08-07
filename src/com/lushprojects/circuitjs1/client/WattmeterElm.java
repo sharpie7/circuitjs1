@@ -138,7 +138,7 @@ class WattmeterElm extends CircuitElm {
 	drawPosts(g);
 
 	String str = getUnitText(getPower(), "W");
-	g.context.save();
+	g.save();
 	int fsize = 15;
 	int w;
 	// adjust font size to fit
@@ -152,7 +152,7 @@ class WattmeterElm extends CircuitElm {
 	g.setColor(whiteColor);
 	g.context.setTextBaseline("middle");
 	g.drawString(str, center.x-w/2, center.y);
-	g.context.restore();
+	g.restore();
     }
 
     double getPower() { return getVoltageDiff()*getCurrent(); }

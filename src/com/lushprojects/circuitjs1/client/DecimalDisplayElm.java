@@ -41,8 +41,8 @@ class DecimalDisplayElm extends ChipElm {
     void draw(Graphics g) {
         drawChip(g);
         int xl = x+cspc + sizeX*cspc;
-        int yl = y-cspc + sizeY*cspc; 
-        g.context.save();
+        int yl = y-cspc + sizeY*cspc;
+        g.save();
         g.setFont(new Font("SansSerif", 0, 15*csize));
         g.setColor(whiteColor);
         g.context.setTextBaseline("middle");
@@ -54,7 +54,7 @@ class DecimalDisplayElm extends ChipElm {
         String str = String.valueOf(value);
         int w=(int)g.context.measureText(str).getWidth();
         g.drawString(str, xl+5*csize-w/2, yl);
-        g.context.restore();
+        g.restore();
     }
     
     String dump() { return super.dump() + " " + bitCount; }

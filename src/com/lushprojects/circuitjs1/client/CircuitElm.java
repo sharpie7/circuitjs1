@@ -611,7 +611,7 @@ public abstract class CircuitElm implements Editable {
 //		   x+w, y+fm.getAscent()/2+fm.getDescent());
     	int w=(int)g.context.measureText(s).getWidth();
     	int h2=(int)g.currentFontSize/2;
-		g.context.save();
+		g.save();
 		g.context.setTextBaseline("middle");
 		if (cx) {
 			g.context.setTextAlign("center");
@@ -623,7 +623,7 @@ public abstract class CircuitElm implements Editable {
 		if (cx)
 			g.context.setTextAlign("center");
 		g.drawString(s, x, y);
-		g.context.restore();
+		g.restore();
     }
     
     // draw component values (number of resistor ohms, etc).  hs = offset
@@ -663,7 +663,7 @@ public abstract class CircuitElm implements Editable {
 	}
         int w=(int)g.context.measureText(str).getWidth();
         int h=(int)g.currentFontSize;
-        g.context.save();
+        g.save();
         g.context.setTextBaseline("middle");
         int x = pt2.x, y = pt2.y;
         if (pt1.y != pt2.y) {
@@ -677,7 +677,7 @@ public abstract class CircuitElm implements Editable {
         }
         g.drawString(str, x, y);
         adjustBbox(x, y-h/2, x+w, y+h/2);
-        g.context.restore();
+        g.restore();
 	if (lineOver) {
 	    int ya = y-h/2-1;
 	    g.drawLine(x, ya, x+w, ya);
@@ -688,7 +688,7 @@ public abstract class CircuitElm implements Editable {
 		  double v1, double v2) {
 	double len = distance(p1, p2);
 
-	g.context.save();
+	g.save();
 	g.context.setLineWidth(3.0);
 	g.context.transform(((double)(p2.x-p1.x))/len, ((double)(p2.y-p1.y))/len,
 		-((double)(p2.y-p1.y))/len,((double)(p2.x-p1.x))/len,p1.x,p1.y);
@@ -713,7 +713,7 @@ public abstract class CircuitElm implements Editable {
 	    g.context.stroke();
 	}
 
-	g.context.restore();
+	g.restore();
     }
     
     static void drawThickLine(Graphics g, int x, int y, int x2, int y2) {
