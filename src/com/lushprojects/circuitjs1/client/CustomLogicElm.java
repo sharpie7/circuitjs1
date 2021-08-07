@@ -208,12 +208,13 @@ public class CustomLogicElm extends ChipElm {
 		else
 		    pins[j+inputCount].value = (x == '1');
 	    }
-	    
-	    // save values for transition checking
-	    for (j = 0; j != postCount; j++)
-		lastValues[j] = pins[j].value;
 	    break;
 	}
+	
+	// save values for transition checking
+	int j;
+	for (j = 0; j != postCount; j++)
+	    lastValues[j] = pins[j].value;
     }
     
     public EditInfo getChipEditInfo(int n) {
@@ -233,6 +234,9 @@ public class CustomLogicElm extends ChipElm {
     
     public void setChipEditValue(int n, EditInfo ei) {
 	if (n == 0) {
+	    String newModelName = ei.textf.getText();
+	    if (modelName.equals(newModelName))
+		return;
 	    modelName = lastModelName = ei.textf.getText();
 	    model = CustomLogicModel.getModelWithNameOrCopy(modelName, model);
 	    setupPins();
@@ -240,8 +244,7 @@ public class CustomLogicElm extends ChipElm {
 	    setPoints();
 	    return;
 	}
-	if (n == 1)
-	{
+	if (n == 1) {
 	    EditDialog editDialog = new EditDialog(model, sim);
 	    CirSim.customLogicEditDialog = editDialog;
 	    editDialog.show();
