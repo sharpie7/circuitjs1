@@ -71,6 +71,7 @@ package com.lushprojects.circuitjs1.client;
 		pins[n] = new Pin(1, SIDE_E, "Q");
 		pins[n].lineOver = true;
 		pins[n].output=true;
+		pins[n].bubble = true;
 	    }
 	    if (hasFlag(FLAG_STROBE)) {
 		n++;
