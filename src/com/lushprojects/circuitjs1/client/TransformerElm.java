@@ -26,6 +26,7 @@ package com.lushprojects.circuitjs1.client;
 	Point dots[];
 	int width, polarity;
 	public static final int FLAG_REVERSE = 4;
+	public static final int FLAG_VERTICAL = 8;
 	public TransformerElm(int xx, int yy) {
 	    super(xx, yy);
 	    inductance = 4;
@@ -39,7 +40,11 @@ package com.lushprojects.circuitjs1.client;
 	public TransformerElm(int xa, int ya, int xb, int yb, int f,
 			      StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
-	    width = max(32, abs(yb-ya));
+	    if (hasFlag(FLAG_VERTICAL))
+		width = -max(32, abs(xb-xa));
+	    else
+		width = max(32, abs(yb-ya));
+	    
 	    inductance = new Double(st.nextToken()).doubleValue();
 	    ratio = new Double(st.nextToken()).doubleValue();
 	    current  = new double[2];
@@ -56,7 +61,14 @@ package com.lushprojects.circuitjs1.client;
 	void drag(int xx, int yy) {
 	    xx = sim.snapGrid(xx);
 	    yy = sim.snapGrid(yy);
-	    width = max(32, abs(yy-y));
+	    if (abs(xx-x) > abs(yy-y)) {
+		flags &= ~FLAG_VERTICAL;
+	    } else
+		flags |= FLAG_VERTICAL;
+	    if (hasFlag(FLAG_VERTICAL))
+		width = -max(32, abs(xx-x));
+	    else
+		width = max(32, abs(yy-y));
 	    if (xx == x)
 	        yy = y;
 	    x2 = xx; y2 = yy;
@@ -76,7 +88,10 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    for (i = 0; i != 2; i++) {
 		setPowerColor(g, current[i]*(volts[i]-volts[i+2]));
-		drawCoil(g, dsign*(i == 1 ? -6*polarity : 6), ptCoil[i], ptCoil[i+2], volts[i], volts[i+2]);
+		int csign = dsign*(i == 1 ? -6*polarity : 6);
+		if (hasFlag(FLAG_VERTICAL))
+		    csign *= -1;
+		drawCoil(g, csign, ptCoil[i], ptCoil[i+2], volts[i], volts[i+2]);
 	    }
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    for (i = 0; i != 2; i++) {
@@ -97,7 +112,10 @@ package com.lushprojects.circuitjs1.client;
 	
 	void setPoints() {
 	    super.setPoints();
-	    point2.y = point1.y;
+	    if (hasFlag(FLAG_VERTICAL))
+		point2.x = point1.x;
+	    else
+		point2.y = point1.y;
 	    ptEnds = newPointArray(4);
 	    ptCoil = newPointArray(4);
 	    ptCore = newPointArray(4);
@@ -115,10 +133,11 @@ package com.lushprojects.circuitjs1.client;
 		interpPoint(ptEnds[i], ptEnds[i+1], ptCore[i+1], 1-cd);
 	    }
 	    if (polarity == -1) {
+		int vsign = (hasFlag(FLAG_VERTICAL)) ? -1 : 1;
 		dots = new Point[2];
 		double dotp = Math.abs(7./width);
-		dots[0] = interpPoint(ptCoil[0], ptCoil[2], dotp, -7*dsign);
-		dots[1] = interpPoint(ptCoil[3], ptCoil[1], dotp, -7*dsign);
+		dots[0] = interpPoint(ptCoil[0], ptCoil[2], dotp, -7*dsign*vsign);
+		dots[1] = interpPoint(ptCoil[3], ptCoil[1], dotp, -7*dsign*vsign);
 		Point x = ptEnds[1]; ptEnds[1] = ptEnds[3]; ptEnds[3] = x;
 		x = ptCoil[1]; ptCoil[1] = ptCoil[3]; ptCoil[3] = x;
 	    } else
