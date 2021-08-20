@@ -2578,28 +2578,26 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		int j;
 		for (j = 0; j != ce.getConnectionNodeCount(); j++) {
-		    if (ce.getConnectionNode(j) == n1)
-			break;
-		}
-		if (j == ce.getConnectionNodeCount())
-		    return false;
-		if (ce.hasGroundConnection(j) && findPath(0))
-		    return true;
-		if (type == INDUCT && ce instanceof InductorElm) {
-		    // inductors can use paths with other inductors of matching current
-		    double c = ce.getCurrent();
-		    if (j == 0)
-			c = -c;
-		    if (Math.abs(c-firstElm.getCurrent()) > 1e-10)
-			return false;
-		}
-		int k;
-		for (k = 0; k != ce.getConnectionNodeCount(); k++) {
-		    if (j == k)
-			continue;
-		    if (ce.getConnection(j, k) && findPath(ce.getConnectionNode(k))) {
-			//System.out.println("got findpath " + n1);
-			return true;
+		    if (ce.getConnectionNode(j) == n1) {
+			if (ce.hasGroundConnection(j) && findPath(0))
+			    return true;
+			if (type == INDUCT && ce instanceof InductorElm) {
+			    // inductors can use paths with other inductors of matching current
+			    double c = ce.getCurrent();
+			    if (j == 0)
+				c = -c;
+			    if (Math.abs(c-firstElm.getCurrent()) > 1e-10)
+				continue;
+			}
+			int k;
+			for (k = 0; k != ce.getConnectionNodeCount(); k++) {
+			    if (j == k)
+				continue;
+			    if (ce.getConnection(j, k) && findPath(ce.getConnectionNode(k))) {
+				//System.out.println("got findpath " + n1);
+				return true;
+			    }
+			}
 		    }
 		}
 	    return false;
