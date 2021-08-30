@@ -1023,7 +1023,7 @@ MouseOutHandler, MouseWheelHandler {
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Text"), "TextElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Box"), "BoxElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Line"), "LineElm"));
-    	outputMenuBar.addItem(getClassCheckItem(LS("Add Voltmeter/Scobe Probe"), "ProbeElm"));
+    	outputMenuBar.addItem(getClassCheckItem(LS("Add Voltmeter/Scope Probe"), "ProbeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Ohmmeter"), "OhmMeterElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Labeled Node"), "LabeledNodeElm"));
     	outputMenuBar.addItem(getClassCheckItem(LS("Add Test Point"), "TestPointElm"));

@@ -125,7 +125,7 @@
 "Add Variable Voltage"="Variable Spannung einfügen"
 "Add Voltage Source (1-terminal)"="Spannungsquelle (einpolig) einfügen"
 "Add Voltage Source (2-terminal)"="Spannungsquelle (zweipolig) einfügen"
-"Add Voltmeter/Scobe Probe"="Voltmeter/Oszi-Spannungskanal einfügen"
+"Add Voltmeter/Scope Probe"="Voltmeter/Oszi-Spannungskanal einfügen"
 "Add Wire"="Verbindung einfügen (wire)"
 "Add XOR Gate"="Exklusiv-ODER-Gatter (XOR) einfügen"
 "Add Zener Diode"="Zenerdiode einfügen"

@@ -166,7 +166,7 @@
 "Add Variable Voltage"="添加可变电压源"
 "Add Voltage Source (1-terminal)"="添加直流电压源(单端口)"
 "Add Voltage Source (2-terminal)"="添加直流电压源(二端口)"
-"Add Voltmeter/Scobe Probe"="添加电压表"
+"Add Voltmeter/Scope Probe"="添加电压表"
 "Add Wire"="添加导线"
 "Add XOR Gate"="添加异或门"
 "Add Zener Diode"="添加齐纳二极管"

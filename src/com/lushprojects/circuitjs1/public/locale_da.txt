@@ -119,7 +119,7 @@
 "Add Variable Voltage"="Tilføj Variabel Spænding"
 "Add Voltage Source (1-terminal)"="Tilføj Spændingskilde (1-terminal)"
 "Add Voltage Source (2-terminal)"="Tilføj Spændingskilde (2-terminal)"
-"Add Voltmeter/Scobe Probe"="Tilføj Voltmeter/Scope Probe "
+"Add Voltmeter/Scope Probe"="Tilføj Voltmeter/Scope Probe "
 "Add Wire"="Tilføj Ledning"
 "Add XOR Gate"="Tilføj XOR Gate "
 "Add Zener Diode"="Tilføj Zenerdiode"

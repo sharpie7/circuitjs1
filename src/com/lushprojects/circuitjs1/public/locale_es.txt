@@ -164,7 +164,7 @@
 "Add Variable Voltage"=" Fuente de Tensión Variable"
 "Add Voltage Source (1-terminal)"=" Fuente de Tensión (1 terminal)"
 "Add Voltage Source (2-terminal)"=" Fuente de Tensión (2 terminales)"
-"Add Voltmeter/Scobe Probe"=" Voltímetro/Sonda"
+"Add Voltmeter/Scope Probe"=" Voltímetro/Sonda"
 "Add Wire"=" Conexión Eléctrica"
 "Add XOR Gate"=" Puerta XOR"
 "Add Zener Diode"=" Diodo Zener"
