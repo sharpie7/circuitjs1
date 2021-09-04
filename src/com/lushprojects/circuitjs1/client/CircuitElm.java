@@ -24,6 +24,7 @@ import java.util.Vector;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.storage.client.Storage;
 
 // circuit element class
 public abstract class CircuitElm implements Editable {
@@ -48,6 +49,8 @@ public abstract class CircuitElm implements Editable {
     static final int SCALE_1 = 1;
     static final int SCALE_M = 2;
     static final int SCALE_MU = 3;
+    
+    static int decimalDigits, shortDecimalDigits;
  
     // initial point where user created element.  For simple two-terminal elements, this is the first node/post.
     int x, y;
@@ -110,12 +113,45 @@ public abstract class CircuitElm implements Editable {
 	
 	ps1 = new Point();
 	ps2 = new Point();
-
-	showFormat=NumberFormat.getFormat("####.###");
-
-	shortFormat=NumberFormat.getFormat("####.#");
+	
+	Storage stor = Storage.getLocalStorageIfSupported();
+	decimalDigits = 3;
+	shortDecimalDigits = 1;
+	if (stor != null) {
+	    String s1 = stor.getItem("decimalDigits");
+	    String s2 = stor.getItem("decimalDigitsShort");
+	    if (s1 != null)
+		decimalDigits = Integer.parseInt(s1);
+	    if (s2 != null)
+		shortDecimalDigits = Integer.parseInt(s2);
+	}
+	setDecimalDigits(decimalDigits, false, false);
+	setDecimalDigits(shortDecimalDigits, true, false);
     }
-   
+
+    static void setDecimalDigits(int num, boolean sf, boolean save) {
+	if (sf)
+	    shortDecimalDigits = num;
+	else
+	    decimalDigits = num;
+	
+	String s = "####.";
+	int ct = num;
+	for (; ct > 0; ct--)
+	    s += '#';
+	NumberFormat nf = NumberFormat.getFormat(s);
+	if (sf)
+	    shortFormat = nf;
+	else
+	    showFormat = nf;
+	
+	if (save) {
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    if (stor != null)
+		stor.setItem(sf ? "decimalDigitsShort" : "decimalDigits", Integer.toString(num));
+	}
+    }
+    
     static void setColorScale() {
 
 	int i;
