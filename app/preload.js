@@ -37,8 +37,11 @@ window.toggleDevTools = function () {
 
 const arguments = remote.getGlobal('sharedObject').prop1;
 if (arguments.length > 1) {
+  // arguments[1] gets destroyed somehow
+  var arg1 = arguments[1];
   fs.readFile(arguments[1], 'utf-8', function (err, data) {
     if (err) { if (err) window.alert(err); return; }
+    lastSavedFilePath = arg1;
     window.startCircuitText = data;
   });
 }
