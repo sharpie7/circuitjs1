@@ -118,10 +118,14 @@ package com.lushprojects.circuitjs1.client;
 		current = 0;
 	}
 	
-	Point getConnectedPost() {
+	void stamp() {
 	    if (position == 2 && hasCenterOff()) // in center?
-		return null;
-	    return swposts[position];
+		return;
+	    sim.stampVoltageSource(nodes[0], nodes[position+1], voltSource, 0);
+	}
+		
+	int getVoltageSourceCount() {
+	    return (position == 2 && hasCenterOff()) ? 0 : 1; 	    
 	}
 	
 	void toggle() {
@@ -143,8 +147,12 @@ package com.lushprojects.circuitjs1.client;
 		return false;
 	    return comparePair(n1, n2, 0, 1+position);
 	}
+	
 	boolean isWireEquivalent() { return true; }
-	boolean isRemovableWire() { return true; }
+	
+	// optimizing out this element is too complicated to be worth it (see #646)
+	boolean isRemovableWire() { return false; }
+	
 	void getInfo(String arr[]) {
 	    arr[0] = "switch (" + (link == 0 ? "S" : "D") + "P" +
 		    ((throwCount > 2) ? throwCount+"T)" : "DT)");
