@@ -73,7 +73,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 
 public class circuitjs1 implements EntryPoint {
 
-	public static final String versionString="2.5.6js";
+	public static final String versionString="2.5.7js";
 	
 	// Set to true if the server runs the shortrelay.php file in the same directory as the circuit simulator
 	public static final boolean shortRelaySupported = true;
