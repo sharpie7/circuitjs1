@@ -1896,6 +1896,7 @@ MouseOutHandler, MouseWheelHandler {
     boolean calcWireInfo() {
 	int i;
 	int moved = 0;
+	
 	for (i = 0; i != wireInfoList.size(); i++) {
 	    WireInfo wi = wireInfoList.get(i);
 	    CircuitElm wire = wi.wire;
@@ -1905,9 +1906,10 @@ MouseOutHandler, MouseWheelHandler {
 	    Vector<CircuitElm> neighbors0 = new Vector<CircuitElm>();
 	    Vector<CircuitElm> neighbors1 = new Vector<CircuitElm>();
 	    
-	    // assume each end is ready
+	    // assume each end is ready (except ground nodes which have one end)
+	    // labeled nodes are treated as having 2 terminals, see below
 	    boolean isReady0 = true, isReady1 = !(wire instanceof GroundElm);
-	    
+
 	    // go through elements sharing a node with this wire (may be connected indirectly
 	    // by other wires, but at least it's faster than going through all elements)
 	    for (j = 0; j != cn1.links.size(); j++) {
@@ -1915,7 +1917,7 @@ MouseOutHandler, MouseWheelHandler {
 		CircuitElm ce = cnl.elm;
 		if (ce == wire)
 		    continue;
-		Point pt = cnl.elm.getPost(cnl.num);
+		Point pt = ce.getPost(cnl.num);
 		
 		// is this a wire that doesn't have wire info yet?  If so we can't use it yet.
 		// That would create a circular dependency.  So that side isn't ready.
@@ -1931,6 +1933,11 @@ MouseOutHandler, MouseWheelHandler {
 			neighbors1.add(ce);
 			if (notReady) isReady1 = false;
 		    }
+		} else if (ce instanceof LabeledNodeElm && wire instanceof LabeledNodeElm &&
+			((LabeledNodeElm) ce).text == ((LabeledNodeElm) wire).text) {
+		    // ce and wire are both labeled nodes with matching labels.  treat them as neighbors
+		    neighbors1.add(ce);
+		    if (notReady) isReady1 = false;
 		}
 	    }
 
@@ -1948,7 +1955,7 @@ MouseOutHandler, MouseWheelHandler {
 	    } else {
 		// no, so move to the end of the list and try again later
 		wireInfoList.add(wireInfoList.remove(i--));
-		moved++; 
+		moved++;
 		if (moved > wireInfoList.size() * 2) {
 		    stop("wire loop detected", wire);
 		    return false;
@@ -2981,7 +2988,9 @@ MouseOutHandler, MouseWheelHandler {
 		int n = ce.getNodeAtPoint(p.x, p.y);
 		cur += ce.getCurrentIntoNode(n);
 	    }
-	    if (wi.post == 0)
+	    // get correct current polarity
+	    // (LabeledNodes may have wi.post == 1, in which case we flip the current sign)
+	    if (wi.post == 0 || (wi.wire instanceof LabeledNodeElm))
 		wi.wire.setCurrent(-1, cur);
 	    else
 		wi.wire.setCurrent(-1, -cur);
