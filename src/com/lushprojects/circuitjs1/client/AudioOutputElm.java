@@ -79,6 +79,7 @@ public class AudioOutputElm extends CircuitElm {
 	    lead1 = new Point();
 	}
 	void draw(Graphics g) {
+	    g.save();
 	    boolean selected = (needsHighlight());
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    String s = "Audio Out";
@@ -98,6 +99,7 @@ public class AudioOutputElm extends CircuitElm {
 		g.setColor(selectColor);
 	    drawThickLine(g, point1, lead1);
 	    drawPosts(g);
+	    g.restore();
 	}
 	double getVoltageDiff() { return volts[0]; }
 	void getInfo(String arr[]) {

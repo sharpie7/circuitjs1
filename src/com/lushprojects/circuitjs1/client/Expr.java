@@ -276,7 +276,6 @@ class ExprParser {
     void setError(String s) {
 	if (err == null)
 	    err = s;
-	CirSim.debugger();
     }
     
     void skipOrError(String s) {

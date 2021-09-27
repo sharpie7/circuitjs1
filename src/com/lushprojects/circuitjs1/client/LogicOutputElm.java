@@ -51,7 +51,7 @@ package com.lushprojects.circuitjs1.client;
 	    lead1 = interpPoint(point1, point2, 1-12/dn);
 	}
 	void draw(Graphics g) {
-		Font oldf=g.getFont();
+	    g.save();
 	    Font f = new Font("SansSerif", Font.BOLD, 20);
 	    g.setFont(f);
 	    //g.setColor(needsHighlight() ? selectColor : lightGrayColor);
@@ -72,7 +72,7 @@ package com.lushprojects.circuitjs1.client;
 	    setVoltageColor(g, volts[0]);
 	    drawThickLine(g, point1, lead1);
 	    drawPosts(g);
-	    g.setFont(oldf);
+	    g.restore();
 	}
 	void stamp() {
 	    if (needsPullDown())

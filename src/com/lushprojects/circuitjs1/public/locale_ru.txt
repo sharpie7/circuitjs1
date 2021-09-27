@@ -164,7 +164,7 @@
 "Add Variable Voltage"="Добавить ист. регулируемого напряжения"
 "Add Voltage Source (1-terminal)"="Добавить источник напряжения (1 вывод)"
 "Add Voltage Source (2-terminal)"="Добавить источник напряжения (2 вывода)"
-"Add Voltmeter/Scobe Probe"="Добавить вольтметр"
+"Add Voltmeter/Scope Probe"="Добавить вольтметр"
 "Add Wire"="Добавить провод"
 "Add XOR Gate"="Добавить логический элемент Исключающее ИЛИ"
 "Add Zener Diode"="Добавить диод Зендера (Стабилитрон)"

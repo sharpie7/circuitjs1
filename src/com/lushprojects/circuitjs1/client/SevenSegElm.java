@@ -294,8 +294,8 @@ package com.lushprojects.circuitjs1.client;
 	int getVoltageSourceCount() { return 0; }
 	int getDumpType() { return 157; }
 	
-	public EditInfo getEditInfo(int n) {
-	        if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+	        if (n == 0) {
 	            EditInfo ei =  new EditInfo("Segments", 0, -1, -1);
 	            ei.choice = new Choice();
 	            ei.choice.add("7 Segment");
@@ -304,7 +304,7 @@ package com.lushprojects.circuitjs1.client;
 	            ei.choice.select(baseSegmentCount == 7 ? 0 : baseSegmentCount == 14 ? 1 : 2);
 	            return ei;
 	        }
-	        if (n == 3) {
+	        if (n == 1) {
 	            EditInfo ei =  new EditInfo("Extra Segment", 0, -1, -1);
 	            ei.choice = new Choice();
 	            ei.choice.add("None");
@@ -313,7 +313,7 @@ package com.lushprojects.circuitjs1.client;
 	            ei.choice.select(extraSegment);
 	            return ei;
 	        }
-	        if (n == 4) {
+	        if (n == 2) {
 	            EditInfo ei =  new EditInfo("Diodes", 0, -1, -1);
 	            ei.choice = new Choice();
 	            ei.choice.add("Common Cathode");
@@ -322,28 +322,28 @@ package com.lushprojects.circuitjs1.client;
 	            ei.choice.select(diodeDirection == 1 ? 0 : diodeDirection == -1 ? 1 : 2);
 	            return ei;
 	        }
-	        return super.getEditInfo(n);
+	        return super.getChipEditInfo(n);
 	}
 	
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
 		int ix = ei.choice.getSelectedIndex();
 		baseSegmentCount = (ix == 0) ? 7 : (ix == 1) ? 14 : 16;
 		setPinCount();
 		return;
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		extraSegment = ei.choice.getSelectedIndex();
 		setPinCount();
 		return;
 	    }
-	    if (n == 4) {
+	    if (n == 2) {
 		int ix = ei.choice.getSelectedIndex();
 		diodeDirection = (ix == 0) ? 1 : (ix == 1) ? -1 : 0;
 		setPinCount();
 		return;
 	    }
-	    super.setEditValue(n, ei);
+	    super.setChipEditValue(n, ei);
 	}
 	
 	void setPinCount() {

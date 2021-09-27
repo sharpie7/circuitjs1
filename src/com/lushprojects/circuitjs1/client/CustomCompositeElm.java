@@ -27,6 +27,13 @@ public class CustomCompositeElm extends CompositeElm {
 	updateModels();
     }
 
+    public CustomCompositeElm(int xx, int yy, String name) {
+	super(xx, yy);
+	modelName = name;
+	flags |= FLAG_ESCAPE;
+	updateModels();
+    }
+    
     public CustomCompositeElm(int xa, int ya, int xb, int yb, int f,
             StringTokenizer st) {
 	super(xa, ya, xb, yb, f);
@@ -81,6 +88,7 @@ public class CustomCompositeElm extends CompositeElm {
 	chip = new CustomCompositeChipElm(x, y);
 	chip.x2 = x2;
 	chip.y2 = y2;
+	chip.flags = (flags & (ChipElm.FLAG_FLIP_X | ChipElm.FLAG_FLIP_Y | ChipElm.FLAG_FLIP_XY));
 	
 	chip.sizeX = model.sizeX;
 	chip.sizeY = model.sizeY;
@@ -136,12 +144,32 @@ public class CustomCompositeElm extends CompositeElm {
 	}
         if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Edit Model"));
+            ei.button = new Button(sim.LS("Edit Pin Layout"));
+            return ei;
+        }
+        if (n == 2) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip X", (flags & ChipElm.FLAG_FLIP_X) != 0);
+            return ei;
+        }
+        if (n == 3) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip Y", (flags & ChipElm.FLAG_FLIP_Y) != 0);
+            return ei;
+        }
+        if (n == 4) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip X/Y", (flags & ChipElm.FLAG_FLIP_XY) != 0);
+            return ei;
+        }
+        if (n == 5 && model.canLoadModelCircuit()) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.button = new Button(sim.LS("Load Model Circuit"));
             return ei;
         }
 	return null;
     }
-    
+
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
             model = models.get(ei.choice.getSelectedIndex());
@@ -161,6 +189,22 @@ public class CustomCompositeElm extends CompositeElm {
             CirSim.dialogShowing = dlg;
             dlg.show();
             return;
+        }
+        if (n == 2) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_X);
+            setPoints();
+        }
+        if (n == 3) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_Y);
+            setPoints();
+        }
+        if (n == 4) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_XY);
+            setPoints();
+        }
+        if (n == 5) {
+            sim.readCircuit(model.modelCircuit);
+            sim.editDialog.closeDialog();
         }
     }
     

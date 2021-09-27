@@ -22,6 +22,10 @@ package com.lushprojects.circuitjs1.client;
     class GroundElm extends CircuitElm {
 	static int lastSymbolType = 0;
 	int symbolType;
+	
+	// this is needed for old subcircuits which have GroundElm dumped
+	final int FLAG_OLD_STYLE = 1;
+	
 	public GroundElm(int xx, int yy) {
 	    super(xx, yy);
 	    symbolType = lastSymbolType;
@@ -75,12 +79,35 @@ package com.lushprojects.circuitjs1.client;
 	    setBbox(point1, ps2, 11);
 	    drawPosts(g);
 	}
-	void setCurrent(int x, double c) { current = -c; }
-	void stamp() {
-	    sim.stampVoltageSource(0, nodes[0], voltSource, 0);
+	
+	void setOldStyle() {
+	    flags |= FLAG_OLD_STYLE;
 	}
+	boolean isOldStyle() { return (flags & FLAG_OLD_STYLE) != 0; }
+	int getVoltageSourceCount() {
+	    return (isOldStyle()) ? 1 : 0; 
+	}
+	void stamp() {
+	    if (isOldStyle())
+		sim.stampVoltageSource(0, nodes[0], voltSource, 0);
+	}
+	void setCurrent(int x, double c) { current = isOldStyle() ? -c : c; }
+
+	boolean isWireEquivalent() { return true; }
+	boolean isRemovableWire() { return true; }
+	static Point firstGround;
+	static void resetNodeList() {
+	    firstGround = null;
+	}
+	Point getConnectedPost() {
+	    if (firstGround != null)
+		return firstGround;
+	    firstGround = point1;
+	    return null;
+	}
+	
+//	void setCurrent(int x, double c) { current = -c; }
 	double getVoltageDiff() { return 0; }
-	int getVoltageSourceCount() { return 1; }
 	void getInfo(String arr[]) {
 	    arr[0] = "ground";
 	    arr[1] = "I = " + getCurrentText(getCurrent());

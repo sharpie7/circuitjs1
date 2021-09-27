@@ -41,8 +41,8 @@ class DecimalDisplayElm extends ChipElm {
     void draw(Graphics g) {
         drawChip(g);
         int xl = x+cspc + sizeX*cspc;
-        int yl = y-cspc + sizeY*cspc; 
-        g.context.save();
+        int yl = y-cspc + sizeY*cspc;
+        g.save();
         g.setFont(new Font("SansSerif", 0, 15*csize));
         g.setColor(whiteColor);
         g.context.setTextBaseline("middle");
@@ -54,7 +54,7 @@ class DecimalDisplayElm extends ChipElm {
         String str = String.valueOf(value);
         int w=(int)g.context.measureText(str).getWidth();
         g.drawString(str, xl+5*csize-w/2, yl);
-        g.context.restore();
+        g.restore();
     }
     
     String dump() { return super.dump() + " " + bitCount; }
@@ -71,20 +71,20 @@ class DecimalDisplayElm extends ChipElm {
     int getPostCount() { return bitCount; }
     int getDumpType() { return 419; }
     int getVoltageSourceCount() { return 0; }
-    public EditInfo getEditInfo(int n) {
-        if (n == 2)
+    public EditInfo getChipEditInfo(int n) {
+        if (n == 0)
             return new EditInfo("# of Bits", bitCount, 1, 8).
                 setDimensionless();
-        return super.getEditInfo(n);
+        return super.getChipEditInfo(n);
     }
-    public void setEditValue(int n, EditInfo ei) {
-        if (n == 2 && ei.value >= 1 && ei.value <= 16) {
+    public void setChipEditValue(int n, EditInfo ei) {
+        if (n == 0 && ei.value >= 1 && ei.value <= 16) {
             bitCount = (int) ei.value;
             setupPins();
             setPoints();
             return;
         }
-        super.setEditValue(n, ei);
+        super.setChipEditValue(n, ei);
     }
 
 }

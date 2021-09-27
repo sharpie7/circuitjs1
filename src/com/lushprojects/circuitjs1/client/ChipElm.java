@@ -22,13 +22,14 @@ package com.lushprojects.circuitjs1.client;
 abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;
-	final int FLAG_SMALL = 1;
-	final int FLAG_FLIP_X = 1024;
-	final int FLAG_FLIP_Y = 2048;
+	static final int FLAG_SMALL = 1;
+	static final int FLAG_FLIP_X = 1<<10;
+	static final int FLAG_FLIP_Y = 1<<11;
+	static final int FLAG_FLIP_XY = 1<<12;
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
-		bits = (this instanceof RingCounterElm) ? 10 : 4;
+		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
@@ -37,7 +38,10 @@ abstract class ChipElm extends CircuitElm {
 		       StringTokenizer st) {
 	    super(xa, ya, xb, yb, f);
 	    if (needsBits())
-		bits = new Integer(st.nextToken()).intValue();
+	    	if (st.hasMoreTokens())
+	    		bits = new Integer(st.nextToken()).intValue();
+	    	else
+	    		bits = defaultBitCount();
 	    noDiagonal = true;
 	    setupPins();
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
@@ -52,6 +56,7 @@ abstract class ChipElm extends CircuitElm {
 	    }
 	}
 	boolean needsBits() { return false; }
+	int defaultBitCount() { return 4; }
 	void setSize(int s) {
 	    csize = s;
 	    cspc = 8*s;
@@ -65,7 +70,7 @@ abstract class ChipElm extends CircuitElm {
 	}
 	void drawChip(Graphics g) {
 	    int i;
-	    Font oldfont = g.getFont();
+	    g.save();
 	    Font f = new Font("normal", 0, 10*csize);
 //	    FontMetrics fm = g.getFontMetrics();
 	    boolean hasVertical = false;
@@ -110,10 +115,9 @@ abstract class ChipElm extends CircuitElm {
 		    int asc=(int)g.currentFontSize;
 		    int tx;
 		    // put text closer to edge if it's on left or right.
-		    // we could do extra work to handle flipped case, but we don't
-		    if (p.side == SIDE_W && !isFlippedX())
+		    if (p.side == flippedXSide(SIDE_W))
 			tx = p.textloc.x-(cspc-5);
-		    else if (p.side == SIDE_E && !isFlippedX())
+		    else if (p.side == flippedXSide(SIDE_E))
 			tx = p.textloc.x+(cspc-5)-sw;
 		    else
 			tx = p.textloc.x-sw/2;
@@ -130,12 +134,12 @@ abstract class ChipElm extends CircuitElm {
 	    if (clockPointsX != null)
 		g.drawPolyline(clockPointsX, clockPointsY, 3);
 	    drawPosts(g);
-	    g.setFont(oldfont);
+	    g.restore();
 	}
 	int rectPointsX[], rectPointsY[];
 	int clockPointsX[], clockPointsY[];
 	Pin pins[];
-	int sizeX, sizeY;
+	int sizeX, sizeY, flippedSizeX, flippedSizeY;
 	boolean lastClock;
 	void drag(int xx, int yy) {
 	    yy = sim.snapGrid(yy);
@@ -151,18 +155,23 @@ abstract class ChipElm extends CircuitElm {
 	    clockPointsX = null;
 	    if (x2-x > sizeX*cspc2 && this == sim.dragElm)
 		setSize(2);
-	    int hs = cspc;
 	    int x0 = x+cspc2; int y0 = y;
 	    int xr = x0-cspc;
 	    int yr = y0-cspc;
-	    int xs = sizeX*cspc2;
-	    int ys = sizeY*cspc2;
-	    rectPointsX = new int[] { xr, xr+xs, xr+xs, xr };
-	    rectPointsY = new int[] { yr, yr, yr+ys, yr+ys };
-	    setBbox(xr, yr, rectPointsX[2], rectPointsY[2]);
+	    flippedSizeX = sizeX;
+	    flippedSizeY = sizeY;
+	    if (isFlippedXY()) {
+		flippedSizeX = sizeY;
+		flippedSizeY = sizeX;
+	    }
+	    int xs = flippedSizeX*cspc2;
+	    int ys = flippedSizeY*cspc2;
 	    int i;
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
+		p.side = p.side0;
+		if ((flags & FLAG_FLIP_XY) != 0)
+		    p.side = sideFlipXY[p.side];
 		switch (p.side) {
 		case SIDE_N: p.setPoint(x0, y0, 1, 0, 0, -1, 0, 0); break;
 		case SIDE_S: p.setPoint(x0, y0, 1, 0, 0,  1, 0, ys-cspc2);break;
@@ -170,6 +179,9 @@ abstract class ChipElm extends CircuitElm {
 		case SIDE_E: p.setPoint(x0, y0, 0, 1,  1, 0, xs-cspc2, 0);break;
 		}
 	    }
+	    rectPointsX = new int[] { xr, xr+xs, xr+xs, xr };
+	    rectPointsY = new int[] { yr, yr, yr+ys, yr+ys };
+	    setBbox(xr, yr, rectPointsX[2], rectPointsY[2]);
 	}
 	
 	// see if we can move pin to position xp, yp, and return the new position
@@ -200,14 +212,17 @@ abstract class ChipElm extends CircuitElm {
 		return false;
 	    if ((pos[1] == SIDE_W || pos[1] == SIDE_E) && pos[0] >= sizeY)
 		return false;
-		
+	    return true;
+	}
+	
+	int getOverlappingPin(int p1, int p2, int pin) {
 	    for (int i = 0; i != getPostCount(); i++) {
 		if (pin == i)
 		    continue;
-		if (pins[i].overlaps(pos[0], pos[1]))
-		    return false;
+		if (pins[i].overlaps(p1, p2))
+		    return i;
 	    }
-	    return true;
+	    return -1;
 	}
 	
 	Point getPost(int n) {
@@ -227,11 +242,16 @@ abstract class ChipElm extends CircuitElm {
 	}
 	void stamp() {
 	    int i;
+	    int vsc = 0;
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
-		if (p.output)
+		if (p.output) {
 		    sim.stampVoltageSource(0, nodes[i], p.voltSource);
+		    vsc++;
+		}
 	    }
+	    if (vsc != getVoltageSourceCount())
+		sim.console("voltage source count does not match number of outputs");
 	}
 	void execute() {}
 	void doStep() {
@@ -271,6 +291,12 @@ abstract class ChipElm extends CircuitElm {
 	    return s;
 	}
 	
+	void writeOutput(int n, boolean value) {
+	    if (!pins[n].output)
+		sim.console("pin " + n + " is not an output!");
+	    pins[n].value = value;
+	}
+	
 	void getInfo(String arr[]) {
 	    arr[0] = getChipName();
 	    int i, a = 1;
@@ -306,7 +332,7 @@ abstract class ChipElm extends CircuitElm {
 	    return pins[n].current;
 	}
 	
-	boolean isFlippedX() { return (flags & FLAG_FLIP_X) != 0; }
+	boolean isFlippedXY() { return (flags & FLAG_FLIP_XY) != 0; }
 	
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0) {
@@ -319,23 +345,69 @@ abstract class ChipElm extends CircuitElm {
 		ei.checkbox = new Checkbox("Flip Y", (flags & FLAG_FLIP_Y) != 0);
 		return ei;
 	    }
-	    return null;
+	    if (n == 2) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.checkbox = new Checkbox("Flip X/Y", (flags & FLAG_FLIP_XY) != 0);
+		return ei;
+	    }
+	    return getChipEditInfo(n-3);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_X;
-		else
-		    flags &= ~FLAG_FLIP_X;
+		flags = ei.changeFlag(flags, FLAG_FLIP_X);
 		setPoints();
 	    }
 	    if (n == 1) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_Y;
-		else
-		    flags &= ~FLAG_FLIP_Y;
+		flags = ei.changeFlag(flags, FLAG_FLIP_Y);
 		setPoints();
 	    }
+	    if (n == 2) {
+		flags = ei.changeFlag(flags, FLAG_FLIP_XY);
+		setPoints();
+	    }
+	    if (n >= 3)
+		setChipEditValue(n-3, ei);
+	}
+	
+	public EditInfo getChipEditInfo(int n) { return null; }
+	public void setChipEditValue(int n, EditInfo ei) { }
+	
+	static String writeBits(boolean[] data) {
+		StringBuilder sb = new StringBuilder();
+		int integer = 0;
+		int bitIndex = 0;
+		for (int i = 0; i < data.length; i++) {
+			if (bitIndex >= Integer.SIZE) {
+				//Flush completed integer
+				sb.append(' ');
+				sb.append(integer);
+				integer = 0;
+				bitIndex = 0;
+			}
+			if (data[i])
+				integer |= 1 << bitIndex;
+			bitIndex++;
+		}
+		if (bitIndex > 0) {
+			sb.append(' ');
+			sb.append(integer);
+		}
+		return sb.toString();
+	}
+	static void readBits(StringTokenizer st, boolean[] output) {
+		int integer = 0;
+		int bitIndex = Integer.MAX_VALUE;
+		for (int i = 0; i < output.length; i++) {
+			if (bitIndex >= Integer.SIZE)
+				if (st.hasMoreTokens()) {
+					integer = Integer.parseInt(st.nextToken()); //Load next integer
+					bitIndex = 0;
+				} else
+					break; //Data is absent
+			
+			output[i] = (integer & (1 << bitIndex)) != 0;
+			bitIndex++;
+		}
 	}
 
 	static final int SIDE_N = 0;
@@ -343,28 +415,39 @@ abstract class ChipElm extends CircuitElm {
 	static final int SIDE_W = 2;
 	static final int SIDE_E = 3;
 	
+	static final int sideFlipXY[] = { SIDE_W, SIDE_E, SIDE_N, SIDE_S };
+
+	int flippedXSide(int s) {
+	    if ((flags & FLAG_FLIP_X) == 0)
+		return s;
+	    if (s == SIDE_W)
+		return SIDE_E;
+	    if (s == SIDE_E)
+		return SIDE_W;
+	    return s;
+	}
+	
 	class Pin {
 	    Pin(int p, int s, String t) {
-		pos = p; side = s; text = t;
+		pos = p; side0 = side = s; text = t;
 	    }
 	    Point post, stub;
 	    Point textloc;
-	    int pos, side, voltSource, bubbleX, bubbleY;
+	    int pos, side, side0, voltSource, bubbleX, bubbleY;
 	    String text;
 	    boolean lineOver, bubble, clock, output, value, state, selected;
 	    double curcount, current;
-	    void setPoint(int px, int py, int dx, int dy, int dax, int day,
-			  int sx, int sy) {
+	    void setPoint(int px, int py, int dx, int dy, int dax, int day, int sx, int sy) {
 		if ((flags & FLAG_FLIP_X) != 0) {
 		    dx = -dx;
 		    dax = -dax;
-		    px += cspc2*(sizeX-1);
+		    px += cspc2*(flippedSizeX-1);
 		    sx = -sx;
 		}
 		if ((flags & FLAG_FLIP_Y) != 0) {
 		    dy = -dy;
 		    day = -day;
-		    py += cspc2*(sizeY-1);
+		    py += cspc2*(flippedSizeY-1);
 		    sy = -sy;
 		}
 		int xa = px+cspc2*dx*pos+sx;

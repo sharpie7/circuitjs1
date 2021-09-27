@@ -165,7 +165,7 @@
 "Add Variable Voltage"="Legg til variabel spenning"
 "Add Voltage Source (1-terminal)"="Legg til DC-spenningskilde (1 koblingspunkt)"
 "Add Voltage Source (2-terminal)"="Legg til DC-spenningskilde (2 koblingspunkt)"
-"Add Voltmeter/Scobe Probe"="Legg til voltmeter/oscilloskop"
+"Add Voltmeter/Scope Probe"="Legg til voltmeter/oscilloskop"
 "Add Wire"="Legg til kabel"
 "Add XOR Gate"="Legg til XELLER-port"
 "Add Zener Diode"="Legg til Zenerdiode"

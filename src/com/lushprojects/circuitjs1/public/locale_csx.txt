@@ -176,7 +176,7 @@
 "Add Voltage Source (2-terminal)"="Zdroj napětí DC = (2 vývody)"
 "Add Voltage-Controlled Current Source"="Přidejte napěťově řízený zdroj proudu"
 "Add Voltage-Controlled Voltage Source"="Přidejte zdroj napětí řízený napětím"
-"Add Voltmeter/Scobe Probe"="Voltmetr -sonda osciloskopu"
+"Add Voltmeter/Scope Probe"="Voltmetr -sonda osciloskopu"
 "Add Wire"="Vodič - drát"
 "Add XOR Gate"="Hradlo XOR"
 "Add Zener Diode"="Zenerova dioda"

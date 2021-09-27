@@ -57,12 +57,20 @@ class EditOptions implements Editable {
 		    return new EditInfo("Positive Color", CircuitElm.positiveColor.getHexValue());
 		if (n == 4)
 		    return new EditInfo("Negative Color", CircuitElm.negativeColor.getHexValue());
-		if (n == 5) {
+		if (n == 5)
+		    return new EditInfo("Selection Color", CircuitElm.selectColor.getHexValue());
+		if (n == 6)
+		    return new EditInfo("Current Color", CircuitElm.currentColor.getHexValue());
+		if (n == 7)
+		    return new EditInfo("# of Decimal Digits (short format)", CircuitElm.shortDecimalDigits);
+		if (n == 8)
+		    return new EditInfo("# of Decimal Digits (long format)", CircuitElm.decimalDigits);
+		if (n == 9) {
 		    EditInfo ei = new EditInfo("", 0, -1, -1);
 		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
 		    return ei;
 		}
-		if (n == 6 && sim.adjustTimeStep)
+		if (n == 10 && sim.adjustTimeStep)
 		    return new EditInfo("Minimum time step size (s)", sim.minTimeStep, 0, 0);
 
 		return null;
@@ -110,26 +118,36 @@ class EditOptions implements Editable {
 		            Window.Location.reload();
 		}
 		if (n == 3) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("positiveColor", txt);
-		    CircuitElm.positiveColor = new Color(txt);
+		    CircuitElm.positiveColor = setColor("positiveColor", ei, Color.green);
 		    CircuitElm.setColorScale();
 		}
 		if (n == 4) {
-		    String txt = ei.textf.getText();
-		    Storage stor = Storage.getLocalStorageIfSupported();
-		    if (stor != null)
-			stor.setItem("negativeColor", txt);
-		    CircuitElm.negativeColor = new Color(txt);
+		    CircuitElm.negativeColor = setColor("negativeColor", ei, Color.red);
 		    CircuitElm.setColorScale();
 		}
-		if (n == 5) {
+		if (n == 5)
+		    CircuitElm.selectColor = setColor("selectColor", ei, Color.cyan);
+		if (n == 6)
+		    CircuitElm.currentColor = setColor("currentColor", ei, Color.yellow);
+		if (n == 7)
+		    CircuitElm.setDecimalDigits((int)ei.value, true, true);
+		if (n == 8)
+		    CircuitElm.setDecimalDigits((int)ei.value, false, true);
+		if (n == 9) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
 		    ei.newDialog = true;
 		}
-		if (n == 6 && ei.value > 0)
+		if (n == 10 && ei.value > 0)
 			sim.minTimeStep = ei.value;
+	}
+	
+	Color setColor(String name, EditInfo ei, Color def) {
+	    String val = ei.textf.getText();
+	    if (val.length() == 0)
+		val = def.getHexValue();
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    if (stor != null)
+		stor.setItem(name, val);
+	    return new Color(val);
 	}
 };

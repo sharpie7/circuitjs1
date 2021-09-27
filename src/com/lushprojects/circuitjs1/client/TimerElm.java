@@ -85,21 +85,29 @@ class TimerElm extends ChipElm {
 	}
     }
     boolean out;
+    boolean triggerSuppressed;
+    
     void startIteration() {
 	out = volts[N_OUT] > volts[N_VIN]/2;
 	// check comparators
 	if (volts[N_THRES] > volts[N_CTL])
-		out = false;
+	    out = false;
 	
 	// trigger overrides threshold
-	if (volts[N_CTL]/2 > volts[N_TRIG])
+	// (save triggered flag in case reset and trigger pins are tied together)
+	boolean triggered = (volts[N_CTL]/2 > volts[N_TRIG]);
+	if (triggered || triggerSuppressed)
 	    out = true;
 	
 	double groundVolts = hasGroundPin() ? volts[N_GND] : 0;
 	
 	// reset overrides trigger
-	if (hasReset() && volts[N_RST] < .7+groundVolts)
+	if (hasReset() && volts[N_RST] < .7+groundVolts) {
 	    out = false;
+	    // if trigger is overriden, save it
+	    triggerSuppressed = triggered;
+	} else
+	    triggerSuppressed = false;
     }
     void doStep() {
 	// if output is low, discharge pin 0.  we use a small
@@ -114,22 +122,22 @@ class TimerElm extends ChipElm {
     int getPostCount() { return hasGroundPin() ? 8 : hasReset() ? 7 : 6; }
     int getVoltageSourceCount() { return 0; }
     int getDumpType() { return 165; }
-    public EditInfo getEditInfo(int n) {
-        if (n == 2) {
+    public EditInfo getChipEditInfo(int n) {
+        if (n == 0) {
             EditInfo ei = new EditInfo("", 0, 0, 0);
             ei.checkbox = new Checkbox("Ground Pin", hasGroundPin());
             return ei;
         }
-        return super.getEditInfo(n);
+        return super.getChipEditInfo(n);
     }
-    public void setEditValue(int n, EditInfo ei) {
-        if (n == 2) {
+    public void setChipEditValue(int n, EditInfo ei) {
+        if (n == 0) {
             flags = ei.changeFlag(flags, FLAG_GROUND);
             allocNodes();
             setPoints();
             return;
         }
-        super.setEditValue(n, ei);
+        super.setChipEditValue(n, ei);
     }
 
 }

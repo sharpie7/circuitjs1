@@ -164,7 +164,7 @@
 "Add Variable Voltage"="Ajouter Générateur de Tension Variable"
 "Add Voltage Source (1-terminal)"="Ajouter Générateur de Tension (1 terminal)"
 "Add Voltage Source (2-terminal)"="Ajouter Générateur de Tension (2 terminaux)"
-"Add Voltmeter/Scobe Probe"="Ajouter Voltmètre/Sonde Oscilloscope"
+"Add Voltmeter/Scope Probe"="Ajouter Voltmètre/Sonde Oscilloscope"
 "Add Wire"="Ajouter Fils"
 "Add XOR Gate"="Ajouter Porte XOR (Ou Exclusif)"
 "Add Zener Diode"="Ajouter Diode Zener"

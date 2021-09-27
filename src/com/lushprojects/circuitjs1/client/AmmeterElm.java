@@ -181,7 +181,10 @@ package com.lushprojects.circuitjs1.client;
     }
     double getPower() { return 0; }
     double getVoltageDiff() { return volts[0]; }
-    boolean isWire() { return true; }
+    
+    // do not optimize out, even though isWireEquivalent() is true
+    // (because we need current calculated every timestep)    
+    boolean isWireEquivalent() { return true; }
     
     public EditInfo getEditInfo(int n) {
         if (n==0){

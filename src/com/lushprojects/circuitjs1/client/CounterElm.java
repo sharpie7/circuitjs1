@@ -23,6 +23,7 @@ package com.lushprojects.circuitjs1.client;
 	boolean invertreset;
 	int modulus;
 	final int FLAG_UP_DOWN = 4;
+	final int FLAG_NEGATIVE_EDGE = 8;
 
 	public CounterElm(int xx, int yy) {
 	    super(xx, yy);
@@ -44,13 +45,18 @@ package com.lushprojects.circuitjs1.client;
 	}
 
 	boolean needsBits() { return true; }
-	String getChipName() { return "Counter"; }
+	String getChipName() {
+	    if (modulus == 0)
+		return "Counter";
+	    return sim.LS("Counter") + sim.LS(" (mod ") + modulus + ")";
+	}
 	void setupPins() {
 	    sizeX = 2;
 	    sizeY = bits > 2 ? bits : 2;
 	    pins = new Pin[getPostCount()];
 	    pins[0] = new Pin(0, SIDE_W, "");
 	    pins[0].clock = true;
+	    pins[0].bubble = negativeEdgeTriggered();
 	    pins[1] = new Pin(sizeY-1, SIDE_W, "R");
 	    pins[1].bubble = invertreset;
 	    int i;
@@ -66,70 +72,58 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() {
 	    return (hasUpDown()) ? bits+3 : bits+2;
 	}
-	public EditInfo getEditInfo(int n) {
-	    if (n == 0) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Flip X", (flags & FLAG_FLIP_X) != 0);
-		return ei;
-	    }
-	    if (n == 1) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Flip Y", (flags & FLAG_FLIP_Y) != 0);
-		return ei;
-	    }
-    	    if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+    	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Invert reset pin",invertreset);
 		return ei;
 	    }
-            if (n == 3)
+            if (n == 1)
                 return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
-            if (n == 4)
+            if (n == 2)
                 return new EditInfo("Modulus", modulus, 1, 1).setDimensionless();
-    	    if (n == 5) {
+    	    if (n == 3) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Up/Down Pin", hasUpDown());
 		return ei;
 	    }
+    	    if (n == 4) {
+    		EditInfo ei = new EditInfo("", 0, -1, -1);
+    		ei.checkbox = new Checkbox("Negative Edge Triggered", negativeEdgeTriggered());
+    		return ei;
+    	    }
 	    return null;
 	}
-	public void setEditValue(int n, EditInfo ei) {
+	public void setChipEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_X;
-		else
-		    flags &= ~FLAG_FLIP_X;
-		setPoints();
-	    }
-	    if (n == 1) {
-		if (ei.checkbox.getState())
-		    flags |= FLAG_FLIP_Y;
-		else
-		    flags &= ~FLAG_FLIP_Y;
-		setPoints();
-	    }
-	    if (n == 2) {
 		invertreset = ei.checkbox.getState();
 		setupPins();
 		setPoints();
 	    }
-	    if (n == 3 && ei.value >= 3) {
+	    if (n == 1 && ei.value >= 3) {
 		bits = (int)ei.value;
 		setupPins();
 		setPoints();
 	    }
-	    if (n == 4)
+	    if (n == 2)
 		modulus = (int)ei.value;
-	    if (n == 5) {
+	    if (n == 3) {
 		flags = ei.changeFlag(flags, FLAG_UP_DOWN);
+		setupPins();
+		setPoints();
+	    }
+	    if (n == 4) {
+		flags = ei.changeFlag(flags, FLAG_NEGATIVE_EDGE);
 		setupPins();
 		setPoints();
 	    }
 	}
 	boolean hasUpDown() { return (flags & FLAG_UP_DOWN) != 0; }
+	boolean negativeEdgeTriggered() { return (flags & FLAG_NEGATIVE_EDGE) != 0; }
 	int getVoltageSourceCount() { return bits; }
 	void execute() {
-	    if (pins[0].value && !lastClock) {
+	    boolean neg = negativeEdgeTriggered();
+	    if (pins[0].value != neg && lastClock == neg) {
 		int i;
 		int value = 0;
 		

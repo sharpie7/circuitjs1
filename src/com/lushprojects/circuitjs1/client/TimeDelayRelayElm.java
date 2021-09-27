@@ -94,7 +94,7 @@ package com.lushprojects.circuitjs1.client;
 	int getVoltageSourceCount() { return 0; }
 	int getDumpType() { return 414; }
 	
-	    public EditInfo getEditInfo(int n) {
+	    public EditInfo getChipEditInfo(int n) {
 	        if (n == 0)
 	            return new EditInfo("On Delay (s)", onDelay, 0, 0);
 	        if (n == 1)
@@ -105,7 +105,7 @@ package com.lushprojects.circuitjs1.client;
 	            return new EditInfo("Off Resistance (ohms)", offResistance, 0, 0);
 	        return null;
 	    }
-	    public void setEditValue(int n, EditInfo ei) {
+	    public void setChipEditValue(int n, EditInfo ei) {
 	        if (n == 0)
 	            onDelay = ei.value;
 	        if (n == 1)

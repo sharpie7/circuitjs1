@@ -24,6 +24,7 @@ import java.util.Vector;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.storage.client.Storage;
 
 // circuit element class
 public abstract class CircuitElm implements Editable {
@@ -36,7 +37,8 @@ public abstract class CircuitElm implements Editable {
     static Point ps1, ps2;
     
     static CirSim sim;
-    static Color whiteColor, selectColor, lightGrayColor;
+    static public Color whiteColor, lightGrayColor, selectColor;
+    static public Color positiveColor, negativeColor, neutralColor, currentColor;
     static Font unitsFont;
 
     static NumberFormat showFormat, shortFormat;//, noCommaFormat;
@@ -47,6 +49,8 @@ public abstract class CircuitElm implements Editable {
     static final int SCALE_1 = 1;
     static final int SCALE_M = 2;
     static final int SCALE_MU = 3;
+    
+    static int decimalDigits, shortDecimalDigits;
  
     // initial point where user created element.  For simple two-terminal elements, this is the first node/post.
     int x, y;
@@ -83,6 +87,8 @@ public abstract class CircuitElm implements Editable {
     
     public boolean selected;
     
+    boolean hasWireInfo; // used in calcWireInfo()
+    
 //    abstract int getDumpType();
     int getDumpType() {
 	
@@ -96,6 +102,8 @@ public abstract class CircuitElm implements Editable {
     
     int getDefaultFlags() { return 0; }
 
+    boolean hasFlag(int f) { return (flags & f) != 0; }
+    
     static void initClass(CirSim s) {
 	unitsFont = new Font("SansSerif", 0, 12);
 	sim = s;
@@ -105,13 +113,44 @@ public abstract class CircuitElm implements Editable {
 	
 	ps1 = new Point();
 	ps2 = new Point();
-
-	showFormat=NumberFormat.getFormat("####.###");
-
-	shortFormat=NumberFormat.getFormat("####.#");
+	
+	Storage stor = Storage.getLocalStorageIfSupported();
+	decimalDigits = 3;
+	shortDecimalDigits = 1;
+	if (stor != null) {
+	    String s1 = stor.getItem("decimalDigits");
+	    String s2 = stor.getItem("decimalDigitsShort");
+	    if (s1 != null)
+		decimalDigits = Integer.parseInt(s1);
+	    if (s2 != null)
+		shortDecimalDigits = Integer.parseInt(s2);
+	}
+	setDecimalDigits(decimalDigits, false, false);
+	setDecimalDigits(shortDecimalDigits, true, false);
     }
 
-    static public Color positiveColor, negativeColor, neutralColor;
+    static void setDecimalDigits(int num, boolean sf, boolean save) {
+	if (sf)
+	    shortDecimalDigits = num;
+	else
+	    decimalDigits = num;
+	
+	String s = "####.";
+	int ct = num;
+	for (; ct > 0; ct--)
+	    s += '#';
+	NumberFormat nf = NumberFormat.getFormat(s);
+	if (sf)
+	    shortFormat = nf;
+	else
+	    showFormat = nf;
+	
+	if (save) {
+	    Storage stor = Storage.getLocalStorageIfSupported();
+	    if (stor != null)
+		stor.setItem(sf ? "decimalDigitsShort" : "decimalDigits", Integer.toString(num));
+	}
+    }
     
     static void setColorScale() {
 
@@ -328,7 +367,7 @@ public abstract class CircuitElm implements Editable {
 	int dx = pb.x-pa.x;
 	int dy = pb.y-pa.y;
 	double dn = Math.sqrt(dx*dx+dy*dy);
-	g.setColor(sim.conventionCheckItem.getState()?Color.yellow:Color.cyan);
+	g.setColor(currentColor);
 	int ds = 16;
 	pos %= ds;
 	if (pos < 0)
@@ -436,6 +475,12 @@ public abstract class CircuitElm implements Editable {
     	int oldy=y;
     	int oldx2=x2;
     	int oldy2=y2;
+    	if (noDiagonal) {
+    	    if (x == x2)
+    		dx = 0;
+    	    else
+    		dy = 0;
+    	}
     	if (n == 0) {
     		x += dx; y += dy;
     	} else {
@@ -526,6 +571,11 @@ public abstract class CircuitElm implements Editable {
 	return (n == 0) ? point1 : (n == 1) ? point2 : null;
     }
     
+    // return post we're connected to (for wires, so we can optimize them out in calculateWireClosure())
+    Point getConnectedPost() {
+	return point2;
+    }
+    
     int getNodeAtPoint(int xp, int yp) {
 	if (getPostCount() == 2)
 	    return (x == xp && y == yp) ? 0 : 1;
@@ -597,7 +647,7 @@ public abstract class CircuitElm implements Editable {
 //		   x+w, y+fm.getAscent()/2+fm.getDescent());
     	int w=(int)g.context.measureText(s).getWidth();
     	int h2=(int)g.currentFontSize/2;
-		g.context.save();
+		g.save();
 		g.context.setTextBaseline("middle");
 		if (cx) {
 			g.context.setTextAlign("center");
@@ -609,7 +659,7 @@ public abstract class CircuitElm implements Editable {
 		if (cx)
 			g.context.setTextAlign("center");
 		g.drawString(s, x, y);
-		g.context.restore();
+		g.restore();
     }
     
     // draw component values (number of resistor ohms, etc).  hs = offset
@@ -649,7 +699,7 @@ public abstract class CircuitElm implements Editable {
 	}
         int w=(int)g.context.measureText(str).getWidth();
         int h=(int)g.currentFontSize;
-        g.context.save();
+        g.save();
         g.context.setTextBaseline("middle");
         int x = pt2.x, y = pt2.y;
         if (pt1.y != pt2.y) {
@@ -663,9 +713,9 @@ public abstract class CircuitElm implements Editable {
         }
         g.drawString(str, x, y);
         adjustBbox(x, y-h/2, x+w, y+h/2);
-        g.context.restore();
+        g.restore();
 	if (lineOver) {
-	    int ya = y-h/2-3;
+	    int ya = y-h/2-1;
 	    g.drawLine(x, ya, x+w, ya);
 	}	
     }    
@@ -674,7 +724,7 @@ public abstract class CircuitElm implements Editable {
 		  double v1, double v2) {
 	double len = distance(p1, p2);
 
-	g.context.save();
+	g.save();
 	g.context.setLineWidth(3.0);
 	g.context.transform(((double)(p2.x-p1.x))/len, ((double)(p2.y-p1.y))/len,
 		-((double)(p2.y-p1.y))/len,((double)(p2.x-p1.x))/len,p1.x,p1.y);
@@ -699,7 +749,7 @@ public abstract class CircuitElm implements Editable {
 	    g.context.stroke();
 	}
 
-	g.context.restore();
+	g.restore();
     }
     
     static void drawThickLine(Graphics g, int x, int y, int x2, int y2) {
@@ -965,8 +1015,11 @@ public abstract class CircuitElm implements Editable {
     // is n1 connected to ground somehow?
     boolean hasGroundConnection(int n1) { return false; }
     
-    // is this a wire or equivalent to a wire?
-    boolean isWire() { return false; }
+    // is this a wire or equivalent to a wire?  (used for circuit validation)
+    boolean isWireEquivalent() { return false; }
+    
+    // is this a wire we can remove?
+    boolean isRemovableWire() { return false; }
     
     boolean canViewInScope() { return getPostCount() <= 2; }
     boolean comparePair(int x1, int x2, int y1, int y2) {
@@ -980,8 +1033,11 @@ public abstract class CircuitElm implements Editable {
     boolean isSelected() { return selected; }
     boolean canShowValueInScope(int v) { return false; }
     void setSelected(boolean x) { selected = x; }
-    void selectRect(Rectangle r) {
-	selected = r.intersects(boundingBox);
+    void selectRect(Rectangle r, boolean add) {
+	if (r.intersects(boundingBox))
+	    selected = true;
+	else if (!add)
+	    selected = false;
     }
     static int abs(int x) { return x < 0 ? -x : x; }
     static int sign(int x) { return (x < 0) ? -1 : (x == 0) ? 0 : 1; }

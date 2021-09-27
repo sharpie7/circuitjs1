@@ -25,10 +25,11 @@ class VaractorElm extends DiodeElm {
     // capvoltdiff = volt diff from last timestep
     double compResistance, capvoltdiff;
     Point plate1[], plate2[];
-    void setNodeVoltage(int n, double c) {
-	super.setNodeVoltage(n, c);
+    
+    void stepFinished() {
 	capvoltdiff = volts[0]-volts[1];
     }
+    
     void calculateCurrent() {
 	super.calculateCurrent();
 	current += capCurrent;

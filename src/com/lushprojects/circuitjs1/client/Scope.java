@@ -69,8 +69,9 @@ class ScopePlot {
 	units = u;
 	value = v;
 	manScale = manS;
-	// I *think* all units other than V and A can only be positive, so for these move the v position to the bottom.
-	if (units > Scope.UNITS_A)
+	// ohms can only be positive, so move the v position to the bottom.
+	// power can be negative for caps and inductors, but still move to the bottom (for backward compatibility)
+	if (units == Scope.UNITS_OHMS || units == Scope.UNITS_W)
 	    manVPosition = -Scope.V_POSITION_STEPS/2;
     }
 
@@ -449,7 +450,9 @@ class Scope {
 	    plots.add(new ScopePlot(ce, UNITS_V, VAL_VOLTAGE, getManScaleFromMaxScale(UNITS_V, false)));
 	    
 	    // create plot for current if applicable
-	    if (ce != null && !(ce instanceof OutputElm ||
+	    if (ce != null &&
+		    sim.dotsCheckItem.getState() &&
+		    !(ce instanceof OutputElm ||
 		    ce instanceof LogicOutputElm ||
 		    ce instanceof AudioOutputElm ||
 		    ce instanceof ProbeElm))
@@ -633,9 +636,9 @@ class Scope {
     void clear2dView() {
     	if (imageContext!=null) {
     		if (sim.printableCheckItem.getState()) {
-    			imageContext.setFillStyle("#ffffff");
+    			imageContext.setFillStyle("#eee");
     		} else {
-    			imageContext.setFillStyle("#000000");
+    			imageContext.setFillStyle("#111");
     		}
     		imageContext.fillRect(0, 0, rect.width-1, rect.height-1);
     	}
@@ -766,7 +769,7 @@ class Scope {
 	if (showSettingsWheel()) {
 	    g.context.save();
 	    if (cursorInSettingsWheel())
-		g.setColor(Color.cyan);
+		g.setColor(CircuitElm.selectColor);
 	    else
 		g.setColor(Color.dark_gray);
 	    g.context.translate(rect.x+18, rect.y+rect.height-18);
@@ -1052,7 +1055,7 @@ class Scope {
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
 	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
-    	    color = "#00FFFF";
+    	    color = CircuitElm.selectColor.getHexValue();
 	else if (selected)
 	    color = plot.color;
     	int ipa = plot.startIndex(rect.width);
@@ -1114,6 +1117,8 @@ class Scope {
     	double ts = sim.maxTimeStep*speed;
     	gridStepX = calcGridStepX();
 
+    	boolean highlightCenter = !isManualScale();
+    	
     	if (drawGridLines) {
     	    // horizontal gridlines
     	    
@@ -1125,7 +1130,7 @@ class Scope {
     		int yl = maxy-(int) ((ll*gridStepY-gridMid)*plot.gridMult);
     		if (yl < 0 || yl >= rect.height-1)
     		    continue;
-    		col = ll == 0 ? majorDiv : minorDiv;
+    		col = ll == 0 && highlightCenter ? majorDiv : minorDiv;
     		g.setColor(col);
     		g.drawLine(0,yl,rect.width-1,yl);
     	    }
@@ -1159,6 +1164,7 @@ class Scope {
         g.setColor(color);
         
         if (isManualScale()) {
+            // draw zero point
             int y0= maxy-(int) (plot.gridMult*plot.plotOffset);
             g.drawLine(0, y0, 8, y0);
             g.drawString("0", 0, y0-2);

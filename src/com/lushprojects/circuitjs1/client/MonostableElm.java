@@ -28,12 +28,16 @@ package com.lushprojects.circuitjs1.client;
 	private double lastRisingEdge=0;
 	private double delay=0.01;
 
-	public MonostableElm(int xx, int yy) { super(xx, yy); }
+	public MonostableElm(int xx, int yy) {
+	    super(xx, yy);
+	    reset();
+	}
 	public MonostableElm(int xa, int ya, int xb, int yb, int f,
 			    StringTokenizer st) {
 	    super(xa, ya, xb, yb, f, st);
-	retriggerable=new Boolean(st.nextToken()).booleanValue();
-	delay=new Double(st.nextToken()).doubleValue();
+	    retriggerable=new Boolean(st.nextToken()).booleanValue();
+	    delay=new Double(st.nextToken()).doubleValue();
+	    reset();
 	}
 	String getChipName() { return "Monostable"; }
 	void setupPins() {
@@ -47,6 +51,12 @@ package com.lushprojects.circuitjs1.client;
 	    pins[2] = new Pin(1, SIDE_E, "Q");
 	    pins[2].output=true;
 	    pins[2].lineOver=true;
+	}
+	
+	void reset() {
+	    super.reset();
+	    pins[2].value = true;
+	    triggered = prevInputValue = false;
 	}
 	int getPostCount() {
 	return 3;
@@ -74,25 +84,25 @@ package com.lushprojects.circuitjs1.client;
 	   return super.dump() + " " + retriggerable + " " + delay;
 	}
 	int getDumpType() { return 194; }
-	public EditInfo getEditInfo(int n) {
-	    if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox=new Checkbox("Retriggerable",retriggerable);
 		return ei;
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		EditInfo ei = new EditInfo("Period (s)",delay, 0.001,0.1);
 		return ei;
 	    }
-	    return super.getEditInfo(n);
+	    return super.getChipEditInfo(n);
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
 		retriggerable=ei.checkbox.getState();
 	    }
-	    if (n == 3) {
+	    if (n == 1) {
 		delay=ei.value;
 	    }
-	    super.setEditValue(n, ei);
+	    super.setChipEditValue(n, ei);
 	}
     }

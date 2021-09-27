@@ -43,7 +43,13 @@ class EditInfo {
 	    name = n;
 	    text = txt;
 	}
-		
+
+	static EditInfo createCheckbox(String name, boolean flag) {
+	    EditInfo ei = new EditInfo("", 0, -1, -1);
+	    ei.checkbox = new Checkbox(name, flag);
+	    return ei;
+	}
+	
 	EditInfo setDimensionless() { dimensionless = true; return this; }
 	EditInfo disallowSliders() { noSliders = true; return this; }
 	int changeFlag(int flags, int bit) {
@@ -58,6 +64,7 @@ class EditInfo {
 	Choice choice;
 	Checkbox checkbox;
 	Button button;
+	EditDialogLoadFile loadFile = null; //if non-null, the button will open a file dialog
 	TextArea textArea;
 	Widget widget;
 	boolean newDialog;

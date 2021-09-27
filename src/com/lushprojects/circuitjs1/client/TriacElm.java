@@ -228,7 +228,11 @@ class TriacElm extends CircuitElm {
         arr[6] = "P = " + getUnitText(getPower(), "W");
     }
     void calculateCurrent() {
-	i2 = (volts[mtinode]-volts[mt1node])/aresistance;
+	// aresistance can be 0 on startup
+	if (aresistance == 0)
+	    i2 = 0;
+	else
+	    i2 = (volts[mtinode]-volts[mt1node])/aresistance;
 	ig = -(volts[mt1node]-volts[gnode])/cresistance;
 	i1 = -i2-ig;
     }

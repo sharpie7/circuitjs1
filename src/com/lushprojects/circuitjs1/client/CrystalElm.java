@@ -124,6 +124,7 @@ package com.lushprojects.circuitjs1.client;
 	void getInfo(String arr[]) {
 	    arr[0] = "crystal";
 	    getBasicInfo(arr);
+	    arr[3] = "fs = " + getUnitText(1/(Math.sqrt(inductance*seriesCapacitance)*Math.PI*2), "Hz");
 //	    arr[3] = "C = " + getUnitText(capacitance, "F");
 //	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	    //double v = getVoltageDiff();

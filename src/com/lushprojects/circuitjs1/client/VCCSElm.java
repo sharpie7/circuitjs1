@@ -166,7 +166,7 @@ class VCCSElm extends ChipElm {
 	    return false;
 	}
 
-        public EditInfo getEditInfo(int n) {
+        public EditInfo getChipEditInfo(int n) {
             if (n == 0) {
                 EditInfo ei = new EditInfo(EditInfo.makeLink("customfunction.html", "Output Function"), 0, -1, -1);
                 ei.text = exprString;
@@ -178,7 +178,7 @@ class VCCSElm extends ChipElm {
                     setDimensionless();
             return null;
         }
-        public void setEditValue(int n, EditInfo ei) {
+        public void setChipEditValue(int n, EditInfo ei) {
             if (n == 0) {
         	exprString = ei.textf.getText();
         	parseExpr();

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextArea;
 
@@ -27,25 +28,55 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     String nodeList;
     Vector<ExtListEntry> extList;
     String elmDump;
+    String modelCircuit;
     boolean dumped;
+    static int sequenceNumber;
     
     void setName(String n) {
 	modelMap.remove(name);
 	name = n;
 	modelMap.put(name, this);
+	sequenceNumber++;
+    }
+
+    static void initModelMap() {
+	modelMap = new HashMap<String,CustomCompositeModel>();
+
+	// create default stub model
+	Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
+	extList.add(new ExtListEntry("gnd", 1));
+	CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
+	d.sizeX = d.sizeY = 1;
+	modelMap.put(d.name, d);
+	sequenceNumber = 1;
+	
+	// get models from local storage
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor != null) {
+            int len = stor.getLength();
+            int i;
+            for (i = 0; i != len; i++) {
+        	String key = stor.key(i);
+        	if (!key.startsWith("subcircuit:"))
+        	    continue;
+        	String data = stor.getItem(key);
+        	String firstLine = data;
+        	int lineLen = data.indexOf('\n');
+        	if (lineLen != -1)
+        	    firstLine = data.substring(0, lineLen);
+        	StringTokenizer st = new StringTokenizer(firstLine, " ");
+        	if (st.nextToken() == ".") {
+        	    CustomCompositeModel model = undumpModel(st);
+        	    if (lineLen != -1)
+        		model.modelCircuit = data.substring(lineLen+1);
+        	}
+            }
+        }
     }
     
     static CustomCompositeModel getModelWithName(String name) {
-	if (modelMap == null) {
-	    modelMap = new HashMap<String,CustomCompositeModel>();
-	    
-	    // create default stub model
-	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
-	    extList.add(new ExtListEntry("gnd", 1));
-	    CustomCompositeModel d = createModel("default", "0 0", "GroundElm 1", extList);
-	    d.sizeX = d.sizeY = 1;
-	    modelMap.put(d.name, d);
-	}
+	if (modelMap == null)
+	    initModelMap();
 	CustomCompositeModel lm = modelMap.get(name);
 	return lm;
     }
@@ -57,6 +88,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	lm.nodeList = nodeList;
 	lm.extList = extList;
         modelMap.put(name, lm);
+        sequenceNumber++;
         return lm;
     }
 
@@ -89,16 +121,22 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     CustomCompositeModel() {
     }
     
-    static void undumpModel(StringTokenizer st) {
+    static CustomCompositeModel undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
-	CustomCompositeElm.lastModelName = name;
+//	CustomCompositeElm.lastModelName = name;
 	CustomCompositeModel model = getModelWithName(name);
 	if (model == null) {
 	    model = new CustomCompositeModel();
 	    model.name = name;
 	    modelMap.put(name, model);
+	    sequenceNumber++;
+	} else if (model.modelCircuit != null) {
+	    // if model has an associated model circuit, don't overwrite it.  keep the old one.
+	    CirSim.console("ignoring model " + name + ", using stored version instead");
+	    return model;
 	}
 	model.undump(st);
+	return model;
     }
     
     void undump(StringTokenizer st) {
@@ -117,6 +155,26 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	}
 	nodeList = CustomLogicModel.unescape(st.nextToken());
 	elmDump = CustomLogicModel.unescape(st.nextToken());
+    }
+    
+    boolean isSaved() {
+	if (name == null)
+	    return false;
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return false;
+        return stor.getItem("subcircuit:" + name) != null;
+    }
+    
+    void setSaved(boolean sv) {
+        Storage stor = Storage.getLocalStorageIfSupported();
+        if (stor == null)
+            return;
+        if (sv) {
+            String cir = (modelCircuit == null) ? "" : modelCircuit;
+            stor.setItem("subcircuit:" + name, dump() + "\n" + cir);
+        } else
+            stor.removeItem("subcircuit:" + name);
     }
     
     String arrayToList(String arr[]) {
@@ -147,5 +205,9 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
         }
         str += " " + CustomLogicModel.escape(nodeList) + " " + CustomLogicModel.escape(elmDump);
         return str;
+    }
+    
+    boolean canLoadModelCircuit() {
+	return modelCircuit != null && modelCircuit.length() > 0;
     }
 }

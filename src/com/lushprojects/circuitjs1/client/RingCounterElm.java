@@ -36,6 +36,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	String getChipName() { return "ring counter"; }
 	boolean needsBits() { return true; }
+	int defaultBitCount() { return 10; }
 	boolean hasClockInhibit() { return (flags & FLAG_CLOCK_INHIBIT) != 0 && bits >= 3; }
 	boolean hasInvertReset() { return (flags & FLAG_RESET_HIGH) == 0; }
 	
@@ -98,24 +99,18 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    lastClock = pins[0].value;
 	}
-	public EditInfo getEditInfo(int n) {
-	    if (n < 2)
-		return super.getEditInfo(n);
-	    if (n == 2) {
+	public EditInfo getChipEditInfo(int n) {
+	    if (n == 0) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Invert reset pin", hasInvertReset());
 		return ei;
 	    }
-	    if (n == 3)
+	    if (n == 1)
 		return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();
 	    return null;
 	}
-	public void setEditValue(int n, EditInfo ei) {
-	    if (n < 2) {
-		super.setEditValue(n,  ei);
-		return;
-	    }
-	    if (n == 2) {
+	public void setChipEditValue(int n, EditInfo ei) {
+	    if (n == 0) {
 		if (ei.checkbox.getState())
 		    flags &= ~FLAG_RESET_HIGH;
 		else
@@ -124,7 +119,7 @@ package com.lushprojects.circuitjs1.client;
 		setPoints();
 		return;
 	    }
-	    if (n == 3 && ei.value >= 2) {
+	    if (n == 1 && ei.value >= 2) {
 		bits = (int)ei.value;
 		setupPins();
 		setPoints();

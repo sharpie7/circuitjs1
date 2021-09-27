@@ -193,7 +193,7 @@
 "Add Variable Voltage"="Wstaw źródło napięcia zmiennego"
 "Add Voltage Source (1-terminal)"="Wstaw źródło napięcia (węzeł)"
 "Add Voltage Source (2-terminal)"="Wstaw źródło napięcia"
-"Add Voltmeter/Scobe Probe"="Wstaw woltomierz"
+"Add Voltmeter/Scope Probe"="Wstaw woltomierz"
 "Add Wire"="Wstaw przewód"
 "Add XOR Gate"="Wstaw bramkę alternatywy wykluczającej (XOR)"
 "Add Zener Diode"="Wstaw diodę Zenera"

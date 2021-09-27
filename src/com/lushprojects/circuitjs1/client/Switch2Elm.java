@@ -92,7 +92,7 @@ package com.lushprojects.circuitjs1.client;
 	    
 	    updateDotCount();
 	    drawDots(g, point1, lead1, curcount);
-	    if (position != 2)
+	    if (!(position == 2 && hasCenterOff()))
 		drawDots(g, swpoles[position], swposts[position], curcount);
 	    drawPosts(g);
 	}
@@ -117,14 +117,17 @@ package com.lushprojects.circuitjs1.client;
 	    if (position == 2 && hasCenterOff())
 		current = 0;
 	}
+	
 	void stamp() {
 	    if (position == 2 && hasCenterOff()) // in center?
 		return;
 	    sim.stampVoltageSource(nodes[0], nodes[position+1], voltSource, 0);
 	}
+		
 	int getVoltageSourceCount() {
-	    return (position == 2 && hasCenterOff()) ? 0 : 1;
+	    return (position == 2 && hasCenterOff()) ? 0 : 1; 	    
 	}
+	
 	void toggle() {
 	    super.toggle();
 	    if (link != 0) {
@@ -144,7 +147,12 @@ package com.lushprojects.circuitjs1.client;
 		return false;
 	    return comparePair(n1, n2, 0, 1+position);
 	}
-	boolean isWire() { return true; }
+	
+	boolean isWireEquivalent() { return true; }
+	
+	// optimizing out this element is too complicated to be worth it (see #646)
+	boolean isRemovableWire() { return false; }
+	
 	void getInfo(String arr[]) {
 	    arr[0] = "switch (" + (link == 0 ? "S" : "D") + "P" +
 		    ((throwCount > 2) ? throwCount+"T)" : "DT)");

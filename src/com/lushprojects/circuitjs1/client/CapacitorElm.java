@@ -41,10 +41,7 @@ package com.lushprojects.circuitjs1.client;
 	    } catch (Exception e) {}
 	}
 	boolean isTrapezoidal() { return (flags & FLAG_BACK_EULER) == 0; }
-	void setNodeVoltage(int n, double c) {
-	    super.setNodeVoltage(n, c);
-	    voltdiff = volts[0]-volts[1];
-	}
+	
 	void reset() {
 	    super.reset();
 	    current = curcount = curSourceValue = 0;
@@ -96,7 +93,7 @@ package com.lushprojects.circuitjs1.client;
 		drawThickLine(g, plate2[0], plate2[1]);
 	    else {
 		int i;
-		for (i = 0; i != 7; i++)
+		for (i = 0; i != platePoints.length-1; i++)
 		    drawThickLine(g,  platePoints[i], platePoints[i+1]);
 	    }
 	    
@@ -138,6 +135,19 @@ package com.lushprojects.circuitjs1.client;
 	    else
 		curSourceValue = -voltdiff/compResistance;
 	}
+	
+	void stepFinished() {
+	    voltdiff = volts[0]-volts[1];
+	    calculateCurrent();
+	}
+	
+	void setNodeVoltage(int n, double c) {
+	    // do not calculate current, that only gets done in stepFinished().  otherwise calculateCurrent() may get
+	    // called while stamping the circuit, which might discharge the cap (since we use that current to calculate
+	    // curSourceValue in startIteration)
+	    volts[n] = c;
+	}	
+	
 	void calculateCurrent() {
 	    double voltdiff = volts[0] - volts[1];
 	    if (sim.dcAnalysisFlag) {
