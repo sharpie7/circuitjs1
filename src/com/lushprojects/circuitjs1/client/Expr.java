@@ -78,6 +78,12 @@ class Expr {
 	case E_LOG: return Math.log(left.eval(es));
 	case E_SQRT: return Math.sqrt(left.eval(es));
 	case E_TAN: return Math.tan(left.eval(es));
+	case E_ASIN: return Math.asin(left.eval(es));
+	case E_ACOS: return Math.acos(left.eval(es));
+	case E_ATAN: return Math.atan(left.eval(es));
+	case E_SINH: return Math.sinh(left.eval(es));
+	case E_COSH: return Math.cosh(left.eval(es));
+	case E_TANH: return Math.tanh(left.eval(es));
 	case E_FLOOR: return Math.floor(left.eval(es));
 	case E_CEIL: return Math.ceil(left.eval(es));
 	case E_MIN: {
@@ -214,9 +220,15 @@ class Expr {
     static final int E_NOT = 41;
     static final int E_FLOOR = 42;
     static final int E_CEIL = 43;
-    static final int E_A = 44;
-    static final int E_DADT = 54; // must be E_A+10
-    static final int E_LASTA = 64; // should be at end and equal to E_DADT+10
+    static final int E_ASIN = 44;
+    static final int E_ACOS = 45;
+    static final int E_ATAN = 46;
+    static final int E_SINH = 47;
+    static final int E_COSH = 48;
+    static final int E_TANH = 49;
+    static final int E_A = 50;
+    static final int E_DADT = E_A+10; // must be E_A+10
+    static final int E_LASTA = E_DADT+10; // should be at end and equal to E_DADT+10
 };
 
 class ExprParser {
@@ -455,6 +467,18 @@ class ExprParser {
 	    return parseFunc(Expr.E_SIN);
 	if (skip("cos"))
 	    return parseFunc(Expr.E_COS);
+	if (skip("asin"))
+	    return parseFunc(Expr.E_ASIN);
+	if (skip("acos"))
+	    return parseFunc(Expr.E_ACOS);
+	if (skip("atan"))
+	    return parseFunc(Expr.E_ATAN);
+	if (skip("sinh"))
+	    return parseFunc(Expr.E_SINH);
+	if (skip("cosh"))
+	    return parseFunc(Expr.E_COSH);
+	if (skip("tanh"))
+	    return parseFunc(Expr.E_TANH);
 	if (skip("abs"))
 	    return parseFunc(Expr.E_ABS);
 	if (skip("exp"))
