@@ -180,7 +180,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
-		return new EditInfo("Capacitance (F)", capacitance, 0, 0);
+		return new EditInfo("Capacitance (F)", capacitance, 1e-6, 1e-3);
 	    if (n == 1) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Trapezoidal Approximation", isTrapezoidal());

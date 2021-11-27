@@ -21,6 +21,11 @@ public class Adjustable implements Command {
 	maxValue = 1000;
 	elm = ce;
 	editItem = item;
+        EditInfo ei = ce.getEditInfo(editItem);
+        if (ei != null && ei.maxVal > 0) {
+            minValue = ei.minVal;
+            maxValue = ei.maxVal;
+        }
     }
 
     // undump

@@ -25,12 +25,13 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
 
 class EditInfo {
-    	// mn/mx were used in the java version to create sliders in the edit dialog but we don't do that in the javascript version, so this
-    	// constructor is deprecated
+    
 	EditInfo(String n, double val, double mn, double mx) {
 		name = n;
 		value = val;
 		dimensionless = false;
+		minVal = mn;
+		maxVal = mx;
 	}
 	
 	EditInfo(String n, double val) {
@@ -70,6 +71,7 @@ class EditInfo {
 	boolean newDialog;
 	boolean dimensionless;
 	boolean noSliders;
+	double minVal, maxVal;
 	
 	// for slider dialog
 	TextBox minBox, maxBox, labelBox;

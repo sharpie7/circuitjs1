@@ -90,7 +90,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)
-		return new EditInfo("Inductance (H)", inductance, 0, 0);
+		return new EditInfo("Inductance (H)", inductance, 1e-2, 10);
 	    if (n == 1) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
 		ei.checkbox = new Checkbox("Trapezoidal Approximation",
