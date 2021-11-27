@@ -487,23 +487,23 @@ MouseOutHandler, MouseWheelHandler {
 	buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 
 	m = new MenuBar(true);
-	m.addItem(undoItem = menuItemWithShortcut("ccw", LS("Undo"), LS(ctrlMetaKey + "Z"), new MyCommand("edit","undo")));
-	m.addItem(redoItem = menuItemWithShortcut("cw", LS("Redo"), LS(ctrlMetaKey + "Y"), new MyCommand("edit","redo")));
+	m.addItem(undoItem = menuItemWithShortcut("ccw", "Undo", LS(ctrlMetaKey + "Z"), new MyCommand("edit","undo")));
+	m.addItem(redoItem = menuItemWithShortcut("cw", "Redo", LS(ctrlMetaKey + "Y"), new MyCommand("edit","redo")));
 	m.addSeparator();
-	m.addItem(cutItem = menuItemWithShortcut("scissors", LS("Cut"), LS(ctrlMetaKey + "X"), new MyCommand("edit","cut")));
-	m.addItem(copyItem = menuItemWithShortcut("copy", LS("Copy"), LS(ctrlMetaKey + "C"), new MyCommand("edit","copy")));
-	m.addItem(pasteItem = menuItemWithShortcut("paste", LS("Paste"), LS(ctrlMetaKey + "V"), new MyCommand("edit","paste")));
+	m.addItem(cutItem = menuItemWithShortcut("scissors", "Cut", LS(ctrlMetaKey + "X"), new MyCommand("edit","cut")));
+	m.addItem(copyItem = menuItemWithShortcut("copy", "Copy", LS(ctrlMetaKey + "C"), new MyCommand("edit","copy")));
+	m.addItem(pasteItem = menuItemWithShortcut("paste", "Paste", LS(ctrlMetaKey + "V"), new MyCommand("edit","paste")));
 	pasteItem.setEnabled(false);
 
-	m.addItem(menuItemWithShortcut("clone", LS("Duplicate"), LS(ctrlMetaKey + "D"), new MyCommand("edit","duplicate")));
+	m.addItem(menuItemWithShortcut("clone", "Duplicate", LS(ctrlMetaKey + "D"), new MyCommand("edit","duplicate")));
 
 	m.addSeparator();
-	m.addItem(selectAllItem = menuItemWithShortcut("select-all", LS("Select All"), LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
+	m.addItem(selectAllItem = menuItemWithShortcut("select-all", "Select All", LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
 	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
-	m.addItem(menuItemWithShortcut("zoom-11", LS("Zoom 100%"), "0", new MyCommand("zoom", "zoom100")));
-	m.addItem(menuItemWithShortcut("zoom-in", LS("Zoom In"), "+", new MyCommand("zoom", "zoomin")));
-	m.addItem(menuItemWithShortcut("zoom-out", LS("Zoom Out"), "-", new MyCommand("zoom", "zoomout")));
+	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
+	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
+	m.addItem(menuItemWithShortcut("zoom-out", "Zoom Out", "-", new MyCommand("zoom", "zoomout")));
 	menuBar.addItem(LS("Edit"),m);
 
 	MenuBar drawMenuBar = new MenuBar(true);
@@ -710,7 +710,7 @@ MouseOutHandler, MouseWheelHandler {
 	elmMenuBar.addItem(elmDeleteMenuItem = new MenuItem(LS("Delete"),new MyCommand("elm","delete")));
 	elmMenuBar.addItem(                    new MenuItem(LS("Duplicate"),new MyCommand("elm","duplicate")));
 	elmMenuBar.addItem(elmFlipMenuItem = new MenuItem(LS("Swap Terminals"),new MyCommand("elm","flip")));
-	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", LS("Split Wire"), LS(ctrlMetaKey + "click"), new MyCommand("elm","split")));
+	elmMenuBar.addItem(elmSplitMenuItem = menuItemWithShortcut("", "Split Wire", LS(ctrlMetaKey + "click"), new MyCommand("elm","split")));
 	elmMenuBar.addItem(elmSliderMenuItem = new MenuItem(LS("Sliders..."),new MyCommand("elm","sliders")));
 
 	scopePopupMenu = new ScopePopupMenu();
@@ -807,10 +807,10 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     MenuItem menuItemWithShortcut(String icon, String text, String shortcut, MyCommand cmd) {
-	final String edithtml="<div style=\"white-space:nowrap\"><div style=\"display:inline-block;width:110px;\"><i class=\"cirjsicon-";
+	final String edithtml="<div style=\"white-space:nowrap\"><div style=\"display:inline-block;width:100%;\"><i class=\"cirjsicon-";
 	String nbsp = "&nbsp;";
 	if (icon=="") nbsp="";
-	String sn=edithtml + icon + "\"></i>" + nbsp + text + "</div>" + shortcut + "</div>";
+	String sn=edithtml + icon + "\"></i>" + nbsp + LS(text) + "</div>" + shortcut + "</div>";
 	return new MenuItem(SafeHtmlUtils.fromTrustedString(sn), cmd);
     }
     
