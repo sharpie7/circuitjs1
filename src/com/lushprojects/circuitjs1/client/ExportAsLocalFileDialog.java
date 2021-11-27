@@ -21,12 +21,15 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.Date;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
@@ -55,22 +58,20 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 	}-*/;
 	
 	TextBox textBox;
-	Anchor a;
 	static String lastFileName;
+	String url;
 	
 	public ExportAsLocalFileDialog(String data) {
 		super();
-		Button okButton;
-		String url;
+		Button okButton, cancelButton;
 		vp=new VerticalPanel();
 		setWidget(vp);
 		setText(CirSim.LS("Export as Local File"));
 		vp.add(new Label(CirSim.LS("File name:")));
 		textBox = new TextBox();
                 textBox.addValueChangeHandler(this);
-		textBox.setWidth("90%");
+		textBox.setWidth("250px"); // "90%");
 		vp.add(textBox);
-		vp.add(new Label(CirSim.LS("Click on the link below to save your circuit")));
 		url=getBlobUrl(data);
 		Date date = new Date();
 		String fname;
@@ -81,16 +82,41 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 		    fname = "circuit-"+ dtf.format(date) + ".circuitjs.txt";
 		}
 		textBox.setText(fname);
-		a=new Anchor(fname, url);
-		a.getElement().setAttribute("Download", fname);
-		vp.add(a);
-		vp.add(okButton = new Button(CirSim.LS("OK")));
+		
+                HorizontalPanel hp = new HorizontalPanel();
+                hp.setWidth("100%");
+                hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+                hp.setStyleName("topSpace");
+                vp.add(hp);
+                hp.add(okButton = new Button(CirSim.LS("OK")));
+                hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				closeDialog();
+			    download();
+			    closeDialog();
+			}
+		});
+		cancelButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+			    closeDialog();
 			}
 		});
 		this.center();
+	}
+	
+	static native void click(Element elem) /*-{
+	    elem.click();
+	}-*/;
+	
+	void download() {
+	    String fname = textBox.getText();
+	    if (!fname.contains("."))
+		fname += ".txt";
+	    Anchor a  = new Anchor(fname, url);
+	    a.getElement().setAttribute("Download", fname);
+	    vp.add(a);
+	    click(a.getElement());
 	}
 	
 	public void onValueChange(ValueChangeEvent<String> event) {
@@ -98,10 +124,6 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 	    String fname = textBox.getText();
 	    if (fname.length() == 0)
 		return;
-	    if (!fname.contains("."))
-		fname += ".txt";
-	    a.getElement().setAttribute("Download", fname);
-	    a.setText(fname);
 	    lastFileName = fname;
 	}
 	
