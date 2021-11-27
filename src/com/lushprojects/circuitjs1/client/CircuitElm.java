@@ -22,9 +22,11 @@ package com.lushprojects.circuitjs1.client;
 import java.util.Vector;
 
 import com.google.gwt.canvas.dom.client.CanvasGradient;
+import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Random;
 
 // circuit element class
 public abstract class CircuitElm implements Editable {
@@ -360,6 +362,8 @@ public abstract class CircuitElm implements Editable {
 	return a;
     }
 
+    final int CURRENT_TOO_FAST = 100;
+
     // draw current dots from point a to b
     void drawDots(Graphics g, Point pa, Point pb, double pos) {
 	 if ((!sim.simIsRunning()) || pos == 0 || !sim.dotsCheckItem.getState())
@@ -369,6 +373,20 @@ public abstract class CircuitElm implements Editable {
 	double dn = Math.sqrt(dx*dx+dy*dy);
 	g.setColor(currentColor);
 	int ds = 16;
+	if (pos == CURRENT_TOO_FAST || pos == -CURRENT_TOO_FAST) {
+	    // current is moving too fast, avoid aliasing by drawing dots at
+	    // random position with transparent yellow line underneath
+	    g.save();
+	    Context2d ctx = g.context;
+	    ctx.setLineWidth(4);
+	    ctx.setGlobalAlpha(.5);
+	    ctx.beginPath();
+	    ctx.moveTo(pa.x, pa.y);
+	    ctx.lineTo(pb.x, pb.y);
+	    ctx.stroke();
+	    g.restore();
+	    pos = Random.nextDouble()*ds;
+	}
 	pos %= ds;
 	if (pos < 0)
 	    pos += ds;
@@ -897,13 +915,9 @@ public abstract class CircuitElm implements Editable {
 	 if (!sim.simIsRunning())
 	    return cc;
 	double cadd = cur*currentMult;
-	/*if (cur != 0 && cadd <= .05 && cadd >= -.05)
-	  cadd = (cadd < 0) ? -.05 : .05;*/
+	if (cadd > 6 || cadd < -6)
+	    return CURRENT_TOO_FAST;
 	cadd %= 8;
-	/*if (cadd > 8)
-	  cadd = 8;
-	  if (cadd < -8)
-	  cadd = -8;*/
 	return cc + cadd;
     }
     
