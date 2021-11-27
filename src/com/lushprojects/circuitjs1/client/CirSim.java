@@ -125,6 +125,7 @@ MouseOutHandler, MouseWheelHandler {
     CheckboxMenuItem printableCheckItem;
     CheckboxMenuItem conventionCheckItem;
     CheckboxMenuItem noEditCheckItem;
+    CheckboxMenuItem mouseWheelEditCheckItem;
     private Label powerLabel;
     private Label titleLabel;
     private Scrollbar speedBar;
@@ -367,6 +368,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean hideSidebar = false;
 	boolean hideMenu = false;
 	boolean noEditing = false;
+	boolean mouseWheelEdit = false;
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -403,6 +405,7 @@ MouseOutHandler, MouseWheelHandler {
 	    convention = qp.getBooleanValue("conventionalCurrent",
 		    getOptionFromStorage("conventionalCurrent", true));
 	    noEditing = !qp.getBooleanValue("editable", true);
+	    mouseWheelEdit = qp.getBooleanValue("mouseWheelEdit", getOptionFromStorage("mouseWheelEdit", true));
 	    positiveColor = qp.getValue("positiveColor");
 	    negativeColor = qp.getValue("negativeColor");
 	    selectColor = qp.getValue("selectColor");
@@ -589,6 +592,12 @@ MouseOutHandler, MouseWheelHandler {
 	m.addItem(noEditCheckItem = new CheckboxMenuItem(LS("Disable Editing")));
 	noEditCheckItem.setState(noEditing);
 
+	m.addItem(mouseWheelEditCheckItem = new CheckboxMenuItem(LS("Edit Values With Mouse Wheel"),
+		new Command() { public void execute(){
+		    setOptionInStorage("mouseWheelEdit", mouseWheelEditCheckItem.getState());
+		}
+	}));
+	mouseWheelEditCheckItem.setState(mouseWheelEdit);
 
 	m.addItem(new CheckboxAlignedMenuItem(LS("Shortcuts..."), new MyCommand("options", "shortcuts")));
 	m.addItem(optionsItem = new CheckboxAlignedMenuItem(LS("Other Options..."), new MyCommand("options","other")));
@@ -4717,7 +4726,7 @@ MouseOutHandler, MouseWheelHandler {
     	// so we don't accidentally edit a resistor value while zooming
     	boolean zoomOnly = System.currentTimeMillis() < zoomTime+1000;
     	
-    	if (noEditCheckItem.getState())
+    	if (noEditCheckItem.getState() || !mouseWheelEditCheckItem.getState())
     	    zoomOnly = true;
     	
     	if (!zoomOnly)
