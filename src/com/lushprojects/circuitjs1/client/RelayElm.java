@@ -286,6 +286,10 @@ class RelayElm extends CircuitElm {
 	int i;
 	for (i = 0; i != poleCount; i++)
 	    switchCurrent[i] = switchCurCount[i] = 0;
+	d_position = i_position = 0;
+
+	// preserve onState because if we don't, Relay Flip-Flop gets left in a weird state on reset.
+	// onState = false;
     }
     double a1, a2, a3, a4;
     void stamp() {
