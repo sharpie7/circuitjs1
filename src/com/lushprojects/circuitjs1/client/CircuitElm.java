@@ -917,6 +917,8 @@ public abstract class CircuitElm implements Editable {
 	double cadd = cur*currentMult;
 	if (cadd > 6 || cadd < -6)
 	    return CURRENT_TOO_FAST;
+	if (cc == CURRENT_TOO_FAST)
+	    cc = 0;
 	cadd %= 8;
 	return cc + cadd;
     }
