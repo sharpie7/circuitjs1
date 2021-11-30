@@ -93,6 +93,7 @@ package com.lushprojects.circuitjs1.client;
 	boolean doBodyDiode() { return (flags & FLAG_BODY_DIODE) != 0 && showBulk(); }
 	void reset() {
 	    lastv1 = lastv2 = volts[0] = volts[1] = volts[2] = curcount = 0;
+	    curcount_body1 = curcount_body2 = 0;
 	    diodeB1.reset();
 	    diodeB2.reset();
 	    if (doBodyDiode())
