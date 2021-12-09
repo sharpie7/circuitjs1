@@ -332,6 +332,9 @@ class TransistorElm extends CircuitElm {
             double ceqbe=pnp * (cc + cb - vbe * (gm + go + gpi) + vbc * go);
             double ceqbc=pnp * (-cc + vbe * (gm + go) - vbc * (gmu + go));
 
+            if (Double.isInfinite(ib) || Double.isNaN(ic))
+        	sim.stop("infinite transistor current", this);
+            
             // stamp matrix.
 	    // Node 0 is the base, node 1 the collector, node 2 the emitter.
 	    sim.stampMatrix(nodes[1], nodes[1], gmu+go);

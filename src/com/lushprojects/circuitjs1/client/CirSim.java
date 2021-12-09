@@ -5335,6 +5335,10 @@ MouseOutHandler, MouseWheelHandler {
 	    
 	    // pivoting
 	    if (j != largestRow) {
+		if (largestRow == -1) {
+		    console("largestRow == -1");
+		    return false;
+		}
 		double x;
 		for (k = 0; k != n; k++) {
 		    x = a[largestRow][k];
