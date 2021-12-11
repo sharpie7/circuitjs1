@@ -233,6 +233,12 @@
       "src": "elusive"
     },
     {
+      "uid": "9dd9e835aebe1060ba7190ad2b2ed951",
+      "css": "search",
+      "code": 59412,
+      "src": "fontawesome"
+    },
+    {
       "uid": "500f9108bd1bad36bbe1a4cef7828974",
       "css": "folder",
       "code": 59408,

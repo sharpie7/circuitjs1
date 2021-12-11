@@ -503,6 +503,7 @@ MouseOutHandler, MouseWheelHandler {
 	m.addSeparator();
 	m.addItem(selectAllItem = menuItemWithShortcut("select-all", "Select All", LS(ctrlMetaKey + "A"), new MyCommand("edit","selectAll")));
 	m.addSeparator();
+	m.addItem(menuItemWithShortcut("search", "Find Component...", "/", new MyCommand("edit", "search")));
 	m.addItem(iconMenuItem("target", weAreInUS(false) ? "Center Circuit" : "Centre Circuit", new MyCommand("edit", "centrecircuit")));
 	m.addItem(menuItemWithShortcut("zoom-11", "Zoom 100%", "0", new MyCommand("zoom", "zoom100")));
 	m.addItem(menuItemWithShortcut("zoom-in", "Zoom In", "+", new MyCommand("zoom", "zoomin")));
@@ -3137,6 +3138,10 @@ MouseOutHandler, MouseWheelHandler {
     	    	dialogShowing = new ShortcutsDialog(this);
     	    	dialogShowing.show();
     	}
+    	if (item=="search") {
+    	    	dialogShowing = new SearchDialog(this);
+    	    	dialogShowing.show();
+    	}
     	if (menu=="options" && item=="other")
     		doEdit(new EditOptions(this));
     	if (item=="devtools")
@@ -5189,6 +5194,10 @@ MouseOutHandler, MouseWheelHandler {
 		if (cc=='0') {
     		    menuPerformed("key", "zoom100");
     		    e.cancel();
+		}
+		if (cc=='/' && shortcuts['/'] == null) {
+		    menuPerformed("key", "search");
+		    e.cancel();
 		}
     	}
     	
