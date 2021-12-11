@@ -248,9 +248,15 @@ public class OpAmpRealElm extends CompositeElm {
             EditInfo ei =  new EditInfo(EditInfo.makeLink("opampreal.html", "Model"), modelType);
             ei.choice = new Choice();
             ei.choice.add("LM741");
-            ei.choice.add("LM324 v1");
-            ei.choice.add("LM324 v2");
-            ei.choice.select(modelType);
+            // hide old 324 model
+            if (modelType == MODEL_324) {
+        	ei.choice.add("LM324, old");
+        	ei.choice.add("LM324, fixed");
+                ei.choice.select(modelType);
+            } else {
+        	ei.choice.add("LM324");
+        	ei.choice.select(modelType == MODEL_741 ? 0 : 1);
+            }
             return ei;
         }
         if (n == 1) {
@@ -269,6 +275,8 @@ public class OpAmpRealElm extends CompositeElm {
     public void setEditValue(int n, EditInfo ei) {
 	if (n == 0) {
 	    modelType = ei.choice.getSelectedIndex();
+            if (ei.choice.getItemCount() == 2 && modelType == 1)
+        	modelType = MODEL_324v2;
 	    capValue = 0;
 	    initModel();
 	    ei.newDialog = true;
