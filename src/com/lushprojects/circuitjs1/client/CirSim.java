@@ -1022,6 +1022,7 @@ MouseOutHandler, MouseWheelHandler {
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Current Source"), "CurrentElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Noise Generator"), "NoiseElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add Audio Input"), "AudioInputElm"));
+    	inputMenuBar.addItem(getClassCheckItem(LS("Add Data Input"), "DataInputElm"));
     	inputMenuBar.addItem(getClassCheckItem(LS("Add External Voltage (JavaScript)"), "ExtVoltageElm"));
 
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Inputs and Sources")), inputMenuBar);
@@ -3869,6 +3870,7 @@ MouseOutHandler, MouseWheelHandler {
 	    updateModels();
 	
 	AudioInputElm.clearCache();  // to save memory
+	DataInputElm.clearCache();  // to save memory
     }
 
     // delete sliders for an element
@@ -5562,6 +5564,7 @@ MouseOutHandler, MouseWheelHandler {
     	case 421: return new Counter2Elm(x1, y1, x2, y2, f, st);
     	case 422: return new DelayBufferElm(x1, y1, x2, y2, f, st);
     	case 423: return new LineElm(x1, y1, x2, y2, f, st);
+    	case 424: return new DataInputElm(x1, y1, x2, y2, f, st);
         }
     	return null;
     }
@@ -5824,6 +5827,8 @@ MouseOutHandler, MouseWheelHandler {
 		return (CircuitElm) new Counter2Elm(x1, y1);
     	if (n=="DelayBufferElm")
 		return (CircuitElm) new DelayBufferElm(x1, y1);
+    	if (n=="DataInputElm")
+		return (CircuitElm) new DataInputElm(x1, y1);
     	
     	// handle CustomCompositeElm:modelname
     	if (n.startsWith("CustomCompositeElm:")) {
