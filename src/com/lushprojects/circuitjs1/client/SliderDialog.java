@@ -112,16 +112,43 @@ class SliderDialog extends DialogBox  {
                         });
 
 			if (adj != null) {
+			    if (!adj.sliderBeingShared()) {
+				// add popup to select which slider to share
+				Choice ch = ei.choice = new Choice();
+				ei.choice.addChangeHandler( new ChangeHandler() {
+				    public void onChange(ChangeEvent e){
+					itemStateChanged(e);
+				    }
+				});
+				ch.add("New Slider");
+				int j;
+				for (j = 0; j != sim.adjustables.size(); j++) {
+				    Adjustable adji = sim.adjustables.get(j);
+				    // don't share with an object sharing with someone else
+				    if (adji.sharedSlider != null)
+					break;
+				    // don't share with ourselves
+				    if (adji == adj)
+					continue;
+				    ch.add("Share Slider: " + adji.sliderText);
+				    if (adji == adj.sharedSlider)
+					ch.setSelectedIndex(ch.getItemCount()-1);
+				}
+				vp.insert(ch, idx++);
+			    }
 			    vp.insert(new Label(sim.LS("Min Value")), idx++);
 			    ei.minBox = new TextBox();
 			    vp.insert(ei.minBox, idx++);
 			    vp.insert(new Label(sim.LS("Max Value")), idx++);
 			    ei.maxBox = new TextBox();
 			    vp.insert(ei.maxBox, idx++);
-			    vp.insert(new Label(sim.LS("Label")), idx++);
-			    ei.labelBox = new TextBox();
-			    ei.labelBox.setText(adj.sliderText);
-			    vp.insert(ei.labelBox, idx++);
+			    if (adj.sharedSlider == null) {
+				// select label if this is a new slider
+				vp.insert(new Label(sim.LS("Label")), idx++);
+				ei.labelBox = new TextBox();
+				ei.labelBox.setText(adj.sliderText);
+				vp.insert(ei.labelBox, idx++);
+			    }
 			    ei.minBox.setText(EditDialog.unitString(ei, adj.minValue));
 			    ei.maxBox.setText(EditDialog.unitString(ei, adj.maxValue));
 			}
@@ -144,7 +171,8 @@ class SliderDialog extends DialogBox  {
 //		    if (ei.labelBox == null)  // haven't created UI yet?
 //			continue;
 		    try {
-			adj.sliderText = ei.labelBox.getText();
+			adj.sliderText = ei.labelBox == null ? "" : ei.labelBox.getText();
+			sim.console("slidertext " + adj.sliderText + " " + ei.labelBox);
 			adj.label.setText(adj.sliderText);
 			double d = EditDialog.parseUnits(ei.minBox.getText());
 			adj.minValue = d;
@@ -175,11 +203,35 @@ class SliderDialog extends DialogBox  {
 		    }
 		    changed = true;
 		}
+		if (ei.choice == src) {
+		    apply();
+		    Adjustable adj = findAdjustable(i);
+		    if (ei.choice.getSelectedIndex() == 0) {
+			// new slider
+			adj.sharedSlider = null;
+			if (adj.sliderText == null || adj.sliderText.length() == 0)
+			    adj.sliderText = ei.name.replaceAll(" \\(.*\\)$", "");
+			adj.createSlider(sim, ei.value);
+		    } else {
+			int j;
+			int ct = 0;
+			for (j = 0; j != sim.adjustables.size(); j++) {
+			    Adjustable adji = sim.adjustables.get(j);
+			    if (adji.sharedSlider != null)
+				break;
+			    if (adji == adj)
+				continue;
+			    if (++ct == ei.choice.getSelectedIndex()) {
+				adj.sharedSlider = adji;
+				adj.deleteSlider(sim);
+			    }
+			}
+		    }
+		    changed = true;
+		}
 	    }
 	    if (changed) {
-		// apply changes before we reset everything
-		apply();
-		
+		Adjustable.reorderAdjustables();
 		clearDialog();
 		buildDialog();
 	    }
