@@ -87,7 +87,7 @@ package com.lushprojects.circuitjs1.client;
 	void doStep() {
 	    double v = (position == 0) ? loV : hiV;
 	    if (isTernary())
-		v = position * 2.5;
+		v = loV + position * (hiV-loV) * .5;
 	    sim.updateVoltageSource(0, nodes[0], voltSource, v);
 	}
 	int getVoltageSourceCount() { return 1; }
