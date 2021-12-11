@@ -595,8 +595,6 @@ public abstract class CircuitElm implements Editable {
     }
     
     int getNodeAtPoint(int xp, int yp) {
-	if (getPostCount() == 2)
-	    return (x == xp && y == yp) ? 0 : 1;
 	int i;
 	for (i = 0; i != getPostCount(); i++) {
 	    Point p = getPost(i);
