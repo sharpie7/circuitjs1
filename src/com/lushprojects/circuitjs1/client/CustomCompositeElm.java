@@ -129,6 +129,10 @@ public class CustomCompositeElm extends CompositeElm {
     Vector<CustomCompositeModel> models;
     
     public EditInfo getEditInfo(int n) {
+	// if model is built in, don't allow it to be changed
+	if (model.builtin)
+	    n += 2;
+	
 	if (n == 0) {
 	    EditInfo ei = new EditInfo(EditInfo.makeLink("subcircuits.html", "Model Name"), 0, -1, -1);
             models = CustomCompositeModel.getModelList();
@@ -171,6 +175,8 @@ public class CustomCompositeElm extends CompositeElm {
     }
 
     public void setEditValue(int n, EditInfo ei) {
+	if (model.builtin)
+	    n += 2;
 	if (n == 0) {
             model = models.get(ei.choice.getSelectedIndex());
 	    lastModelName = modelName = model.name;
@@ -212,7 +218,10 @@ public class CustomCompositeElm extends CompositeElm {
 
     void getInfo(String arr[]) {
 	super.getInfo(arr);
-	arr[0] = "subcircuit (" + model.name + ")";
+	if (model.builtin)
+	    arr[0] = model.name.substring(1);
+	else
+	    arr[0] = "subcircuit (" + model.name + ")";
 	int i;
 	for (i = 0; i != postCount; i++) {
 	    if (i+1 >= arr.length)
