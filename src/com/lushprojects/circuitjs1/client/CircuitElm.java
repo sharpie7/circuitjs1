@@ -882,7 +882,9 @@ public abstract class CircuitElm implements Editable {
 	    return format(v*1e-3, sf) + sp + "k" + u;
 	if (va < 1e9)
 	    return format(v*1e-6, sf) + sp + "M" + u;
-	return format(v*1e-9, sf) + sp + "G" + u;
+	if (va < 1e12)
+	    return format(v*1e-9, sf) + sp + "G" + u;
+	return NumberFormat.getFormat("#.##E000").format(v) + sp + u;
     }
     
     static String getCurrentText(double i) {
@@ -893,6 +895,8 @@ public abstract class CircuitElm implements Editable {
     }
 
     static String getUnitTextWithScale(double val, String utext, int scale) {
+	if (Math.abs(val) > 1e12)
+	    return getUnitText(val, utext);
 	if (scale == SCALE_1)
 	    return showFormat.format(val) + " " + utext;
 	if (scale == SCALE_M)
