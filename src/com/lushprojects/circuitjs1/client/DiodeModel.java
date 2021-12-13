@@ -95,6 +95,12 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	// http://users.skynet.be/hugocoolens/spice/diodes/1n4148.htm
 	addDefaultModel("1N4148", new DiodeModel(4.352e-9, .6458, 1.906, 75, "switching"));
 	addDefaultModel("x2n2646-emitter", new DiodeModel(2.13e-11, 0, 1.8, 0, null).setInternal());
+	
+	// for TL431
+	loadInternalModel("~tl431ed-d_ed 0 1e-14 5 1 0 0");
+	
+	// for LM317
+	loadInternalModel("~zvoltage\\q6.3 0 1.7143528192808883e-7 0 2 6.3 0");
     }
 
     static void addDefaultModel(String name, DiodeModel dm) {
@@ -148,6 +154,12 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	return getModelWithName("default");
     }
     
+    static void loadInternalModel(String s) {
+        StringTokenizer st = new StringTokenizer(s);
+        DiodeModel dm = undumpModel(st);
+        dm.builtIn = dm.internal = true;
+    }
+
     static void clearDumpedFlags() {
 	if (modelMap == null)
 	    return;
@@ -203,10 +215,11 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	updateModel();
     }
 
-    static void undumpModel(StringTokenizer st) {
+    static DiodeModel undumpModel(StringTokenizer st) {
 	String name = CustomLogicModel.unescape(st.nextToken());
 	DiodeModel dm = DiodeModel.getModelWithName(name);
 	dm.undump(st);
+	return dm;
     }
     
     void undump(StringTokenizer st) {
