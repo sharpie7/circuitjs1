@@ -1405,7 +1405,6 @@ MouseOutHandler, MouseWheelHandler {
 		debugger();
 		console("exception in runCircuit " + e);
 		e.printStackTrace();
-		return;
 	    }
 	    myruntime+=System.currentTimeMillis()-myrunstarttime;
 	}
