@@ -3542,13 +3542,7 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing.show();
     }
     
-
-    String dumpCircuit() {
-	int i;
-	CustomLogicModel.clearDumpedFlags();
-	CustomCompositeModel.clearDumpedFlags();
-	DiodeModel.clearDumpedFlags();
-	TransistorModel.clearDumpedFlags();
+    String dumpOptions() {
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
 	f |= (voltsCheckItem.getState()) ? 0 : 4;
@@ -3560,6 +3554,17 @@ MouseOutHandler, MouseWheelHandler {
 	    maxTimeStep + " " + getIterCount() + " " +
 	    currentBar.getValue() + " " + CircuitElm.voltageRange + " " +
 	    powerBar.getValue() + " " + minTimeStep + "\n";
+	return dump;
+    }
+    
+    String dumpCircuit() {
+	int i;
+	CustomLogicModel.clearDumpedFlags();
+	CustomCompositeModel.clearDumpedFlags();
+	DiodeModel.clearDumpedFlags();
+	TransistorModel.clearDumpedFlags();
+	
+	String dump = dumpOptions();
 		
 	for (i = 0; i != elmList.size(); i++) {
 	    CircuitElm ce = getElm(i);
@@ -3787,7 +3792,7 @@ MouseOutHandler, MouseWheelHandler {
 			break;
 		    }
 		    if (tint == '$') {
-			readOptions(st);
+			readOptions(st, flags);
 			break;
 		    }
 		    if (tint == '!') {
@@ -3894,8 +3899,16 @@ MouseOutHandler, MouseWheelHandler {
 	hintItem2 = new Integer(st.nextToken()).intValue();
     }
 
-    void readOptions(StringTokenizer st) {
+    void readOptions(StringTokenizer st, int importFlags) {
 	int flags = new Integer(st.nextToken()).intValue();
+	
+	if ((importFlags & RC_RETAIN) != 0) {
+            // need to set small grid if pasted circuit uses it
+	    if ((flags & 2) != 0)
+		smallGridCheckItem.setState(true);
+	    return;
+	}
+	
 	dotsCheckItem.setState((flags & 1) != 0);
 	smallGridCheckItem.setState((flags & 2) != 0);
 	voltsCheckItem.setState((flags & 4) == 0);
@@ -4970,7 +4983,7 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     String copyOfSelectedElms() {
-	String r="";
+	String r = dumpOptions();
 	CustomLogicModel.clearDumpedFlags();
 	CustomCompositeModel.clearDumpedFlags();
 	DiodeModel.clearDumpedFlags();
