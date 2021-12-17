@@ -32,10 +32,14 @@ class TransistorElm extends CircuitElm {
 	double beta;
 //	double fgain, inv_fgain;
 	double gmin;
-	    String modelName;
+	String modelName;
 	TransistorModel model;
 	static String lastModelName = "default";
 	final int FLAG_FLIP = 1;
+	final int FLAG_CIRCLE = 2;
+	final int FLAGS_GLOBAL = FLAG_CIRCLE;
+	static int globalFlags;
+	
 	TransistorElm(int xx, int yy, boolean pnpflag) {
 	    super(xx, yy);
 	    pnp = (pnpflag) ? -1 : 1;
@@ -58,6 +62,7 @@ class TransistorElm extends CircuitElm {
 	    } catch (Exception e) {
 		modelName = "default";
 	    }
+            globalFlags = flags & (FLAGS_GLOBAL);
 	    setup();
 	}
 	void setup() {
@@ -90,10 +95,21 @@ class TransistorElm extends CircuitElm {
 	
 	double ic, ie, ib, curcount_c, curcount_e, curcount_b;
 	
-		Polygon rectPoly, arrowPoly;
+	Polygon rectPoly, arrowPoly;
+	Point circleCenter;	
+	
+	boolean hasCircle() { return (globalFlags & FLAG_CIRCLE) != 0; }
 	
 	void draw(Graphics g) {
+            // pick up global flags changes
+            if ((flags & FLAGS_GLOBAL) != globalFlags)
+                setPoints();
+
 	    setBbox(point1, point2, 16);
+	    if (hasCircle()) {
+		g.setColor(Color.gray);
+		drawThickCircle(g, circleCenter.x, circleCenter.y, 20);
+	    }
 	    setPowerColor(g, true);
 	    // draw collector
 	    setVoltageColor(g, volts[1]);
@@ -143,6 +159,10 @@ class TransistorElm extends CircuitElm {
 
 	Point rect[], coll[], emit[], base;
 	void setPoints() {
+            // these flags apply to all transistors
+            flags &= ~FLAGS_GLOBAL;
+            flags |= globalFlags;
+
 	    super.setPoints();
 	    int hs = 16;
 	    if ((flags & FLAG_FLIP) != 0)
@@ -171,6 +191,8 @@ class TransistorElm extends CircuitElm {
 		Point pt = interpPoint(point1, point2, 1-11/dn, -5*dsign*pnp);
 		arrowPoly = calcArrow(emit[0], pt, 8, 4);
 	    }
+	    
+	    circleCenter = interpPoint(base, point2, .5);
 	}
 	
 	static final double leakage = 1e-13; // 1e-6;
@@ -421,31 +443,35 @@ class TransistorElm extends CircuitElm {
 		ei.checkbox = new Checkbox("Swap E/C", (flags & FLAG_FLIP) != 0);
 		return ei;
 	    }
-	        if (n == 2) {
-	            EditInfo ei =  new EditInfo("Model", 0, -1, -1);
-	            models = TransistorModel.getModelList();
-	            ei.choice = new Choice();
-	            int i;
-	            for (i = 0; i != models.size(); i++) {
-	        	TransistorModel dm = models.get(i);
-	                ei.choice.add(dm.getDescription());
-	                if (dm == model)
-	                    ei.choice.select(i);
-	            }
-	            return ei;
-	        }
-	        if (n == 3) {
-	            EditInfo ei = new EditInfo("", 0, -1, -1);
-	            ei.button = new Button(sim.LS("Create New Model"));
-	            return ei;
-	        }
-	        if (n == 4) {
-	            if (model.readOnly)
-	                return null;
-	            EditInfo ei = new EditInfo("", 0, -1, -1);
-	            ei.button = new Button(sim.LS("Edit Model"));
-	            return ei;
-	        }
+	    if (n == 2) {
+		EditInfo ei = EditInfo.createCheckbox("Draw Circle", hasCircle());
+		return ei;
+	    }
+	    if (n == 3) {
+		EditInfo ei =  new EditInfo("Model", 0, -1, -1);
+		models = TransistorModel.getModelList();
+		ei.choice = new Choice();
+		int i;
+		for (i = 0; i != models.size(); i++) {
+		    TransistorModel dm = models.get(i);
+		    ei.choice.add(dm.getDescription());
+		    if (dm == model)
+			ei.choice.select(i);
+		}
+		return ei;
+	    }
+	    if (n == 4) {
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.button = new Button(sim.LS("Create New Model"));
+		return ei;
+	    }
+	    if (n == 5) {
+		if (model.readOnly)
+		    return null;
+		EditInfo ei = new EditInfo("", 0, -1, -1);
+		ei.button = new Button(sim.LS("Edit Model"));
+		return ei;
+	    }
 	    return null;
 	}
 	
@@ -468,31 +494,35 @@ class TransistorElm extends CircuitElm {
 		    flags &= ~FLAG_FLIP;
 		setPoints();
 	    }
-	        if (n == 2) {
-	            model = models.get(ei.choice.getSelectedIndex());
-	            modelName = model.name;
-	            setup();
-	            ei.newDialog = true;
-	            return;
-	        }
-	        if (n == 3) {
-	            TransistorModel newModel = new TransistorModel(model);
-	            EditDialog editDialog = new EditTransistorModelDialog(newModel, sim, this);
-	            CirSim.diodeModelEditDialog = editDialog;
-	            editDialog.show();
-	            return;
-	        }
-	        if (n == 4) {
-	            if (model.readOnly) {
-	                // probably never reached
-	                Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
-	                return;
-	            }
-	            EditDialog editDialog = new EditTransistorModelDialog(model, sim, null);
-	            CirSim.diodeModelEditDialog = editDialog;
-	            editDialog.show();
-	            return;
-	        }
+	    if (n == 2) {
+		globalFlags = ei.changeFlag(globalFlags, FLAG_CIRCLE);
+		return;
+	    }
+	    if (n == 3) {
+		model = models.get(ei.choice.getSelectedIndex());
+		modelName = model.name;
+		setup();
+		ei.newDialog = true;
+		return;
+	    }
+	    if (n == 4) {
+		TransistorModel newModel = new TransistorModel(model);
+		EditDialog editDialog = new EditTransistorModelDialog(newModel, sim, this);
+		CirSim.diodeModelEditDialog = editDialog;
+		editDialog.show();
+		return;
+	    }
+	    if (n == 5) {
+		if (model.readOnly) {
+		    // probably never reached
+		    Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
+		    return;
+		}
+		EditDialog editDialog = new EditTransistorModelDialog(model, sim, null);
+		CirSim.diodeModelEditDialog = editDialog;
+		editDialog.show();
+		return;
+	    }
 	}
 	
 	void setBeta(double b) {
