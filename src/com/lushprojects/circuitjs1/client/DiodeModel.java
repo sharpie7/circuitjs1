@@ -100,7 +100,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
 	loadInternalModel("~tl431ed-d_ed 0 1e-14 5 1 0 0");
 	
 	// for LM317
-	loadInternalModel("~zvoltage\\q6.3 0 1.7143528192808883e-7 0 2 6.3 0");
+	loadInternalModel("~lm317-dz 0 1e-14 0 1 6.3 0");
     }
 
     static void addDefaultModel(String name, DiodeModel dm) {
