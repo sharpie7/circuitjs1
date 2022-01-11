@@ -112,7 +112,7 @@ package com.lushprojects.circuitjs1.client;
 		threshold = ei.value;
 	    if (n == 1) {
 		if (ei.checkbox.getState())
-		    flags = FLAG_PULLDOWN;
+		    flags |= FLAG_PULLDOWN;
 		else
 		    flags &= ~FLAG_PULLDOWN;
 	    }
