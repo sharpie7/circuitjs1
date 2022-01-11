@@ -23,7 +23,7 @@ class LatchElm extends ChipElm {
     final int FLAG_STATE = 2;
     public LatchElm(int xx, int yy) {
 	super(xx, yy);
-	flags = FLAG_STATE;
+	flags |= FLAG_STATE;
 	setupPins();
     }
     public LatchElm(int xa, int ya, int xb, int yb, int f,
