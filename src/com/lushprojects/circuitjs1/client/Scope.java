@@ -190,13 +190,13 @@ class ScopePlot {
 class Scope {
     final int FLAG_YELM = 32;
     
-    // bunch of other flags go here, see dump()
+    // bunch of other flags go here, see getFlags()
     final int FLAG_IVALUE = 2048; // Flag to indicate if IVALUE is included in dump
     final int FLAG_PLOTS = 4096; // new-style dump with multiple plots
-    final int FLAG_PERPLOTFLAGS = 1<< 18; // new-new style dump with plot flags
+    final int FLAG_PERPLOTFLAGS = 1<<18; // new-new style dump with plot flags
     final int FLAG_PERPLOT_MAN_SCALE = 1<<19; // new-new style dump with manual included in each plot
     final int FLAG_MAN_SCALE = 16;
-    // other flags go here too, see dump()
+    // other flags go here too, see getFlags()
     
     static final int VAL_POWER = 7;
     static final int VAL_POWER_OLD = 1;
@@ -232,7 +232,7 @@ class Scope {
     boolean maxScale;
 
     boolean logSpectrum;
-    boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle;
+    boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle, showElmInfo;
     Vector<ScopePlot> plots, visiblePlots;
     int draw_ox, draw_oy;
     CirSim sim;
@@ -361,7 +361,7 @@ class Scope {
     	speed = 64;
     	showMax = true;
     	showV = showI = false;
-    	showScale = showFreq = manualScale = showMin = false;
+    	showScale = showFreq = manualScale = showMin = showElmInfo = false;
     	showFFT = false;
     	plot2d = false;
     	if (!loadDefaults()) {
@@ -953,8 +953,7 @@ class Scope {
     	if (selectedPlot >= 0 && selectedPlot < visiblePlots.size())
     	    drawPlot(g, visiblePlots.get(selectedPlot), allPlotsSameUnits, true);
     	
-        if (visiblePlots.size() > 0)
-            drawInfoTexts(g);
+        drawInfoTexts(g);
     	
     	g.restore();
     	
@@ -1573,6 +1572,14 @@ class Scope {
 	    drawInfoText(g, CircuitElm.getUnitText(freq, "Hz"));
     }
 
+    void drawElmInfo(Graphics g) {
+	String info[] = new String[1];
+	getElm().getInfo(info);
+	int i;
+	for (i = 0; info[i] != null; i++)
+	    drawInfoText(g, info[i]);
+    }
+    
     int textY;
     
     void drawInfoText(Graphics g, String text) {
@@ -1585,20 +1592,12 @@ class Scope {
     void drawInfoTexts(Graphics g) {
     	g.setColor(CircuitElm.whiteColor);
     	textY = 10;
-    	/*
-    	String x = position +" " + plots.size()+" ";
-	int i;
-    	for (i = 0; i < plots.size(); i++) {
-    	    x+=",";
-    	    ScopePlot p = plots.get(i);
-    	  //  if (i > 0)
-    		x += " " + sim.locateElm(p.elm) + " " + p.value;
-    	    // dump scale if units are not V or A
-    	    if (p.units > UNITS_A)
-    		x += " " + scale[p.units];
+    	
+    	if (visiblePlots.size() == 0) {
+    	    if (showElmInfo)
+    		drawElmInfo(g);
+    	    return;
     	}
-    	drawInfoText(g, x);
-    	*/
     	ScopePlot plot = visiblePlots.firstElement();
     	if (showScale) 
     	    drawScale(plot, g);
@@ -1621,6 +1620,8 @@ class Scope {
     	    drawInfoText(g, t);
     	if (showFreq)
     	    drawFrequency(g);
+    	if (showElmInfo)
+    	    drawElmInfo(g);
     }
 
     String getScopeText() {
@@ -1648,6 +1649,8 @@ class Scope {
     String getScopeLabelOrText() {
     	String t = text;
     	if (t == null) {
+    	    if (showElmInfo)
+    		return null;
     	    t = getScopeText();
     	    if (t==null)
     		return "";
@@ -1722,7 +1725,7 @@ class Scope {
 			(plotXY ? 128 : 0) | (showMin ? 256 : 0) | (showScale? 512:0) |
 			(showFFT ? 1024 : 0) | (maxScale ? 8192 : 0) | (showRMS ? 16384 : 0) |
 			(showDutyCycle ? 32768 : 0) | (logSpectrum ? 65536 : 0) |
-			(showAverage ? (1<<17) : 0);
+			(showAverage ? (1<<17) : 0) | (showElmInfo ? (1<<20) : 0);
 	flags |= FLAG_PLOTS; // 4096
 	int allPlotFlags = 0;
 	for (ScopePlot p : plots) {
@@ -1892,6 +1895,7 @@ class Scope {
     	showDutyCycle = (flags & 32768) != 0;
     	logSpectrum = (flags & 65536) != 0;
     	showAverage = (flags & (1<<17)) != 0;
+    	showElmInfo = (flags & (1<<20)) != 0;
     }
     
     void saveAsDefault() {
@@ -1955,6 +1959,8 @@ class Scope {
 	    	showAverage = state;
     	if (mi == "showduty")
     	    	showDutyCycle = state;
+    	if (mi == "showelminfo")
+	    	showElmInfo = state;
     	if (mi == "showpower")
     		setValue(VAL_POWER);
     	if (mi == "showib")
