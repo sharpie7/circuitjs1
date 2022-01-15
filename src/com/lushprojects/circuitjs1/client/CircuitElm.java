@@ -31,7 +31,7 @@ import com.google.gwt.user.client.Random;
 // circuit element class
 public abstract class CircuitElm implements Editable {
     static double voltageRange = 5;
-    static int colorScaleCount = 32;
+    static int colorScaleCount = 201; // odd so ground = gray 
     static Color colorScale[];
     static double currentMult, powerMult;
     
