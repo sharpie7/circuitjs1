@@ -234,13 +234,11 @@ class Scope {
     boolean logSpectrum;
     boolean showFFT, showNegative, showRMS, showAverage, showDutyCycle;
     Vector<ScopePlot> plots, visiblePlots;
-    int pixels[];
     int draw_ox, draw_oy;
-    float dpixels[];
     CirSim sim;
     Canvas imageCanvas;
     Context2d imageContext;
-    int alphadiv =0;
+    int alphaCounter =0;
     // scopeTimeStep to check if sim timestep has changed from previous value when redrawing
     double scopeTimeStep;
     double scale[]; // Max value to scale the display to show - indexed for each value of UNITS - e.g. UNITS_V, UNITS_A etc.
@@ -793,10 +791,11 @@ class Scope {
     	g.context.translate(rect.x, rect.y);
     	g.clipRect(0, 0, rect.width, rect.height);
     	
-    	alphadiv++;
+    	alphaCounter++;
     	
-    	if (alphadiv>2) {
-    		alphadiv=0;
+    	if (alphaCounter>2) {
+    		// fade out plot
+    		alphaCounter=0;
     		imageContext.setGlobalAlpha(0.01);
     		if (sim.printableCheckItem.getState()) {
     			imageContext.setFillStyle("#ffffff");
@@ -1044,9 +1043,6 @@ class Scope {
 	    return;
     	int i;
     	String col;
-//    	int col = (sim.printableCheckItem.getState()) ? 0xFFFFFFFF : 0;
-//    	for (i = 0; i != pixels.length; i++)
-//    		pixels[i] = col;
     	
     	double gridMid, positionOffset;
     	int multptr=0;
