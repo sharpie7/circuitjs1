@@ -380,6 +380,7 @@ MouseOutHandler, MouseWheelHandler {
 	String selectColor = null;
 	String currentColor = null;
 	String mouseModeReq = null;
+	boolean euroGates = false;
 
 	try {
 	    //baseURL = applet.getDocumentBase().getFile();
@@ -397,6 +398,7 @@ MouseOutHandler, MouseWheelHandler {
 	    startLabel   = qp.getValue("startLabel");
 	    startCircuitLink = qp.getValue("startCircuitLink");
 	    euroRes = qp.getBooleanValue("euroResistors", false);
+	    euroGates = qp.getBooleanValue("IECGates", getOptionFromStorage("euroGates", weAreInGermany()));
 	    usRes = qp.getBooleanValue("usResistors",  false);
 	    running = qp.getBooleanValue("running", true);
 	    hideSidebar = qp.getBooleanValue("hideSidebar", false);
@@ -420,7 +422,6 @@ MouseOutHandler, MouseWheelHandler {
 	    euroSetting = false;
 	else
 	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS(true));
-	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 
 	transform = new double[6];
 	String os = Navigator.getPlatform();
