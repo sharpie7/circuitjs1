@@ -24,6 +24,7 @@ class FuseElm extends CircuitElm {
 	double heat;
 	double i2t;
 	boolean blown;
+	final int FLAG_IEC_SYMBOL = 1;
 	final double blownResistance = 1e9;
 	public FuseElm(int xx, int yy) {
 	    super(xx, yy);
@@ -44,6 +45,8 @@ class FuseElm extends CircuitElm {
 	}
 	int getDumpType() { return 404; }
 
+	boolean isIECSymbol() { return (flags & FLAG_IEC_SYMBOL) != 0; }
+	
 	void reset() {
 	    super.reset();
 	    heat = 0;
@@ -51,7 +54,7 @@ class FuseElm extends CircuitElm {
 	}
 	void setPoints() {
 	    super.setPoints();
-	    int llen = 16;
+	    int llen = isIECSymbol() ? 32 : 16;
 	    calcLeads(llen);
 	}
 
@@ -93,14 +96,23 @@ class FuseElm extends CircuitElm {
 	    g.context.setLineWidth(3.0);
 	    g.context.transform(((double)(lead2.x-lead1.x))/len, ((double)(lead2.y-lead1.y))/len, -((double)(lead2.y-lead1.y))/len,((double)(lead2.x-lead1.x))/len,lead1.x,lead1.y);
 	    g.context.setStrokeStyle(getTempColor(g).getHexValue());
-	    if (!blown) {
-		g.context.beginPath();
-		g.context.moveTo(0,0);
-		for (i = 0; i <= segments; i++)
-		    g.context.lineTo(i*len/segments, hs*Math.sin(i*Math.PI*2/segments));
-		g.context.stroke();
+	    if (!isIECSymbol()) {
+		if (!blown) {
+		    g.context.beginPath();
+		    g.context.moveTo(0,0);
+		    for (i = 0; i <= segments; i++)
+			g.context.lineTo(i*len/segments, hs*Math.sin(i*Math.PI*2/segments));
+		    g.context.stroke();
+		}
+	    } else {
+		if (!blown) {
+		    g.context.beginPath();
+		    g.context.moveTo(0, 0);
+		    g.context.lineTo(len, 0);
+		    g.context.stroke();
+		    g.context.strokeRect(0, -hs, len, 2.0*hs);
+		}
 	    }
-
 	    g.context.restore();
 	    doDots(g);
 	    drawPosts(g);
@@ -144,6 +156,8 @@ class FuseElm extends CircuitElm {
 		return new EditInfo("I2t", i2t, 0, 0);
 	    if (n == 1)
 		return new EditInfo("Resistance", resistance, 0, 0);
+	    if (n == 2)
+		return EditInfo.createCheckbox("IEC Symbol", isIECSymbol());
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
@@ -151,5 +165,9 @@ class FuseElm extends CircuitElm {
 		i2t = ei.value;
 	    if (n == 1 && ei.value > 0)
 		resistance = ei.value;
+	    if (n == 2) {
+		flags = ei.changeFlag(flags, FLAG_IEC_SYMBOL);
+		setPoints();
+	    }
 	}
     }
