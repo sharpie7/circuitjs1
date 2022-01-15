@@ -1615,7 +1615,7 @@ class Scope {
     	    drawAverage(g);
     	if (showDutyCycle)
     	    drawDutyCycle(g);
-    	String t = getScopeLabelOrText();
+    	String t = getScopeLabelOrText(true);
     	if (t != null &&  t!= "") 
     	    drawInfoText(g, t);
     	if (showFreq)
@@ -1645,11 +1645,17 @@ class Scope {
 	else
 	    	return plot.elm.getScopeText(plot.value);
     }
-    
+
     String getScopeLabelOrText() {
+	return getScopeLabelOrText(false);
+    }
+
+    String getScopeLabelOrText(boolean forInfo) {
     	String t = text;
     	if (t == null) {
-    	    if (showElmInfo)
+    	    // if we're drawing the info and showElmInfo is true, return null so we don't print redundant info.
+    	    // But don't do that if we're getting the scope label to generate "Add to Existing Scope" menu.
+    	    if (forInfo && showElmInfo)
     		return null;
     	    t = getScopeText();
     	    if (t==null)
