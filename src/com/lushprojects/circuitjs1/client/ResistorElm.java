@@ -112,8 +112,7 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (ei.value > 0)
-	        resistance = ei.value;
+	    resistance = (ei.value <= 0) ? 1e-9 : ei.value;
 	}
 	int getShortcut() { return 'r'; }
 	double getResistance() { return resistance; }

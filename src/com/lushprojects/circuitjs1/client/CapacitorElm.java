@@ -191,8 +191,8 @@ package com.lushprojects.circuitjs1.client;
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0 && ei.value > 0)
-		capacitance = ei.value;
+	    if (n == 0)
+		capacitance = (ei.value > 0) ? ei.value : 1e-12;
 	    if (n == 1) {
 		if (ei.checkbox.getState())
 		    flags &= ~FLAG_BACK_EULER;
