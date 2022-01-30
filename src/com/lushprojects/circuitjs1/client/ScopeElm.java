@@ -100,6 +100,7 @@ class ScopeElm extends CircuitElm {
 	g.context.save();
 	g.context.setTransform(sim.devicePixelRatio(), 0, 0, sim.devicePixelRatio(), 0, 0);
 	setScopeRect();
+	elmScope.position = -1;
 	elmScope.draw(g);
 	g.context.restore();
 	setBbox(point1, point2, 0);
@@ -110,4 +111,5 @@ class ScopeElm extends CircuitElm {
     int getPostCount() { return 0; }
     int getNumHandles() { return 2; }
     
+    void selectScope(int mx, int my) { elmScope.selectScope(mx, my); }
 }

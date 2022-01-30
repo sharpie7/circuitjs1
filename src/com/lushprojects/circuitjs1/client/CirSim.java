@@ -1565,6 +1565,12 @@ MouseOutHandler, MouseWheelHandler {
 	if (stopMessage != null)
 	    ct = 0;
 	int i;
+	Scope.clearCursorInfo();
+	for (i = 0; i != ct; i++)
+	    scopes[i].selectScope(mouseCursorX, mouseCursorY);
+	if (scopeElmArr != null)
+	    for (i=0; i != scopeElmArr.length; i++)
+		scopeElmArr[i].selectScope(mouseCursorX, mouseCursorY);
 	for (i = 0; i != ct; i++)
 	    scopes[i].draw(g);
 	if (mouseWasOverSplitter) {
@@ -4369,17 +4375,17 @@ MouseOutHandler, MouseWheelHandler {
     	}
     	scopeSelected = -1;
     	if (newMouseElm == null) {
-    		for (i = 0; i != scopeCount; i++) {
-    			Scope s = scopes[i];
-    			if (s.rect.contains(sx, sy)) {
-    				newMouseElm=s.getElm();
-    		    	if (s.plotXY) {
-    		    		plotXElm = s.getXElm();
-    		    		plotYElm = s.getYElm();
-    		    	}
-    				scopeSelected = i;
-    			}
+    	    for (i = 0; i != scopeCount; i++) {
+    		Scope s = scopes[i];
+    		if (s.rect.contains(sx, sy)) {
+    		    newMouseElm=s.getElm();
+    		    if (s.plotXY) {
+    			plotXElm = s.getXElm();
+    			plotYElm = s.getYElm();
+    		    }
+    		    scopeSelected = i;
     		}
+    	    }
     		//	    // the mouse pointer was not in any of the bounding boxes, but we
     		//	    // might still be close to a post
     		for (i = 0; i != elmList.size(); i++) {

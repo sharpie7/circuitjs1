@@ -254,6 +254,10 @@ class Scope {
     boolean drawGridLines;
     boolean somethingSelected;
     
+    static double cursorTime;
+    static int cursorUnits;
+    static Scope cursorScope;
+    
     Scope(CirSim s) {
     	sim = s;
     	scale = new double[UNITS_COUNT];
@@ -856,7 +860,7 @@ class Scope {
  	    info[0]=px.getUnitText(xValue);
     	    info[1]=py.getUnitText(yValue);
     	    
-    	    drawCrosshairsInfo(g, info, 2, true);
+    	    drawCursorInfo(g, info, 2, sim.mouseCursorX, true);
     	    
     	}
     }
@@ -875,7 +879,30 @@ class Scope {
 		sim.mouseCursorY <= rect.y + rect.height;
     }
     
-
+    // does another scope have something selected?
+    void checkForSelectionElsewhere() {
+	// if mouse is here, then selection is already set by checkForSelection()
+	if (cursorScope == this)
+	    return;
+	
+	if (cursorScope == null || visiblePlots.size() == 0) {
+	    selectedPlot = -1;
+	    return;
+	}
+	
+	// find a plot with same units as selected plot
+	int i;
+	for (i = 0; i != visiblePlots.size(); i++) {
+	    ScopePlot p = visiblePlots.get(i);
+	    if (p.units == cursorUnits) {
+		selectedPlot = i;
+		return;
+	    }
+	}
+	
+	// default if we can't find anything with matching units
+	selectedPlot = 0;
+    }
     
     void draw(Graphics g) {
 	if (plots.size() == 0)
@@ -922,7 +949,7 @@ class Scope {
     	    reduceRange[plot.units] = true;
     	}
     	
-    	checkForSelection();
+    	checkForSelectionElsewhere();
     	if (selectedPlot >= 0)
     	    somethingSelected = true;
 
@@ -957,7 +984,7 @@ class Scope {
     	
     	g.restore();
     	
-    	drawCrosshairs(g);
+    	drawCursor(g);
     	
     	if (plots.get(0).ptr > 5 && !manualScale) {
     	    for (i = 0; i != UNITS_COUNT; i++)
@@ -1196,16 +1223,32 @@ class Scope {
         
     }
 
+    static void clearCursorInfo() {
+	cursorScope = null;
+	cursorTime = -1;
+    }
+    
+    void selectScope(int mouseX, int mouseY) {
+	if (!rect.contains(mouseX, mouseY))
+	    return;
+	if (plot2d || visiblePlots.size() == 0)
+	    cursorTime = -1;
+	else
+	    cursorTime = sim.t-sim.maxTimeStep*speed*(rect.x+rect.width-mouseX);
+    	checkForSelection(mouseX, mouseY);
+    	cursorScope = this;
+    }
+    
     // find selected plot
-    void checkForSelection() {
+    void checkForSelection(int mouseX, int mouseY) {
 	if (sim.dialogIsShowing())
 	    return;
-	if (!rect.contains(sim.mouseCursorX, sim.mouseCursorY)) {
+	if (!rect.contains(mouseX, mouseY)) {
 	    selectedPlot = -1;
 	    return;
 	}
 	int ipa = plots.get(0).startIndex(rect.width);
-	int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
+	int ip = (mouseX-rect.x+ipa) & (scopePointCount-1);
     	int maxy = (rect.height-1)/2;
     	int y = maxy;
     	int i;
@@ -1214,47 +1257,66 @@ class Scope {
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    ScopePlot plot = visiblePlots.get(i);
     	    int maxvy = (int) (plot.gridMult*(plot.maxValues[ip]+plot.plotOffset));
-    	    int dist = Math.abs(sim.mouseCursorY-(rect.y+y-maxvy));
+    	    int dist = Math.abs(mouseY-(rect.y+y-maxvy));
     	    if (dist < bestdist) {
     		bestdist = dist;
     		best = i;
     	    }
     	}
     	selectedPlot = best;
+    	if (selectedPlot >= 0)
+    	    cursorUnits = visiblePlots.get(selectedPlot).units;
     }
     
-    void drawCrosshairs(Graphics g) {
+    void drawCursor(Graphics g) {
 	if (sim.dialogIsShowing())
 	    return;
-	if (!rect.contains(sim.mouseCursorX, sim.mouseCursorY))
-	    return;
-	if (selectedPlot < 0 && !showFFT)
+	if (cursorScope == null)
 	    return;
 	String info[] = new String[4];
-	int ipa = plots.get(0).startIndex(rect.width);
-	int ip = (sim.mouseCursorX-rect.x+ipa) & (scopePointCount-1);
+	int cursorX = -1;
 	int ct = 0;
-    	int maxy = (rect.height-1)/2;
-    	int y = maxy;
-    	if (selectedPlot >= 0) {
-    	    ScopePlot plot = visiblePlots.get(selectedPlot);
-    	    info[ct++] = plot.getUnitText(plot.maxValues[ip]);
-    	    int maxvy = (int) (plot.gridMult*(plot.maxValues[ip]+plot.plotOffset));
-    	    g.setColor(plot.color);
-    	    g.fillOval(sim.mouseCursorX-2, rect.y+y-maxvy-2, 5, 5);
-    	}
-        if (showFFT) {
-    		double maxFrequency = 1 / (sim.maxTimeStep * speed * 2);
-    		info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
-        }
-	if (visiblePlots.size() > 0) {
-	    double t = sim.t-sim.maxTimeStep*speed*(rect.x+rect.width-sim.mouseCursorX);
-	    info[ct++] = CircuitElm.getTimeText(t);
+	if (cursorTime >= 0) {
+	    cursorX = -(int) ((sim.t-cursorTime)/(sim.maxTimeStep*speed) - rect.x - rect.width);
+	    if (cursorX >= rect.x) {
+		int ipa = plots.get(0).startIndex(rect.width);
+		int ip = (cursorX-rect.x+ipa) & (scopePointCount-1);
+		int maxy = (rect.height-1)/2;
+		int y = maxy;
+		if (visiblePlots.size() > 0) {
+		    ScopePlot plot = visiblePlots.get(selectedPlot >= 0 ? selectedPlot : 0);
+		    info[ct++] = plot.getUnitText(plot.maxValues[ip]);
+		    int maxvy = (int) (plot.gridMult*(plot.maxValues[ip]+plot.plotOffset));
+		    g.setColor(plot.color);
+		    g.fillOval(cursorX-2, rect.y+y-maxvy-2, 5, 5);
+		}
+	    }
 	}
-	drawCrosshairsInfo(g, info, ct, false);
+	
+	// show FFT even if there's no plots (in which case cursorTime/cursorX will be invalid)
+        if (showFFT && cursorScope == this) {
+            double maxFrequency = 1 / (sim.maxTimeStep * speed * 2);
+            if (cursorX < 0)
+        	cursorX = sim.mouseCursorX;
+            info[ct++] = CircuitElm.getUnitText(maxFrequency*(sim.mouseCursorX-rect.x)/rect.width, "Hz");
+        } else if (cursorX < rect.x)
+            return;
+        
+	if (visiblePlots.size() > 0)
+	    info[ct++] = CircuitElm.getTimeText(cursorTime);
+	
+	if (cursorScope != this) {
+	    // don't show cursor info if not enough room, or stacked with selected one
+	    // (position == -1 for embedded scopes)
+	    if (rect.height < 40 || (position >= 0 && cursorScope.position == position)) {
+		drawCursorInfo(g, null, 0, cursorX, false);
+		return;
+	    }
+	}
+	drawCursorInfo(g, info, ct, cursorX, false);
     }
     
-    void drawCrosshairsInfo(Graphics g, String[] info, int ct, Boolean drawY) {
+    void drawCursorInfo(Graphics g, String[] info, int ct, int x, Boolean drawY) {
 	int szw = 0, szh = 15*ct;
 	int i;
 	for (i = 0; i != ct; i++) {
@@ -1264,11 +1326,11 @@ class Scope {
 	}
 
 	g.setColor(CircuitElm.whiteColor);
-	g.drawLine(sim.mouseCursorX, rect.y, sim.mouseCursorX, rect.y+rect.height);
+	g.drawLine(x, rect.y, x, rect.y+rect.height);
 	if (drawY)
 	    g.drawLine(rect.x, sim.mouseCursorY, rect.x+rect.width, sim.mouseCursorY);
 	g.setColor(sim.printableCheckItem.getState() ? Color.white : Color.black);
-	int bx = sim.mouseCursorX;
+	int bx = x;
 	if (bx < szw/2)
 	    bx = szw/2;
 	g.fillRect(bx-szw/2, rect.y-szh, szw, szh);
