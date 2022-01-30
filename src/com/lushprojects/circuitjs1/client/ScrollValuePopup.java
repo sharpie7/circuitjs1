@@ -90,7 +90,7 @@ public class ScrollValuePopup extends PopupPanel implements MouseOutHandler, Mou
 	private void setupValues() {
 		if (myElm instanceof ResistorElm) {
 			minpow=0;
-			maxpow=6;
+			maxpow=7;
 		} 
 		if (myElm instanceof CapacitorElm) {
 			minpow=-11;
