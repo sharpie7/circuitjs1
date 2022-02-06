@@ -288,6 +288,8 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
     void setEmissionCoefficient() {
 	if (forwardCurrent > 0 && forwardVoltage > 0)
 	    emissionCoefficient = (forwardVoltage/Math.log(forwardCurrent/saturationCurrent+1)) / vt;
+
+	seriesResistance = 0;
     }
     
     public void setForwardVoltage() {
