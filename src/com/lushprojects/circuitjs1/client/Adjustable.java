@@ -131,7 +131,8 @@ public class Adjustable implements Command {
     }
     
     void setMouseElm(CircuitElm e) {
-	slider.draw();
+	if (slider != null)
+	    slider.draw();
     }
     
     boolean sliderBeingShared() {
