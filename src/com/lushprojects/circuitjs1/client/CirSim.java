@@ -6006,8 +6006,8 @@ MouseOutHandler, MouseWheelHandler {
 		// add some space on edges because bounds calculation is not perfect
 	    	int wmargin = 140;
 	    	int hmargin = 100;
-	    	int w = (bounds.width+wmargin) ;
-	    	int h = (bounds.height+hmargin) ;
+	    	int w = (bounds.width*2+wmargin) ;
+	    	int h = (bounds.height*2+hmargin) ;
 	    	cv.setCoordinateSpaceWidth(w);
 	    	cv.setCoordinateSpaceHeight(h);
 	    
@@ -6068,7 +6068,6 @@ MouseOutHandler, MouseWheelHandler {
 	        if (bounds != null)
 	            scale = Math.min(w /(double)(bounds.width+wmargin),
 	                             h/(double)(bounds.height+hmargin));
-	        scale = Math.min(scale, 1.5); // Limit scale so we don't create enormous circuits in big windows
 	        
 	        // ScopeElms need the transform array to be updated
 		transform[0] = transform[3] = scale;
