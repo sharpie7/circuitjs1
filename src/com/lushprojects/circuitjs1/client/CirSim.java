@@ -6076,6 +6076,7 @@ MouseOutHandler, MouseWheelHandler {
 		transform[5] = -(bounds.y-hmargin/2);
 		context.scale(scale, scale);
 		context.translate(transform[4], transform[5]);
+		context.setLineCap(Context2d.LineCap.ROUND);
 		
 		// draw elements
 		int i;
