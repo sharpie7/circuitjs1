@@ -2157,12 +2157,12 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     // take list of unconnected nodes, which we identified earlier, and connect them to ground
-    // with a big resistor.  otherwise we will get matrix errors
+    // with a resistor.  otherwise we will get matrix errors
     void connectUnconnectedNodes() {
 	int i;
 	for (i = 0; i != unconnectedNodes.size(); i++) {
 	    int n = unconnectedNodes.get(i);
-	    stampResistor(0, n, 1e8);
+	    stampResistor(0, n, 1);
 	}
     }
     
