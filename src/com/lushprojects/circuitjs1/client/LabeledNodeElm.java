@@ -103,6 +103,8 @@ class LabeledNodeElm extends CircuitElm {
     boolean isRemovableWire() { return true; }
     
     static Integer getByName(String n) {
+	if (labelList == null)
+	    return null;
 	LabelEntry le = labelList.get(n);
 	if (le == null)
 	    return null;
@@ -153,4 +155,6 @@ class LabeledNodeElm extends CircuitElm {
     @Override String getScopeText(int v) {
 	return text;
     }
+    
+    String getName() { return text; }
 }

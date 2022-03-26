@@ -60,6 +60,8 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Style.Unit;
@@ -2305,6 +2307,8 @@ MouseOutHandler, MouseWheelHandler {
 	
 	timeStep = maxTimeStep;
 	needsStamp = true;
+	
+	callAnalyzeHook();
     }
 
     // stamp the matrix, meaning populate the matrix as required to simulate the circuit (for all linear elements, at least)
@@ -6237,6 +6241,19 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	    }
 	}
+
+	native JsArray<JavaScriptObject> getJSArray() /*-{ return []; }-*/;
+	
+	JsArray<JavaScriptObject> getJSElements() {
+	    int i;
+	    JsArray<JavaScriptObject> arr = getJSArray();
+	    for (i = 0; i != elmList.size(); i++) {
+		CircuitElm ce = getElm(i);
+		ce.addJSMethods();
+		arr.push(ce.getJavaScriptObject());
+	    }
+	    return arr;
+	}
 	
 	native void setupJSInterface() /*-{
 	    var that = this;
@@ -6245,7 +6262,8 @@ MouseOutHandler, MouseWheelHandler {
 	        getTime: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::t; } ),
 	        isRunning: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::simIsRunning()(); } ),
 	        getNodeVoltage: $entry(function(n) { return that.@com.lushprojects.circuitjs1.client.CirSim::getLabeledNodeVoltage(Ljava/lang/String;)(n); } ),
-	        setExtVoltage: $entry(function(n, v) { that.@com.lushprojects.circuitjs1.client.CirSim::setExtVoltage(Ljava/lang/String;D)(n, v); } )
+	        setExtVoltage: $entry(function(n, v) { that.@com.lushprojects.circuitjs1.client.CirSim::setExtVoltage(Ljava/lang/String;D)(n, v); } ),
+	        getElements: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getJSElements()(); } )
 	    };
 	    var hook = $wnd.oncircuitjsloaded;
 	    if (hook)
@@ -6258,6 +6276,13 @@ MouseOutHandler, MouseWheelHandler {
 	    	hook($wnd.CircuitJS1);
 	}-*/;
 	
+        native void callAnalyzeHook() /*-{
+            var hook = $wnd.CircuitJS1.onanalyze;
+            if (hook)
+                hook($wnd.CircuitJS1);
+    	}-*/;
+    
+
 	native void callTimeStepHook() /*-{
 	    var hook = $wnd.CircuitJS1.ontimestep;
 	    if (hook)

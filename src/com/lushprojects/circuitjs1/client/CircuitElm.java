@@ -24,6 +24,8 @@ import java.util.Vector;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.Context2d.LineCap;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Random;
@@ -1107,4 +1109,38 @@ public abstract class CircuitElm implements Editable {
 	y2 = oldy;
 	setPoints();
     }
+    
+    String getClassName() { return getClass().getName().replace("com.lushprojects.circuitjs1.client.", ""); }
+    
+    native JsArrayString getJsArrayString() /*-{ return []; }-*/;
+    
+    JsArrayString getInfoJS() {
+	JsArrayString jsarr = getJsArrayString();
+	String arr[] = new String[20];
+	getInfo(arr);
+	int i;
+	for (i = 0; arr[i] != null; i++)
+	    jsarr.push(arr[i]);
+	return jsarr;
+    }
+    
+    double getVoltageJS(int n) {
+	if (n >= volts.length)
+	    return 0;
+	return volts[n];
+    }
+    
+    native void addJSMethods() /*-{
+        var that = this;
+        this.getType = $entry(function() { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getClassName()(); });
+        this.getInfo = $entry(function() { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getInfoJS()(); });
+        this.getVoltageDiff = $entry(function() { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getVoltageDiff()(); });
+        this.getVoltage = $entry(function(n) { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getVoltageJS(I)(n); });
+        this.getCurrent = $entry(function() { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getCurrent()(); });
+        this.getLabelName = $entry(function() { return that.@com.lushprojects.circuitjs1.client.LabeledNodeElm::getName()(); });
+        this.getPostCount = $entry(function() { return that.@com.lushprojects.circuitjs1.client.CircuitElm::getPostCount()(); });
+    }-*/;
+    
+    native JavaScriptObject getJavaScriptObject() /*-{ return this; }-*/;
+    
 }
