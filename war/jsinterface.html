@@ -63,12 +63,16 @@ function didUpdate(sim) {
   info.innerHTML += "<br>counter value = <tt>" + bstr + "</tt> = " + bval;
 
   var rcount = 0;
+
+  // go through list of elements
   for (const elm of elmList) {
     if (elm.getType() == "ResistorElm") {
+      // show info about each resistor
       rcount++;
       info.innerHTML += "<br>resistor " + rcount + " voltage diff = " + round(elm.getVoltageDiff());
       info.innerHTML += "<br>resistor " + rcount + " current = " + round(elm.getCurrent() * 1000) + " mA";
     } else if (elm.getType() == "LabeledNodeElm") {
+      // show voltage of each labeled node
       info.innerHTML += "<br>V(" + elm.getLabelName() + ") = " + round(elm.getVoltage(0));
     }
   }
@@ -77,7 +81,11 @@ function didUpdate(sim) {
 // called when simulator analyzes a circuit (when a circuit is loaded or edited)
 function didAnalyze(sim) {
   console.log("analyzed circuit");
+
+  // get the list of elements
   elmList = sim.getElements();
+
+  // log some info about each one
   for (const elm of elmList) {
     console.log("elm " + elm.getType() + ", " + elm.getPostCount() + " posts");
     console.log("elm info: " + elm.getInfo());
