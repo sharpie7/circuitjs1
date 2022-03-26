@@ -8,8 +8,9 @@
 Javascript Interface Example
 <p>
 You can write javascript code that interfaces with the simulator running in an iframe, as long as the
-simulator code is hosted on the same website (has the same origin).  Your code can get the voltage
-of labeled nodes, and set the voltage of external voltage nodes.
+simulator code is hosted on the same website (has the same origin).  Your code can get the list of circuit
+elements and get information about each element (like the voltage of each node, and the current of two-terminal elements),
+and set the voltage of external voltage nodes.
 <p>
 <button onclick="sim.setSimRunning(true)">Start</button>
 <button onclick="sim.setSimRunning(false)">Stop</button>
