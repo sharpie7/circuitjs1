@@ -569,7 +569,7 @@
 "RTL NAND"="RTL-NOG"
 "RTL NOR"="RTL-NELLER"
 "Range for voltage color (V)"="Intervall for farget spenning (V)"
-"Ratio"="Forhold"
+"Ratio (N1/N2)"="Forhold (N1/N2)"
 "Red Value (0-1)"="Rødfarge (0-1)"
 "regulated"="regulert"
 "Relaxation Oscillator"="Relaksasjonsoscillator"

@@ -558,7 +558,7 @@
 "RTL NAND"="NAND RTL"
 "RTL NOR"="NOR RTL"
 "Range for voltage color (V)"="Faixa p/ Cores de Tensão (V)"
-"Ratio"="Razão"
+"Ratio (N1/N2)"="Razão (N1/N2)"
 "Red Value (0-1)"="Valor em Vermelho (0-1)"
 "regulated"="regulado"
 "Relaxation Oscillator"="Oscilador de Relaxação"

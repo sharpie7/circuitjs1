@@ -567,7 +567,7 @@
 "RTL NAND"="RTL NAND閘"
 "RTL NOR"="RTL NOR閘"
 "Range for voltage color (V)"="電壓顏色範圍(V)"
-"Ratio"="比"
+"Ratio (N1/N2)"="比"
 "Red Value (0-1)"="紅色的值(0-1)"
 "regulated"="控制"
 "Relaxation Oscillator"="張弛振盪器"

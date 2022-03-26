@@ -745,7 +745,7 @@
 "R-2R Ladder DAC"="R-2R Ladder DAC"
 "range = "="rozsah ="
 "Range for voltage color (V)"="Rozsah pro barvu napětí (V)"
-"Ratio"="Poměr"
+"Ratio (N1/N2)"="Poměr (N1/N2)"
 "Ratio = "="Poměr ="
 "Recover Auto-Save"="Obnovte automatické ukládání"
 "Red Value (0-1)"="Červená hodnota (0-1)"

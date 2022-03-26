@@ -357,7 +357,7 @@
 "RMS Current"="RMS-strøm"
 "RMS Voltage"="RMS-spænding"
 "Range for voltage color (V)"="Interval for spændingsfarve (V)"
-"Ratio"="Forhold"
+"Ratio (N1/N2)"="Forhold (N1/N2)"
 "Red Value (0-1)"="Rød værdi (0-1)"
 "Redo</div>Ctrl-Y"="Gentag</div>Ctrl-Y"
 "Relay"="Relæ"

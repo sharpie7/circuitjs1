@@ -584,7 +584,7 @@
 "RTL NAND"="Negacja koniunkcji (NAND)"
 "RTL NOR"="Negacja alternatywy (NOR)"
 "Range for voltage color (V)"="Nasycenie barwy [V]"
-"Ratio"="Przekładnia 1:n"
+"Ratio (N1/N2)"="Przekładnia (N1/N2)"
 "Red Value (0-1)"="Zawartość czerwonego (0-1)"
 "regulated"="stabilizowane"
 "Relaxation Oscillator"="Generator relaksacyjny"

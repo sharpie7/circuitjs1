@@ -478,7 +478,7 @@
 "RTL NAND"="RTL-Nicht-UND (NAND)"
 "RTL NOR"="RTL-Nicht-ODER (NOR)"
 "Range for voltage color (V)"="Bereich für Spannungsfarbe (V)"
-"Ratio"="Übersetzungverhältnis (1/ü)"
+"Ratio (N1/N2)"="Übersetzungverhältnis (ü)"
 "Red Value (0-1)"="Rot-Wert (0-1)"
 "Relaxation Oscillator"="Kippschwingungsoszillator"
 "Relay"="Relais"

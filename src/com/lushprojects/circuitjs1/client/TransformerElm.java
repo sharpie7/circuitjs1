@@ -249,7 +249,7 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 0)
 		return new EditInfo("Primary Inductance (H)", inductance, .01, 5);
 	    if (n == 1)
-		return new EditInfo("Ratio", ratio, 1, 10).setDimensionless();
+		return new EditInfo("Ratio (N1/N2)", 1/ratio, 1, 10).setDimensionless();
 	    if (n == 2)
 		return new EditInfo("Coupling Coefficient", couplingCoef, 0, 1).
 		    setDimensionless();
@@ -271,7 +271,7 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 0 && ei.value > 0)
 		inductance = ei.value;
 	    if (n == 1 && ei.value > 0)
-		ratio = ei.value;
+		ratio = 1/ei.value;
 	    if (n == 2 && ei.value > 0 && ei.value < 1)
 		couplingCoef = ei.value;
 	    if (n == 3) {

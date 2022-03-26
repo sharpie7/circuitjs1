@@ -559,7 +559,7 @@
 "RTL NAND"="NON ET RTL"
 "RTL NOR"="NON OU RTL"
 "Range for voltage color (V)"="Plage de couleur représentant la tension (V)"
-"Ratio"="Ratio"
+"Ratio (N1/N2)"="Ratio (N1/N2)"
 "Red Value (0-1)"="Valeur rouge (0-1)"
 "regulated"="regule"
 "Relaxation Oscillator"="Oscillateur de relaxation"
