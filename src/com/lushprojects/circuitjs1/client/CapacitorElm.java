@@ -188,6 +188,7 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	    if (n == 2)
 		return new EditInfo("Initial Voltage (on Reset)", initialVoltage);
+	    // if you add more things here, check PolarCapacitorElm
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
