@@ -119,13 +119,13 @@ package com.lushprojects.circuitjs1.client;
 	    updateDotCount();
 	    if (sim.dragElm != this) {
 		drawDots(g, point1, lead1, curcount);
-		double cc = curcount+(dn-16)/2;
+		double cc = addCurCount(curcount, (dn-16)/2);
 		drawDots(g, lead1,  filament[0], cc);
-		cc += filament_len;
+		cc = addCurCount(cc, filament_len);
 		drawDots(g, filament[0], filament[1], cc);
-		cc += 16;
+		cc = addCurCount(cc, 16);
 		drawDots(g, filament[1], lead2, cc);
-		cc += filament_len;
+		cc = addCurCount(cc, filament_len);
 		drawDots(g, lead2, point2, curcount);
 	    }
 	    drawPosts(g);

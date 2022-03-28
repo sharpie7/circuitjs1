@@ -400,6 +400,12 @@ public abstract class CircuitElm implements Editable {
 	}
     }
 
+    double addCurCount(double c, double a) {
+	if (c == CURRENT_TOO_FAST || c == -CURRENT_TOO_FAST)
+	    return c;
+	return c+a;
+    }
+    
     Polygon calcArrow(Point a, Point b, double al, double aw) {
 	Polygon poly = new Polygon();
 	Point p1 = new Point();
