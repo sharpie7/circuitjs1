@@ -346,7 +346,7 @@ class VoltageElm extends CircuitElm {
 		    frequency = maxfreq;
 	    }
 	    double adj = frequency-oldfreq;
-	    freqTimeZero = sim.t-oldfreq*(sim.t-freqTimeZero)/frequency;
+	    freqTimeZero = (frequency == 0) ? 0 : sim.t-oldfreq*(sim.t-freqTimeZero)/frequency;
 	}
 	if (n == 1) {
 	    int ow = waveform;
