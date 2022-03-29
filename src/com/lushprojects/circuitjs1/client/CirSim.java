@@ -3250,6 +3250,9 @@ MouseOutHandler, MouseWheelHandler {
     	    ScopeElm newScope = new ScopeElm(snapGrid(menuElm.x+50), snapGrid(menuElm.y+50));
     	    elmList.addElement(newScope);
     	    newScope.setScopeElm(menuElm);
+    	    
+    	    // need to rebuild scopeElmArr
+    	    needAnalyze();
 	}
     	
     	if (item.substring(0,10)=="addToScope" && menuElm != null) {
@@ -4955,6 +4958,9 @@ MouseOutHandler, MouseWheelHandler {
     		if (ce instanceof ScopeElm && (((ScopeElm) ce).elmScope.needToRemove() )) {
     			ce.delete();
     			elmList.removeElementAt(i);
+    			
+    			// need to rebuild scopeElmArr
+    			needAnalyze();
     		}
     	}
 	
