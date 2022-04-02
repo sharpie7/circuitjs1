@@ -5912,7 +5912,7 @@ MouseOutHandler, MouseWheelHandler {
 	// use trailing ~ to differentiate strings that are the same in English but need different translations.
 	// remove these if there's no translation.
 	int ix = s.indexOf('~');
-	if (ix < 0)
+	if (ix != s.length()-1)
 	    return s;
 	s = s.substring(0, ix);
 	sm = localizationMap.get(s);
