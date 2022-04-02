@@ -1091,7 +1091,7 @@ MouseOutHandler, MouseWheelHandler {
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Current-Controlled Current Source (CCCS)"), "CCCSElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Optocoupler"), "OptocouplerElm"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Time Delay Relay"), "TimeDelayRelayElm"));
-    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add LM317"), "CustomCompositeElm:~LM317-v2"));
+    	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add LM317"), "CustomCompositeElm:~LM317-v3"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add TL431"), "CustomCompositeElm:~TL431"));
     	activeBlocMenuBar.addItem(getClassCheckItem(LS("Add Subcircuit Instance"), "CustomCompositeElm"));
     	mainMenuBar.addItem(SafeHtmlUtils.fromTrustedString(CheckboxMenuItem.checkBoxHtml+LS("&nbsp;</div>Active Building Blocks")), activeBlocMenuBar);
