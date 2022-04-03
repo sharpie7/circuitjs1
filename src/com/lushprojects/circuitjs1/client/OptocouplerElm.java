@@ -74,15 +74,16 @@ public class OptocouplerElm extends CompositeElm {
 
         // draw little arrows
         g.setColor(lightGrayColor);
-        int sx = stubs[0].x+2;
+	int dx = isFlippedX() ? -1 : 1;
+        int sx = stubs[0].x+2*dx;
         int sy = (stubs[0].y+stubs[1].y)/2;
         for (i = 0; i != 2; i++) {
             int y = sy+i*10-5;
-            Point p1 = new Point(sx,    y);
-            Point p2 = new Point(sx+20, y);
+            Point p1 = new Point(sx,       y);
+            Point p2 = new Point(sx+20*dx, y);
             Polygon p = calcArrow(p1, p2, 5, 2);
             g.fillPolygon(p);
-            g.drawLine(sx+10, y, sx+15, y);
+            g.drawLine(sx+10*dx, y, sx+15*dx, y);
         }
     }
 
@@ -112,19 +113,28 @@ public class OptocouplerElm extends CompositeElm {
         setPin(1, x0, y0, 0, 1, -1, 0, 0, 0);
         setPin(2, x0, y0, 0, 1, 1, 0, xs-cspc2, 0);
         setPin(3, x0, y0, 0, 1, 1, 0, xs-cspc2, 0);
-        diode.setPosition(posts[0].x+32, posts[0].y, posts[1].x+32, posts[1].y);
+        int dx = isFlippedX() ? -1 : 1;
+        diode.setPosition(posts[0].x+32*dx, posts[0].y, posts[1].x+32*dx, posts[1].y);
         stubs[0] = diode.getPost(0);
         stubs[1] = diode.getPost(1);
         
         int midp = (posts[2].y+posts[3].y)/2;
-        transistor.setPosition(posts[2].x-40, midp, posts[2].x-24, midp);
+        transistor.setPosition(posts[2].x-40*dx, midp, posts[2].x-24*dx, midp);
         stubs[2] = transistor.getPost(1);
         stubs[3] = transistor.getPost(2);
     }
 
+    boolean isFlippedX() { return (flags & ChipElm.FLAG_FLIP_X) != 0; }
+
     void setPin(int n, int px, int py, int dx, int dy, int dax, int day, int sx, int sy) {
 	int pos = n % 2; 
-//		(n < 2) ? 0 : 1;
+	if (isFlippedX()) {
+	    dx = -dx;
+	    dax = -dax;
+	    px += cspc2;
+	    sx = -sx;
+	}
+
         int xa = px+cspc2*dx*pos+sx;
         int ya = py+cspc2*dy*pos+sy;
         setPost(n, new Point(xa+dax*cspc2, ya+day*cspc2));
@@ -140,5 +150,21 @@ public class OptocouplerElm extends CompositeElm {
 	arr[0] = "optocoupler";
 	arr[1] = "Iin = " + getCurrentText(getCurrentIntoNode(0));
 	arr[2] = "Iout = " + getCurrentText(getCurrentIntoNode(2));
+    }
+
+    public EditInfo getEditInfo(int n) {
+        if (n == 0) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Flip X", (flags & ChipElm.FLAG_FLIP_X) != 0);
+            return ei;
+        }
+        return null;
+    }
+
+    public void setEditValue(int n, EditInfo ei) {
+        if (n == 0) {
+            flags = ei.changeFlag(flags, ChipElm.FLAG_FLIP_X);
+            setPoints();
+        }
     }
 }
