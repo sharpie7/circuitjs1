@@ -173,13 +173,14 @@ class SliderDialog extends DialogBox  {
 		    try {
 			adj.sliderText = ei.labelBox == null ? "" : ei.labelBox.getText();
 			sim.console("slidertext " + adj.sliderText + " " + ei.labelBox);
-			adj.label.setText(adj.sliderText);
+			if (adj.label != null)
+			    adj.label.setText(adj.sliderText);
 			double d = EditDialog.parseUnits(ei.minBox.getText());
 			adj.minValue = d;
 			d = EditDialog.parseUnits(ei.maxBox.getText());
 			adj.maxValue = d;
 			adj.setSliderValue(ei.value);
-		    } catch (Exception e) { }
+		    } catch (Exception e) { sim.console(e.toString()); }
 		}
 	}
 
