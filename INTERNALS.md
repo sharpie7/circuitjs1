@@ -6,7 +6,7 @@
 
 # Forward
 
-The original design and implementation of the simulation is based on the book **_Electronic circuit and system simulation methods_ (Pillage, L., Rohrer, R., &amp; Visweswariah, C. (1999))**.
+The original design and implementation of the simulation is based on the book **_Electronic Circuit and System Simulation Methods_ (Pillage, L., Rohrer, R., &amp; Visweswariah, C. (1999))**.
 
 The core part of the simulation uses **Modified Nodal Analysis** to determine the voltage of each node in a given circuit, as well as the current of select elements. You can find a detailed introduction to modified nodal analysis [here (Cheever, E., Swarthmore College, (2005))](https://lpsa.swarthmore.edu/Systems/Electrical/mna/MNA1.html).
 
