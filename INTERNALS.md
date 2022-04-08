@@ -1,15 +1,27 @@
+## Contents
+- Forward
+- Internals
+- Adding New Elements
+- Program Loop
+
+# Forward
+
+The original design and implementation of the simulation is based on the book **_Electronic circuit and system simulation methods_ (Pillage, L., Rohrer, R., &amp; Visweswariah, C. (1999))**.
+
+The core part of the simulation uses **Modified Nodal Analysis** to determine the voltage of each node in a given circuit, as well as the current of select elements. You can find a detailed introduction to modified nodal analysis [here (Cheever, E., Swarthmore College, (2005))](https://lpsa.swarthmore.edu/Systems/Electrical/mna/MNA1.html).
+
 # Internals
 
-Here is a brief description of how we simulate a circuit.
-See the book Electronic Circuit and System Simulation Methods by
-Pillage, et al for more information.
+The simulation constructs and solves the following matrix equation:
 
-Basically, we create a matrix.  Each row in the matrix represents
-a node in the circuit.  The matrix equation looks like A x = B
-where x is a vector containing the voltages of each node.  B
-represents the net current in or out of each node, and should be
-all zeroes by Kirchoff's current law, unless there is a current
-source somewhere.
+**X = A⁻¹B**
+
+Where 
+- `A` is a _square matrix_ containing one row for each _node_ in the circuit (each connection between two or more elements) and one row for each _independent voltage source_. The contents of this matrix describe how the elements of the circuit are connected, expressed as _admittance_.
+- `B` is a _column vector_ also containing one entry for each node in the circuit and one entry for each independent voltage source. The entries associated with circuit nodes are usually zero, unless an _independent current source_ is present. The entries associated with the voltage sources contain the voltage of those sources.
+- `X` is a column vector that will contain, after solving: one entry for each node in the circuit containing the voltage at that node and one entry for each independent voltage source containing the current across the voltage source.
+- `A⁻¹` means the inversion of the matrix `A` via _LU decomposition_ (also called _LU factorization_).
+- `A⁻¹B` means multiplying the result of the inversion of the `A` matrix with the column vector `B`.
 
 If you have a resistor, you want Vb-Va=IR or Vb/R - Va/R = I.  So
 the net current out of node b and into node a depends on the voltage
@@ -264,3 +276,47 @@ of a subcircuit, so if you have anything important in there, you may have proble
 * if you are modifying an existing element rather than creating a new one, then make sure your changes don't break
 existing circuits.  Make sure you can still read the old dump format (if you changed it) and that everything
 works the same.
+
+# Program Loop
+
+An incomplete description of the program loop and descriptions of major functions.
+
+## `updateCircuit()`
+
+This is the main loop. It runs after platform-specific initialization and loops continuously until program shutdown. It has two main sections:
+
+- Run the circuit. Running the sim for a single timestep conditionally involves three main steps:
+  1. Analyze the circuit: `analyzeCircuit()`
+  2. Build the circuit matrices: `stampCircuit()`
+  3. Run the simulation: `runCircuit()`
+- Draw the circuit graphics
+  - This is the simulation graphics state (i.e. the center screen). Menus and property interfaces are managed elsewhere (by GWT).
+
+## `analyzeCircuit()`
+
+Called when something in the circuit changes. This function does some initial setup for the overall simulation state, then searches the circuit for the presence of various invalid configurations and edge cases.
+
+- Map groups of connected wire-like elements to the same node: `calculateWireClosure()`
+- Sets the root ground node, important for the simulation: `setGroundNode()`
+- Determines nodes that are not connected indirectly to ground: `findUnconnectedNodes()`.
+  - All nodes must be connected to ground somehow, or else we will get a matrix error.
+  - The unconnected nodes won't actually be connected here, but in the next step `stampCircuit()`.
+- `validateCircuit()` searches for these invalid cases:
+  - Inductors with no current path.
+  - Current sources with no current path.
+  - VCCS elements with no current path.
+  - Voltage loops with no resistance.
+  - Voltages that connect to ground with no resistance.
+- `stampCircuit()` will always be called following `analyzeCircuit()`.
+
+## `stampCircuit()`
+
+Creates the MNA matrices using info gathered by `analyzeCircuit()` and fills them wih data from each circuit element.
+
+- `connectUnconnectedNodes()` connects isolated nodes by connecting them to ground with a large resistor.
+- `simplifyMatrix()` is an important function which is run after the initial stamping of the matrix is complete. Since the number of steps required to solve a matrix is proportional to n^3, where n is the number of rows, it is worth a lot of effort to reduce the size of the matrix as much as possible.
+- If the circuit is nonlinear, we can factor the circuit matrix one time inside `stampCircuit()` instead of needing to do it every frame (inside `runCircuit()`).
+
+## `runCircuit()`
+
+This function has two major loops: the *iteration loop* and the *subiteration loop*, the latter being a child of the former. The *iteration loop* can be thought of as executing a single full step of simulation. Each run of the *iteration loop* increments the circuit time by the timestep. The inner loop, called the *subiteration loop*, normally runs at least once per call to `runCircuit`. The *subiteration loop* tries to solve the circuit matrix (via `lu_solve()`). The number of times the *subiteration loop* runs inside the *iteration loop* depends on weather or not the circuit has converged.
