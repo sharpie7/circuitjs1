@@ -315,7 +315,7 @@ Creates the MNA matrices using info gathered by `analyzeCircuit()` and fills the
 
 - `connectUnconnectedNodes()` connects isolated nodes by connecting them to ground with a large resistor.
 - `simplifyMatrix()` is an important function which is run after the initial stamping of the matrix is complete. Since the number of steps required to solve a matrix is proportional to n^3, where n is the number of rows, it is worth a lot of effort to reduce the size of the matrix as much as possible.
-- If the circuit is nonlinear, we can factor the circuit matrix one time inside `stampCircuit()` instead of needing to do it every frame (inside `runCircuit()`).
+- If the circuit is linear, we can factor the circuit matrix one time inside `stampCircuit()` instead of needing to do it every frame (inside `runCircuit()`).
 
 ## `runCircuit()`
 
