@@ -1,10 +1,10 @@
 ## Contents
-- Forward
+- Foreword
 - Internals
 - Adding New Elements
 - Program Loop
 
-# Forward
+# Foreword
 
 The original design and implementation of the simulation is based on the book **_Electronic Circuit and System Simulation Methods_ (Pillage, L., Rohrer, R., &amp; Visweswariah, C. (1999))**.
 
@@ -311,7 +311,7 @@ Called when something in the circuit changes. This function does some initial se
 
 ## `stampCircuit()`
 
-Creates the MNA matrices using info gathered by `analyzeCircuit()` and fills them wih data from each circuit element.
+Creates the MNA matrices using info gathered by `analyzeCircuit()` and fills them with data from each circuit element.
 
 - `connectUnconnectedNodes()` connects isolated nodes by connecting them to ground with a large resistor.
 - `simplifyMatrix()` is an important function which is run after the initial stamping of the matrix is complete. Since the number of steps required to solve a matrix is proportional to n^3, where n is the number of rows, it is worth a lot of effort to reduce the size of the matrix as much as possible.
@@ -319,4 +319,4 @@ Creates the MNA matrices using info gathered by `analyzeCircuit()` and fills the
 
 ## `runCircuit()`
 
-This function has two major loops: the *iteration loop* and the *subiteration loop*, the latter being a child of the former. The *iteration loop* can be thought of as executing a single full step of simulation. Each run of the *iteration loop* increments the circuit time by the timestep. The inner loop, called the *subiteration loop*, normally runs at least once per call to `runCircuit`. The *subiteration loop* tries to solve the circuit matrix (via `lu_solve()`). The number of times the *subiteration loop* runs inside the *iteration loop* depends on weather or not the circuit has converged.
+This function has two major loops: the *iteration loop* and the *subiteration loop*, the latter being a child of the former. The *iteration loop* can be thought of as executing a single full step of simulation. Each run of the *iteration loop* increments the circuit time by the timestep. The inner loop, called the *subiteration loop*, normally runs at least once per call to `runCircuit`. The *subiteration loop* tries to solve the circuit matrix (via `lu_solve()`). The number of times the *subiteration loop* runs inside the *iteration loop* depends on whether or not the circuit has converged.
