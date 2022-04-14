@@ -94,6 +94,7 @@ import static com.google.gwt.event.dom.client.KeyCodes.*;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
+import com.lushprojects.circuitjs1.client.util.PerfMonitor;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Navigator;
 import com.google.gwt.event.logical.shared.CloseHandler;
@@ -174,10 +175,6 @@ MouseOutHandler, MouseWheelHandler {
     static final int MODE_SELECT = 6;
     static final int MODE_DRAG_SPLITTER = 7;
     static final int infoWidth = 160;
-    long myframes =1;
-    long mytime=0;
-    long myruntime=0;
-    long mydrawtime=0;
     int dragGridX, dragGridY, dragScreenX, dragScreenY, initDragGridX, initDragGridY;
     long mouseDownTime;
     long zoomTime;
@@ -1354,200 +1351,233 @@ MouseOutHandler, MouseWheelHandler {
 	}
     }
     
-// *****************************************************************
-//                     UPDATE CIRCUIT
+    // *****************************************************************
+    //                     UPDATE CIRCUIT
     
     public void updateCircuit() {
-    long mystarttime;
-    long myrunstarttime;
-    long mydrawstarttime;
-//	if (winSize == null || winSize.width == 0)
-//	    return;
-    	checkCanvasSize();
-	mystarttime=System.currentTimeMillis();
-	boolean didAnalyze = analyzeFlag;
-	if (analyzeFlag || dcAnalysisFlag) {
-	    analyzeCircuit();
-	    analyzeFlag = false;
-	}
-	if (needsStamp && simRunning) {
-	    try {
-		stampCircuit();
-	    } catch (Exception e) {
-		stop("Exception in stampCircuit()", null);
-	    }
-	}
-	
-//	if (editDialog != null && editDialog.elm instanceof CircuitElm)
-//	    mouseElm = (CircuitElm) (editDialog.elm);
-	if (stopElm != null && stopElm != mouseElm)
-	    stopElm.setMouseElm(true);
-	setupScopes();
+        PerfMonitor perfmon = new PerfMonitor();
+        perfmon.startContext("updateCircuit()");
 
-	Graphics g=new Graphics(cvcontext);
-	
-	if (printableCheckItem.getState()) {
-  	    CircuitElm.whiteColor = Color.black;
-  	    CircuitElm.lightGrayColor = Color.black;
-  	    g.setColor(Color.white);
-  	    cv.getElement().getStyle().setBackgroundColor("#fff");
-	} else {
-	    CircuitElm.whiteColor = Color.white;
-	    CircuitElm.lightGrayColor = Color.lightGray;
-	    g.setColor(Color.black);
-  	    cv.getElement().getStyle().setBackgroundColor("#000");
-	}
-	g.fillRect(0, 0, canvasWidth, canvasHeight);
-	myrunstarttime=System.currentTimeMillis();
-	if (simRunning) {
-	    if (needsStamp)
-		console("needsStamp while simRunning?");
-	    try {
-		runCircuit(didAnalyze);
-	    } catch (Exception e) {
-		debugger();
-		console("exception in runCircuit " + e);
-		e.printStackTrace();
-	    }
-	    myruntime+=System.currentTimeMillis()-myrunstarttime;
-	}
-	long sysTime = System.currentTimeMillis();
-		if (simRunning) {
-			
-			if (lastTime != 0) {
-				int inc = (int) (sysTime - lastTime);
-				double c = currentBar.getValue();
-				c = java.lang.Math.exp(c / 3.5 - 14.2);
-				CircuitElm.currentMult = 1.7 * inc * c;
-				 if (!conventionCheckItem.getState())
-				 CircuitElm.currentMult = -CircuitElm.currentMult;
-			}
+        checkCanvasSize();
+        
+        // Analyze circuit
+        boolean didAnalyze = analyzeFlag;
+        if (analyzeFlag || dcAnalysisFlag) {
+            perfmon.startContext("analyzeCircuit()");
+            analyzeCircuit();
+            analyzeFlag = false;
+            perfmon.stopContext();
+        }
+        
+        // Stamp circuit
+        if (needsStamp && simRunning) {
+            perfmon.startContext("stampCircuit()");
+            try {
+                stampCircuit();
+            } catch (Exception e) {
+                stop("Exception in stampCircuit()", null);
+            }
+            perfmon.stopContext();
+        }
+        
+        if (stopElm != null && stopElm != mouseElm)
+            stopElm.setMouseElm(true);
+        
+        setupScopes();
 
-			lastTime = sysTime;
-		} else
-			lastTime = 0;
-		
-		if (sysTime - secTime >= 1000) {
-			framerate = frames;
-			steprate = steps;
-			frames = 0;
-			steps = 0;
-			secTime = sysTime;
-		}
-	   CircuitElm.powerMult = Math.exp(powerBar.getValue()/4.762-7);
-	   
-	
-	int i;
-	g.setFont(CircuitElm.unitsFont);
-	
-	// this causes bad behavior on Chrome 55
-//	g.clipRect(0, 0, circuitArea.width, circuitArea.height);
-	
-	mydrawstarttime=System.currentTimeMillis();
+        Graphics g = new Graphics(cvcontext);
 
-	g.context.setLineCap(LineCap.ROUND);
+        if (printableCheckItem.getState()) {
+            CircuitElm.whiteColor = Color.black;
+            CircuitElm.lightGrayColor = Color.black;
+            g.setColor(Color.white);
+            cv.getElement().getStyle().setBackgroundColor("#fff");
+        } else {
+            CircuitElm.whiteColor = Color.white;
+            CircuitElm.lightGrayColor = Color.lightGray;
+            g.setColor(Color.black);
+            cv.getElement().getStyle().setBackgroundColor("#000");
+        }
 
-	if (noEditCheckItem.getState())
-	    g.drawLock(20, 30);
-	g.setColor(Color.white);
-	// draw elements
-	double scale = devicePixelRatio();
-	cvcontext.setTransform(transform[0]*scale, 0, 0, transform[3]*scale,
-		transform[4]*scale, transform[5]*scale);
-	for (i = 0; i != elmList.size(); i++) {
-	    if (powerCheckItem.getState())
-	    	g.setColor(Color.gray);
-	    /*else if (conductanceCheckItem.getState())
-	      g.setColor(Color.white);*/
-	    getElm(i).draw(g);
-	}
-	mydrawtime+=System.currentTimeMillis()-mydrawstarttime;
-	
-	// draw posts normally
-	if (mouseMode != CirSim.MODE_DRAG_ROW && mouseMode != CirSim.MODE_DRAG_COLUMN) {
-	    for (i = 0; i != postDrawList.size(); i++)
-		CircuitElm.drawPost(g, postDrawList.get(i));
-	}
-	
-	// for some mouse modes, what matters is not the posts but the endpoints (which are only
-	// the same for 2-terminal elements).  We draw those now if needed
-	if (tempMouseMode == MODE_DRAG_ROW || tempMouseMode == MODE_DRAG_COLUMN ||
-			tempMouseMode == MODE_DRAG_POST || tempMouseMode == MODE_DRAG_SELECTED)
-		for (i = 0; i != elmList.size(); i++) {
+        // Clear the frame
+        g.fillRect(0, 0, canvasWidth, canvasHeight);
 
-			CircuitElm ce = getElm(i);
-//			ce.drawPost(g, ce.x , ce.y );
-//			ce.drawPost(g, ce.x2, ce.y2);
-			if (ce!=mouseElm || tempMouseMode!=MODE_DRAG_POST) {
-				g.setColor(Color.gray);
-				g.fillOval(ce.x-3, ce.y-3, 7, 7);
-				g.fillOval(ce.x2-3, ce.y2-3, 7, 7);
-			} else {
-				ce.drawHandles(g, CircuitElm.selectColor);
-			}
-		}
-	// draw handles for elm we're creating
-	if (tempMouseMode==MODE_SELECT && mouseElm!=null) {
-		mouseElm.drawHandles(g, CircuitElm.selectColor);
-	}
+        // Run circuit
+        if (simRunning) {
+            if (needsStamp)
+                console("needsStamp while simRunning?");
 
-	// draw handles for elm we're dragging
-	if (dragElm != null &&
-		      (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
-		    	dragElm.draw(g);
-		    	dragElm.drawHandles(g, CircuitElm.selectColor);
-		}
+            perfmon.startContext("runCircuit()");
+            try {                
+                runCircuit(didAnalyze);
+            } catch (Exception e) {
+                debugger();
+                console("exception in runCircuit " + e);
+                e.printStackTrace();
+            }
+            perfmon.stopContext();
+        }
 
-	// draw bad connections.  do this last so they will not be overdrawn.
-	for (i = 0; i != badConnectionList.size(); i++) {
-	    Point cn = badConnectionList.get(i);
-	    g.setColor(Color.red);
-	    g.fillOval(cn.x-3, cn.y-3, 7, 7);
-	}
-	
-	if (selectedArea != null) {
-	    g.setColor(CircuitElm.selectColor);
-	    g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
-	}
+        long sysTime = System.currentTimeMillis();
+        if (simRunning) {
+            if (lastTime != 0) {
+                int inc = (int) (sysTime - lastTime);
+                double c = currentBar.getValue();
+                c = java.lang.Math.exp(c / 3.5 - 14.2);
+                CircuitElm.currentMult = 1.7 * inc * c;
+                if (!conventionCheckItem.getState())
+                    CircuitElm.currentMult = -CircuitElm.currentMult;
+            }
+            lastTime = sysTime;
+        } else {
+            lastTime = 0;
+        }
 
-	if (crossHairCheckItem.getState() && mouseCursorX>=0
-		&& mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
-	    g.setColor(Color.gray);
-	    int x = snapGrid(inverseTransformX(mouseCursorX));
-	    int y = snapGrid(inverseTransformY(mouseCursorY));
-	    g.drawLine(x, inverseTransformY(0), x, inverseTransformY(circuitArea.height));
-	    g.drawLine(inverseTransformX(0), y, inverseTransformX(circuitArea.width), y);
-	}
+        if (sysTime - secTime >= 1000) {
+            framerate = frames;
+            steprate = steps;
+            frames = 0;
+            steps = 0;
+            secTime = sysTime;
+        }
 
-	
-	cvcontext.setTransform(scale, 0, 0, scale, 0, 0);
-	
-	drawBottomArea(g);
+        CircuitElm.powerMult = Math.exp(powerBar.getValue() / 4.762 - 7);
 
-	if (stopElm != null && stopElm != mouseElm)
-	    stopElm.setMouseElm(false);
-	frames++;
-	
-	g.setColor(Color.white);
-//	g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, 10);
-//	g.drawString("Steprate: " + CircuitElm.showFormat.format(steprate),  10, 30);
-//	g.drawString("Steprate/iter: " + CircuitElm.showFormat.format(steprate/getIterCount()),  10, 50);
-//	g.drawString("iterc: " + CircuitElm.showFormat.format(getIterCount()),  10, 70);
-//	g.drawString("Frames: "+ frames,10,90);
-//	g.drawString("ms per frame (other): "+ CircuitElm.showFormat.format((mytime-myruntime-mydrawtime)/myframes),10,110);
-//	g.drawString("ms per frame (sim): "+ CircuitElm.showFormat.format((myruntime)/myframes),10,130);
-//	g.drawString("ms per frame (draw): "+ CircuitElm.showFormat.format((mydrawtime)/myframes),10,150);
-	
-	// if we did DC analysis, we need to re-analyze the circuit with that flag cleared. 
-	if (dcAnalysisFlag) {
-	    dcAnalysisFlag = false;
-	    analyzeFlag = true;
-	}
+        perfmon.startContext("graphics");
 
-	lastFrameTime = lastTime;
-	mytime=mytime+System.currentTimeMillis()-mystarttime;
-	myframes++;
-	callUpdateHook();
+        g.setFont(CircuitElm.unitsFont);
+
+        g.context.setLineCap(LineCap.ROUND);
+
+        if (noEditCheckItem.getState())
+            g.drawLock(20, 30);
+        
+        g.setColor(Color.white);
+        
+        // Set the graphics transform to deal with zoom and offset
+        double scale = devicePixelRatio();
+        cvcontext.setTransform(transform[0] * scale, 0, 0, transform[3] * scale, transform[4] * scale, transform[5] * scale);
+
+        // Draw each element
+        perfmon.startContext("elm.draw()");
+        for (int i = 0; i != elmList.size(); i++) {
+            if (powerCheckItem.getState())
+                g.setColor(Color.gray);
+            
+            getElm(i).draw(g);
+        }
+        perfmon.stopContext();
+
+        // Draw posts normally
+        if (mouseMode != CirSim.MODE_DRAG_ROW && mouseMode != CirSim.MODE_DRAG_COLUMN) {
+            for (int i = 0; i != postDrawList.size(); i++)
+                CircuitElm.drawPost(g, postDrawList.get(i));
+        }
+
+        // for some mouse modes, what matters is not the posts but the endpoints (which
+        // are only
+        // the same for 2-terminal elements). We draw those now if needed
+        if (tempMouseMode == MODE_DRAG_ROW || 
+            tempMouseMode == MODE_DRAG_COLUMN || 
+            tempMouseMode == MODE_DRAG_POST || 
+            tempMouseMode == MODE_DRAG_SELECTED) {
+            for (int i = 0; i != elmList.size(); i++) {
+
+                CircuitElm ce = getElm(i);
+                // ce.drawPost(g, ce.x , ce.y );
+                // ce.drawPost(g, ce.x2, ce.y2);
+                if (ce != mouseElm || tempMouseMode != MODE_DRAG_POST) {
+                    g.setColor(Color.gray);
+                    g.fillOval(ce.x - 3, ce.y - 3, 7, 7);
+                    g.fillOval(ce.x2 - 3, ce.y2 - 3, 7, 7);
+                } else {
+                    ce.drawHandles(g, CircuitElm.selectColor);
+                }
+            }
+        }
+        
+        // draw handles for elm we're creating
+        if (tempMouseMode == MODE_SELECT && mouseElm != null) {
+            mouseElm.drawHandles(g, CircuitElm.selectColor);
+        }
+
+        // draw handles for elm we're dragging
+        if (dragElm != null && (dragElm.x != dragElm.x2 || dragElm.y != dragElm.y2)) {
+            dragElm.draw(g);
+            dragElm.drawHandles(g, CircuitElm.selectColor);
+        }
+
+        // draw bad connections. do this last so they will not be overdrawn.
+        for (int i = 0; i != badConnectionList.size(); i++) {
+            Point cn = badConnectionList.get(i);
+            g.setColor(Color.red);
+            g.fillOval(cn.x - 3, cn.y - 3, 7, 7);
+        }
+
+        // draw the selection rect
+        if (selectedArea != null) {
+            g.setColor(CircuitElm.selectColor);
+            g.drawRect(selectedArea.x, selectedArea.y, selectedArea.width, selectedArea.height);
+        }
+
+        // draw the crosshair cursor
+        if (crossHairCheckItem.getState() && mouseCursorX >= 0
+                && mouseCursorX <= circuitArea.width && mouseCursorY <= circuitArea.height) {
+            g.setColor(Color.gray);
+            int x = snapGrid(inverseTransformX(mouseCursorX));
+            int y = snapGrid(inverseTransformY(mouseCursorY));
+            g.drawLine(x, inverseTransformY(0), x, inverseTransformY(circuitArea.height));
+            g.drawLine(inverseTransformX(0), y, inverseTransformX(circuitArea.width), y);
+        }
+
+        // reset the graphics scale and translation
+        cvcontext.setTransform(scale, 0, 0, scale, 0, 0);
+
+        // draw the bottom area i.e. the scope and info section
+        perfmon.startContext("drawBottomArea()");
+        drawBottomArea(g);
+        perfmon.stopContext();
+
+        if (stopElm != null && stopElm != mouseElm)
+            stopElm.setMouseElm(false);
+        
+        frames++;
+
+        perfmon.stopContext(); // graphics
+
+        g.setColor(Color.white);
+        
+        /*int height = 10;
+        int increment = 15;
+        g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, height);
+        g.drawString("Steprate: " + CircuitElm.showFormat.format(steprate), 10, height += increment);
+        g.drawString("Steprate/iter: " + CircuitElm.showFormat.format(steprate / getIterCount()), 10, height += increment);
+        g.drawString("iterc: " + CircuitElm.showFormat.format(getIterCount()), 10, height += increment);
+        g.drawString("Frames: " + frames, 10, height += increment);*/
+        
+        // if we did DC analysis, we need to re-analyze the circuit with that flag
+        // cleared.
+        if (dcAnalysisFlag) {
+            dcAnalysisFlag = false;
+            analyzeFlag = true;
+        }
+
+        lastFrameTime = lastTime;
+
+        perfmon.stopContext(); // updateCircuit
+
+        String perfmonResult = PerfMonitor.buildString(perfmon).toString();
+        console(perfmonResult);
+
+        /*String[] splits = perfmonResult.split("\n");
+        int rootXValue = 200;
+        for (int x = 0; x < splits.length; x++) {
+            g.drawString(splits[x], 10, rootXValue + (15 * x));
+        }*/
+        
+        // This should always be the last 
+        // thing called by updateCircuit();
+        callUpdateHook();
     }
 
     void drawBottomArea(Graphics g) {
