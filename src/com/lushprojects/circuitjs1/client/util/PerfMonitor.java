@@ -41,10 +41,6 @@ public class PerfMonitor {
         return newEntry;
     }
     
-    private long getTime() {
-        return System.currentTimeMillis();
-    }
-    
     public static StringBuilder buildString(PerfMonitor mon) {
         StringBuilder sb = new StringBuilder();
         buildStringInternal(sb, mon.rootCtxName, mon.rootCtx, 0);
@@ -66,14 +62,27 @@ public class PerfMonitor {
         }
     }
     
+    private static native float getTime() /*-{
+        // https://stackoverflow.com/questions/6875625
+        if (window.performance.now) {
+            return window.performance.now();
+        } else {
+            if (window.performance.webkitNow) {
+                return window.performance.webkitNow();
+            } else {
+                return new Date().getTime();
+            }
+        }
+    }-*/;
+
     class PerfEntry {
     
         public PerfEntry parent;
         public HashMap<String, PerfEntry> children;
             
-        public long startTime;
-        public long endTime;
-        public long length;
+        public float startTime;
+        public float endTime;
+        public float length;
         
         public PerfEntry(PerfEntry p) {
             parent = p;

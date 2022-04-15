@@ -211,6 +211,7 @@ MouseOutHandler, MouseWheelHandler {
     int timeStepCount;
     
     boolean adjustTimeStep;
+    boolean developerMode;
     static final int HINT_LC = 1;
     static final int HINT_RC = 2;
     static final int HINT_3DB_C = 3;
@@ -1475,8 +1476,7 @@ MouseOutHandler, MouseWheelHandler {
         }
 
         // for some mouse modes, what matters is not the posts but the endpoints (which
-        // are only
-        // the same for 2-terminal elements). We draw those now if needed
+        // are only the same for 2-terminal elements). We draw those now if needed
         if (tempMouseMode == MODE_DRAG_ROW || 
             tempMouseMode == MODE_DRAG_COLUMN || 
             tempMouseMode == MODE_DRAG_POST || 
@@ -1538,23 +1538,15 @@ MouseOutHandler, MouseWheelHandler {
         drawBottomArea(g);
         perfmon.stopContext();
 
+        g.setColor(Color.white);
+        
+        perfmon.stopContext(); // graphics
+        
         if (stopElm != null && stopElm != mouseElm)
             stopElm.setMouseElm(false);
         
         frames++;
 
-        perfmon.stopContext(); // graphics
-
-        g.setColor(Color.white);
-        
-        /*int height = 10;
-        int increment = 15;
-        g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, height);
-        g.drawString("Steprate: " + CircuitElm.showFormat.format(steprate), 10, height += increment);
-        g.drawString("Steprate/iter: " + CircuitElm.showFormat.format(steprate / getIterCount()), 10, height += increment);
-        g.drawString("iterc: " + CircuitElm.showFormat.format(getIterCount()), 10, height += increment);
-        g.drawString("Frames: " + frames, 10, height += increment);*/
-        
         // if we did DC analysis, we need to re-analyze the circuit with that flag
         // cleared.
         if (dcAnalysisFlag) {
@@ -1565,15 +1557,24 @@ MouseOutHandler, MouseWheelHandler {
         lastFrameTime = lastTime;
 
         perfmon.stopContext(); // updateCircuit
-
-        String perfmonResult = PerfMonitor.buildString(perfmon).toString();
-        console(perfmonResult);
-
-        /*String[] splits = perfmonResult.split("\n");
-        int rootXValue = 200;
-        for (int x = 0; x < splits.length; x++) {
-            g.drawString(splits[x], 10, rootXValue + (15 * x));
-        }*/
+        
+        if (developerMode) {
+            int height = 15;
+            int increment = 15;
+            g.drawString("Framerate: " + CircuitElm.showFormat.format(framerate), 10, height);
+            g.drawString("Steprate: " + CircuitElm.showFormat.format(steprate), 10, height += increment);
+            g.drawString("Steprate/iter: " + CircuitElm.showFormat.format(steprate / getIterCount()), 10, height += increment);
+            g.drawString("iterc: " + CircuitElm.showFormat.format(getIterCount()), 10, height += increment);
+            g.drawString("Frames: " + frames, 10, height += increment);
+            
+            height += (increment * 2);
+            
+            String perfmonResult = PerfMonitor.buildString(perfmon).toString();
+            String[] splits = perfmonResult.split("\n");
+            for (int x = 0; x < splits.length; x++) {
+                g.drawString(splits[x], 10, height + (increment * x));
+            }
+        }
         
         // This should always be the last 
         // thing called by updateCircuit();
