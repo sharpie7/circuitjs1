@@ -157,7 +157,8 @@ public class SearchDialog extends DialogBox {
             });
             for (i = 0; i != items.size(); i++)
         	listBox.addItem(items.get(i));
-            listBox.setItemSelected(0, true);
+            if (items.size() > 0)
+		listBox.setItemSelected(0, true);
 	}
 	
 	protected void closeDialog()
