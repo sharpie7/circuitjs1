@@ -66,11 +66,16 @@ class EditOptions implements Editable {
 		if (n == 8)
 		    return new EditInfo("# of Decimal Digits (long format)", CircuitElm.decimalDigits);
 		if (n == 9) {
+            EditInfo ei = new EditInfo("", 0, -1, -1);
+            ei.checkbox = new Checkbox("Developer Mode", sim.developerMode);
+            return ei;
+        }
+		if (n == 10) {
 		    EditInfo ei = new EditInfo("", 0, -1, -1);
 		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
 		    return ei;
 		}
-		if (n == 10 && sim.adjustTimeStep)
+		if (n == 11 && sim.adjustTimeStep)
 		    return new EditInfo("Minimum time step size (s)", sim.minTimeStep, 0, 0);
 
 		return null;
@@ -133,11 +138,13 @@ class EditOptions implements Editable {
 		    CircuitElm.setDecimalDigits((int)ei.value, true, true);
 		if (n == 8)
 		    CircuitElm.setDecimalDigits((int)ei.value, false, true);
-		if (n == 9) {
+		if (n == 9)
+	            sim.developerMode = ei.checkbox.getState();
+		if (n == 10) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
 		    ei.newDialog = true;
 		}
-		if (n == 10 && ei.value > 0)
+		if (n == 11 && ei.value > 0)
 			sim.minTimeStep = ei.value;
 	}
 	
