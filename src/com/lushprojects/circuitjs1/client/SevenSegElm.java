@@ -250,7 +250,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	
 	void calculateCurrent() {
-	    if (diodeDirection == 0) {
+	    if (diodeDirection == 0 || diodes == null) {
 		// no current
 		int i;
 		for (i = 0; i != pinCount; i++)
