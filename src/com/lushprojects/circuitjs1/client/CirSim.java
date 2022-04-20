@@ -2098,6 +2098,7 @@ MouseOutHandler, MouseWheelHandler {
     
     Vector<Integer> unconnectedNodes;
     Vector<CircuitElm> nodesWithGroundConnection;
+    int nodesWithGroundConnectionCount;
     
     void findUnconnectedNodes() {
 	int i, j;
@@ -2303,6 +2304,7 @@ MouseOutHandler, MouseWheelHandler {
 	if (!validateCircuit())
 	    return;
 	
+	nodesWithGroundConnectionCount = nodesWithGroundConnection.size();
 	// only need this for validation
 	nodesWithGroundConnection = null;
 	
@@ -6191,9 +6193,14 @@ MouseOutHandler, MouseWheelHandler {
 		}
 	    }
 	
+	    boolean first = true;
 	    for (i = 0; i != unconnectedNodes.size(); i++) {
 		int q = unconnectedNodes.get(i);
 		if (!extnodes[q] && used[q]) {
+		    if (nodesWithGroundConnectionCount == 0 && first) {
+			first = false;
+			continue;
+		    }
 		    Window.alert("Some nodes are unconnected!");
 		    return null;
 		}
