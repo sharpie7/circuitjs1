@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
 class TimerElm extends ChipElm {
     final int FLAG_RESET = 2;
     final int FLAG_GROUND = 4;
+    final int FLAG_NUMBERS = 8;
+    
     final int N_DIS  = 0;
     final int N_TRIG = 1;
     final int N_THRES = 2;
@@ -42,20 +44,23 @@ class TimerElm extends ChipElm {
 	sizeX = 3;
 	sizeY = 5;
 	pins = new Pin[8];
-	pins[N_DIS] = new Pin(1, SIDE_W, "dis");
-	pins[N_TRIG] = new Pin(3, SIDE_W, "tr");
-	pins[N_TRIG].lineOver = true;
-	pins[N_THRES] = new Pin(4, SIDE_W, "th");
-	pins[N_VIN] = new Pin(1, SIDE_N, "Vin");
-	pins[N_CTL] = new Pin(1, SIDE_S, "ctl");
-	pins[N_OUT] = new Pin(2, SIDE_E, "out");
+	pins[N_DIS] = new Pin(1, SIDE_W, usePinNames() ? "dis" : "7");
+	pins[N_TRIG] = new Pin(3, SIDE_W, usePinNames() ? "tr" : "2");
+        if (usePinNames())
+	    pins[N_TRIG].lineOver = true;
+	pins[N_THRES] = new Pin(4, SIDE_W, usePinNames() ? "th" : "6");
+	pins[N_VIN] = new Pin(1, SIDE_N, usePinNames() ? "Vin" : "8");
+	pins[N_CTL] = new Pin(1, SIDE_S, usePinNames() ? "ctl" : "5");
+	pins[N_OUT] = new Pin(2, SIDE_E, usePinNames() ? "out" : "3");
 	pins[N_OUT].state = true;
-	pins[N_RST] = new Pin(1, SIDE_E, "rst");
-	pins[N_GND] = new Pin(2, SIDE_S, "gnd");
+	pins[N_RST] = new Pin(1, SIDE_E, usePinNames() ? "rst" : "4");
+	pins[N_GND] = new Pin(2, SIDE_S, usePinNames() ? "gnd" : "1");
     }
     boolean nonLinear() { return true; }
     boolean hasReset() { return (flags & FLAG_RESET) != 0 || hasGroundPin(); }
     boolean hasGroundPin() { return (flags & FLAG_GROUND) != 0; }
+    boolean usePinNumbers() { return (flags & FLAG_NUMBERS) != 0; }
+    boolean usePinNames() { return (flags & FLAG_NUMBERS) == 0; }
     void stamp() {
 	ground = hasGroundPin() ? nodes[N_GND] : 0;
 	// stamp voltage divider to put ctl pin at 2/3 V
@@ -128,12 +133,22 @@ class TimerElm extends ChipElm {
             ei.checkbox = new Checkbox("Ground Pin", hasGroundPin());
             return ei;
         }
+        if (n == 1) {
+            EditInfo ei = EditInfo.createCheckbox("Show Pin Numbers", usePinNumbers());
+            return ei;
+        }
         return super.getChipEditInfo(n);
     }
     public void setChipEditValue(int n, EditInfo ei) {
         if (n == 0) {
             flags = ei.changeFlag(flags, FLAG_GROUND);
             allocNodes();
+            setPoints();
+            return;
+        }
+        if (n == 1) {
+            flags = ei.changeFlag(flags, FLAG_NUMBERS);
+            setupPins();
             setPoints();
             return;
         }
