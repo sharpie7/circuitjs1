@@ -57,7 +57,7 @@ package com.lushprojects.circuitjs1.client;
 	int getVoltageSourceCount() { return 2; }
         void reset() {
             super.reset();
-            volts[2] = 5;
+            volts[2] = highVoltage;
             pins[2].value = true;
         }
 	void execute() {

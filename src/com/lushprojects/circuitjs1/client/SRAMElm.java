@@ -209,13 +209,13 @@ import com.google.gwt.user.client.ui.TextArea;
 	
 	void doStep() {
 	    int i;
-	    boolean writeEnabled = volts[0] < 2.5;
-	    boolean outputEnabled = (volts[1] < 2.5) && !writeEnabled;
+	    boolean writeEnabled = volts[0] < getThreshold();
+	    boolean outputEnabled = (volts[1] < getThreshold()) && !writeEnabled;
 	    
 	    // get address
 	    address = 0;
 	    for (i = 0; i != addressBits; i++) {
-		address |= (volts[addressNodes+i] > 2.5) ? 1<<(addressBits-1-i) : 0;
+		address |= (volts[addressNodes+i] > getThreshold()) ? 1<<(addressBits-1-i) : 0;
 	    }
 	    
 	    Integer dataObj = map.get(address);
@@ -233,13 +233,13 @@ import com.google.gwt.user.client.ui.TextArea;
 	void stepFinished() {
 	    int i;
 	    int data = 0;
-	    boolean writeEnabled = volts[0] < 2.5;
+	    boolean writeEnabled = volts[0] < getThreshold();
 	    if (!writeEnabled)
 		return;
 	    
 	    // store data in RAM
 	    for (i = 0; i != dataBits; i++) {
-		data |= (volts[dataNodes+i] > 2.5) ? 1<<(dataBits-1-i) : 0;
+		data |= (volts[dataNodes+i] > getThreshold()) ? 1<<(dataBits-1-i) : 0;
 	    }
 	    map.put(address, data);	    
 	}

@@ -102,4 +102,5 @@ package com.lushprojects.circuitjs1.client;
 	int getPostCount() { return 6; }
 	int getVoltageSourceCount() { return 3; }
 	int getDumpType() { return 158; }
+	@Override boolean isDigitalChip() { return false; }
     }

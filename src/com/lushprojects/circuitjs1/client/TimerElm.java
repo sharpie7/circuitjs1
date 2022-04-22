@@ -61,6 +61,7 @@ class TimerElm extends ChipElm {
     boolean hasGroundPin() { return (flags & FLAG_GROUND) != 0; }
     boolean usePinNumbers() { return (flags & FLAG_NUMBERS) != 0; }
     boolean usePinNames() { return (flags & FLAG_NUMBERS) == 0; }
+    @Override boolean isDigitalChip() { return false; }
     void stamp() {
 	ground = hasGroundPin() ? nodes[N_GND] : 0;
 	// stamp voltage divider to put ctl pin at 2/3 V

@@ -80,6 +80,8 @@ package com.lushprojects.circuitjs1.client;
 		    diodes[i].doStep(volts[sizeX+iy]-volts[ix]);
 	}
         boolean nonLinear() { return true; }
+        @Override boolean isDigitalChip() { return false; }
+
 	void draw(Graphics g) {
 	    drawChip(g);
 	    int ix, iy;

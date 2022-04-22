@@ -22,14 +22,18 @@ package com.lushprojects.circuitjs1.client;
 abstract class ChipElm extends CircuitElm {
 	int csize, cspc, cspc2;
 	int bits;
+	double highVoltage;
+	
 	static final int FLAG_SMALL = 1;
 	static final int FLAG_FLIP_X = 1<<10;
 	static final int FLAG_FLIP_Y = 1<<11;
 	static final int FLAG_FLIP_XY = 1<<12;
+	static final int FLAG_CUSTOM_VOLTAGE = 1<<13;
 	public ChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    if (needsBits())
 		bits = defaultBitCount();
+	    highVoltage = 5;
 	    noDiagonal = true;
 	    setupPins();
 	    setSize(sim.smallGridCheckItem.getState() ? 1 : 2);
@@ -42,6 +46,7 @@ abstract class ChipElm extends CircuitElm {
 	    		bits = new Integer(st.nextToken()).intValue();
 	    	else
 	    		bits = defaultBitCount();
+	    highVoltage = (hasCustomVoltage()) ? Double.parseDouble(st.nextToken()) : 5;
 	    noDiagonal = true;
 	    setupPins();
 	    setSize((f & FLAG_SMALL) != 0 ? 1 : 2);
@@ -51,11 +56,15 @@ abstract class ChipElm extends CircuitElm {
 		    volts[i] = new Double(st.nextToken()).doubleValue();
 		else if (pins[i].state) {
 		    volts[i] = new Double(st.nextToken()).doubleValue();
-		    pins[i].value = volts[i] > 2.5;
+		    pins[i].value = volts[i] > getThreshold();
 		}
 	    }
 	}
 	boolean needsBits() { return false; }
+	boolean hasCustomVoltage() { return (flags & FLAG_CUSTOM_VOLTAGE) != 0; }
+	boolean isDigitalChip() { return true; }
+	double getThreshold() { return highVoltage/2; }
+	
 	int defaultBitCount() { return 4; }
 	void setSize(int s) {
 	    csize = s;
@@ -259,14 +268,14 @@ abstract class ChipElm extends CircuitElm {
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
 		if (!p.output)
-		    p.value = volts[i] > 2.5;
+		    p.value = volts[i] > getThreshold();
 	    }
 	    execute();
 	    for (i = 0; i != getPostCount(); i++) {
 		Pin p = pins[i];
 		if (p.output)
 		    sim.updateVoltageSource(0, nodes[i], p.voltSource,
-					p.value ? 5 : 0);
+					p.value ? highVoltage : 0);
 	    }
 	}
 	void reset() {
@@ -280,9 +289,16 @@ abstract class ChipElm extends CircuitElm {
 	}
 	
 	String dump() {
+	    if (highVoltage == 5)
+		flags &= ~FLAG_CUSTOM_VOLTAGE;
+	    else
+		flags |= FLAG_CUSTOM_VOLTAGE;
+	    
 	    String s = super.dump();
 	    if (needsBits())
 		s += " " + bits;
+	    if (hasCustomVoltage())
+		s += " " + highVoltage;
 	    int i;
 	    for (i = 0; i != getPostCount(); i++) {
 		if (pins[i].state)
@@ -350,7 +366,13 @@ abstract class ChipElm extends CircuitElm {
 		ei.checkbox = new Checkbox("Flip X/Y", (flags & FLAG_FLIP_XY) != 0);
 		return ei;
 	    }
-	    return getChipEditInfo(n-3);
+	    if (!isDigitalChip())
+		return getChipEditInfo(n-3);
+	    
+	    if (n == 3)
+		return new EditInfo("High Voltage (V)", highVoltage);
+	    
+	    return getChipEditInfo(n-4);
 	}
 	public void setEditValue(int n, EditInfo ei) {
 	    if (n == 0) {
@@ -365,8 +387,17 @@ abstract class ChipElm extends CircuitElm {
 		flags = ei.changeFlag(flags, FLAG_FLIP_XY);
 		setPoints();
 	    }
-	    if (n >= 3)
-		setChipEditValue(n-3, ei);
+	    if (!isDigitalChip()) {
+		if (n >= 3)
+		    setChipEditValue(n-3, ei);
+		return;
+	    }
+	    
+	    if (n == 3)
+		highVoltage = ei.value;
+	    
+	    if (n >= 4)
+		setChipEditValue(n-4, ei);
 	}
 	
 	public EditInfo getChipEditInfo(int n) { return null; }

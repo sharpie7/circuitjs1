@@ -361,4 +361,6 @@ package com.lushprojects.circuitjs1.client;
 	    setupPins();
 	    setPoints();
 	}
+
+	@Override boolean isDigitalChip() { return false; }
     }

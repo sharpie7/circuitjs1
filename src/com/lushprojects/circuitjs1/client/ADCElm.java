@@ -53,6 +53,9 @@ class ADCElm extends ChipElm {
     int getVoltageSourceCount() { return bits; }
     int getPostCount() { return bits+2; }
     int getDumpType() { return 167; }
+
+    // there's already a V+ pin, how does that relate to high logic voltage?  figure out later
+    @Override boolean isDigitalChip() { return false; }
     public EditInfo getChipEditInfo(int n) {
         if (n == 0)
             return new EditInfo("# of Bits", bits, 1, 1).setDimensionless();

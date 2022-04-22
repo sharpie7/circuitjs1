@@ -65,6 +65,8 @@ class VCCSElm extends ChipElm {
 	}
 	String getChipName() { return "VCCS~"; } // ~ is for localization 
 	boolean nonLinear() { return true; }
+	@Override boolean isDigitalChip() { return false; }
+
 	void stamp() {
             sim.stampNonLinear(nodes[inputCount]);
             sim.stampNonLinear(nodes[inputCount+1]);
