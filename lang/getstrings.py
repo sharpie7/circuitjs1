@@ -18,6 +18,10 @@ def checkString(bstr, str, astr, line):
     return
   if re.search("iconMenuItem.$", bstr):
     return
+  if re.search("com.lushprojects", str):
+    return
+  if re.search("perfmon.startContext", bstr):
+    return
   if re.search("menuItemWithShortcut.$", bstr):
     return
   if re.search("^#[0-9a-fA-F][0-9a-fA-F]", str):
@@ -30,9 +34,15 @@ def checkString(bstr, str, astr, line):
     return
   if re.search('menu==$', bstr):
     return
+  if re.search('cmd *= *$', bstr):
+    return
   if not re.search('[a-zA-Z]', str):
     return
   if str in ignorelist:
+    return
+  if str.startswith('~'):
+    return
+  if str.startswith('#.#'):
     return
   output.append(str)
 
@@ -87,6 +97,8 @@ for fn in files:
       if line.startswith("x "):
         line2 = re.sub("^x ([-0-9]+ )*", "", line)
         line2 = re.sub("\\\\s", " ", line2)
+        if not re.search('[a-zA-Z]', line2):
+          continue
         if len(line2) > 2 and not line2 in ignorelist:
           output.append(line2)
 

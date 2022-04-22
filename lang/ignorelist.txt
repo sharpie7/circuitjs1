@@ -184,3 +184,8 @@ zh-tw
 subcircuit:
 selectColor
 currentColor
+decimalDigitsShort
+decimalDigits
+saveas
+showelminfo
+save
