@@ -370,7 +370,7 @@ abstract class ChipElm extends CircuitElm {
 		return getChipEditInfo(n-3);
 	    
 	    if (n == 3)
-		return new EditInfo("High Voltage (V)", highVoltage);
+		return new EditInfo("High Logic Voltage", highVoltage);
 	    
 	    return getChipEditInfo(n-4);
 	}

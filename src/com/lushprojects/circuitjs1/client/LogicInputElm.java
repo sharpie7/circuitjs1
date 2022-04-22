@@ -108,7 +108,7 @@ package com.lushprojects.circuitjs1.client;
 		return ei;
 	    }
 	    if (n == 1)
-		return new EditInfo("High Voltage", hiV, 10, -10);
+		return new EditInfo("High Logic Voltage", hiV, 10, -10);
 	    if (n == 2)
 		return new EditInfo("Low Voltage", loV, 10, -10);
 	    if (n == 3) {

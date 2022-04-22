@@ -114,7 +114,7 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 0)
 		return new EditInfo("Slew Rate (V/ns)", slewRate, 0, 0);
 	    if (n == 1)
-		return new EditInfo("High Voltage (V)", highVoltage, 1, 10);
+		return new EditInfo("High Logic Voltage", highVoltage, 1, 10);
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {

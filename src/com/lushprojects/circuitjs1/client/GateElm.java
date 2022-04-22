@@ -203,7 +203,7 @@ package com.lushprojects.circuitjs1.client;
 		return new EditInfo("# of Inputs", inputCount, 1, 8).
 		    setDimensionless();
 	    if (n == 1)
-		return new EditInfo("High Voltage (V)", highVoltage, 1, 10);
+		return new EditInfo("High Logic Voltage", highVoltage, 1, 10);
 	    if (n == 2)
 		return EditInfo.createCheckbox("Schmitt Inputs", hasSchmittInputs());
 	    if (n == 3)

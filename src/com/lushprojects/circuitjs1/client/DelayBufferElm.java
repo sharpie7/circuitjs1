@@ -113,7 +113,7 @@ package com.lushprojects.circuitjs1.client;
 	    if (n == 1)
 		return new EditInfo("Threshold (V)", threshold, 0, 0);
 	    if (n == 2)
-		return new EditInfo("High Voltage", highVoltage, 0, 0);
+		return new EditInfo("High Logic Voltage", highVoltage, 0, 0);
 	    return null;
 	}
 	public void setEditValue(int n, EditInfo ei) {
