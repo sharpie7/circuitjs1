@@ -61,6 +61,15 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 	static String lastFileName;
 	String url;
 	
+	public static void setLastFileName(String s) {
+	    // remember filename for use when saving a new file.
+	    // if s is null or automatically generated then just clear out old filename.
+	    if (s == null || (s.startsWith("circuit-") && s.contains(".circuitjs")))
+		lastFileName = null;
+	    else
+		lastFileName = s;
+	}
+
 	public ExportAsLocalFileDialog(String data) {
 		super();
 		Button okButton, cancelButton;
