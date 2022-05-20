@@ -97,7 +97,14 @@ class TriStateElm extends CircuitElm {
     }
 
     void calculateCurrent() {
-	current = (volts[0] - volts[1]) / resistance;
+	// current from node 3 to node 1
+	double current31 = (volts[3]-volts[1])/resistance;
+	
+	// current from node 1 through pulldown
+	double current10 = (r_off_ground == 0) ? 0 : volts[1]/r_off_ground;
+
+	// output current is difference of these
+	current = current31-current10;
     }
 
     double getCurrentIntoNode(int n) {
@@ -111,6 +118,12 @@ class TriStateElm extends CircuitElm {
 	return true;
     }
 
+    // node 0: input
+    // node 1: output
+    // node 2: control input
+    // node 3: internal node
+    // there is a voltage source connected to node 3, and a resistor (r_off or r_on) from node 3 to 1.
+    // then there is a pulldown resistor from node 1 to ground.
     void stamp() {
 	sim.stampVoltageSource(0, nodes[3], voltSource);
 	sim.stampNonLinear(nodes[3]);
