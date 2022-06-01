@@ -58,20 +58,20 @@ If you want to embed the application in another page then use an iframe with the
 
 You can add query parameters to link to change the applications startup behaviour. The following are supported:
 ```
-.../circuitjs1.html?cct=<string> // Load the circuit from the URL (like the # in the Java version)
-.../circuitjs1.html?ctz=<string> // Load the circuit from compressed data in the URL
-.../circuitjs1.html?startCircuit=<filename> // Loads the circuit named "filename" from the "Circuits" directory
-.../circuitjs1.html?startCircuitLink=<URL> // Loads the circuit from the specified URL. CURRENTLY THE URL MUST BE A DROPBOX SHARED FILE OR ANOTHER URL THAT SUPPORTS CORS ACCESS FROM THE CLIENT
-.../circuitjs1.html?euroResistors=true // Set to true to force "Euro" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
-.../circuitjs1.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
-.../circuitjs1.html?whiteBackground=<true|false>
-.../circuitjs1.html?conventionalCurrent=<true|false>
-.../circuitjs1.html?running=<true|false> // Start the app without the simulation running, default true
-.../circuitjs1.html?hideSidebar=<true|false> // Hide the sidebar, default false
-.../circuitjs1.html?hideMenu=<true|false> // Hide the menu, default false
-.../circuitjs1.html?editable=<true|false> // Allow circuit editing, default true
-.../circuitjs1.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
-.../circuitjs1.html?negativeColor=%23ff0000 // change negative voltage color
+.../circuitjs.html?cct=<string> // Load the circuit from the URL (like the # in the Java version)
+.../circuitjs.html?ctz=<string> // Load the circuit from compressed data in the URL
+.../circuitjs.html?startCircuit=<filename> // Loads the circuit named "filename" from the "Circuits" directory
+.../circuitjs.html?startCircuitLink=<URL> // Loads the circuit from the specified URL. CURRENTLY THE URL MUST BE A DROPBOX SHARED FILE OR ANOTHER URL THAT SUPPORTS CORS ACCESS FROM THE CLIENT
+.../circuitjs.html?euroResistors=true // Set to true to force "Euro" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
+.../circuitjs.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
+.../circuitjs.html?whiteBackground=<true|false>
+.../circuitjs.html?conventionalCurrent=<true|false>
+.../circuitjs.html?running=<true|false> // Start the app without the simulation running, default true
+.../circuitjs.html?hideSidebar=<true|false> // Hide the sidebar, default false
+.../circuitjs.html?hideMenu=<true|false> // Hide the menu, default false
+.../circuitjs.html?editable=<true|false> // Allow circuit editing, default true
+.../circuitjs.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
+.../circuitjs.html?negativeColor=%23ff0000 // change negative voltage color
 ```
 ## Building an Electron application
 
