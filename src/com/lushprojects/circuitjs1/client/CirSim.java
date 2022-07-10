@@ -314,6 +314,8 @@ MouseOutHandler, MouseWheelHandler {
     	height=(int)RootLayoutPanel.get().getOffsetHeight();
     	height=height-MENUBARHEIGHT;
     	width=width-VERTICALPANELWIDTH;
+    	width = Math.max(width, 0);   // avoid exception when setting negative width
+    	height = Math.max(height, 0);
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
@@ -325,6 +327,10 @@ MouseOutHandler, MouseWheelHandler {
 		}
 
     	setCircuitArea();
+
+	// recenter circuit in case canvas was hidden at startup
+    	if (transform[0] == 0)
+    	    centreCircuit();
     }
     
     void setCircuitArea() {
@@ -1259,6 +1265,9 @@ MouseOutHandler, MouseWheelHandler {
 
     
     void centreCircuit() {
+	if (elmList == null)  // avoid exception if called during initialization
+	    return;
+	
 	Rectangle bounds = getCircuitBounds();
     	setCircuitArea();
 	
