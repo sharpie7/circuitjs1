@@ -15,6 +15,7 @@ public class CustomCompositeElm extends CompositeElm {
     int inputCount, outputCount;
     CustomCompositeModel model;
     static String lastModelName = "default";
+    static final int FLAG_SMALL = 2;
     
     public CustomCompositeElm(int xx, int yy) {
 	super(xx, yy);
@@ -22,8 +23,10 @@ public class CustomCompositeElm extends CompositeElm {
 	// use last model as default when creating new element in UI.
 	// use default otherwise, to avoid infinite recursion when creating nested subcircuits.
 	modelName = (xx == 0 && yy == 0) ? "default" : lastModelName;
-	
+		
 	flags |= FLAG_ESCAPE;
+	if (sim.smallGridCheckItem.getState())
+	    flags |= FLAG_SMALL;
 	updateModels();
     }
 
@@ -31,6 +34,8 @@ public class CustomCompositeElm extends CompositeElm {
 	super(xx, yy);
 	modelName = name;
 	flags |= FLAG_ESCAPE;
+	if (sim.smallGridCheckItem.getState())
+	    flags |= FLAG_SMALL;
 	updateModels();
     }
     
@@ -89,6 +94,9 @@ public class CustomCompositeElm extends CompositeElm {
 	chip.x2 = x2;
 	chip.y2 = y2;
 	chip.flags = (flags & (ChipElm.FLAG_FLIP_X | ChipElm.FLAG_FLIP_Y | ChipElm.FLAG_FLIP_XY));
+        if (x2-x > model.sizeX*16 && this == sim.dragElm)
+	    flags &= ~FLAG_SMALL;
+	chip.setSize((flags & FLAG_SMALL) != 0 ? 1 : 2);
 	
 	chip.sizeX = model.sizeX;
 	chip.sizeY = model.sizeY;
