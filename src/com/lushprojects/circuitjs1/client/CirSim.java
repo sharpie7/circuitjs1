@@ -3335,6 +3335,8 @@ MouseOutHandler, MouseWheelHandler {
     	    	    for (i = menuScope; i < scopeCount; i++)
     	    		scopes[i] = scopes[i+1];
     	    	    scopeCount--;
+
+    	            needAnalyze();      // need to rebuild scopeElmArr
     		}
     		if (item=="remove")
     		    	s.setElm(null);  // setupScopes() will clean this up
