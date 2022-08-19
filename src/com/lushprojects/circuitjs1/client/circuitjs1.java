@@ -47,20 +47,19 @@ public class circuitjs1 implements EntryPoint {
 
     public void onModuleLoad() {
         localizationMap = new HashMap<String, String>();
-
         loadLocale();
     }
 
     native String language() /*-{
         if (navigator.languages) {
-            if (navigator.languages.length>0) {
+            if (navigator.languages.length > 0) {
                 return navigator.languages[0];
             } else {
-                 // In Electron, navigator.languages returns an empty array
+                // In Electron, navigator.languages returns an empty array
                 return "en-US";
             }
         } else {
-            return  (navigator.language || navigator.userLanguage);  
+            return (navigator.language || navigator.userLanguage);  
         }
     }-*/;
 
@@ -75,6 +74,7 @@ public class circuitjs1 implements EntryPoint {
             if (lang == null)
                 lang = language();
         }
+        
         GWT.log("got language " + lang);
 
         // check for Taiwan Chinese. Otherwise, strip the region code
@@ -88,6 +88,7 @@ public class circuitjs1 implements EntryPoint {
             loadSimulator();
             return;
         }
+        
         url = GWT.getModuleBaseURL() + "locale_" + lang + ".txt";
         RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, url);
         try {
@@ -97,15 +98,15 @@ public class circuitjs1 implements EntryPoint {
                 }
 
                 public void onResponseReceived(Request request, Response response) {
-                    // processing goes here
                     if (response.getStatusCode() == Response.SC_OK) {
                         String text = response.getText();
                         processLocale(text);
-                        // end or processing
                     } else {
-                        GWT.log("Bad file server response:" + response.getStatusText());
-                        loadSimulator();
+                        GWT.log("Bad file server response: " + response.getStatusText());
+                        // if there was an error in retrieving the 
+                        // language, default to English (empty map)
                     }
+                    loadSimulator();
                 }
             });
         } catch (RequestException e) {
@@ -116,8 +117,7 @@ public class circuitjs1 implements EntryPoint {
 
     void processLocale(String data) {
         String lines[] = data.split("\r?\n");
-        int i;
-        for (i = 0; i != lines.length; i++) {
+        for (int i = 0; i != lines.length; i++) {
             String line = lines[i];
             if (line.length() == 0)
                 continue;
@@ -126,8 +126,10 @@ public class circuitjs1 implements EntryPoint {
                 continue;
             }
             int q2 = line.indexOf('"', 1);
-            if (q2 < 0 || line.charAt(q2 + 1) != '=' || line.charAt(q2 + 2) != '"'
-                    || line.charAt(line.length() - 1) != '"') {
+            if ((q2 < 0)
+                || (line.charAt(q2 + 1) != '=')
+                || (line.charAt(q2 + 2) != '"')
+                || (line.charAt(line.length() - 1) != '"')) {
                 CirSim.console("ignoring line in string catalog: " + line);
                 continue;
             }
@@ -135,7 +137,6 @@ public class circuitjs1 implements EntryPoint {
             String str2 = line.substring(q2 + 3, line.length() - 1);
             localizationMap.put(str1, str2);
         }
-        loadSimulator();
     }
 
     public void loadSimulator() {
@@ -149,7 +150,7 @@ public class circuitjs1 implements EntryPoint {
                 mysim.setiFrameHeight();
             }
         });
-
+        
         mysim.updateCircuit();
     }
 
