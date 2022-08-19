@@ -43,10 +43,8 @@ public class circuitjs1 implements EntryPoint {
     public static final boolean shortRelaySupported = true;
 
     static CirSim mysim;
-    HashMap<String, String> localizationMap;
 
     public void onModuleLoad() {
-        localizationMap = new HashMap<String, String>();
         loadLocale();
     }
 
@@ -85,7 +83,8 @@ public class circuitjs1 implements EntryPoint {
 
         if (lang.startsWith("en")) {
             // no need to load locale file for English
-            loadSimulator();
+            HashMap<String, String> localizationMap = new HashMap<String, String>();
+            loadSimulator(localizationMap);
             return;
         }
         
@@ -98,15 +97,17 @@ public class circuitjs1 implements EntryPoint {
                 }
 
                 public void onResponseReceived(Request request, Response response) {
+                    HashMap<String, String> localizationMap;
                     if (response.getStatusCode() == Response.SC_OK) {
                         String text = response.getText();
-                        processLocale(text);
+                        localizationMap = processLocale(text);
                     } else {
                         GWT.log("Bad file server response: " + response.getStatusText());
                         // if there was an error in retrieving the 
                         // language, default to English (empty map)
+                        localizationMap = new HashMap<String, String>();
                     }
-                    loadSimulator();
+                    loadSimulator(localizationMap);
                 }
             });
         } catch (RequestException e) {
@@ -115,7 +116,8 @@ public class circuitjs1 implements EntryPoint {
 
     }
 
-    void processLocale(String data) {
+    HashMap<String, String> processLocale(String data) {
+        HashMap<String, String> localizationMap = new HashMap<String, String>();
         String lines[] = data.split("\r?\n");
         for (int i = 0; i != lines.length; i++) {
             String line = lines[i];
@@ -137,11 +139,12 @@ public class circuitjs1 implements EntryPoint {
             String str2 = line.substring(q2 + 3, line.length() - 1);
             localizationMap.put(str1, str2);
         }
+        return localizationMap;
     }
 
-    public void loadSimulator() {
+    public void loadSimulator(HashMap<String, String> localizationMap) {
+        CirSim.localizationMap = localizationMap;
         mysim = new CirSim();
-        mysim.localizationMap = localizationMap;
         mysim.init();
 
         Window.addResizeHandler(new ResizeHandler() {
