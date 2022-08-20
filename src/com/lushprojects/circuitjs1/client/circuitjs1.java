@@ -44,7 +44,10 @@ public class circuitjs1 implements EntryPoint {
 
     static CirSim mysim;
 
+    // This is the program entrypoint! 
+    // Called by gtw automagically (see circuitjs1.gwt.xml)
     public void onModuleLoad() {
+        // loadLocale() launches the sim after determining the language (see below)
         loadLocale();
     }
 
@@ -72,7 +75,7 @@ public class circuitjs1 implements EntryPoint {
             if (lang == null)
                 lang = language();
         }
-        
+
         GWT.log("got language " + lang);
 
         // check for Taiwan Chinese. Otherwise, strip the region code
@@ -153,7 +156,7 @@ public class circuitjs1 implements EntryPoint {
                 mysim.setiFrameHeight();
             }
         });
-        
+
         mysim.updateCircuit();
     }
 
