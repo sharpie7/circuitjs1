@@ -28,7 +28,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
 
-public class ImportFromTextDialog extends DialogBox {
+public class ImportFromTextDialog extends Dialog {
 	
 VerticalPanel vp;
 HorizontalPanel hp;
@@ -39,6 +39,7 @@ TextArea textArea;
 	public ImportFromTextDialog( CirSim asim) {
 		super();
 		sim=asim;
+		closeOnEnter = false;
 		Button okButton, cancelButton;
 		final Checkbox subCheck;
 		vp=new VerticalPanel();
@@ -79,10 +80,4 @@ TextArea textArea;
 		this.center();
 		show();
 	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 }

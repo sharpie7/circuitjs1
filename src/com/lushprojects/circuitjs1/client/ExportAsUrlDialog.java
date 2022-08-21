@@ -38,7 +38,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.Request;
 
-public class ExportAsUrlDialog extends DialogBox {
+public class ExportAsUrlDialog extends Dialog {
 	
 	VerticalPanel vp;
 	Button shortButton;
@@ -93,6 +93,7 @@ public class ExportAsUrlDialog extends DialogBox {
 	
 	public ExportAsUrlDialog( String dump) {
 		super();
+		closeOnEnter = false;
 		String start[] = Location.getHref().split("\\?");
 		String query="?ctz=" + compress(dump);
 		dump = start[0] + query;
@@ -149,11 +150,6 @@ public class ExportAsUrlDialog extends DialogBox {
 		    }
 		});
 		this.center();
-	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
 	}
 	
 	private static native boolean copyToClipboard() /*-{

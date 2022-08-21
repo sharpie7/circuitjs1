@@ -244,12 +244,9 @@ MouseOutHandler, MouseWheelHandler {
     boolean showResistanceInVoltageSources;
    int scopeColCount[];
     static EditDialog editDialog, customLogicEditDialog, diodeModelEditDialog;
-    static SliderDialog sliderDialog;
-    static ImportFromDropbox importFromDropbox;
     static ScrollValuePopup scrollValuePopup;
-    static DialogBox dialogShowing;
+    static Dialog dialogShowing;
     static AboutBox aboutBox;
-    static ImportFromDropboxDialog importFromDropboxDialog;
 //    Class dumpTypes[], shortcuts[];
     String shortcuts[];
     static String muString = "\u03bc";
@@ -3161,7 +3158,7 @@ MouseOutHandler, MouseWheelHandler {
     		dialogShowing = new ImportFromTextDialog(this);
     	}
     	if (item=="importfromdropbox") {
-    		importFromDropboxDialog = new ImportFromDropboxDialog(this);
+    		dialogShowing = new ImportFromDropboxDialog(this);
     	}
     	if (item=="exportasurl") {
     		doExportAsUrl();
@@ -3556,12 +3553,8 @@ MouseOutHandler, MouseWheelHandler {
     void doSliders(CircuitElm ce) {
 	clearSelection();
 	pushUndo();
-	if (sliderDialog != null) {
-	    sliderDialog.setVisible(false);
-	    sliderDialog = null;
-	}
-	sliderDialog = new SliderDialog(ce, this);
-	sliderDialog.show();
+	dialogShowing = new SliderDialog(ce, this);
+	dialogShowing.show();
     }
 
 
@@ -5211,12 +5204,10 @@ MouseOutHandler, MouseWheelHandler {
     boolean dialogIsShowing() {
     	if (editDialog!=null && editDialog.isShowing())
     		return true;
-    	if (sliderDialog!=null && sliderDialog.isShowing())
-		return true;
-    	if (customLogicEditDialog!=null && customLogicEditDialog.isShowing())
-		return true;
-    	if (diodeModelEditDialog!=null && diodeModelEditDialog.isShowing())
-		return true;
+        if (customLogicEditDialog!=null && customLogicEditDialog.isShowing())
+                return true;
+        if (diodeModelEditDialog!=null && diodeModelEditDialog.isShowing())
+                return true;
        	if (dialogShowing != null && dialogShowing.isShowing())
        		return true;
     	if (contextPanel!=null && contextPanel.isShowing())
@@ -5224,8 +5215,6 @@ MouseOutHandler, MouseWheelHandler {
     	if (scrollValuePopup != null && scrollValuePopup.isShowing())
     		return true;
     	if (aboutBox !=null && aboutBox.isShowing())
-    		return true;
-    	if (importFromDropboxDialog != null && importFromDropboxDialog.isShowing())
     		return true;
     	return false;
     }
@@ -5243,13 +5232,15 @@ MouseOutHandler, MouseWheelHandler {
     				scrollValuePopup.close(true);
     		}
     		
-    		// process escape/enter for edit dialogs
+    		// process escape/enter for dialogs
     		// multiple edit dialogs could be displayed at once, pick the one in front
-    		EditDialog dlg = editDialog;
+    		Dialog dlg = editDialog;
     		if (diodeModelEditDialog != null)
     		    dlg = diodeModelEditDialog;
     		if (customLogicEditDialog != null)
     		    dlg = customLogicEditDialog;
+    		if (dialogShowing != null)
+    		    dlg = dialogShowing;
     		if (dlg!=null && dlg.isShowing() &&
     				(t & Event.ONKEYDOWN)!=0) {
     			if (code==KEY_ESCAPE)

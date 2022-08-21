@@ -42,8 +42,7 @@ interface Editable {
     void setEditValue(int n, EditInfo ei);
 }
 
-// class EditDialog extends Dialog implements AdjustmentListener, ActionListener, ItemListener {
-class EditDialog extends DialogBox  {
+class EditDialog extends Dialog {
 	Editable elm;
 	CirSim cframe;
 	Button applyButton, okButton, cancelButton;
@@ -52,7 +51,6 @@ class EditDialog extends DialogBox  {
 	final int barmax = 1000;
 	VerticalPanel vp;
 	HorizontalPanel hp;
-	boolean closeOnEnter = true;
 	static NumberFormat noCommaFormat = NumberFormat.getFormat("####.##########");
 
 	EditDialog(Editable ce, CirSim f) {
@@ -311,18 +309,13 @@ class EditDialog extends DialogBox  {
 			vp.remove(0);
 	}
 	
-	protected void closeDialog()
+	public void closeDialog()
 	{
-		EditDialog.this.hide();
+		super.closeDialog();
 		if (cframe.editDialog == this)
 		    cframe.editDialog = null;
-	}
-	
-	public void enterPressed() {
-	    if (closeOnEnter) {
-		apply();
-		closeDialog();
-	    }
+		if (cframe.customLogicEditDialog == this)
+		    cframe.customLogicEditDialog = null;
 	}
 }
 

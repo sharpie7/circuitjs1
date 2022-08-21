@@ -35,7 +35,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHandler<String> {
+public class ExportAsLocalFileDialog extends Dialog implements ValueChangeHandler<String> {
 	
 	VerticalPanel vp;
 	
@@ -102,7 +102,7 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-			    download();
+			    apply();
 			    closeDialog();
 			}
 		});
@@ -118,7 +118,7 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 	    elem.click();
 	}-*/;
 	
-	void download() {
+	void apply() {
 	    String fname = textBox.getText();
 	    if (!fname.contains("."))
 		fname += ".txt";
@@ -135,10 +135,4 @@ public class ExportAsLocalFileDialog extends DialogBox implements ValueChangeHan
 		return;
 	    lastFileName = fname;
 	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 }

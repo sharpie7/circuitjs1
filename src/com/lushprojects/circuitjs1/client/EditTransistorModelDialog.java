@@ -20,7 +20,7 @@ public class EditTransistorModelDialog extends EditDialog {
 	    transistorElm.newModelCreated(model);
     }
     
-    protected void closeDialog() {
+    public void closeDialog() {
 	super.closeDialog();
 	EditDialog edlg = CirSim.editDialog;
 	CirSim.console("resetting dialog " + edlg);

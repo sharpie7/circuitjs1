@@ -38,7 +38,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 // class EditDialog extends Dialog implements AdjustmentListener, ActionListener, ItemListener {
-class SliderDialog extends DialogBox  {
+class SliderDialog extends Dialog  {
 	CircuitElm elm;
 	CirSim sim;
 	Button applyButton, okButton, cancelButton;
@@ -241,12 +241,6 @@ class SliderDialog extends DialogBox  {
 	public void clearDialog() {
 		while (vp.getWidget(0)!=hp)
 			vp.remove(0);
-	}
-	
-	protected void closeDialog()
-	{
-		SliderDialog.this.hide();
-		sim.sliderDialog = null;
 	}
 }
 

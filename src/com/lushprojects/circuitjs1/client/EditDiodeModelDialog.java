@@ -20,7 +20,7 @@ public class EditDiodeModelDialog extends EditDialog {
 	    diodeElm.newModelCreated(model);
     }
     
-    protected void closeDialog() {
+    public void closeDialog() {
 	super.closeDialog();
 	EditDialog edlg = CirSim.editDialog;
 	CirSim.console("resetting dialog " + edlg);

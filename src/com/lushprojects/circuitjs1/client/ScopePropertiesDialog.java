@@ -43,7 +43,7 @@ class ScopeCheckBox extends CheckBox {
 
 
 
-public class ScopePropertiesDialog extends DialogBox implements ValueChangeHandler<Boolean> {
+public class ScopePropertiesDialog extends Dialog implements ValueChangeHandler<Boolean> {
 
 	
 Panel fp, channelButtonsp, channelSettingsp;
@@ -647,10 +647,10 @@ labelledGridManager gridLabels;
 		updateManualScaleUi();
 	}
 	
-	protected void closeDialog()
+	public void closeDialog()
 	{
+	    super.closeDialog();
 	    apply();
-	    this.hide();
 	}
 	
 	double getManualScaleValue()

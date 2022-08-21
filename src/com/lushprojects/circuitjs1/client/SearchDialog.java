@@ -49,7 +49,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.safehtml.shared.SafeHtml;
 
-public class SearchDialog extends DialogBox {
+public class SearchDialog extends Dialog {
 	
 	VerticalPanel vp;
 	CirSim sim;
@@ -160,10 +160,4 @@ public class SearchDialog extends DialogBox {
             if (items.size() > 0)
 		listBox.setItemSelected(0, true);
 	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 }

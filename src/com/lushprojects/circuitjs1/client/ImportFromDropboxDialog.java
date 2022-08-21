@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.Window;
 
-public class ImportFromDropboxDialog extends DialogBox {
+public class ImportFromDropboxDialog extends Dialog {
 	
 		
 	VerticalPanel vp;
@@ -74,6 +74,7 @@ public class ImportFromDropboxDialog extends DialogBox {
 		super();
 		setSim(csim);
 
+		closeOnEnter = false;
 		vp=new VerticalPanel();
 		setWidget(vp);
 		setText(sim.LS("Import from Dropbox"));
@@ -121,11 +122,5 @@ public class ImportFromDropboxDialog extends DialogBox {
 		});
 		this.center();
 	}
-
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 }
 

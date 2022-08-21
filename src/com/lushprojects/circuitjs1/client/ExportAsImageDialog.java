@@ -29,7 +29,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-public class ExportAsImageDialog extends DialogBox {
+public class ExportAsImageDialog extends Dialog {
 	
 	VerticalPanel vp;
 	
@@ -69,10 +69,4 @@ public class ExportAsImageDialog extends DialogBox {
 		});
 		this.center();
 	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 }

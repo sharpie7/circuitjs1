@@ -30,7 +30,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.safehtml.shared.SafeHtml;
 
-public class ExportAsTextDialog extends DialogBox {
+public class ExportAsTextDialog extends Dialog {
 	
 	VerticalPanel vp;
 	CirSim sim;
@@ -38,6 +38,7 @@ public class ExportAsTextDialog extends DialogBox {
 	
 	public ExportAsTextDialog(CirSim asim, String s) {
 		super();
+		closeOnEnter = false;
 		sim = asim;
 	//	RichTextArea tb;
 		TextArea ta;
@@ -96,11 +97,6 @@ public class ExportAsTextDialog extends DialogBox {
 		    }
 		});
 		this.center();
-	}
-	
-	protected void closeDialog()
-	{
-		this.hide();
 	}
 	
 	private static native boolean copyToClipboard() /*-{

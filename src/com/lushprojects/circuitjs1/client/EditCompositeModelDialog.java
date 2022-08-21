@@ -52,7 +52,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-public class EditCompositeModelDialog extends DialogBox implements MouseDownHandler, MouseMoveHandler, MouseUpHandler, MouseOutHandler, MouseOverHandler {
+public class EditCompositeModelDialog extends Dialog implements MouseDownHandler, MouseMoveHandler, MouseUpHandler, MouseOutHandler, MouseOverHandler {
 	
 	VerticalPanel vp;
 	boolean error;
@@ -100,6 +100,7 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
         
 	public EditCompositeModelDialog() {
 		super();
+		closeOnEnter = true;
 	}
 	
 	TextBox modelNameTextBox = null;
@@ -257,11 +258,6 @@ public class EditCompositeModelDialog extends DialogBox implements MouseDownHand
 	    drawChip();
 	}
 	
-	protected void closeDialog()
-	{
-		this.hide();
-	}
-
 	boolean dragging;
 	
 	public void onMouseOver(MouseOverEvent event) {
