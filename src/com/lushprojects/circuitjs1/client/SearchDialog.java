@@ -71,8 +71,6 @@ public class SearchDialog extends Dialog {
 			new KeyUpHandler() {
 		    public void onKeyUp(KeyUpEvent ev) {
 			search();
-			if (ev.getNativeKeyCode() == 13)
-			    ok();
 		    }
 		});
 
@@ -82,13 +80,7 @@ public class SearchDialog extends Dialog {
 		listBox.setWidth("100%");
 		listBox.addDoubleClickHandler(new DoubleClickHandler() {
 		    public void onDoubleClick(DoubleClickEvent ev) {
-			ok();
-		    }
-		});
-		listBox.addKeyDownHandler(new KeyDownHandler() {
-		    public void onKeyDown(KeyDownEvent ev) {
-			if (ev.getNativeKeyCode() == 13)
-			    ok();
+			apply();
 		    }
 		});
 		listBox.setVisibleItemCount(10);
@@ -111,7 +103,7 @@ public class SearchDialog extends Dialog {
 		hp.add(cancelButton = new Button(sim.LS("Cancel")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-			    ok();
+			    apply();
 			}
 		});
 		cancelButton.addClickHandler(new ClickHandler() {
@@ -123,7 +115,7 @@ public class SearchDialog extends Dialog {
 		textBox.setFocus(true);
 	}
 	
-	void ok() {
+	void apply() {
 	    String s = listBox.getSelectedItemText();
 	    
 	    int i;
