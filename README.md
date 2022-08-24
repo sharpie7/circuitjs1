@@ -64,6 +64,7 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs.html?startCircuitLink=<URL> // Loads the circuit from the specified URL. CURRENTLY THE URL MUST BE A DROPBOX SHARED FILE OR ANOTHER URL THAT SUPPORTS CORS ACCESS FROM THE CLIENT
 .../circuitjs.html?euroResistors=true // Set to true to force "Euro" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
 .../circuitjs.html?usResistors=true // Set to true to force "US" style resistors. If not specified the resistor style will be based on the user's browser's language preferences
+.../circuitjs.html?euroGates=true // Set to true to force "IEC" style logic gates. If not specified the gate style will be based on the user's browser's language preferences
 .../circuitjs.html?whiteBackground=<true|false>
 .../circuitjs.html?conventionalCurrent=<true|false>
 .../circuitjs.html?running=<true|false> // Start the app without the simulation running, default true

@@ -354,6 +354,7 @@ MouseOutHandler, MouseWheelHandler {
 	boolean hideSidebar = false;
 	boolean hideMenu = false;
 	boolean noEditing = false;
+	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 	MenuBar m;
 
 	CircuitElm.initClass(this);
@@ -378,6 +379,8 @@ MouseOutHandler, MouseWheelHandler {
 	    startCircuitLink = qp.getValue("startCircuitLink");
 	    euroRes = qp.getBooleanValue("euroResistors", false);
 	    usRes = qp.getBooleanValue("usResistors",  false);
+	    if (qp.getValue("euroGates")!=null)
+		euroGates = qp.getBooleanValue("euroGates", euroGates);
 	    running = qp.getBooleanValue("running", true);
 	    hideSidebar = qp.getBooleanValue("hideSidebar", false);
 	    hideMenu = qp.getBooleanValue("hideMenu", false);
@@ -396,7 +399,6 @@ MouseOutHandler, MouseWheelHandler {
 	    euroSetting = false;
 	else
 	    euroSetting = getOptionFromStorage("euroResistors", !weAreInUS());
-	boolean euroGates = getOptionFromStorage("euroGates", weAreInGermany());
 
 	transform = new double[6];
 	String os = Navigator.getPlatform();
