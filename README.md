@@ -73,6 +73,10 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs.html?editable=<true|false> // Allow circuit editing, default true
 .../circuitjs.html?positiveColor=%2300ff00 // change positive voltage color (rrggbb)
 .../circuitjs.html?negativeColor=%23ff0000 // change negative voltage color
+.../circuitjs.html?selectColor=%2300ffff // change selection color
+.../circuitjs.html?currentColor=%23ffff00 // change current color
+.../circuitjs.html?mouseWheelEdit=<true|false> // allow changing of values by mouse wheel
+.../circuitjs.html?mouseMode=<item> // initially perform a specific UI action, such as opening the 'about' menu, running 'importfromlocalfile', etc.
 ```
 The simulator can also interface with your javascript code.  See [war/jsinterface.html](http://www.falstad.com/circuit/jsinterface.html) for an example.
 
