@@ -19,15 +19,11 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.core.client.JsArrayNumber;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FileUpload;
 
 class DataFileEntry {

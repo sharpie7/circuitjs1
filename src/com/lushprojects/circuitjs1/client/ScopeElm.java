@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import java.util.Vector;
-
 class ScopeElm extends CircuitElm {
     
     Scope elmScope;

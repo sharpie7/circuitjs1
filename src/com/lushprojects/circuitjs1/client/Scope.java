@@ -20,16 +20,13 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
 
 
 import java.util.Vector;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
-import com.google.gwt.core.client.GWT;
 
 // plot of single value on a scope
 class ScopePlot {

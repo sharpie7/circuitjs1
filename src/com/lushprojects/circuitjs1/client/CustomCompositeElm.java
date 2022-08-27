@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.lushprojects.circuitjs1.client.ChipElm.Pin;
 
 // instances of subcircuits
 
