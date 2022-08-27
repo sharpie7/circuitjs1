@@ -183,7 +183,7 @@ class DataInputElm extends RailElm {
         	    double d = Double.parseDouble(arr[i]);
         	    data.add(d);
         	} catch (Exception e) {
-        	    sim.console("parse error on line " + i);
+        	    CirSim.console("parse error on line " + i);
         	}
             }
 	}

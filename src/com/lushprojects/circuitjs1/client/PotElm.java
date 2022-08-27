@@ -255,7 +255,7 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	    dpx = 0;
 	    dpy = -hs;
 	}
-	sim.console("dv " + dpx + " " + w);
+	CirSim.console("dv " + dpx + " " + w);
 	if (dpx == 0)
 	    g.drawString(s, xc-w/2, yc-abs(dpy)-2);
 	else {

@@ -260,7 +260,7 @@ abstract class ChipElm extends CircuitElm {
 		}
 	    }
 	    if (vsc != getVoltageSourceCount())
-		sim.console("voltage source count does not match number of outputs");
+		CirSim.console("voltage source count does not match number of outputs");
 	}
 	void execute() {}
 	void doStep() {
@@ -309,7 +309,7 @@ abstract class ChipElm extends CircuitElm {
 	
 	void writeOutput(int n, boolean value) {
 	    if (!pins[n].output)
-		sim.console("pin " + n + " is not an output!");
+		CirSim.console("pin " + n + " is not an output!");
 	    pins[n].value = value;
 	}
 	
