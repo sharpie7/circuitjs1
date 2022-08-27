@@ -218,7 +218,7 @@ public class CustomCompositeElm extends CompositeElm {
         }
         if (n == 5) {
             sim.readCircuit(model.modelCircuit);
-            sim.editDialog.closeDialog();
+            CirSim.editDialog.closeDialog();
         }
     }
     
