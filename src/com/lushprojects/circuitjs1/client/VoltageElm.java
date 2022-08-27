@@ -294,7 +294,7 @@ class VoltageElm extends CircuitElm {
 		    getUnitText(2.9979e8/frequency, "m");
 	}
 	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources)
-	    arr[i++] = "(R = " + getUnitText(maxVoltage/current, sim.ohmString) + ")";
+	    arr[i++] = "(R = " + getUnitText(maxVoltage/current, CirSim.ohmString) + ")";
 	arr[i++] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {

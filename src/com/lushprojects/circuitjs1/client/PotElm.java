@@ -293,8 +293,8 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     void getInfo(String arr[]) {
 	arr[0] = "potentiometer";
 	arr[1] = "Vd = " + getVoltageDText(getVoltageDiff());
-	arr[2] = "R1 = " + getUnitText(resistance1, sim.ohmString);
-	arr[3] = "R2 = " + getUnitText(resistance2, sim.ohmString);
+	arr[2] = "R1 = " + getUnitText(resistance1, CirSim.ohmString);
+	arr[3] = "R2 = " + getUnitText(resistance2, CirSim.ohmString);
 	arr[4] = "I1 = " + getCurrentDText(current1);
 	arr[5] = "I2 = " + getCurrentDText(current2);
     }
