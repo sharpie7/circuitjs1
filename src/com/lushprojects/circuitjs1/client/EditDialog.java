@@ -314,8 +314,8 @@ class EditDialog extends Dialog {
 		super.closeDialog();
 		if (CirSim.editDialog == this)
 		    CirSim.editDialog = null;
-		if (cframe.customLogicEditDialog == this)
-		    cframe.customLogicEditDialog = null;
+		if (CirSim.customLogicEditDialog == this)
+		    CirSim.customLogicEditDialog = null;
 	}
 }
 
