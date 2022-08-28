@@ -34,6 +34,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.lushprojects.circuitjs1.client.ChipElm.Pin;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -69,7 +70,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
             if (model == null)
         	return false;
             if (model.extList.size() == 0) {
-        	Window.alert(CirSim.LS("Device has no external inputs/outputs!"));
+        	Window.alert(Locale.LS("Device has no external inputs/outputs!"));
         	return false;
             }
             Collections.sort(model.extList, new Comparator<ExtListEntry>() {
@@ -89,7 +90,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
         	pin.pos = left ? i : i-model.sizeY;
         	pin.side = side;
         	if (nodeSet.contains(pin.node)) {
-        	    Window.alert(CirSim.LS("Can't have two input/output nodes connected!"));
+        	    Window.alert(Locale.LS("Can't have two input/output nodes connected!"));
         	    return false;
         	}
         	nodeSet.add(pin.node);
@@ -111,8 +112,8 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 		Anchor a;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText(CirSim.LS("Edit Subcircuit Pin Layout"));
-		vp.add(new Label(CirSim.LS("Drag the pins to the desired position")));
+		setText(Locale.LS("Edit Subcircuit Pin Layout"));
+		vp.add(new Label(Locale.LS("Drag the pins to the desired position")));
 		Date date = new Date();
 
 		Canvas canvas = Canvas.createIfSupported();
@@ -131,14 +132,14 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 		createPinsFromModel();
 		
 		if (model.name == null) {
-		    vp.add(new Label(CirSim.LS("Model Name")));
+		    vp.add(new Label(Locale.LS("Model Name")));
 		    modelNameTextBox = new TextBox();
 		    vp.add(modelNameTextBox);
 //		    modelNameTextBox.setText(model.name);
 		}
 		
 		HorizontalPanel hp = new HorizontalPanel();
-		hp.add(new Label(CirSim.LS("Width")));
+		hp.add(new Label(Locale.LS("Width")));
 		Button b;
 		hp.add(b = new Button("+"));
 		b.addClickHandler(new ClickHandler() {
@@ -152,7 +153,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
                 	adjustChipSize(-1, 0);
                     }
                 });
-		hp.add(new Label(CirSim.LS("Height")));
+		hp.add(new Label(Locale.LS("Height")));
 		hp.add(b = new Button("+"));
 		b.addClickHandler(new ClickHandler() {
                     public void onClick(ClickEvent event) {
@@ -167,7 +168,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
                 });
 		vp.add(hp);
 		hp.addStyleName("topSpace");
-		vp.add(saveCheck = new Checkbox(CirSim.LS("Save Across Sessions")));
+		vp.add(saveCheck = new Checkbox(Locale.LS("Save Across Sessions")));
 		saveCheck.setState(model.isSaved());
 	
                 canvas.addMouseDownHandler(this);
@@ -181,11 +182,11 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
                 hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
                 hp.setStyleName("topSpace");
                 vp.add(hp);
-                hp.add(okButton = new Button(CirSim.LS("OK")));
+                hp.add(okButton = new Button(Locale.LS("OK")));
                 hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
                 Button cancelButton;
 		if (model.name == null) {
-		    hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
+		    hp.add(cancelButton = new Button(Locale.LS("Cancel")));
 		    cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 			    closeDialog();
@@ -197,7 +198,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 			    if (modelNameTextBox != null) {
 				String name = modelNameTextBox.getText();
 				if (name.length() == 0) {
-				    Window.alert(CirSim.LS("Please enter a model name."));
+				    Window.alert(Locale.LS("Please enter a model name."));
 				    return;
 				}
 				model.setName(CustomCompositeElm.lastModelName = name);

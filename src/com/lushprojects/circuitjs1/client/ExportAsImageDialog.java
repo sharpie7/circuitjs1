@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
@@ -44,8 +45,8 @@ public class ExportAsImageDialog extends Dialog {
 		Anchor a;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText(CirSim.LS("Export as Image"));
-		vp.add(new Label(CirSim.LS("Click on the link below to save your image")));
+		setText(Locale.LS("Export as Image"));
+		vp.add(new Label(Locale.LS("Click on the link below to save your image")));
 		Date date = new Date();
 		DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
 		String dataURL;
@@ -61,7 +62,7 @@ public class ExportAsImageDialog extends Dialog {
 		String fname = "circuit-"+ dtf.format(date) + ext;
 		a.getElement().setAttribute("Download", fname);
 		vp.add(a);
-		vp.add(okButton = new Button(CirSim.LS("OK")));
+		vp.add(okButton = new Button(Locale.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();

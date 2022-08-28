@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class CapacitorElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class CapacitorElm extends CircuitElm {
 	double capacitance;
 	double compResistance, voltdiff;
 	double initialVoltage;
@@ -176,7 +178,7 @@ package com.lushprojects.circuitjs1.client;
 	}
 	@Override
 	String getScopeText(int v) {
-	    return sim.LS("capacitor") + ", " + getUnitText(capacitance, "F");
+	    return Locale.LS("capacitor") + ", " + getUnitText(capacitance, "F");
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)

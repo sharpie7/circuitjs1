@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.core.client.GWT;
@@ -103,10 +104,10 @@ public class ExportAsUrlDialog extends Dialog {
 		Label la1, la2;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText(CirSim.LS("Export as URL"));
-		vp.add(new Label(CirSim.LS("URL for this circuit is...")));
+		setText(Locale.LS("Export as URL"));
+		vp.add(new Label(Locale.LS("URL for this circuit is...")));
 		if (dump.length()>2000) {
-			vp.add( la1= new Label(CirSim.LS("Warning: this URL is longer than 2000 characters and may not work in some browsers."), true));
+			vp.add( la1= new Label(Locale.LS("Warning: this URL is longer than 2000 characters and may not work in some browsers."), true));
 			la1.setWidth("300px");
 		}
 		vp.add(textArea = new TextArea());
@@ -122,13 +123,13 @@ public class ExportAsUrlDialog extends Dialog {
 		hp.setWidth("100%");
 		hp.setStyleName("topSpace");
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		hp.add(okButton = new Button(CirSim.LS("OK")));
-		hp.add(copyButton = new Button(CirSim.LS("Copy to Clipboard")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
+		hp.add(copyButton = new Button(Locale.LS("Copy to Clipboard")));
 		vp.add(hp);
 		if (shortIsSupported()) {
 			hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 	
-			hp.add(shortButton = new Button(CirSim.LS("Create short URL")));
+			hp.add(shortButton = new Button(Locale.LS("Create short URL")));
 			shortButton.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					shortButton.setVisible(false);

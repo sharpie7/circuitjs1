@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import java.util.Vector;
@@ -56,7 +57,7 @@ public class ShortcutsDialog extends Dialog {
 		vp.add(sp);
 		sp.setHeight("400px");
 		sp.setAlwaysShowScrollBars(true);
-		setText(sim.LS("Edit Shortcuts"));
+		setText(Locale.LS("Edit Shortcuts"));
 		textBoxes = new Vector<TextBox>();
 		
 		FlexTable table = new FlexTable();
@@ -84,9 +85,9 @@ public class ShortcutsDialog extends Dialog {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(okButton = new Button(sim.LS("OK")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button(sim.LS("Cancel")));
+		hp.add(cancelButton = new Button(Locale.LS("Cancel")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 			    enterPressed();

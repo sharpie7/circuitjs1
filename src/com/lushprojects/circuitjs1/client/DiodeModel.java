@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 public class DiodeModel implements Editable, Comparable<DiodeModel> {
 
     static HashMap<String, DiodeModel> modelMap;
@@ -194,7 +196,7 @@ public class DiodeModel implements Editable, Comparable<DiodeModel> {
     String getDescription() {
 	if (description == null)
 	    return name;
-	return name + " (" + CirSim.LS(description) + ")";
+	return name + " (" + Locale.LS(description) + ")";
     }
     
     DiodeModel() {

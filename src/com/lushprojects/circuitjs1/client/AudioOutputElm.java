@@ -9,6 +9,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class AudioOutputElm extends CircuitElm {
     int dataCount, dataPtr;
@@ -167,7 +168,7 @@ public class AudioOutputElm extends CircuitElm {
                 Date date = new Date();
                 DateTimeFormat dtf = DateTimeFormat.getFormat("yyyyMMdd-HHmm");
                 String fname = "audio-"+ dtf.format(date) + ".circuitjs.wav";
-                Anchor a=new Anchor(CirSim.LS("Download last played audio"), url);
+                Anchor a=new Anchor(Locale.LS("Download last played audio"), url);
                 a.getElement().setAttribute("Download", fname);
                 ei.widget = a;
                 return ei;
@@ -209,7 +210,7 @@ public class AudioOutputElm extends CircuitElm {
 //	    int frac = (int)Math.round(Math.max(sampleStep*33000, 1));
 	    double target = sampleStep/8;
 	    if (sim.maxTimeStep != target) {
-                if (okToChangeTimeStep || Window.confirm(sim.LS("Adjust timestep for best audio quality and performance?"))) {
+                if (okToChangeTimeStep || Window.confirm(Locale.LS("Adjust timestep for best audio quality and performance?"))) {
                     sim.maxTimeStep = target;
                     okToChangeTimeStep = true;
                 }
@@ -217,7 +218,7 @@ public class AudioOutputElm extends CircuitElm {
 	}
 	
         void createButton() {
-            String label = "&#9654; " + sim.LS("Play Audio");
+            String label = "&#9654; " + Locale.LS("Play Audio");
             if (labelNum > 1)
         	label += " " + labelNum;
             sim.addWidgetToVerticalPanel(button = new Button(label));
@@ -363,7 +364,7 @@ public class AudioOutputElm extends CircuitElm {
         	base = dataPtr;
             }
             if (ct * sampleStep < .05) {
-        	Window.alert(sim.LS("Audio data is not ready yet.  Increase simulation speed to make data ready sooner."));
+        	Window.alert(Locale.LS("Audio data is not ready yet.  Increase simulation speed to make data ready sooner."));
         	return;
             }
             

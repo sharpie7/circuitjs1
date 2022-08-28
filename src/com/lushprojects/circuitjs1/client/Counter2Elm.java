@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class Counter2Elm extends ChipElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class Counter2Elm extends ChipElm {
 	int modulus;
 
 	public Counter2Elm(int xx, int yy) {
@@ -42,7 +44,7 @@ package com.lushprojects.circuitjs1.client;
 	String getChipName() {
 	    if (modulus == 0)
 		return "Counter";
-	    return sim.LS("Counter") + sim.LS(" (mod ") + modulus + ")";
+	    return Locale.LS("Counter") + Locale.LS(" (mod ") + modulus + ")";
 	}
 	
 	int clk, clr, enp, ent, rco, load;

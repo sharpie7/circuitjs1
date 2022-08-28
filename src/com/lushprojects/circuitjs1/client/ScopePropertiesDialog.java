@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.RadioButton;
 
@@ -246,17 +247,17 @@ labelledGridManager gridLabels;
 		Button okButton, applyButton2;
 		fp=new FlowPanel();
 		setWidget(fp);
-		setText(CirSim.LS("Scope Properties"));
+		setText(Locale.LS("Scope Properties"));
 
 // *************** VERTICAL SCALE ***********************************************************
 		Grid vSLG = new Grid(1,1); // Stupid grid to force labels to align without diving deep in to table CSS
-		vScaleLabel = new expandingLabel(CirSim.LS("Vertical Scale"), displayScales);
+		vScaleLabel = new expandingLabel(Locale.LS("Vertical Scale"), displayScales);
 		vSLG.setWidget(0,0,vScaleLabel.p);
 		fp.add(vSLG);
 		
 				
 		vModep = new HorizontalPanel();
-		autoButton = new RadioButton("vMode", CirSim.LS("Auto"));
+		autoButton = new RadioButton("vMode", Locale.LS("Auto"));
 		autoButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(false, false);
@@ -264,7 +265,7 @@ labelledGridManager gridLabels;
 	        	updateUi();
 	            }
 	        });
-		maxButton = new RadioButton("vMode", CirSim.LS("Auto (Max Scale)"));
+		maxButton = new RadioButton("vMode", Locale.LS("Auto (Max Scale)"));
 		maxButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(false, false);
@@ -272,7 +273,7 @@ labelledGridManager gridLabels;
 	        	updateUi();
 	            }
 	        });
-		manualButton = new RadioButton("vMode", CirSim.LS("Manual"));
+		manualButton = new RadioButton("vMode", Locale.LS("Manual"));
 		manualButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 	            public void onValueChange(ValueChangeEvent<Boolean> e) {
 	        	scope.setManualScale(true, true);
@@ -290,7 +291,7 @@ labelledGridManager gridLabels;
 		fp.add(channelSettingsp);
 		
 		vScaleGrid = new Grid(3,5);
-		dcButton= new RadioButton("acdc", CirSim.LS("DC Coupled"));
+		dcButton= new RadioButton("acdc", Locale.LS("DC Coupled"));
 		dcButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 		    public void onValueChange(ValueChangeEvent<Boolean> e) {
 		    if (plotSelection<scope.visiblePlots.size())
@@ -299,7 +300,7 @@ labelledGridManager gridLabels;
 		    }
 		});
 		vScaleGrid.setWidget(0, 0, dcButton);
-		acButton= new RadioButton("acdc", CirSim.LS("AC Coupled"));
+		acButton= new RadioButton("acdc", Locale.LS("AC Coupled"));
 		acButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 		    public void onValueChange(ValueChangeEvent<Boolean> e) {
 		    if (plotSelection<scope.visiblePlots.size())
@@ -309,7 +310,7 @@ labelledGridManager gridLabels;
 		});
 		vScaleGrid.setWidget(0, 1, acButton);
 		
-		positionLabel= new Label(CirSim.LS("Position"));
+		positionLabel= new Label(Locale.LS("Position"));
 		vScaleGrid.setWidget(1,0, positionLabel);
 		vScaleGrid.getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		positionBar = new Scrollbar(Scrollbar.HORIZONTAL,0, 1, -Scope.V_POSITION_STEPS, Scope.V_POSITION_STEPS, new Command() {
@@ -318,7 +319,7 @@ labelledGridManager gridLabels;
 		    }
 		});
 		vScaleGrid.setWidget(1,1,positionBar);
-		Button resetPosButton = new Button(CirSim.LS("Reset Position"));
+		Button resetPosButton = new Button(Locale.LS("Reset Position"));
 		resetPosButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 			    positionBar.setValue(0);
@@ -344,7 +345,7 @@ labelledGridManager gridLabels;
 		vScaleGrid.setWidget(2,1, scaleBoxGrid);
 		manualScaleLabel = new Label("");
 		vScaleGrid.setWidget(2,2, manualScaleLabel);
-		vScaleGrid.setWidget(2,4, applyButton = new Button(CirSim.LS("Apply")));
+		vScaleGrid.setWidget(2,4, applyButton = new Button(Locale.LS("Apply")));
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -358,7 +359,7 @@ labelledGridManager gridLabels;
 
 		
 		hScaleGrid = new Grid(2,4);
-		hScaleLabel = new expandingLabel(CirSim.LS("Horizontal Scale"), displayScales);
+		hScaleLabel = new expandingLabel(Locale.LS("Horizontal Scale"), displayScales);
 		hScaleGrid.setWidget(0, 0, hScaleLabel.p);
 		speedBar = new Scrollbar(Scrollbar.HORIZONTAL, 2, 1, 0, 11, new Command() {
 		    public void execute() {
@@ -381,72 +382,72 @@ labelledGridManager gridLabels;
 		if (!transistor) {
 		    grid = new Grid(11, 3);
 		    gridLabels = new labelledGridManager(grid);
-		    gridLabels.addLabel(CirSim.LS("Plots"), displayAll);
-		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(CirSim.LS("Show Voltage"), "showvoltage"));
+		    gridLabels.addLabel(Locale.LS("Plots"), displayAll);
+		    addItemToGrid(grid, voltageBox = new ScopeCheckBox(Locale.LS("Show Voltage"), "showvoltage"));
 		    voltageBox.addValueChangeHandler(this); 
-		    addItemToGrid(grid, currentBox = new ScopeCheckBox(CirSim.LS("Show Current"), "showcurrent"));
+		    addItemToGrid(grid, currentBox = new ScopeCheckBox(Locale.LS("Show Current"), "showcurrent"));
 		    currentBox.addValueChangeHandler(this);
 		} else {
 		    grid = new Grid(13,3);
 		    gridLabels = new labelledGridManager(grid);
-		    gridLabels.addLabel(CirSim.LS("Plots"), displayAll);
-		    addItemToGrid(grid, ibBox = new ScopeCheckBox(CirSim.LS("Show Ib"), "showib"));
+		    gridLabels.addLabel(Locale.LS("Plots"), displayAll);
+		    addItemToGrid(grid, ibBox = new ScopeCheckBox(Locale.LS("Show Ib"), "showib"));
 		    ibBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, icBox = new ScopeCheckBox(CirSim.LS("Show Ic"), "showic"));
+		    addItemToGrid(grid, icBox = new ScopeCheckBox(Locale.LS("Show Ic"), "showic"));
 		    icBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, ieBox = new ScopeCheckBox(CirSim.LS("Show Ie"), "showie"));
+		    addItemToGrid(grid, ieBox = new ScopeCheckBox(Locale.LS("Show Ie"), "showie"));
 		    ieBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, vbeBox = new ScopeCheckBox(CirSim.LS("Show Vbe"), "showvbe"));
+		    addItemToGrid(grid, vbeBox = new ScopeCheckBox(Locale.LS("Show Vbe"), "showvbe"));
 		    vbeBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, vbcBox = new ScopeCheckBox(CirSim.LS("Show Vbc"), "showvbc"));
+		    addItemToGrid(grid, vbcBox = new ScopeCheckBox(Locale.LS("Show Vbc"), "showvbc"));
 		    vbcBox.addValueChangeHandler(this);
-		    addItemToGrid(grid, vceBox = new ScopeCheckBox(CirSim.LS("Show Vce"), "showvce"));
+		    addItemToGrid(grid, vceBox = new ScopeCheckBox(Locale.LS("Show Vce"), "showvce"));
 		    vceBox.addValueChangeHandler(this);
 		}
-		addItemToGrid(grid, powerBox = new ScopeCheckBox(CirSim.LS("Show Power Consumed"), "showpower"));
+		addItemToGrid(grid, powerBox = new ScopeCheckBox(Locale.LS("Show Power Consumed"), "showpower"));
 		powerBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, resistanceBox = new ScopeCheckBox(CirSim.LS("Show Resistance"), "showresistance"));
+		addItemToGrid(grid, resistanceBox = new ScopeCheckBox(Locale.LS("Show Resistance"), "showresistance"));
 		resistanceBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(CirSim.LS("Show Spectrum"), "showfft"));
+		addItemToGrid(grid, spectrumBox = new ScopeCheckBox(Locale.LS("Show Spectrum"), "showfft"));
 		spectrumBox.addValueChangeHandler(this);
-		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(CirSim.LS("Log Spectrum"), "logspectrum"));
+		addItemToGrid(grid, logSpectrumBox = new ScopeCheckBox(Locale.LS("Log Spectrum"), "logspectrum"));
 		logSpectrumBox.addValueChangeHandler(this);
 		
-		gridLabels.addLabel(CirSim.LS("X-Y Plots"), displayAll);
-		addItemToGrid(grid, viBox = new ScopeCheckBox(CirSim.LS("Show V vs I"), "showvvsi"));
+		gridLabels.addLabel(Locale.LS("X-Y Plots"), displayAll);
+		addItemToGrid(grid, viBox = new ScopeCheckBox(Locale.LS("Show V vs I"), "showvvsi"));
 		viBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, xyBox = new ScopeCheckBox(CirSim.LS("Plot X/Y"), "plotxy"));
+		addItemToGrid(grid, xyBox = new ScopeCheckBox(Locale.LS("Plot X/Y"), "plotxy"));
 		xyBox.addValueChangeHandler(this);
 		if (transistor) {
-		    addItemToGrid(grid, vceIcBox = new ScopeCheckBox(CirSim.LS("Show Vce vs Ic"), "showvcevsic"));
+		    addItemToGrid(grid, vceIcBox = new ScopeCheckBox(Locale.LS("Show Vce vs Ic"), "showvcevsic"));
 		    vceIcBox.addValueChangeHandler(this);
 		}
-		gridLabels.addLabel(CirSim.LS("Show Info"), displayAll);
-		addItemToGrid(grid, scaleBox = new ScopeCheckBox(CirSim.LS("Show Scale"), "showscale"));
+		gridLabels.addLabel(Locale.LS("Show Info"), displayAll);
+		addItemToGrid(grid, scaleBox = new ScopeCheckBox(Locale.LS("Show Scale"), "showscale"));
 		scaleBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, peakBox = new ScopeCheckBox(CirSim.LS("Show Peak Value"), "showpeak"));
+		addItemToGrid(grid, peakBox = new ScopeCheckBox(Locale.LS("Show Peak Value"), "showpeak"));
 		peakBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, negPeakBox = new ScopeCheckBox(CirSim.LS("Show Negative Peak Value"), "shownegpeak"));
+		addItemToGrid(grid, negPeakBox = new ScopeCheckBox(Locale.LS("Show Negative Peak Value"), "shownegpeak"));
 		negPeakBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, freqBox = new ScopeCheckBox(CirSim.LS("Show Frequency"), "showfreq"));
+		addItemToGrid(grid, freqBox = new ScopeCheckBox(Locale.LS("Show Frequency"), "showfreq"));
 		freqBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, averageBox = new ScopeCheckBox(CirSim.LS("Show Average"), "showaverage"));
+		addItemToGrid(grid, averageBox = new ScopeCheckBox(Locale.LS("Show Average"), "showaverage"));
 		averageBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, rmsBox = new ScopeCheckBox(CirSim.LS("Show RMS Average"), "showrms"));
+		addItemToGrid(grid, rmsBox = new ScopeCheckBox(Locale.LS("Show RMS Average"), "showrms"));
 		rmsBox.addValueChangeHandler(this); 
-		addItemToGrid(grid, dutyBox = new ScopeCheckBox(CirSim.LS("Show Duty Cycle"), "showduty"));
+		addItemToGrid(grid, dutyBox = new ScopeCheckBox(Locale.LS("Show Duty Cycle"), "showduty"));
 		dutyBox.addValueChangeHandler(this);
-		addItemToGrid(grid, elmInfoBox = new ScopeCheckBox(CirSim.LS("Show Extended Info"), "showelminfo"));
+		addItemToGrid(grid, elmInfoBox = new ScopeCheckBox(Locale.LS("Show Extended Info"), "showelminfo"));
 		elmInfoBox.addValueChangeHandler(this); 
 		fp.add(grid);
 
-		gridLabels.addLabel(CirSim.LS("Custom Label"), displayAll);
+		gridLabels.addLabel(Locale.LS("Custom Label"), displayAll);
 		labelTextBox = new TextBox();
 		addItemToGrid(grid, labelTextBox);
 		String labelText = scope.getText();
 		if (labelText != null)
 		    labelTextBox.setText(labelText);
-		addItemToGrid(grid, applyButton2= new Button(CirSim.LS("Apply")));
+		addItemToGrid(grid, applyButton2= new Button(Locale.LS("Apply")));
 		applyButton2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -459,7 +460,7 @@ labelledGridManager gridLabels;
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		fp.add(hp);
-		hp.add(okButton = new Button(CirSim.LS("OK")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -471,7 +472,7 @@ labelledGridManager gridLabels;
 		
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		Button saveAsDefaultButton;
-		hp.add(saveAsDefaultButton = new Button(CirSim.LS("Save as Default")));
+		hp.add(saveAsDefaultButton = new Button(Locale.LS("Save as Default")));
 		saveAsDefaultButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				scope.saveAsDefault();
@@ -496,7 +497,7 @@ labelledGridManager gridLabels;
         	    if (nx != 0)
         		ny++;
         	    nx = 0;
-        	    expandingLabel l = new expandingLabel(CirSim.LS(s), e);
+        	    expandingLabel l = new expandingLabel(Locale.LS(s), e);
         	    g.setWidget(ny, nx, l.p);
         	    labels.add(l);
         	    labelRows.add(ny);
@@ -607,11 +608,11 @@ labelledGridManager gridLabels;
 	    if (scope.isManualScale()) {
 		if (plotSelection<scope.visiblePlots.size()) {
 		    ScopePlot p = scope.visiblePlots.get(plotSelection);
-		    manualScaleId.setText("CH "+String.valueOf(plotSelection+1)+" "+CirSim.LS("Scale"));
-		    manualScaleLabel.setText(Scope.getScaleUnitsText(p.units)+CirSim.LS("/div"));
+		    manualScaleId.setText("CH "+String.valueOf(plotSelection+1)+" "+Locale.LS("Scale"));
+		    manualScaleLabel.setText(Scope.getScaleUnitsText(p.units)+Locale.LS("/div"));
 		    manualScaleTextBox.setText(EditDialog.unitString(null, p.manScale));
 		    manualScaleTextBox.setEnabled(true);
-		    positionLabel.setText("CH "+String.valueOf(plotSelection+1)+" "+CirSim.LS("Position"));
+		    positionLabel.setText("CH "+String.valueOf(plotSelection+1)+" "+Locale.LS("Position"));
 		    positionBar.setValue(p.manVPosition);
 		    dcButton.setEnabled(true);
 		    positionBar.enable();
@@ -632,7 +633,7 @@ labelledGridManager gridLabels;
 		}
 	    } else {
 		manualScaleId.setText("");
-		manualScaleLabel.setText(CirSim.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
+		manualScaleLabel.setText(Locale.LS("Max Value") + " (" + scope.getScaleUnitsText() + ")");
 		manualScaleTextBox.setText(EditDialog.unitString(null, scope.getScaleValue()));
 		manualScaleTextBox.setEnabled(false);
 		positionLabel.setText("");

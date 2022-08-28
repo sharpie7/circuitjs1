@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Label;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 
@@ -48,7 +49,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 	int getDumpType() { return 172; }
 	void createSlider() {
 	    waveform = WF_VAR;
-	    sim.addWidgetToVerticalPanel(label = new Label(sim.LS(sliderText)));
+	    sim.addWidgetToVerticalPanel(label = new Label(Locale.LS(sliderText)));
 	    label.addStyleName("topSpace");
 	    int value = (int) ((frequency-bias)*100/(maxVoltage-bias));
 	    sim.addWidgetToVerticalPanel(slider = new Scrollbar(Scrollbar.HORIZONTAL, value, 1, 0, 101 ,
@@ -83,7 +84,7 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 		maxVoltage = ei.value;
 	    if (n == 2) {
 		sliderText = ei.textf.getText();
-		label.setText(sim.LS(sliderText));
+		label.setText(Locale.LS(sliderText));
 		sim.setiFrameHeight();
 	    }
 	}

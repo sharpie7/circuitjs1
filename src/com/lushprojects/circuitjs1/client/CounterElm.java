@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class CounterElm extends ChipElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class CounterElm extends ChipElm {
 	boolean invertreset;
 	int modulus;
 	final int FLAG_UP_DOWN = 4;
@@ -48,7 +50,7 @@ package com.lushprojects.circuitjs1.client;
 	String getChipName() {
 	    if (modulus == 0)
 		return "Counter";
-	    return sim.LS("Counter") + sim.LS(" (mod ") + modulus + ")";
+	    return Locale.LS("Counter") + Locale.LS(" (mod ") + modulus + ")";
 	}
 	void setupPins() {
 	    sizeX = 2;

@@ -23,6 +23,7 @@ import java.util.Vector;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class DiodeElm extends CircuitElm {
     Diode diode;
@@ -163,7 +164,7 @@ class DiodeElm extends CircuitElm {
 	if (model.oldStyle)
 	    arr[0] = "diode";
 	else
-	    arr[0] = sim.LS("diode") + " (" + modelName + ")";
+	    arr[0] = Locale.LS("diode") + " (" + modelName + ")";
 	arr[1] = "I = " + getCurrentText(getCurrent());
 	arr[2] = "Vd = " + getVoltageText(getVoltageDiff());
 	arr[3] = "P = " + getUnitText(getPower(), "W");
@@ -189,19 +190,19 @@ class DiodeElm extends CircuitElm {
 	}
         if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Create New Simple Model"));
+            ei.button = new Button(Locale.LS("Create New Simple Model"));
             return ei;
         }
         if (n == 2) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Create New Advanced Model"));
+            ei.button = new Button(Locale.LS("Create New Advanced Model"));
             return ei;
         }
         if (n == 3) {
             if (model.readOnly)
         	return null;
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Edit Model"));
+            ei.button = new Button(Locale.LS("Edit Model"));
             return ei;
         }
         return null;
@@ -234,7 +235,7 @@ class DiodeElm extends CircuitElm {
         if (n == 3) {
             if (model.readOnly) {
         	// probably never reached
-        	Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
+        	Window.alert(Locale.LS("This model cannot be modified.  Change the model name to allow customization."));
         	return;
             }
             if (model.isSimple())

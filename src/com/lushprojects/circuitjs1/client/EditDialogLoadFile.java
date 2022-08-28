@@ -23,6 +23,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FileUpload;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 /*
  * An abstract class for circuitjs which allows components to prompt for files from the user.
@@ -32,12 +33,12 @@ public abstract class EditDialogLoadFile extends FileUpload implements ChangeHan
 	static public final boolean isSupported() { return LoadFile.isSupported(); }
 	
 	static public void doErrorCallback(String msg) {
-		Window.alert(CirSim.LS(msg));
+		Window.alert(Locale.LS(msg));
 	}
 	
 	EditDialogLoadFile() {
 		super();
-		this.setName(CirSim.LS("Load File"));
+		this.setName(Locale.LS("Load File"));
 		this.getElement().setId("EditDialogLoadFileElement");
 		this.addChangeHandler(this);
 		this.addStyleName("offScreen");

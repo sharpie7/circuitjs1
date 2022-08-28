@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class EditOptions implements Editable {
 	CirSim sim;
@@ -115,11 +116,11 @@ class EditOptions implements Editable {
 		    	    return;
 		        Storage stor = Storage.getLocalStorageIfSupported();
 		        if (stor == null) {
-		            Window.alert(sim.LS("Can't set language"));
+		            Window.alert(Locale.LS("Can't set language"));
 		            return;
 		        }
 		        stor.setItem("language", langString);
-		        if (Window.confirm(sim.LS("Must restart to set language.  Restart now?")))
+		        if (Window.confirm(Locale.LS("Must restart to set language.  Restart now?")))
 		            Window.Location.reload();
 		}
 		if (n == 3) {

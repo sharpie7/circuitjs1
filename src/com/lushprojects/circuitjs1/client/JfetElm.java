@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class JfetElm extends MosfetElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class JfetElm extends MosfetElm {
 	Diode diode;
 	double gateCurrent;
 	
@@ -144,6 +146,6 @@ package com.lushprojects.circuitjs1.client;
 	}
 
 	@Override String getScopeText(int v) { 
-	    return sim.LS(((pnp == -1) ? "p-" : "n-") + "JFET");
+	    return Locale.LS(((pnp == -1) ? "p-" : "n-") + "JFET");
 	}
     }

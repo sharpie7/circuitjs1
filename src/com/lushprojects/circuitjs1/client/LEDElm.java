@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class LEDElm extends DiodeElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class LEDElm extends DiodeElm {
 	double colorR, colorG, colorB, maxBrightnessCurrent;
 	static String lastLEDModelName = "default-led";
 	
@@ -100,7 +102,7 @@ package com.lushprojects.circuitjs1.client;
 	    if (model.oldStyle)
 		arr[0] = "LED";
 	    else
-		arr[0] = sim.LS("LED") + " (" + modelName + ")";
+		arr[0] = Locale.LS("LED") + " (" + modelName + ")";
 	}
 
 	public EditInfo getEditInfo(int n) {

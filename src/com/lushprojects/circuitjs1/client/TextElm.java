@@ -21,6 +21,8 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class TextElm extends GraphicElm {
     String text;
     Vector<String> lines;
@@ -103,7 +105,7 @@ class TextElm extends GraphicElm {
 	setBbox(x, y, x, y);
 	for (i = 0; i != lines.size(); i++) {
 	    String s = (String) (lines.elementAt(i));
-	    s = CirSim.LS(s);
+	    s = Locale.LS(s);
 	    int sw=(int)g.context.measureText(s).getWidth();
 	    g.drawString(s, x, cury);
 	    if ((flags & FLAG_BAR) != 0) {

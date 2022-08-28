@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.Window;
 
@@ -77,10 +78,10 @@ public class ImportFromDropboxDialog extends Dialog {
 		closeOnEnter = false;
 		vp=new VerticalPanel();
 		setWidget(vp);
-		setText(sim.LS("Import from Dropbox"));
+		setText(Locale.LS("Import from Dropbox"));
 		if (ImportFromDropbox.isSupported()) {
-			vp.add(new Label(sim.LS("To open a file in your dropbox account using the chooser click below.")));
-			chooserButton = new Button(sim.LS("Open Dropbox Chooser"));
+			vp.add(new Label(Locale.LS("To open a file in your dropbox account using the chooser click below.")));
+			chooserButton = new Button(Locale.LS("Open Dropbox Chooser"));
 			vp.add(chooserButton);
 			chooserButton.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -88,7 +89,7 @@ public class ImportFromDropboxDialog extends Dialog {
 					importFromDropbox= new ImportFromDropbox(sim);
 				}
 			});
-			la = new Label(sim.LS("To open a shared Dropbox file from a Dropbox link paste the link below..."));
+			la = new Label(Locale.LS("To open a shared Dropbox file from a Dropbox link paste the link below..."));
 		} else {
 			vp.add(new Label("This site, or your browser doesn't support the Dropbox chooser so you can't pick a file from your dropbox account."));
 			la = new Label("You can open a shared Dropbox file if you have a link. Paste the Dropbox link below...");
@@ -104,7 +105,7 @@ public class ImportFromDropboxDialog extends Dialog {
 		hp.setWidth("100%");
 		vp.add(hp);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		importButton= new Button(sim.LS("Import From Dropbox Link"));
+		importButton= new Button(Locale.LS("Import From Dropbox Link"));
 		importButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -113,7 +114,7 @@ public class ImportFromDropboxDialog extends Dialog {
 		});
 		hp.add(importButton);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		cancelButton=new Button(sim.LS("Cancel"));
+		cancelButton=new Button(Locale.LS("Cancel"));
 		hp.add(cancelButton);
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {

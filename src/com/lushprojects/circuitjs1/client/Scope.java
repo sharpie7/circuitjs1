@@ -22,7 +22,7 @@ package com.lushprojects.circuitjs1.client;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
-
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 import java.util.Vector;
 
@@ -1516,7 +1516,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    avg = (endAvg/(end-start));
-	    drawInfoText(g, plot.getUnitText(avg) + CirSim.LS(" average"));
+	    drawInfoText(g, plot.getUnitText(avg) + Locale.LS(" average"));
 	}
     }
 
@@ -1574,7 +1574,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    int duty = 100*dutyLen/(end-start);
-	    drawInfoText(g, CirSim.LS("Duty cycle ") + duty + "%");
+	    drawInfoText(g, Locale.LS("Duty cycle ") + duty + "%");
 	}
     }
 
@@ -1722,7 +1722,7 @@ class Scope {
     	    t = getScopeText();
     	    if (t==null)
     		return "";
-    	    return CirSim.LS(t);
+    	    return Locale.LS(t);
     	}
     	else
     	    return t;

@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -74,7 +75,7 @@ public class SearchDialog extends Dialog {
 		    }
 		});
 
-		setText(sim.LS("Find Component"));
+		setText(Locale.LS("Find Component"));
 		
 		listBox = new ListBox();
 		listBox.setWidth("100%");
@@ -98,9 +99,9 @@ public class SearchDialog extends Dialog {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(okButton = new Button(sim.LS("OK")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button(sim.LS("Cancel")));
+		hp.add(cancelButton = new Button(Locale.LS("Cancel")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 			    apply();

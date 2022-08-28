@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextArea;
@@ -82,6 +83,6 @@ class EditInfo {
 	}
 
 	static String makeLink(String file, String text) {
-            return "<a href=\"" + file + "\" target=\"_blank\">" + CirSim.LS(text) + "</a>";
+            return "<a href=\"" + file + "\" target=\"_blank\">" + Locale.LS(text) + "</a>";
 	}
 }
