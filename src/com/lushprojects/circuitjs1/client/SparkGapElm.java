@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class SparkGapElm extends CircuitElm {
     double resistance, onresistance, offresistance, breakdown, holdcurrent;
     boolean state;
@@ -103,8 +105,8 @@ class SparkGapElm extends CircuitElm {
 	arr[0] = "spark gap";
 	getBasicInfo(arr);
 	arr[3] = state ? "on" : "off";
-	arr[4] = "Ron = " + getUnitText(onresistance, sim.ohmString);
-	arr[5] = "Roff = " + getUnitText(offresistance, sim.ohmString);
+	arr[4] = "Ron = " + getUnitText(onresistance, Locale.ohmString);
+	arr[5] = "Roff = " + getUnitText(offresistance, Locale.ohmString);
 	arr[6] = "Vbreakdown = " + getUnitText(breakdown, "V");
     }
     public EditInfo getEditInfo(int n) {

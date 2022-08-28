@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class LampElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class LampElm extends CircuitElm {
 	double resistance;
 	final double roomTemp = 300;
 	double temp, nom_pow, nom_v, warmTime, coolTime;
@@ -165,7 +167,7 @@ package com.lushprojects.circuitjs1.client;
 	void getInfo(String arr[]) {
 	    arr[0] = "lamp";
 	    getBasicInfo(arr);
-	    arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
+	    arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	    arr[5] = "T = " + ((int) temp) + " K";
 	}

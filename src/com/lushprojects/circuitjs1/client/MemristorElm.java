@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class MemristorElm extends CircuitElm {
     double r_on, r_off, dopeWidth, totalWidth, mobility, resistance;
     public MemristorElm(int xx, int yy) {
@@ -116,7 +118,7 @@ class MemristorElm extends CircuitElm {
     void getInfo(String arr[]) {
 	arr[0] = "memristor";
 	getBasicInfo(arr);
-	arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
+	arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	arr[4] = "P = " + getUnitText(getPower(), "W");
     }
     double getScopeValue(int x) {

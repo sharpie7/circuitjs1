@@ -1,6 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Label;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.canvas.dom.client.CanvasGradient;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
@@ -157,7 +158,7 @@ class LDRElm extends CircuitElm implements Command, MouseWheelHandler {
 	arr[0] = "photoresistor";
 	arr[1] = "I = "+ getCurrentDText(current); //getBasicInfo(arr);
 	arr[2] = "Vd = "+ getVoltageDText(getVoltageDiff());
-	arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
+	arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	arr[4] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {

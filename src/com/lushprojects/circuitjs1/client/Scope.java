@@ -136,7 +136,7 @@ class ScopePlot {
 	case Scope.UNITS_A:
 	    return CircuitElm.getCurrentText(v);
 	case Scope.UNITS_OHMS:
-	    return CircuitElm.getUnitText(v, CirSim.ohmString);
+	    return CircuitElm.getUnitText(v, Locale.ohmString);
 	case Scope.UNITS_W:
 	    return CircuitElm.getUnitText(v, "W");
 	}
@@ -348,7 +348,7 @@ class Scope {
     static String getScaleUnitsText(int units) {
 	switch (units) {
 	case UNITS_A: return "A";
-	case UNITS_OHMS: return CirSim.ohmString;
+	case UNITS_OHMS: return Locale.ohmString;
 	case UNITS_W: return "W";
 	default: return "V";
 	}

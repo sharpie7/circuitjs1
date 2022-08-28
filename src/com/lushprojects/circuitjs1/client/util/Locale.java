@@ -28,9 +28,13 @@ public class Locale {
 
     public static HashMap<String, String> localizationMap;
 
+    public static String ohmString = "\u03a9";
+    public static String muString = "\u03bc";
+
     public static String LS(String s) {
         if (s == null)
             return null;
+
         String sm = localizationMap.get(s);
         if (sm != null)
             return sm;

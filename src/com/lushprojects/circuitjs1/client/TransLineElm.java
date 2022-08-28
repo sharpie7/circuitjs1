@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class TransLineElm extends CircuitElm {
     double delay, imped;
     double voltageL[], voltageR[];
@@ -212,7 +214,7 @@ class TransLineElm extends CircuitElm {
     }
     void getInfo(String arr[]) {
 	arr[0] = "transmission line";
-	arr[1] = getUnitText(imped, sim.ohmString);
+	arr[1] = getUnitText(imped, Locale.ohmString);
 	// use velocity factor for RG-58 cable (65%)
 	arr[2] = "length = " + getUnitText(.65*2.9979e8*delay, "m");
 	arr[3] = "delay = " + getUnitText(delay, "s");

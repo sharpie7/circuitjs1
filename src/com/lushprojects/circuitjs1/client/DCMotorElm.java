@@ -193,7 +193,7 @@ class DCMotorElm extends CircuitElm {
 	getBasicInfo(arr);
 	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
 	arr[4] = "L = " + getUnitText(inductance, "H");
-	arr[5] = "R = " + getUnitText(resistance, sim.ohmString);
+	arr[5] = "R = " + getUnitText(resistance, Locale.ohmString);
 	arr[6] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {

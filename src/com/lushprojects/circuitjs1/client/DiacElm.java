@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class DiacElm extends CircuitElm {
     // resistor from 0 to 2, 3
     // diodes from 2, 3 to 1
@@ -129,8 +131,8 @@ class DiacElm extends CircuitElm {
 	arr[0] = "DIAC";
 	getBasicInfo(arr);
 	arr[3] = state ? "on" : "off";
-	arr[4] = "Ron = " + getUnitText(onresistance, sim.ohmString);
-	arr[5] = "Roff = " + getUnitText(offresistance, sim.ohmString);
+	arr[4] = "Ron = " + getUnitText(onresistance, Locale.ohmString);
+	arr[5] = "Roff = " + getUnitText(offresistance, Locale.ohmString);
 	arr[6] = "Vbrkdn = " + getUnitText(breakdown, "V");
 	arr[7] = "Ihold = " + getUnitText(holdcurrent, "A");
         arr[8] = "P = " + getUnitText(getPower(), "W");

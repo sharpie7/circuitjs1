@@ -246,8 +246,6 @@ MouseOutHandler, MouseWheelHandler {
     static AboutBox aboutBox;
     // Class dumpTypes[], shortcuts[];
     String shortcuts[];
-    static String muString = "\u03bc";
-    static String ohmString = "\u03a9";
     String clipboard;
     String recovery;
     Rectangle circuitArea;

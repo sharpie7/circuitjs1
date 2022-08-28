@@ -100,11 +100,11 @@ import com.lushprojects.circuitjs1.client.util.Locale;
 	void getInfo(String arr[]) {
 	    arr[0] = "resistor";
 	    getBasicInfo(arr);
-	    arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
+	    arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	}
 	@Override String getScopeText(int v) {
-	    return Locale.LS("resistor") + ", " + getUnitText(resistance, sim.ohmString);
+	    return Locale.LS("resistor") + ", " + getUnitText(resistance, Locale.ohmString);
 	}
 	public EditInfo getEditInfo(int n) {
 	    // ohmString doesn't work here on linux
