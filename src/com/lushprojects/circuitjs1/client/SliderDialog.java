@@ -20,8 +20,6 @@
 package com.lushprojects.circuitjs1.client;
 
 
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.lushprojects.circuitjs1.client.util.Locale;
@@ -173,7 +171,7 @@ class SliderDialog extends Dialog  {
 //			continue;
 		    try {
 			adj.sliderText = ei.labelBox == null ? "" : ei.labelBox.getText();
-			sim.console("slidertext " + adj.sliderText + " " + ei.labelBox);
+			CirSim.console("slidertext " + adj.sliderText + " " + ei.labelBox);
 			if (adj.label != null)
 			    adj.label.setText(adj.sliderText);
 			double d = EditDialog.parseUnits(ei.minBox.getText());
@@ -181,7 +179,7 @@ class SliderDialog extends Dialog  {
 			d = EditDialog.parseUnits(ei.maxBox.getText());
 			adj.maxValue = d;
 			adj.setSliderValue(ei.value);
-		    } catch (Exception e) { sim.console(e.toString()); }
+		    } catch (Exception e) { CirSim.console(e.toString()); }
 		}
 	}
 

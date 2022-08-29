@@ -20,7 +20,6 @@
 package com.lushprojects.circuitjs1.client;
 
 
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -313,10 +312,10 @@ class EditDialog extends Dialog {
 	public void closeDialog()
 	{
 		super.closeDialog();
-		if (cframe.editDialog == this)
-		    cframe.editDialog = null;
-		if (cframe.customLogicEditDialog == this)
-		    cframe.customLogicEditDialog = null;
+		if (CirSim.editDialog == this)
+		    CirSim.editDialog = null;
+		if (CirSim.customLogicEditDialog == this)
+		    CirSim.customLogicEditDialog = null;
 	}
 }
 

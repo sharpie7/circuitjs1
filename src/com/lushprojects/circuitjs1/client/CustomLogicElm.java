@@ -1,7 +1,6 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Button;
-import com.lushprojects.circuitjs1.client.ChipElm.Pin;
 import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class CustomLogicElm extends ChipElm {

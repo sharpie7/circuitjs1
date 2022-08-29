@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import java.util.Vector;
-
 class ScopeElm extends CircuitElm {
     
     Scope elmScope;
@@ -101,7 +99,7 @@ class ScopeElm extends CircuitElm {
     void draw(Graphics g) {
 	g.setColor(needsHighlight() ? selectColor : whiteColor);
 	g.context.save();
-	g.context.setTransform(sim.devicePixelRatio(), 0, 0, sim.devicePixelRatio(), 0, 0);
+	g.context.setTransform(CirSim.devicePixelRatio(), 0, 0, CirSim.devicePixelRatio(), 0, 0);
 	setScopeRect();
 	elmScope.position = -1;
 	elmScope.draw(g);

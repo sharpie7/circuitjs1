@@ -19,11 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import java.util.Vector;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-
 class UnijunctionElm extends CompositeElm {
 	// node 0 = E
 	// node 1 = B1

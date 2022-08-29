@@ -23,10 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
-
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.Window;
@@ -51,7 +47,6 @@ import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class EditCompositeModelDialog extends Dialog implements MouseDownHandler, MouseMoveHandler, MouseUpHandler, MouseOutHandler, MouseOverHandler {
 	
@@ -245,9 +240,9 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 	    if (dx < 0 || dy < 0) {
 		for (int i = 0; i != postCount; i++) {
 		    Pin p = chip.pins[i];
-		    if (dx < 0 && (p.side == chip.SIDE_N || p.side == chip.SIDE_S) && p.pos >= chip.sizeX+dx)
+		    if (dx < 0 && (p.side == ChipElm.SIDE_N || p.side == ChipElm.SIDE_S) && p.pos >= chip.sizeX+dx)
 			return;
-		    if (dy < 0 && (p.side == chip.SIDE_E || p.side == chip.SIDE_W) && p.pos >= chip.sizeY+dy)
+		    if (dy < 0 && (p.side == ChipElm.SIDE_E || p.side == ChipElm.SIDE_W) && p.pos >= chip.sizeY+dy)
 			return;
 		}
 	    }

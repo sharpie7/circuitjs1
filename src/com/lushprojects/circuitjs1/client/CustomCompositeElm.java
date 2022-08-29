@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.lushprojects.circuitjs1.client.ChipElm.Pin;
 import com.lushprojects.circuitjs1.client.util.Locale;
 
 // instances of subcircuits
@@ -219,7 +218,7 @@ public class CustomCompositeElm extends CompositeElm {
         }
         if (n == 5) {
             sim.readCircuit(model.modelCircuit);
-            sim.editDialog.closeDialog();
+            CirSim.editDialog.closeDialog();
         }
     }
     
