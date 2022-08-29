@@ -435,7 +435,6 @@ class MosfetElm extends CircuitElm {
 	    sim.stampRightSide(nodes[source], -rs);
 	}
 	
-	@SuppressWarnings("static-access")
 	void getFetInfo(String arr[], String n) {
 	    arr[0] = Locale.LS(((pnp == -1) ? "p-" : "n-") + n);
 	    arr[0] += " (Vt=" + getVoltageText(pnp*vt);
