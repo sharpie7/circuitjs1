@@ -33,13 +33,15 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_ext_voltage", "voltages": { "extsin": 1 } }
 			case "sev2":
 				msg = { "cmd": "set_ext_voltage", "voltages": { "extsin": 2 } }
+			case "svg":
+				msg = { "cmd": "get_svg" }
 			case "q":
 				sys.exit(0)
 				break
 			case "":
 				continue
 			case _:
-				print("Not understood. Commands: ?, start, stop, gnv, list, sev1, sev2, q")
+				print("Not understood. Commands: ?, start, stop, gnv, list, sev1, sev2, svg, q")
 				continue
 
 		await ws.send_json(msg)

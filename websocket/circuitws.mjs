@@ -26,7 +26,25 @@ export class CircuitWS {
 		this._respond({ "status": "error", "code": error_code, "text": error_text })
 	}
 
-	_ws_message(event) {
+	async _sleep(time_millis) {
+		await new Promise(resolved => setTimeout(resolved, 100));
+	}
+
+	async _initialize_svg() {
+		if (!this.sim.isSVGInitialized()) {
+			this.sim.initializeSVG();
+			for (let i = 0; i < 50; i++) {
+				if (this.sim.isSVGInitialized()) {
+					return true;
+				}
+				await this._sleep(100);
+			}
+			return false;
+		}
+		return true;
+	}
+
+	async _ws_message(event) {
 		const msg = JSON.parse(event.data);
 		if (!msg.hasOwnProperty("cmd")) {
 			this._respond_error("no_cmd_in_request", "No 'cmd' element found in JSON request.")
@@ -70,6 +88,13 @@ export class CircuitWS {
 			for (const [name, value] of Object.entries(msg.voltages)) {
 				this.sim.setExtVoltage(name, value);
 			}
+		} else if (msg.cmd == "get_svg") {
+			const initialized = await this._initialize_svg();
+			if (!initialized) {
+				this._respond_error("init_svg", "Cannot initialize SVG engine.");
+				return
+			}
+			response.data = this.sim.getCircuitAsSVG();
 		} else {
 			this._respond_error("unknown_cmd", "Unknown command: " + msg.cmd)
 			return;
