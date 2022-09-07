@@ -67,9 +67,16 @@ export class CircuitWS {
 			response.data = {
 				"running":	this.sim.isRunning(),
 				"time":		this.sim.getTime(),
+				"timestep":	this.sim.getTimeStep(),
 			};
 		} else if (msg.cmd == "set_running") {
 			this.sim.setSimRunning(msg.state);
+		} else if (msg.cmd == "set_timestep") {
+			if (!msg.hasOwnProperty("timestep")) {
+				this._respond_error("no_timestep_in_request", "No 'timestep' element found in JSON request.")
+				return;
+			}
+			this.sim.setTimeStep(msg.timestep);
 		} else if (msg.cmd == "get_node_voltage") {
 			response.data = { };
 			for (let node_name of msg.nodes) {

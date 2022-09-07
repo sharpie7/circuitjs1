@@ -34,6 +34,8 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_running", "state": True }
 			case "stop":
 				msg = { "cmd": "set_running", "state": False }
+			case "setts":
+				msg = { "cmd": "set_timestep", "timestep": 1e-3 }
 			case "gnv":
 				msg = { "cmd": "get_node_voltage", "nodes": [ "D7", "D6" ] }
 			case "list":
@@ -54,7 +56,7 @@ async def websocket_handler(request):
 			case "":
 				continue
 			case _:
-				print("Not understood. Commands: ?, start, stop, gnv, list, sev1, sev2, svg, export, import, q")
+				print("Not understood. Commands: ?, start, stop, setts, gnv, list, sev1, sev2, svg, export, import, q")
 				continue
 
 		await ws.send_json(msg)
