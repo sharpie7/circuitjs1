@@ -88,6 +88,15 @@ export class CircuitWS {
 			for (const [name, value] of Object.entries(msg.voltages)) {
 				this.sim.setExtVoltage(name, value);
 			}
+		} else if (msg.cmd == "circuit_export") {
+			response.data = this.sim.exportCircuit();
+		} else if (msg.cmd == "circuit_import") {
+			if (!msg.hasOwnProperty("circuit")) {
+				this._respond_error("no_circuit_in_request", "No 'circuit' element found in JSON request.")
+				return;
+			}
+			const subcircuits_only = !!msg.subcircuits_only;
+			this.sim.importCircuit(msg.circuit, subcircuits_only);
 		} else if (msg.cmd == "get_svg") {
 			const initialized = await this._initialize_svg();
 			if (!initialized) {

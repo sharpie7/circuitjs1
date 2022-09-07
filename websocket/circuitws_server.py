@@ -10,6 +10,15 @@ config = {
 	"circuitws_uri":	"http://127.0.0.1:8123/circuitws.html",
 }
 
+demo_circuit = """\
+$ 1 0.000005 10.20027730826997 50 5 50 5e-11
+w 192 272 208 304 0
+w 208 304 272 304 0
+w 272 304 288 272 0
+w 240 256 240 272 0
+z 208 224 272 224 2 default-zener
+"""
+
 async def websocket_handler(request):
 	print("Websocket connected.")
 	ws = aiohttp.web.WebSocketResponse()
@@ -35,13 +44,17 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_ext_voltage", "voltages": { "extsin": 2 } }
 			case "svg":
 				msg = { "cmd": "get_svg" }
+			case "export":
+				msg = { "cmd": "circuit_export" }
+			case "import":
+				msg = { "cmd": "circuit_import", "circuit": demo_circuit }
 			case "q":
 				sys.exit(0)
 				break
 			case "":
 				continue
 			case _:
-				print("Not understood. Commands: ?, start, stop, gnv, list, sev1, sev2, svg, q")
+				print("Not understood. Commands: ?, start, stop, gnv, list, sev1, sev2, svg, export, import, q")
 				continue
 
 		await ws.send_json(msg)

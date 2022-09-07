@@ -62,13 +62,7 @@ TextArea textArea;
 //				s=textBox.getHTML();
 //				s=s.replace("<br>", "\r");
 				s=textArea.getText();
-				int flags = 0;
-				if (subCheck.getState())
-				    flags |= CirSim.RC_SUBCIRCUITS | CirSim.RC_RETAIN;
-				if (s!=null) {
-					sim.readCircuit(s, flags);
-					sim.allowSave(false);
-				}
+				sim.importCircuitFromText(s, subCheck.getState());
 			}
 		});
 		hp.add(cancelButton = new Button(sim.LS("Cancel")));

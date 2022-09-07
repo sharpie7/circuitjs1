@@ -3593,7 +3593,15 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing = new ExportAsLocalFileDialog(dump);
     	dialogShowing.show();
     }
-    
+
+    public void importCircuitFromText(String circuitText, boolean subcircuitsOnly) {
+		int flags = subcircuitsOnly ? (CirSim.RC_SUBCIRCUITS | CirSim.RC_RETAIN) : 0;
+		if (circuitText != null) {
+			readCircuit(circuitText, flags);
+			allowSave(false);
+		}
+    }
+
     String dumpOptions() {
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
@@ -6321,7 +6329,9 @@ MouseOutHandler, MouseWheelHandler {
 	        getElements: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getJSElements()(); } ),
 	        initializeSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::initializeSVGScriptIfNecessary(Ljava/lang/String;)(null); } ),
 	        isSVGInitialized: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::loadedCanvas2SVG; } ),
-	        getCircuitAsSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getCircuitAsSVG()(); } )
+	        getCircuitAsSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getCircuitAsSVG()(); } ),
+	        exportCircuit: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::dumpCircuit()(); } ),
+	        importCircuit: $entry(function(circuit, subcircuitsOnly) { return that.@com.lushprojects.circuitjs1.client.CirSim::importCircuitFromText(Ljava/lang/String;Z)(circuit, subcircuitsOnly); })
 	    };
 	    var hook = $wnd.oncircuitjsloaded;
 	    if (hook)
