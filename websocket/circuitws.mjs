@@ -63,7 +63,11 @@ export class CircuitWS {
 		if (msg.hasOwnProperty("msgid")) {
 			response.msgid = msg.msgid;
 		}
-		if (msg.cmd == "status") {
+		if (msg.cmd == "reload") {
+			const url = new URL(this._iframe.src);
+			url.search = "?" + (new URLSearchParams(msg.args).toString());
+			this._iframe.src = url.toString();
+		} else if (msg.cmd == "status") {
 			response.data = {
 				"running":	this.sim.isRunning(),
 				"time":		this.sim.getTime(),

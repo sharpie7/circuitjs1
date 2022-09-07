@@ -34,6 +34,8 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_running", "state": True }
 			case "stop":
 				msg = { "cmd": "set_running", "state": False }
+			case "reload":
+				msg = { "cmd": "reload", "args": { "IECGates": False, "whiteBackground": True } }
 			case "setts":
 				msg = { "cmd": "set_timestep", "timestep": 1e-3 }
 			case "gnv":
