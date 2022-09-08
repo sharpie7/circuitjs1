@@ -8,9 +8,11 @@ export class CircuitWS {
 
 	connect(ws_uri) {
 		this._ws_uri = ws_uri;
-		this._ws = new WebSocket(ws_uri);
-		this._ws.onmessage = (event) => this._ws_message(event);
-		this._ws.onclose = (event) => this._ws_close(event);
+		if (ws_uri != null) {
+			this._ws = new WebSocket(ws_uri);
+			this._ws.onmessage = (event) => this._ws_message(event);
+			this._ws.onclose = (event) => this._ws_close(event);
+		}
 	}
 
 	initialize_parameters(query_params) {
@@ -121,6 +123,10 @@ export class CircuitWS {
 				return
 			}
 			response.data = this.sim.getCircuitAsSVG();
+		} else if (msg.cmd == "shutdown") {
+			this.connect(null);
+			this._ws.close();
+			this._iframe.src = "about:blank";
 		} else {
 			this._respond_error("unknown_cmd", "Unknown command: " + msg.cmd)
 			return;
