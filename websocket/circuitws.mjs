@@ -58,6 +58,23 @@ export class CircuitWS {
 			return;
 		}
 
+		/* Process commands first which do not require a simulator; they do not
+		 * send a response. */
+		if (msg.cmd == "wait_available") {
+			this._send_available_event();
+			return;
+		} else if (msg.cmd == "shutdown") {
+			this.connect(null);
+			this._ws.close();
+			this._iframe.src = "about:blank";
+			return;
+		} else if (msg.cmd == "reload") {
+			const url = new URL(this._iframe.src);
+			url.search = "?" + (new URLSearchParams(msg.args).toString());
+			this._iframe.src = url.toString();
+			return;
+		}
+
 		if (!this.sim) {
 			this._respond_error("no_sim_running", "No simulation running (iframe not loaded yet?).")
 			return;
@@ -71,11 +88,7 @@ export class CircuitWS {
 		if (msg.hasOwnProperty("msgid")) {
 			response.msgid = msg.msgid;
 		}
-		if (msg.cmd == "reload") {
-			const url = new URL(this._iframe.src);
-			url.search = "?" + (new URLSearchParams(msg.args).toString());
-			this._iframe.src = url.toString();
-		} else if (msg.cmd == "status") {
+		if (msg.cmd == "status") {
 			response.data = {
 				"running":	this.sim.isRunning(),
 				"time":		this.sim.getTime(),
@@ -123,10 +136,6 @@ export class CircuitWS {
 				return
 			}
 			response.data = this.sim.getCircuitAsSVG();
-		} else if (msg.cmd == "shutdown") {
-			this.connect(null);
-			this._ws.close();
-			this._iframe.src = "about:blank";
 		} else {
 			this._respond_error("unknown_cmd", "Unknown command: " + msg.cmd)
 			return;
@@ -141,24 +150,27 @@ export class CircuitWS {
 		}, 1000);
 	}
 
-	async _send_reload_complete_event() {
+	async _send_available_event() {
 		while (true) {
-			if (this.sim) {
+			if ((this.sim) && (this.sim.importCircuit)) {
 				break;
 			}
 			await this._sleep(100);
 		}
 		this._respond({
 			"type": 	"event",
-			"event":	"reload_complete",
+			"event":	"available",
 		})
 	}
 
 	_iframe_load(event) {
-		this._send_reload_complete_event();
+		this._send_available_event();
 	}
 
 	get sim() {
+		if (this._iframe.contentWindow == null) {
+			return null;
+		}
 		return this._iframe.contentWindow.CircuitJS1;
 	}
 }
