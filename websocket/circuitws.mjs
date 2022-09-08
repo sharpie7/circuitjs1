@@ -3,6 +3,7 @@ export class CircuitWS {
 		this._iframe = iframe;
 		this._ws_uri = null;
 		this._ws = null;
+		this._iframe.addEventListener("load", (event) => this._iframe_load());
 	}
 
 	connect(ws_uri) {
@@ -19,11 +20,15 @@ export class CircuitWS {
 	}
 
 	_respond(msg) {
-		this._ws.send(JSON.stringify(msg));
+		if ((this._ws != null) && (this._ws.readyState == WebSocket.OPEN)) {
+			this._ws.send(JSON.stringify(msg));
+		} else {
+			console.log("Discard", msg, this._ws);
+		}
 	}
 
 	_respond_error(error_code, error_text) {
-		this._respond({ "status": "error", "code": error_code, "text": error_text })
+		this._respond({ "type": "response", "status": "error", "code": error_code, "text": error_text })
 	}
 
 	async _sleep(time_millis) {
@@ -57,6 +62,7 @@ export class CircuitWS {
 		}
 
 		let response = {
+			"type": "response",
 			"status": "ok",
 			"cmd": msg.cmd,
 		};
@@ -127,6 +133,23 @@ export class CircuitWS {
 		setTimeout(() => {
 			this.connect(this._ws_uri);
 		}, 1000);
+	}
+
+	async _send_reload_complete_event() {
+		while (true) {
+			if (this.sim) {
+				break;
+			}
+			await this._sleep(100);
+		}
+		this._respond({
+			"type": 	"event",
+			"event":	"reload_complete",
+		})
+	}
+
+	_iframe_load(event) {
+		this._send_reload_complete_event();
 	}
 
 	get sim() {
