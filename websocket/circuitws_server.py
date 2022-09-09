@@ -19,7 +19,9 @@ w 240 256 240 272 0
 z 208 224 272 224 2 default-zener
 """
 
+
 async def websocket_handler(request):
+	msg_id = 0
 	print("Websocket connected.")
 	ws = aiohttp.web.WebSocketResponse()
 	await ws.prepare(request)
@@ -61,8 +63,13 @@ async def websocket_handler(request):
 				print("Not understood. Commands: ?, start, stop, setts, gnv, list, sev1, sev2, svg, export, import, q")
 				continue
 
+		msg_id += 1
+		msg["msgid"] = msg_id
 		await ws.send_json(msg)
-		response = await ws.receive_json()
+		while True:
+			response = await ws.receive_json()
+			if response.get("msgid") == msg_id:
+				break
 		print(response)
 
 	return ws

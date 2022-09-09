@@ -25,12 +25,25 @@ export class CircuitWS {
 		if ((this._ws != null) && (this._ws.readyState == WebSocket.OPEN)) {
 			this._ws.send(JSON.stringify(msg));
 		} else {
-			console.log("Discard", msg, this._ws);
+			console.log("Discarded response:", msg);
 		}
 	}
 
-	_respond_error(error_code, error_text) {
-		this._respond({ "type": "response", "status": "error", "code": error_code, "text": error_text })
+	_respond_error(msg, error_code, error_text) {
+		msg.status = "error";
+		msg.text = error_text;
+		this._respond(msg);
+	}
+
+	_respond_event(event_code, event_data) {
+		const msg = {
+			"type": "event",
+			"code": event_code,
+		};
+		if (event_data) {
+			msg["data"] = event_data;
+		}
+		this._respond(msg);
 	}
 
 	async _sleep(time_millis) {
@@ -58,28 +71,7 @@ export class CircuitWS {
 			return;
 		}
 
-		/* Process commands first which do not require a simulator; they do not
-		 * send a response. */
-		if (msg.cmd == "wait_available") {
-			this._send_available_event();
-			return;
-		} else if (msg.cmd == "shutdown") {
-			this.connect(null);
-			this._ws.close();
-			this._iframe.src = "about:blank";
-			return;
-		} else if (msg.cmd == "reload") {
-			const url = new URL(this._iframe.src);
-			url.search = "?" + (new URLSearchParams(msg.args).toString());
-			this._iframe.src = url.toString();
-			return;
-		}
-
-		if (!this.sim) {
-			this._respond_error("no_sim_running", "No simulation running (iframe not loaded yet?).")
-			return;
-		}
-
+		/* The default response layout */
 		let response = {
 			"type": "response",
 			"status": "ok",
@@ -88,6 +80,30 @@ export class CircuitWS {
 		if (msg.hasOwnProperty("msgid")) {
 			response.msgid = msg.msgid;
 		}
+
+		/* Process commands first which do not require a simulator; they do not
+		 * send a response. */
+		if (msg.cmd == "wait_available") {
+			this._wait_for_simulator_available().then(
+				() => this._respond(response)
+			);
+			return;
+		} else if (msg.cmd == "shutdown") {
+			this.connect(null);
+			this._ws.close();
+			this._iframe.src = "about:blank";
+			return this._respond(response);
+		} else if (msg.cmd == "reload") {
+			const url = new URL(this._iframe.src);
+			url.search = "?" + (new URLSearchParams(msg.args).toString());
+			this._iframe.src = url.toString();
+			return this._respond(response);
+		}
+
+		if (!this.sim) {
+			return this._respond_error(response, "no_sim_running", "No simulation running (iframe not loaded yet?).")
+		}
+
 		if (msg.cmd == "status") {
 			response.data = {
 				"running":	this.sim.isRunning(),
@@ -98,8 +114,7 @@ export class CircuitWS {
 			this.sim.setSimRunning(msg.state);
 		} else if (msg.cmd == "set_timestep") {
 			if (!msg.hasOwnProperty("timestep")) {
-				this._respond_error("no_timestep_in_request", "No 'timestep' element found in JSON request.")
-				return;
+				return this._respond_error(response, "no_timestep_in_request", "No 'timestep' element found in JSON request.");
 			}
 			this.sim.setTimeStep(msg.timestep);
 		} else if (msg.cmd == "get_node_voltage") {
@@ -124,21 +139,18 @@ export class CircuitWS {
 			response.data = this.sim.exportCircuit();
 		} else if (msg.cmd == "circuit_import") {
 			if (!msg.hasOwnProperty("circuit")) {
-				this._respond_error("no_circuit_in_request", "No 'circuit' element found in JSON request.")
-				return;
+				return this._respond_error(response, "no_circuit_in_request", "No 'circuit' element found in JSON request.")
 			}
 			const subcircuits_only = !!msg.subcircuits_only;
 			this.sim.importCircuit(msg.circuit, subcircuits_only);
 		} else if (msg.cmd == "get_svg") {
 			const initialized = await this._initialize_svg();
 			if (!initialized) {
-				this._respond_error("init_svg", "Cannot initialize SVG engine.");
-				return
+				return this._respond_error(response, "init_svg", "Cannot initialize SVG engine.");
 			}
 			response.data = this.sim.getCircuitAsSVG();
 		} else {
-			this._respond_error("unknown_cmd", "Unknown command: " + msg.cmd)
-			return;
+			return this._respond_error(response, "unknown_cmd", "Unknown command: " + msg.cmd)
 		}
 		this._respond(response);
 	}
@@ -150,21 +162,17 @@ export class CircuitWS {
 		}, 1000);
 	}
 
-	async _send_available_event() {
+	async _wait_for_simulator_available() {
 		while (true) {
 			if ((this.sim) && (this.sim.importCircuit)) {
 				break;
 			}
 			await this._sleep(100);
 		}
-		this._respond({
-			"type": 	"event",
-			"event":	"available",
-		})
 	}
 
 	_iframe_load(event) {
-		this._send_available_event();
+		this._respond_event("reload_complete");
 	}
 
 	get sim() {
