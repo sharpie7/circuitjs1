@@ -20,6 +20,12 @@ Additionally, you can supply a `src=` query parameter which is the initial
 `src` attribute of the iframe. If not supplied, a sensible default is chosen
 for you so that the page always loads with a simulator.
 
+Lastly, you can specify an `autoshutoff` query parameter which tells the
+WebSocket shim that once it has once finished a WebSocket connection, it should
+automatically shut down. This is useful if your server is short-lived and may
+crash so that you don't end up a bunch of different (possibly competing)
+simulators in different browser tabs).
+
 For example, assume you're the `war/` subdirectory at `http://127.0.0.1:8123`,
 then you could have a WebSocket endpoint listening on port 4444 as
 `ws://127.0.0.1:4444/ws`. You would then open your web browser with the

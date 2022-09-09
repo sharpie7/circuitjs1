@@ -1,6 +1,7 @@
 export class CircuitWS {
 	constructor(iframe) {
 		this._iframe = iframe;
+		this._autoshutoff = false;
 		this._ws_uri = null;
 		this._ws = null;
 		this._iframe.addEventListener("load", (event) => this._iframe_load());
@@ -18,6 +19,9 @@ export class CircuitWS {
 	initialize_parameters(query_params) {
 		if (query_params.has("ws")) {
 			this.connect(query_params.get("ws"));
+		}
+		if (query_params.has("autoshutoff")) {
+			this._autoshutoff = query_params.get("autoshutoff") != 0;
 		}
 	}
 
@@ -91,7 +95,7 @@ export class CircuitWS {
 		} else if (msg.cmd == "shutdown") {
 			this.connect(null);
 			this._ws.close();
-			this._iframe.src = "about:blank";
+			this._shutdown();
 			return this._respond(response);
 		} else if (msg.cmd == "reload") {
 			const url = new URL(this._iframe.src);
@@ -155,8 +159,18 @@ export class CircuitWS {
 		this._respond(response);
 	}
 
+	_shutdown() {
+		this._iframe.src = "about:blank";
+	}
+
 	_ws_close(event) {
-		/* Attempt to reconnect after a while */
+		/* Attempt to reconnect after a while if we're not in autoshutoff mode.
+		 * Otherwise, shut down the simulator. */
+		if (this._autoshutoff) {
+			this._shutdown();
+			return;
+		}
+
 		setTimeout(() => {
 			this.connect(this._ws_uri);
 		}, 1000);
