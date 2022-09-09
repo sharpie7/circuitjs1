@@ -5,13 +5,19 @@
 		<title>CircuitJS websockets automation</title>
 	</head>
 	<body>
-		<iframe id="circuitFrame" width=800 height=550 src="circuitjs.html?startCircuit=jsinterface.txt"></iframe>
+		<iframe id="circuitFrame" width=800 height=550></iframe>
 
 		<script type="module">
 			import {CircuitWS} from "./circuitws.mjs";
 			const iframe = document.querySelector("#circuitFrame");
 			const circuitws = new CircuitWS(iframe);
-			circuitws.initialize_parameters(new URLSearchParams(window.location.search));
+			const search_params = new URLSearchParams(window.location.search);
+			if (search_params.has("src")) {
+				iframe.src = search_params.get("src");
+			} else {
+				iframe.src = "circuitjs.html?startCircuit=jsinterface.txt";
+			}
+			circuitws.initialize_parameters(search_params);
 		</script>
 	</body>
 </html>
