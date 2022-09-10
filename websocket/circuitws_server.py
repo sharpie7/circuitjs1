@@ -52,6 +52,7 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_ext_voltage", "voltages": { "extsin": 2 } }
 			case "svg":
 				msg = { "cmd": "get_svg" }
+				wait_for_event = "svg_rendered"
 			case "export":
 				msg = { "cmd": "circuit_export" }
 			case "import":
@@ -74,6 +75,7 @@ async def websocket_handler(request):
 				break
 			elif (wait_for_event is not None) and (response["type"] == "event") and (response["code"] == wait_for_event):
 				break
+			print("Ignored:", response)
 		print(response)
 
 	return ws

@@ -6040,6 +6040,8 @@ MouseOutHandler, MouseWheelHandler {
 					loadedCanvas2SVG = true;
 					if (followupAction.equals("doExportAsSVG")) {
 						doExportAsSVG();
+					} else if (followupAction.equals("doExportAsSVGFromAPI")) {
+						doExportAsSVGFromAPI();
 					}
 				}
 			}).inject();
@@ -6054,6 +6056,14 @@ MouseOutHandler, MouseWheelHandler {
 		}
 		dialogShowing = new ExportAsImageDialog(CAC_SVG);
 		dialogShowing.show();
+	}
+
+	public void doExportAsSVGFromAPI() {
+		if (!initializeSVGScriptIfNecessary("doExportAsSVGFromAPI")) {
+			return;
+		}
+		String svg = getCircuitAsSVG();
+		callSVGRenderedHook(svg);
 	}
 
 	static final int CAC_PRINT = 0;
@@ -6329,9 +6339,7 @@ MouseOutHandler, MouseWheelHandler {
 	        getNodeVoltage: $entry(function(n) { return that.@com.lushprojects.circuitjs1.client.CirSim::getLabeledNodeVoltage(Ljava/lang/String;)(n); } ),
 	        setExtVoltage: $entry(function(n, v) { that.@com.lushprojects.circuitjs1.client.CirSim::setExtVoltage(Ljava/lang/String;D)(n, v); } ),
 	        getElements: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getJSElements()(); } ),
-	        initializeSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::initializeSVGScriptIfNecessary(Ljava/lang/String;)(null); } ),
-	        isSVGInitialized: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::loadedCanvas2SVG; } ),
-	        getCircuitAsSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getCircuitAsSVG()(); } ),
+	        getCircuitAsSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::doExportAsSVGFromAPI()(); } ),
 	        exportCircuit: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::dumpCircuit()(); } ),
 	        importCircuit: $entry(function(circuit, subcircuitsOnly) { return that.@com.lushprojects.circuitjs1.client.CirSim::importCircuitFromText(Ljava/lang/String;Z)(circuit, subcircuitsOnly); })
 	    };
@@ -6359,6 +6367,12 @@ MouseOutHandler, MouseWheelHandler {
 	    	hook($wnd.CircuitJS1);
 	}-*/;
 	
+	native void callSVGRenderedHook(String svgData) /*-{
+		var hook = $wnd.CircuitJS1.onsvgrendered;
+		if (hook)
+			hook($wnd.CircuitJS1, svgData);
+	}-*/;
+
 	class UndoItem {
 	    public String dump;
 	    public double scale, transform4, transform5;

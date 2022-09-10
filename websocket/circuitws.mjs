@@ -5,8 +5,8 @@ export class CircuitWS {
 		this._ws_uri = null;
 		this._ws = null;
 		this._circuitjs_loaded = false;
-		this._iframe.addEventListener("load", (event) => this._iframe_load());
-		this._iframe.contentWindow.oncircuitjsloaded = (event) => this._circuitjs_load();
+		this._iframe.addEventListener("load", (event) => this._on_iframe_load(event));
+		this._on_iframe_load();
 	}
 
 	reload_circuitjs(src_uri) {
@@ -54,24 +54,6 @@ export class CircuitWS {
 			msg["data"] = event_data;
 		}
 		this._respond(msg);
-	}
-
-	async _sleep(time_millis) {
-		await new Promise(resolved => setTimeout(resolved, 100));
-	}
-
-	async _initialize_svg() {
-		if (!this.sim.isSVGInitialized()) {
-			this.sim.initializeSVG();
-			for (let i = 0; i < 50; i++) {
-				if (this.sim.isSVGInitialized()) {
-					return true;
-				}
-				await this._sleep(100);
-			}
-			return false;
-		}
-		return true;
 	}
 
 	async _ws_message(event) {
@@ -149,11 +131,8 @@ export class CircuitWS {
 			const subcircuits_only = !!msg.subcircuits_only;
 			this.sim.importCircuit(msg.circuit, subcircuits_only);
 		} else if (msg.cmd == "get_svg") {
-			const initialized = await this._initialize_svg();
-			if (!initialized) {
-				return this._respond_error(response, "init_svg", "Cannot initialize SVG engine.");
-			}
-			response.data = this.sim.getCircuitAsSVG();
+			this.sim.getCircuitAsSVG();
+			response.data = "deferred";
 		} else {
 			return this._respond_error(response, "unknown_cmd", "Unknown command: " + msg.cmd)
 		}
@@ -177,13 +156,18 @@ export class CircuitWS {
 		}, 1000);
 	}
 
-	_iframe_load() {
-		this._iframe.contentWindow.oncircuitjsloaded = (event) => this._circuitjs_load();
+	_on_iframe_load(event) {
+		this._iframe.contentWindow.oncircuitjsloaded = (cjs) => this._on_circuitjs_loaded(cjs);
 	}
 
-	_circuitjs_load() {
+	_on_circuitjs_loaded(cjs) {
 		this._respond_event("reload_complete");
+		cjs.onsvgrendered = (cjs, svg_data) => this._on_circuitjs_svg_rendered(cjs, svg_data);
 		this._circuitjs_loaded = true;
+	}
+
+	_on_circuitjs_svg_rendered(cjs, svg_data) {
+		this._respond_event("svg_rendered", svg_data);
 	}
 
 	get sim() {

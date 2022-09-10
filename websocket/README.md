@@ -68,7 +68,8 @@ that are understood, along with examples:
   - `get_elements`: List all elements of the circuit.
   - `set_ext_voltage`: Sets external voltage sources to their values.  Expects
     a `voltages` dictionary as parameter that contains name/value pairs.
-  - `get_svg`: Returns the circuit as a SVG image.
+  - `get_svg`: Returns the circuit as a SVG image. The result is returned
+    asynchronously as the "svg_rendered" event.
   - `circuit_export`: Returns the cirucit schematic.
   - `circuit_import`: Loads a circuit, provided a textual representation in the
     `circuit` element.
