@@ -12,11 +12,10 @@
 			const iframe = document.querySelector("#circuitFrame");
 			const circuitws = new CircuitWS(iframe);
 			const search_params = new URLSearchParams(window.location.search);
-			console.log(search_params.get("src"));
 			if (search_params.has("src")) {
-				iframe.src = search_params.get("src");
+				circuitws.reload_circuitjs(search_params.get("src"));
 			} else {
-				iframe.src = "circuitjs.html?startCircuit=jsinterface.txt";
+				circuitws.reload_circuitjs("circuitjs.html?startCircuit=jsinterface.txt");
 			}
 			circuitws.initialize_parameters(search_params);
 		</script>

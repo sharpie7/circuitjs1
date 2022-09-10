@@ -4,7 +4,13 @@ export class CircuitWS {
 		this._autoshutoff = false;
 		this._ws_uri = null;
 		this._ws = null;
+		this._circuitjs_loaded = false;
 		this._iframe.addEventListener("load", (event) => this._iframe_load());
+		this._iframe.contentWindow.oncircuitjsloaded = (event) => this._circuitjs_load();
+	}
+
+	reload_circuitjs(src_uri) {
+		this._iframe.src = src_uri;
 	}
 
 	connect(ws_uri) {
@@ -87,12 +93,7 @@ export class CircuitWS {
 
 		/* Process commands first which do not require a simulator; they do not
 		 * send a response. */
-		if (msg.cmd == "wait_available") {
-			this._wait_for_simulator_available().then(
-				() => this._respond(response)
-			);
-			return;
-		} else if (msg.cmd == "shutdown") {
+		if (msg.cmd == "shutdown") {
 			this.connect(null);
 			this._ws.close();
 			this._shutdown();
@@ -176,21 +177,20 @@ export class CircuitWS {
 		}, 1000);
 	}
 
-	async _wait_for_simulator_available() {
-		while (true) {
-			if ((this.sim) && (this.sim.importCircuit)) {
-				break;
-			}
-			await this._sleep(100);
-		}
+	_iframe_load() {
+		this._iframe.contentWindow.oncircuitjsloaded = (event) => this._circuitjs_load();
 	}
 
-	_iframe_load(event) {
+	_circuitjs_load() {
 		this._respond_event("reload_complete");
+		this._circuitjs_loaded = true;
 	}
 
 	get sim() {
 		if (this._iframe.contentWindow == null) {
+			return null;
+		}
+		if (!this._circuitjs_loaded) {
 			return null;
 		}
 		return this._iframe.contentWindow.CircuitJS1;

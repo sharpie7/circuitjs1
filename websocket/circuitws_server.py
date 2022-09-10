@@ -29,6 +29,7 @@ async def websocket_handler(request):
 	while True:
 		cmd = input("Cmd: ")
 
+		wait_for_event = None
 		match cmd.lower():
 			case "?":
 				msg = { "cmd": "status" }
@@ -38,6 +39,7 @@ async def websocket_handler(request):
 				msg = { "cmd": "set_running", "state": False }
 			case "reload":
 				msg = { "cmd": "reload", "args": { "IECGates": False, "whiteBackground": True } }
+				wait_for_event = "reload_complete"
 			case "setts":
 				msg = { "cmd": "set_timestep", "timestep": 1e-3 }
 			case "gnv":
@@ -68,7 +70,9 @@ async def websocket_handler(request):
 		await ws.send_json(msg)
 		while True:
 			response = await ws.receive_json()
-			if response.get("msgid") == msg_id:
+			if (wait_for_event is None) and (response.get("msgid") == msg_id):
+				break
+			elif (wait_for_event is not None) and (response["type"] == "event") and (response["code"] == wait_for_event):
 				break
 		print(response)
 
