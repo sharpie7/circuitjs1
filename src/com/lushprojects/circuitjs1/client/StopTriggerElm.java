@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class StopTriggerElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class StopTriggerElm extends CircuitElm {
 	double triggerVoltage;
 	boolean triggered, stopped;
 	double delay, triggerTime;
@@ -54,7 +56,7 @@ package com.lushprojects.circuitjs1.client;
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
 	    setBbox(point1, lead1, 0);
-	    String s = sim.LS("trigger");
+	    String s = Locale.LS("trigger");
 	    drawLabeledNode(g, s, point1, lead1);
 	    setVoltageColor(g, volts[0]);
 	    if (selected)

@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.Window;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class VoltageElm extends CircuitElm {
     static final int FLAG_COS = 2;
@@ -233,7 +234,7 @@ class VoltageElm extends CircuitElm {
 	{
 	    g.setColor(needsHighlight() ? selectColor : whiteColor);
 	    setPowerColor(g, false);
-	    drawLabeledNode(g, sim.LS("Noise"), point1, lead1);
+	    drawLabeledNode(g, Locale.LS("Noise"), point1, lead1);
 	    break;
 	}
 	case WF_AC:
@@ -294,7 +295,7 @@ class VoltageElm extends CircuitElm {
 		    getUnitText(2.9979e8/frequency, "m");
 	}
 	if (waveform == WF_DC && current != 0 && sim.showResistanceInVoltageSources)
-	    arr[i++] = "(R = " + getUnitText(maxVoltage/current, CirSim.ohmString) + ")";
+	    arr[i++] = "(R = " + getUnitText(maxVoltage/current, Locale.ohmString) + ")";
 	arr[i++] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {
@@ -340,7 +341,7 @@ class VoltageElm extends CircuitElm {
 	    frequency = ei.value;
 	    double maxfreq = 1/(8*sim.maxTimeStep);
 	    if (frequency > maxfreq) {
-		if (Window.confirm(sim.LS("Adjust timestep to allow for higher frequencies?")))
+		if (Window.confirm(Locale.LS("Adjust timestep to allow for higher frequencies?")))
 		    sim.maxTimeStep = 1/(32*frequency);
 		else
 		    frequency = maxfreq;

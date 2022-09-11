@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 // 0 = switch
 // 1 = switch end 1
@@ -390,19 +391,19 @@ class RelayElm extends CircuitElm {
 	}
     }
     void getInfo(String arr[]) {
-	arr[0] = sim.LS("relay");
+	arr[0] = Locale.LS("relay");
 	if (i_position == 0)
-	    arr[0] += " (" + sim.LS("off") + ")";
+	    arr[0] += " (" + Locale.LS("off") + ")";
 	else if (i_position == 1)
-	    arr[0] += " (" + sim.LS("on") + ")";
+	    arr[0] += " (" + Locale.LS("on") + ")";
 	if (switchingTime == 0)
-	    arr[0] += " (" + sim.LS("old model") + ")";
+	    arr[0] += " (" + Locale.LS("old model") + ")";
 	int i;
 	int ln = 1;
 	for (i = 0; i != poleCount; i++)
 	    arr[ln++] = "I" + (i+1) + " = " + getCurrentDText(switchCurrent[i]);
-	arr[ln++] = sim.LS("coil I") + " = " + getCurrentDText(coilCurrent);
-	arr[ln++] = sim.LS("coil Vd") + " = " +
+	arr[ln++] = Locale.LS("coil I") + " = " + getCurrentDText(coilCurrent);
+	arr[ln++] = Locale.LS("coil Vd") + " = " +
 	    getVoltageDText(volts[nCoil1] - volts[nCoil2]);
     }
     public EditInfo getEditInfo(int n) {
@@ -419,7 +420,7 @@ class RelayElm extends CircuitElm {
 		// still using old model, so hide off current which won't work.
 		// make button to switch to new model
                 EditInfo ei = new EditInfo("", 0, -1, -1);
-                ei.button = new Button(sim.LS("Use New Model"));
+                ei.button = new Button(Locale.LS("Use New Model"));
                 return ei;
 	    }
 	    return new EditInfo("Off Current (A)", offCurrent, 0, 0);

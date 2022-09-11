@@ -23,6 +23,7 @@ package com.lushprojects.circuitjs1.client;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -55,7 +56,7 @@ class EditDialog extends Dialog {
 	EditDialog(Editable ce, CirSim f) {
 //		super(f, "Edit Component", false);
 		super(); // Do we need this?
-		setText(CirSim.LS("Edit Component"));
+		setText(Locale.LS("Edit Component"));
 		cframe = f;
 		elm = ce;
 //		setLayout(new EditDialogLayout());
@@ -70,14 +71,14 @@ class EditDialog extends Dialog {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		applyButton = new Button(CirSim.LS("Apply"));
+		applyButton = new Button(Locale.LS("Apply"));
 		hp.add(applyButton);
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
 			}
 		});
-		hp.add(okButton = new Button(CirSim.LS("OK")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -85,7 +86,7 @@ class EditDialog extends Dialog {
 			}
 		});
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
+		hp.add(cancelButton = new Button(Locale.LS("Cancel")));
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -105,7 +106,7 @@ class EditDialog extends Dialog {
 				break;
 			final EditInfo ei = einfos[i];
 			idx = vp.getWidgetIndex(hp);
-			String name = CirSim.LS(ei.name);
+			String name = Locale.LS(ei.name);
 			if (ei.name.startsWith("<"))
 			    vp.insert(l = new HTML(name),idx);
 			else

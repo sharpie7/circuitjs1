@@ -22,7 +22,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class AmmeterElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class AmmeterElm extends CircuitElm {
         
         int meter;
 	int scale;
@@ -201,7 +203,7 @@ package com.lushprojects.circuitjs1.client;
             ei.choice.add("Auto");
             ei.choice.add("A");
             ei.choice.add("mA");
-            ei.choice.add(CirSim.muString + "A");
+            ei.choice.add(Locale.muString + "A");
             ei.choice.select(scale);
             return ei;
         }

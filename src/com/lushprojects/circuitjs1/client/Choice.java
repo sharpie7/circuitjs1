@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.ListBox;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class Choice extends ListBox {
 	
@@ -28,7 +29,7 @@ public class Choice extends ListBox {
 	}
 	
 	public void add(String s){
-		this.addItem(CirSim.LS(s));
+		this.addItem(Locale.LS(s));
 	}
 	
 	public void select(int i){

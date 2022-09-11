@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.canvas.dom.client.CanvasGradient;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
     class ResistorElm extends CircuitElm {
 	double resistance;
@@ -99,11 +100,11 @@ import com.google.gwt.canvas.dom.client.CanvasGradient;
 	void getInfo(String arr[]) {
 	    arr[0] = "resistor";
 	    getBasicInfo(arr);
-	    arr[3] = "R = " + getUnitText(resistance, CirSim.ohmString);
+	    arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	    arr[4] = "P = " + getUnitText(getPower(), "W");
 	}
 	@Override String getScopeText(int v) {
-	    return sim.LS("resistor") + ", " + getUnitText(resistance, CirSim.ohmString);
+	    return Locale.LS("resistor") + ", " + getUnitText(resistance, Locale.ohmString);
 	}
 	public EditInfo getEditInfo(int n) {
 	    // ohmString doesn't work here on linux

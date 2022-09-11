@@ -1,6 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class CustomLogicElm extends ChipElm {
     String modelName;
@@ -225,7 +226,7 @@ public class CustomLogicElm extends ChipElm {
 	}
 	if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Edit Model"));
+            ei.button = new Button(Locale.LS("Edit Model"));
             return ei;
 	}
 	return null;

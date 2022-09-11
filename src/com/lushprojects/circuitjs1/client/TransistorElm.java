@@ -23,6 +23,7 @@ import java.util.Vector;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class TransistorElm extends CircuitElm {
 	// node 0 = base
@@ -391,11 +392,11 @@ class TransistorElm extends CircuitElm {
 	    case Scope.VAL_VCE: t = "Vce"; break;
 	    case Scope.VAL_POWER: t = "P"; break;
 	    }
-	    return sim.LS("transistor") + ", " + t;
+	    return Locale.LS("transistor") + ", " + t;
 	}
 	
 	void getInfo(String arr[]) {
-	    arr[0] = sim.LS("transistor") + " (" + ((pnp == -1) ? "PNP" : "NPN") + ", " + model.name + ", \u03b2=" + showFormat.format(beta) + ")";
+	    arr[0] = Locale.LS("transistor") + " (" + ((pnp == -1) ? "PNP" : "NPN") + ", " + model.name + ", \u03b2=" + showFormat.format(beta) + ")";
 	    double vbc = volts[0]-volts[1];
 	    double vbe = volts[0]-volts[2];
 	    double vce = volts[1]-volts[2];
@@ -403,7 +404,7 @@ class TransistorElm extends CircuitElm {
 		arr[1] = vbe*pnp > .2 ? "saturation" : "reverse active";
 	    else
 		arr[1] = vbe*pnp > .2 ? "fwd active" : "cutoff";
-	    arr[1] = sim.LS(arr[1]);
+	    arr[1] = Locale.LS(arr[1]);
 	    arr[2] = "Ic = " + getCurrentText(ic);
 	    arr[3] = "Ib = " + getCurrentText(ib);
 	    arr[4] = "Vbe = " + getVoltageText(vbe);
@@ -464,14 +465,14 @@ class TransistorElm extends CircuitElm {
 	    }
 	    if (n == 4) {
 		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.button = new Button(sim.LS("Create New Model"));
+		ei.button = new Button(Locale.LS("Create New Model"));
 		return ei;
 	    }
 	    if (n == 5) {
 		if (model.readOnly)
 		    return null;
 		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.button = new Button(sim.LS("Edit Model"));
+		ei.button = new Button(Locale.LS("Edit Model"));
 		return ei;
 	    }
 	    return null;
@@ -517,7 +518,7 @@ class TransistorElm extends CircuitElm {
 	    if (n == 5) {
 		if (model.readOnly) {
 		    // probably never reached
-		    Window.alert(sim.LS("This model cannot be modified.  Change the model name to allow customization."));
+		    Window.alert(Locale.LS("This model cannot be modified.  Change the model name to allow customization."));
 		    return;
 		}
 		EditDialog editDialog = new EditTransistorModelDialog(model, sim, null);

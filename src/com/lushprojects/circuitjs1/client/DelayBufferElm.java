@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class DelayBufferElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class DelayBufferElm extends CircuitElm {
 	double delay, threshold, highVoltage;
 	
 	public DelayBufferElm(int xx, int yy) {
@@ -102,8 +104,8 @@ package com.lushprojects.circuitjs1.client;
 	}
 	double getVoltageDiff() { return volts[0]; }
 	void getInfo(String arr[]) {
-	    arr[0] = sim.LS("buffer");
-	    arr[1] = sim.LS("delay = " )+ getUnitText(delay, "s");
+	    arr[0] = Locale.LS("buffer");
+	    arr[1] = Locale.LS("delay = " )+ getUnitText(delay, "s");
 	    arr[2] = "Vi = " + getVoltageText(volts[0]);
 	    arr[3] = "Vo = " + getVoltageText(volts[1]);
 	}

@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Label;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
@@ -293,8 +294,8 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
     void getInfo(String arr[]) {
 	arr[0] = "potentiometer";
 	arr[1] = "Vd = " + getVoltageDText(getVoltageDiff());
-	arr[2] = "R1 = " + getUnitText(resistance1, CirSim.ohmString);
-	arr[3] = "R2 = " + getUnitText(resistance2, CirSim.ohmString);
+	arr[2] = "R1 = " + getUnitText(resistance1, Locale.ohmString);
+	arr[3] = "R2 = " + getUnitText(resistance2, Locale.ohmString);
 	arr[4] = "I1 = " + getCurrentDText(current1);
 	arr[5] = "I2 = " + getCurrentDText(current2);
     }

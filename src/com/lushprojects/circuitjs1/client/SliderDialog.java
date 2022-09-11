@@ -22,6 +22,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.lushprojects.circuitjs1.client.util.Locale;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -49,7 +50,7 @@ class SliderDialog extends Dialog  {
 
 	SliderDialog(CircuitElm ce, CirSim f) {
 		super(); // Do we need this?
-		setText(CirSim.LS("Add Sliders"));
+		setText(Locale.LS("Add Sliders"));
 		sim = f;
 		elm = ce;
 		vp=new VerticalPanel();
@@ -61,13 +62,13 @@ class SliderDialog extends Dialog  {
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		hp.setStyleName("topSpace");
 		vp.add(hp);
-		hp.add(applyButton = new Button(CirSim.LS("Apply")));
+		hp.add(applyButton = new Button(Locale.LS("Apply")));
 		applyButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
 			}
 		});
-		hp.add(okButton = new Button(CirSim.LS("OK")));
+		hp.add(okButton = new Button(Locale.LS("OK")));
 		okButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				apply();
@@ -75,7 +76,7 @@ class SliderDialog extends Dialog  {
 			}
 		});
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hp.add(cancelButton = new Button(CirSim.LS("Cancel")));
+		hp.add(cancelButton = new Button(Locale.LS("Cancel")));
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				closeDialog();
@@ -96,7 +97,7 @@ class SliderDialog extends Dialog  {
 			if (!ei.canCreateAdjustable())
 			    continue;
 			Adjustable adj = findAdjustable(i);
-			String name = CirSim.LS(ei.name);
+			String name = Locale.LS(ei.name);
 			idx = vp.getWidgetIndex(hp);
 
 			// remove HTML
@@ -134,15 +135,15 @@ class SliderDialog extends Dialog  {
 				}
 				vp.insert(ch, idx++);
 			    }
-			    vp.insert(new Label(sim.LS("Min Value")), idx++);
+			    vp.insert(new Label(Locale.LS("Min Value")), idx++);
 			    ei.minBox = new TextBox();
 			    vp.insert(ei.minBox, idx++);
-			    vp.insert(new Label(sim.LS("Max Value")), idx++);
+			    vp.insert(new Label(Locale.LS("Max Value")), idx++);
 			    ei.maxBox = new TextBox();
 			    vp.insert(ei.maxBox, idx++);
 			    if (adj.sharedSlider == null) {
 				// select label if this is a new slider
-				vp.insert(new Label(sim.LS("Label")), idx++);
+				vp.insert(new Label(Locale.LS("Label")), idx++);
 				ei.labelBox = new TextBox();
 				ei.labelBox.setText(adj.sliderText);
 				vp.insert(ei.labelBox, idx++);

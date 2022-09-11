@@ -32,6 +32,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class circuitjs1 implements EntryPoint {
 
@@ -145,7 +146,7 @@ public class circuitjs1 implements EntryPoint {
     }
 
     public void loadSimulator(HashMap<String, String> localizationMap) {
-        CirSim.localizationMap = localizationMap;
+        Locale.localizationMap = localizationMap;
         mysim = new CirSim();
         mysim.init();
 

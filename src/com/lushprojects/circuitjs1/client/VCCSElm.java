@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.Window;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class VCCSElm extends ChipElm {
 	double gain;
@@ -206,7 +207,7 @@ class VCCSElm extends ChipElm {
             expr = parser.parseExpression();
             String err = parser.gotError();
             if (err != null)
-        	Window.alert(sim.LS("Parse error in expression") + ": " + exprString + ": " + err);
+        	Window.alert(Locale.LS("Parse error in expression") + ": " + exprString + ": " + err);
         }
         
         void getInfo(String arr[]) {

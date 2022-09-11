@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 class FuseElm extends CircuitElm {
 	double resistance;
 	double heat;
@@ -146,10 +148,10 @@ class FuseElm extends CircuitElm {
 	void getInfo(String arr[]) {
 	    arr[0] = blown ? "fuse (blown)" : "fuse";
 	    getBasicInfo(arr);
-	    arr[3] = "R = " + getUnitText(resistance, CirSim.ohmString);
+	    arr[3] = "R = " + getUnitText(resistance, Locale.ohmString);
 	    arr[4] = "I2t = " + i2t;
 	    if (!blown)
-		arr[5] = ((int)(heat*100/i2t)) + "% " + sim.LS("melted");
+		arr[5] = ((int)(heat*100/i2t)) + "% " + Locale.LS("melted");
 	}
 	public EditInfo getEditInfo(int n) {
 	    if (n == 0)

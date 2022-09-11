@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 // much of this was adapted from Bill Collis's code in TestPointElm.java
 
 class ProbeElm extends CircuitElm {
@@ -290,7 +292,7 @@ class ProbeElm extends CircuitElm {
             ei.choice.add("Auto");
             ei.choice.add("V");
             ei.choice.add("mV");
-            ei.choice.add(CirSim.muString + "V");
+            ei.choice.add(Locale.muString + "V");
             ei.choice.select(scale);
             return ei;
         }

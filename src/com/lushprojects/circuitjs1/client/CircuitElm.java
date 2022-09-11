@@ -29,6 +29,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Random;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 // circuit element class
 public abstract class CircuitElm implements Editable {
@@ -881,7 +882,7 @@ public abstract class CircuitElm implements Editable {
 	if (va < 1e-6)
 	    return format(v*1e9, sf) + sp + "n" + u;
 	if (va < 1e-3)
-	    return format(v*1e6, sf) + sp + CirSim.muString + u;
+	    return format(v*1e6, sf) + sp + Locale.muString + u;
 	if (va < 1)
 	    return format(v*1e3, sf) + sp + "m" + u;
 	if (va < 1e3)
@@ -910,7 +911,7 @@ public abstract class CircuitElm implements Editable {
 	if (scale == SCALE_M)
 	    return showFormat.format(1e3*val) + " m" + utext;
 	if (scale == SCALE_MU)
-	    return showFormat.format(1e6*val) + " " + CirSim.muString + utext;
+	    return showFormat.format(1e6*val) + " " + Locale.muString + utext;
 	return getUnitText(val, utext);
     }
 

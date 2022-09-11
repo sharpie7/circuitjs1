@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 public class TransistorModel implements Editable, Comparable<TransistorModel> {
 
     static HashMap<String, TransistorModel> modelMap;
@@ -131,7 +133,7 @@ public class TransistorModel implements Editable, Comparable<TransistorModel> {
     String getDescription() {
 	if (description == null || description.equals(name))
 	    return name;
-	return name + " (" + CirSim.LS(description) + ")";
+	return name + " (" + Locale.LS(description) + ")";
     }
 
     TransistorModel() {

@@ -21,7 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.storage.client.Storage;
-
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 import java.util.Vector;
 
@@ -133,7 +133,7 @@ class ScopePlot {
 	case Scope.UNITS_A:
 	    return CircuitElm.getCurrentText(v);
 	case Scope.UNITS_OHMS:
-	    return CircuitElm.getUnitText(v, CirSim.ohmString);
+	    return CircuitElm.getUnitText(v, Locale.ohmString);
 	case Scope.UNITS_W:
 	    return CircuitElm.getUnitText(v, "W");
 	}
@@ -345,7 +345,7 @@ class Scope {
     static String getScaleUnitsText(int units) {
 	switch (units) {
 	case UNITS_A: return "A";
-	case UNITS_OHMS: return CirSim.ohmString;
+	case UNITS_OHMS: return Locale.ohmString;
 	case UNITS_W: return "W";
 	default: return "V";
 	}
@@ -1513,7 +1513,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    avg = (endAvg/(end-start));
-	    drawInfoText(g, plot.getUnitText(avg) + CirSim.LS(" average"));
+	    drawInfoText(g, plot.getUnitText(avg) + Locale.LS(" average"));
 	}
     }
 
@@ -1571,7 +1571,7 @@ class Scope {
 	}
 	if (waveCount > 1) {
 	    int duty = 100*dutyLen/(end-start);
-	    drawInfoText(g, CirSim.LS("Duty cycle ") + duty + "%");
+	    drawInfoText(g, Locale.LS("Duty cycle ") + duty + "%");
 	}
     }
 
@@ -1719,7 +1719,7 @@ class Scope {
     	    t = getScopeText();
     	    if (t==null)
     		return "";
-    	    return CirSim.LS(t);
+    	    return Locale.LS(t);
     	}
     	else
     	    return t;

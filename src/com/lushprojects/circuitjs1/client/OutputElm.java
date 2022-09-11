@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class OutputElm extends CircuitElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class OutputElm extends CircuitElm {
 	final int FLAG_VALUE = 1;
         int scale;
 	public OutputElm(int xx, int yy) {
@@ -50,7 +52,7 @@ package com.lushprojects.circuitjs1.client;
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
-	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : sim.LS("out");
+	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : Locale.LS("out");
 //	    FontMetrics fm = g.getFontMetrics();
 	    if (this == sim.plotXElm)
 		s = "X";
@@ -84,7 +86,7 @@ package com.lushprojects.circuitjs1.client;
 		ei.choice.add("Auto");
 		ei.choice.add("V");
 		ei.choice.add("mV");
-		ei.choice.add(CirSim.muString + "V");
+		ei.choice.add(Locale.muString + "V");
 		ei.choice.select(scale);
 		return ei;
 	    }

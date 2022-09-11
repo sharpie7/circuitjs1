@@ -1,5 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 // based on https://ctms.engin.umich.edu/CTMS/index.php?example=MotorPosition&section=SystemModeling
 
 
@@ -189,9 +191,9 @@ class DCMotorElm extends CircuitElm {
     void getInfo(String arr[]) {
 	arr[0] = "DC Motor";
 	getBasicInfo(arr);
-	arr[3] = sim.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), sim.LS("RPM"));
+	arr[3] = Locale.LS("speed") + " = " + getUnitText(60*Math.abs(speed)/(2*Math.PI), Locale.LS("RPM"));
 	arr[4] = "L = " + getUnitText(inductance, "H");
-	arr[5] = "R = " + getUnitText(resistance, CirSim.ohmString);
+	arr[5] = "R = " + getUnitText(resistance, Locale.ohmString);
 	arr[6] = "P = " + getUnitText(getPower(), "W");
     }
     public EditInfo getEditInfo(int n) {

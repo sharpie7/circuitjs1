@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 // instances of subcircuits
 
@@ -155,7 +156,7 @@ public class CustomCompositeElm extends CompositeElm {
 	}
         if (n == 1) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Edit Pin Layout"));
+            ei.button = new Button(Locale.LS("Edit Pin Layout"));
             return ei;
         }
         if (n == 2) {
@@ -175,7 +176,7 @@ public class CustomCompositeElm extends CompositeElm {
         }
         if (n == 5 && model.canLoadModelCircuit()) {
             EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.button = new Button(sim.LS("Load Model Circuit"));
+            ei.button = new Button(Locale.LS("Load Model Circuit"));
             return ei;
         }
 	return null;
@@ -193,7 +194,7 @@ public class CustomCompositeElm extends CompositeElm {
 	}
         if (n == 1) {
             if (model.name.equals("default")) {
-        	Window.alert(CirSim.LS("Can't edit this model."));
+        	Window.alert(Locale.LS("Can't edit this model."));
         	return;
             }
             EditCompositeModelDialog dlg = new EditCompositeModelDialog();

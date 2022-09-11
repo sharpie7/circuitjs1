@@ -1,5 +1,7 @@
 package com.lushprojects.circuitjs1.client;
 
+import com.lushprojects.circuitjs1.client.util.Locale;
+
 public class OhmMeterElm extends CurrentElm {
 	public OhmMeterElm(int xx, int yy) {
 	    super(xx, yy);
@@ -21,12 +23,12 @@ public class OhmMeterElm extends CurrentElm {
 	    setPowerColor(g, false);
 	    
 	    drawThickCircle(g, center.x, center.y, cr);
-	    drawCenteredText(g, CirSim.ohmString, center.x, center.y, true);
+	    drawCenteredText(g, Locale.ohmString, center.x, center.y, true);
 
 	    setBbox(point1, point2, cr);
 	    doDots(g);
 	    if (sim.showValuesCheckItem.getState() && current != 0) {
-		String s = getShortUnitText(getVoltageDiff()/current, CirSim.ohmString);
+		String s = getShortUnitText(getVoltageDiff()/current, Locale.ohmString);
 		if (dx == 0 || dy == 0)
 		    drawValues(g, s, cr);
 	    }
@@ -57,6 +59,6 @@ public class OhmMeterElm extends CurrentElm {
 	    if (current == 0)
 		arr[1] = "R = \u221e";
 	    else
-		arr[1] = "R = " + getUnitText(getVoltageDiff()/current, CirSim.ohmString);
+		arr[1] = "R = " + getUnitText(getVoltageDiff()/current, Locale.ohmString);
 	}
 }

@@ -19,7 +19,9 @@
 
 package com.lushprojects.circuitjs1.client;
 
-    class ExtVoltageElm extends RailElm {
+import com.lushprojects.circuitjs1.client.util.Locale;
+
+class ExtVoltageElm extends RailElm {
 	public ExtVoltageElm(int xx, int yy) { super(xx, yy, WF_AC); name = "ext"; }
 	public ExtVoltageElm(int xa, int ya, int xb, int yb, int f,
 		       StringTokenizer st) {
@@ -61,6 +63,6 @@ package com.lushprojects.circuitjs1.client;
 
 	void getInfo(String arr[]) {
 	    super.getInfo(arr);
-	    arr[0] = sim.LS("ext. voltage") + " (" + name + ")";
+	    arr[0] = Locale.LS("ext. voltage") + " (" + name + ")";
 	}
     }

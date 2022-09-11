@@ -21,6 +21,7 @@ package com.lushprojects.circuitjs1.client;
 
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class ScopePopupMenu {
     
@@ -38,16 +39,16 @@ public class ScopePopupMenu {
     
     ScopePopupMenu() {
 	 m = new MenuBar(true);
-	 m.addItem(removeScopeItem = new CheckboxAlignedMenuItem(CirSim.LS("Remove Scope"),new MyCommand("scopepop", "remove")));
-	 m.addItem(dockItem = new CheckboxAlignedMenuItem(CirSim.LS("Dock Scope"),new MyCommand("scopepop", "dock")));
-	 m.addItem(undockItem = new CheckboxAlignedMenuItem(CirSim.LS("Undock Scope"),new MyCommand("scopepop", "undock")));
-	 m.addItem(maxScaleItem = new CheckboxMenuItem(CirSim.LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
-	 m.addItem(stackItem = new CheckboxAlignedMenuItem(CirSim.LS("Stack"), new MyCommand("scopepop", "stack")));
-	 m.addItem(unstackItem = new CheckboxAlignedMenuItem(CirSim.LS("Unstack"), new MyCommand("scopepop", "unstack")));
-	 m.addItem(combineItem = new CheckboxAlignedMenuItem(CirSim.LS("Combine"), new MyCommand("scopepop", "combine")));
-	 m.addItem(removePlotItem = new CheckboxAlignedMenuItem(CirSim.LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
-	 m.addItem(resetItem = new CheckboxAlignedMenuItem(CirSim.LS("Reset"), new MyCommand("scopepop", "reset")));
-	 m.addItem(propertiesItem = new CheckboxAlignedMenuItem(CirSim.LS("Properties..."), new MyCommand("scopepop", "properties")));
+	 m.addItem(removeScopeItem = new CheckboxAlignedMenuItem(Locale.LS("Remove Scope"),new MyCommand("scopepop", "remove")));
+	 m.addItem(dockItem = new CheckboxAlignedMenuItem(Locale.LS("Dock Scope"),new MyCommand("scopepop", "dock")));
+	 m.addItem(undockItem = new CheckboxAlignedMenuItem(Locale.LS("Undock Scope"),new MyCommand("scopepop", "undock")));
+	 m.addItem(maxScaleItem = new CheckboxMenuItem(Locale.LS("Max Scale"), new MyCommand("scopepop", "maxscale")));
+	 m.addItem(stackItem = new CheckboxAlignedMenuItem(Locale.LS("Stack"), new MyCommand("scopepop", "stack")));
+	 m.addItem(unstackItem = new CheckboxAlignedMenuItem(Locale.LS("Unstack"), new MyCommand("scopepop", "unstack")));
+	 m.addItem(combineItem = new CheckboxAlignedMenuItem(Locale.LS("Combine"), new MyCommand("scopepop", "combine")));
+	 m.addItem(removePlotItem = new CheckboxAlignedMenuItem(Locale.LS("Remove Plot"),new MyCommand("scopepop", "removeplot")));
+	 m.addItem(resetItem = new CheckboxAlignedMenuItem(Locale.LS("Reset"), new MyCommand("scopepop", "reset")));
+	 m.addItem(propertiesItem = new CheckboxAlignedMenuItem(Locale.LS("Properties..."), new MyCommand("scopepop", "properties")));
     }
     
     void doScopePopupChecks( boolean floating, boolean canstack, boolean cancombine, boolean canunstack, Scope s) {

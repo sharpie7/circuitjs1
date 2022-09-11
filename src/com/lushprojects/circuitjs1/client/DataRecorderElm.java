@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.Anchor;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 public class DataRecorderElm extends CircuitElm {
     int dataCount, dataPtr;
@@ -41,7 +42,7 @@ public class DataRecorderElm extends CircuitElm {
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
 	    setBbox(point1, lead1, 0);
-	    String s = sim.LS("export");
+	    String s = Locale.LS("export");
 	    drawLabeledNode(g, s, point1, lead1);
 	    setVoltageColor(g, volts[0]);
 	    if (selected)
