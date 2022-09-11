@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+	<head>
+		<meta name="viewport" content="width=820">
+		<title>CircuitJS websockets automation</title>
+	</head>
+	<body>
+		<iframe id="circuitFrame" width=800 height=550></iframe>
+
+		<script type="module">
+			import {CircuitWS} from "./circuitws.js";
+			const iframe = document.querySelector("#circuitFrame");
+			const circuitws = new CircuitWS(iframe);
+			const search_params = new URLSearchParams(window.location.search);
+			if (search_params.has("src")) {
+				circuitws.reload_circuitjs(search_params.get("src"));
+			} else {
+				circuitws.reload_circuitjs("circuitjs.html?startCircuit=jsinterface.txt");
+			}
+			circuitws.initialize_parameters(search_params);
+		</script>
+	</body>
+</html>

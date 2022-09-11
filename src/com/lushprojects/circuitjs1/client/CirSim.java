@@ -3583,7 +3583,15 @@ MouseOutHandler, MouseWheelHandler {
     	dialogShowing = new ExportAsLocalFileDialog(dump);
     	dialogShowing.show();
     }
-    
+
+    public void importCircuitFromText(String circuitText, boolean subcircuitsOnly) {
+		int flags = subcircuitsOnly ? (CirSim.RC_SUBCIRCUITS | CirSim.RC_RETAIN) : 0;
+		if (circuitText != null) {
+			readCircuit(circuitText, flags);
+			allowSave(false);
+		}
+    }
+
     String dumpOptions() {
 	int f = (dotsCheckItem.getState()) ? 1 : 0;
 	f |= (smallGridCheckItem.getState()) ? 2 : 0;
@@ -5987,28 +5995,46 @@ MouseOutHandler, MouseWheelHandler {
 	    Canvas cv = getCircuitAsCanvas(CAC_PRINT);
 	    printCanvas(cv.getCanvasElement());
 	}
-	
+
 	boolean loadedCanvas2SVG = false;
-	
-	void doExportAsSVG() {
-	    // load canvas2svg if we haven't already
-	    if (!loadedCanvas2SVG) {
-		ScriptInjector.fromUrl("canvas2svg.js").setCallback(
-			new Callback<Void,Exception>() {
-			    public void onFailure(Exception reason) {
-				Window.alert("Can't load canvas2svg.js.");
-			    }
-			    public void onSuccess(Void result) {
-				loadedCanvas2SVG = true;
-				doExportAsSVG();
-			    }
+
+	boolean initializeSVGScriptIfNecessary(final String followupAction) {
+		// load canvas2svg if we haven't already
+		if (!loadedCanvas2SVG) {
+			ScriptInjector.fromUrl("canvas2svg.js").setCallback(new Callback<Void,Exception>() {
+				public void onFailure(Exception reason) {
+					Window.alert("Can't load canvas2svg.js.");
+				}
+				public void onSuccess(Void result) {
+					loadedCanvas2SVG = true;
+					if (followupAction.equals("doExportAsSVG")) {
+						doExportAsSVG();
+					} else if (followupAction.equals("doExportAsSVGFromAPI")) {
+						doExportAsSVGFromAPI();
+					}
+				}
 			}).inject();
-		return;
-	    }
-	    dialogShowing = new ExportAsImageDialog(CAC_SVG);
-	    dialogShowing.show();
+			return false;
+		}
+		return true;
 	}
-	
+
+	void doExportAsSVG() {
+		if (!initializeSVGScriptIfNecessary("doExportAsSVG")) {
+			return;
+		}
+		dialogShowing = new ExportAsImageDialog(CAC_SVG);
+		dialogShowing.show();
+	}
+
+	public void doExportAsSVGFromAPI() {
+		if (!initializeSVGScriptIfNecessary("doExportAsSVGFromAPI")) {
+			return;
+		}
+		String svg = getCircuitAsSVG();
+		callSVGRenderedHook(svg);
+	}
+
 	static final int CAC_PRINT = 0;
 	static final int CAC_IMAGE = 1;
 	static final int CAC_SVG   = 2;
@@ -6276,10 +6302,15 @@ MouseOutHandler, MouseWheelHandler {
 	    $wnd.CircuitJS1 = {
 	        setSimRunning: $entry(function(run) { that.@com.lushprojects.circuitjs1.client.CirSim::setSimRunning(Z)(run); } ),
 	        getTime: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::t; } ),
+	        getTimeStep: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::timeStep; } ),
+	        setTimeStep: $entry(function(ts) { that.@com.lushprojects.circuitjs1.client.CirSim::timeStep = ts; } ),
 	        isRunning: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::simIsRunning()(); } ),
 	        getNodeVoltage: $entry(function(n) { return that.@com.lushprojects.circuitjs1.client.CirSim::getLabeledNodeVoltage(Ljava/lang/String;)(n); } ),
 	        setExtVoltage: $entry(function(n, v) { that.@com.lushprojects.circuitjs1.client.CirSim::setExtVoltage(Ljava/lang/String;D)(n, v); } ),
-	        getElements: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getJSElements()(); } )
+	        getElements: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::getJSElements()(); } ),
+	        getCircuitAsSVG: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::doExportAsSVGFromAPI()(); } ),
+	        exportCircuit: $entry(function() { return that.@com.lushprojects.circuitjs1.client.CirSim::dumpCircuit()(); } ),
+	        importCircuit: $entry(function(circuit, subcircuitsOnly) { return that.@com.lushprojects.circuitjs1.client.CirSim::importCircuitFromText(Ljava/lang/String;Z)(circuit, subcircuitsOnly); })
 	    };
 	    var hook = $wnd.oncircuitjsloaded;
 	    if (hook)
@@ -6305,6 +6336,12 @@ MouseOutHandler, MouseWheelHandler {
 	    	hook($wnd.CircuitJS1);
 	}-*/;
 	
+	native void callSVGRenderedHook(String svgData) /*-{
+		var hook = $wnd.CircuitJS1.onsvgrendered;
+		if (hook)
+			hook($wnd.CircuitJS1, svgData);
+	}-*/;
+
 	class UndoItem {
 	    public String dump;
 	    public double scale, transform4, transform5;
