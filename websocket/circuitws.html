@@ -8,7 +8,7 @@
 		<iframe id="circuitFrame" width=800 height=550></iframe>
 
 		<script type="module">
-			import {CircuitWS} from "./circuitws.mjs";
+			import {CircuitWS} from "./circuitws.js";
 			const iframe = document.querySelector("#circuitFrame");
 			const circuitws = new CircuitWS(iframe);
 			const search_params = new URLSearchParams(window.location.search);

@@ -11,7 +11,7 @@ this can be useful, but generally it allows remote controlling a browser-run
 simulation to be controlled and read out from any programming language.
 
 ## Usage
-You can start by copying `circuitws.html` and `circuitws.mjs` to the `war/`
+You can start by copying `circuitws.html` and `circuitws.js` to the `war/`
 directory, then serve it from there. You then need to invoke the URI by adding
 a `ws=` query string parameter. The code expects to find a WebSocket end point
 there and will connect to it (and reconnect if the connection is lost).
