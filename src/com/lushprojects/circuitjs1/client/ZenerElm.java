@@ -19,8 +19,6 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.user.client.Window;
-
 // Zener code contributed by J. Mike Rollins
 // http://www.camotruck.net/rollins/simulator.html
 class ZenerElm extends DiodeElm {

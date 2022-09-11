@@ -116,7 +116,7 @@ class MemristorElm extends CircuitElm {
     void getInfo(String arr[]) {
 	arr[0] = "memristor";
 	getBasicInfo(arr);
-	arr[3] = "R = " + getUnitText(resistance, sim.ohmString);
+	arr[3] = "R = " + getUnitText(resistance, CirSim.ohmString);
 	arr[4] = "P = " + getUnitText(getPower(), "W");
     }
     double getScopeValue(int x) {

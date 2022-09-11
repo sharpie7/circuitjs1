@@ -19,15 +19,11 @@
 
 package com.lushprojects.circuitjs1.client;
 
-import com.google.gwt.core.client.JsArrayNumber;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FileUpload;
 
 class DataFileEntry {
@@ -183,7 +179,7 @@ class DataInputElm extends RailElm {
         	    double d = Double.parseDouble(arr[i]);
         	    data.add(d);
         	} catch (Exception e) {
-        	    sim.console("parse error on line " + i);
+        	    CirSim.console("parse error on line " + i);
         	}
             }
 	}

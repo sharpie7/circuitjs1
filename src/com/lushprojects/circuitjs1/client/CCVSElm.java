@@ -21,8 +21,6 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
 
-import com.lushprojects.circuitjs1.client.ChipElm.Pin;
-
 class CCVSElm extends VCCSElm {
     	static int FLAG_SPICE = 2;
     	VoltageElm voltageSources[];

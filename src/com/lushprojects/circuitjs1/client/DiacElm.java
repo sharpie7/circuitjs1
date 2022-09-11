@@ -129,8 +129,8 @@ class DiacElm extends CircuitElm {
 	arr[0] = "DIAC";
 	getBasicInfo(arr);
 	arr[3] = state ? "on" : "off";
-	arr[4] = "Ron = " + getUnitText(onresistance, sim.ohmString);
-	arr[5] = "Roff = " + getUnitText(offresistance, sim.ohmString);
+	arr[4] = "Ron = " + getUnitText(onresistance, CirSim.ohmString);
+	arr[5] = "Roff = " + getUnitText(offresistance, CirSim.ohmString);
 	arr[6] = "Vbrkdn = " + getUnitText(breakdown, "V");
 	arr[7] = "Ihold = " + getUnitText(holdcurrent, "A");
         arr[8] = "P = " + getUnitText(getPower(), "W");
