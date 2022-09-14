@@ -177,24 +177,29 @@ package com.lushprojects.circuitjs1.client;
 	abstract boolean calcFunction();
 	
 	int oscillationCount;
+	double lastTime;
 	
 	void doStep() {
 	    boolean f = calcFunction();
 	    if (isInverting())
 		f = !f;
 	    
-	    // detect oscillation (using same strategy as Atanua)
-	    if (lastOutput == !f) {
-		if (oscillationCount++ > 50) {
-		    // output is oscillating too much, randomly leave output the same
+	    if (lastTime != sim.t) {
+		// detect oscillation (using same strategy as Atanua)
+		if (lastOutput == !f) {
+		    if (oscillationCount++ > 50) {
+			// output is oscillating too much, randomly leave output the same
+			oscillationCount = 0;
+			if (sim.getrand(10) > 5)
+			    f = lastOutput;
+		    }
+		} else
 		    oscillationCount = 0;
-		    if (sim.getrand(10) > 5)
-			f = lastOutput;
-		}
-	    } else
-		oscillationCount = 0;
 	    
-	    lastOutput = f;
+		lastOutput = f;
+		lastTime = sim.t;
+	    }
+	    
 	    double res = f ? highVoltage : 0;
 	    sim.updateVoltageSource(0, nodes[inputCount], voltSource, res);
 	}

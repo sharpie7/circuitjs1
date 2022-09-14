@@ -166,8 +166,10 @@ public abstract class CompositeElm extends CircuitElm {
     }
 
     public boolean nonLinear() {
-	return true; // Lets assume that any useful composite elements are
-		     // non-linear
+	for (int i = 0; i < compElmList.size(); i++)
+	    if (compElmList.get(i).nonLinear())
+		return true;
+	return false;
     }
 
     public String dump() {
