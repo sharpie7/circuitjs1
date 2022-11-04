@@ -77,6 +77,7 @@ You can add query parameters to link to change the applications startup behaviou
 .../circuitjs.html?currentColor=%23ffff00 // change current color
 .../circuitjs.html?mouseWheelEdit=<true|false> // allow changing of values by mouse wheel
 .../circuitjs.html?mouseMode=<item> // set the initial mouse mode.  can also initially perform other UI actions, such as opening the 'about' menu, running 'importfromlocalfile', etc.
+.../circuitjs.html?hideInfoBox=<true|false>
 ```
 The simulator can also interface with your javascript code.  See [war/jsinterface.html](http://www.falstad.com/circuit/jsinterface.html) for an example.
 
