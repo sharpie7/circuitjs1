@@ -234,6 +234,7 @@ MouseOutHandler, MouseWheelHandler {
     int scopeCount;
     Scope scopes[];
     boolean showResistanceInVoltageSources;
+    boolean hideInfoBox;
     int scopeColCount[];
     static EditDialog editDialog, customLogicEditDialog, diodeModelEditDialog;
     static ScrollValuePopup scrollValuePopup;
@@ -406,6 +407,7 @@ MouseOutHandler, MouseWheelHandler {
 	    selectColor = qp.getValue("selectColor");
 	    currentColor = qp.getValue("currentColor");
 	    mouseModeReq = qp.getValue("mouseMode");
+	    hideInfoBox = qp.getBooleanValue("hideInfoBox", false);
 	} catch (Exception e) { }
 
 	boolean euroSetting = false;
@@ -1584,6 +1586,8 @@ MouseOutHandler, MouseWheelHandler {
 	    leftX = max(canvasWidth-infoWidth, 0);
 	    int h0 = (int) (canvasHeight * scopeHeightFraction);
 	    h = (mouseElm == null) ? 70 : h0;
+	    if (hideInfoBox)
+		h = 0;
 	}
 	if (stopMessage != null && circuitArea.height > canvasHeight-30)
 	    h = 30;
@@ -1612,7 +1616,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	if (stopMessage != null) {
 	    g.drawString(stopMessage, 10, canvasHeight-10);
-	} else {
+	} else if (!hideInfoBox) {
 	    // in JS it doesn't matter how big this is, there's no out-of-bounds exception
 	    String info[] = new String[10];
 	    if (mouseElm != null) {
