@@ -5,6 +5,10 @@ war/circuitjs1/circuits/
 war/e-*.html
 war/WEB-INF/
 
+# GWT command line tools
+codeserver.log
+webserver.log
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
