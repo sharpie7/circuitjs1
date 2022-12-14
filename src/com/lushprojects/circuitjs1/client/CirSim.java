@@ -3288,7 +3288,7 @@ MouseOutHandler, MouseWheelHandler {
     	    needAnalyze();
 	}
     	
-    	if (item.substring(0,10)=="addToScope" && menuElm != null) {
+    	if (item.startsWith("addToScope") && menuElm != null) {
     	    int n;
     	    n = Integer.parseInt(item.substring(10));
     	    if (n < scopeCount + countScopeElms()) {
