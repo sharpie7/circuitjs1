@@ -26,6 +26,7 @@ package com.lushprojects.circuitjs1.client;
 
 import java.util.Vector;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -6152,6 +6153,10 @@ MouseOutHandler, MouseWheelHandler {
 	    CustomLogicModel.clearDumpedFlags();
 	    DiodeModel.clearDumpedFlags();
 	    TransistorModel.clearDumpedFlags();
+            Vector<LabeledNodeElm> sideLabels[] = new Vector[] {
+                new Vector<LabeledNodeElm>(), new Vector<LabeledNodeElm>(),
+                new Vector<LabeledNodeElm>(), new Vector<LabeledNodeElm>()
+            };
 	    Vector<ExtListEntry> extList = new Vector<ExtListEntry>();
 	    boolean sel = isSelection();
 	    
@@ -6173,13 +6178,30 @@ MouseOutHandler, MouseWheelHandler {
 		    if (extnodes[ce.getNode(0)])
 			continue;
 		    
+                    int side = ChipElm.SIDE_W;
+                    if (Math.abs(ce.dx) >= Math.abs(ce.dy) && ce.dx > 0) side = ChipElm.SIDE_E;
+                    if (Math.abs(ce.dx) <= Math.abs(ce.dy) && ce.dy < 0) side = ChipElm.SIDE_N;
+                    if (Math.abs(ce.dx) <= Math.abs(ce.dy) && ce.dy > 0) side = ChipElm.SIDE_S;
+                    
 		    // create ext list entry for external nodes
-		    ExtListEntry ent = new ExtListEntry(label, ce.getNode(0));
-		    extList.add(ent);
+                    sideLabels[side].add(lne);
 		    extnodes[ce.getNode(0)] = true;
 		}
 	    }
 	    
+            Collections.sort(sideLabels[ChipElm.SIDE_W], (LabeledNodeElm a, LabeledNodeElm b) -> Integer.signum(a.y - b.y));
+            Collections.sort(sideLabels[ChipElm.SIDE_E], (LabeledNodeElm a, LabeledNodeElm b) -> Integer.signum(a.y - b.y));
+            Collections.sort(sideLabels[ChipElm.SIDE_N], (LabeledNodeElm a, LabeledNodeElm b) -> Integer.signum(a.x - b.x));
+            Collections.sort(sideLabels[ChipElm.SIDE_S], (LabeledNodeElm a, LabeledNodeElm b) -> Integer.signum(a.x - b.x));
+
+            for (int side = 0; side < sideLabels.length; side++) {
+                for (int pos = 0; pos < sideLabels[side].size(); pos++) {
+                    LabeledNodeElm lne = sideLabels[side].get(pos);
+                    ExtListEntry ent = new ExtListEntry(lne.text, lne.getNode(0), pos, side);
+                    extList.add(ent);
+                }
+            }
+
 	    // output all the elements
 	    for (i = 0; i != elmList.size(); i++) {
 		CircuitElm ce = getElm(i);
