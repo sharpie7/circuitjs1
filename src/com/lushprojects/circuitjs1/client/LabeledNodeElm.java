@@ -20,6 +20,7 @@
 package com.lushprojects.circuitjs1.client;
 
 import java.util.HashMap;
+import com.lushprojects.circuitjs1.client.util.Locale;
 
 class LabeledNodeElm extends CircuitElm {
     final int FLAG_ESCAPE = 4;
@@ -128,7 +129,7 @@ class LabeledNodeElm extends CircuitElm {
     void setCurrent(int x, double c) { current = c; }
     double getVoltageDiff() { return volts[0]; }
     void getInfo(String arr[]) {
-	arr[0] = text;
+	arr[0] = Locale.LS(text) + " (" + Locale.LS("Labeled Node") + ")";
 	arr[1] = "I = " + getCurrentText(getCurrent());
 	arr[2] = "V = " + getVoltageText(volts[0]);
     }

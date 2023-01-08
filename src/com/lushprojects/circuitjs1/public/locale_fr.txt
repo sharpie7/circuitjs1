@@ -119,6 +119,7 @@
 "Add JK Flip-Flop"="Ajouter Bascule JK"
 "Add LED"="Ajouter LED"
 "Add Labeled Node"="Ajouter Noeud avec Label"
+"Labeled Node"="Noeud avec Label"
 "Add Lamp"="Ajouter Lampe"
 "Add Latch"="Ajouter Verrou"
 "Add Logic Input"="Ajouter Entrée Logique"
