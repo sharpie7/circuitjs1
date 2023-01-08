@@ -103,19 +103,19 @@ package com.lushprojects.circuitjs1.client;
 	    }
 	}
 	
-	void drawSegment(Graphics g, int x1, int y1, int x2, int y2) {
-	    drawSegment(g, new Point(x1, y1), new Point(x2, y2));
+	void drawSegment(Graphics g, int x1, int y1, int x2, int y2, int thick) {
+	    drawSegment(g, new Point(x1, y1), new Point(x2, y2), thick);
 	}
-	void drawSegment(Graphics g, Point p1, Point p2) {
+	void drawSegment(Graphics g, Point p1, Point p2, int thick) {
 	    g.context.beginPath();
 	    Point p3 = new Point();
 	    Point p4 = new Point();
 	    Point p5 = new Point();
 	    Point p6 = new Point();
 	    double dn = Math.hypot(p1.x-p2.x, p1.y-p2.y);
-	    // from p1 to p2, calculate points 5 pixels from each end, 5 pixels offset from center of line on both sides
-	    interpPoint2(p1, p2, p3, p4, 5/dn, 5); 
-	    interpPoint2(p1, p2, p5, p6, 1-5/dn, 5);
+	    // from p1 to p2, calculate points several pixels from each end, offset from center of line on both sides
+	    interpPoint2(p1, p2, p3, p4, thick/dn, thick); 
+	    interpPoint2(p1, p2, p5, p6, 1-thick/dn, thick);
 	    g.context.moveTo(p1.x, p1.y);
 	    g.context.lineTo(p3.x, p3.y);
 	    g.context.lineTo(p5.x, p5.y);
@@ -125,8 +125,7 @@ package com.lushprojects.circuitjs1.client;
 	    g.context.lineTo(p1.x, p1.y);
 	    g.context.fill();
 	}
-	void drawDecimal(Graphics g, int x, int y) {
-	    int sp = 7;
+	void drawDecimal(Graphics g, int x, int y, int sp) {
 	    g.context.beginPath();
 	    g.context.moveTo(x, y-sp);
 	    g.context.lineTo(x-sp, y);
@@ -218,14 +217,18 @@ package com.lushprojects.circuitjs1.client;
 	    if (extraSegment != ES_NONE)
 		spx = (int)(spx*.9);
 	    
-	    if (sizeY <= 4)
+	    if (sizeY <= 4 || isFlippedXY())
 		spx /= 2;
 	    int spy = spx*2;
-	    int xl = x+cspc + sizeX*cspc - spx;
-	    int yl = y-cspc + sizeY*cspc - spy;
+	    int xl = x+cspc + flippedSizeX*cspc - spx;
+	    int yl = y-cspc + flippedSizeY*cspc - spy;
+	    if (sizeY <= 4 && (flags & (FLAG_FLIP_Y|FLAG_FLIP_XY)) != 0)
+		yl += 10;
 	    int i;
 	    int disp[] = (baseSegmentCount == 7) ? display7 : (baseSegmentCount == 14) ? display14 : display16;
 	    int step;
+	    int thick = (sizeY <= 4) ? 5 : spx/6;
+	    int dpsize = (sizeY <= 4) ? 7 : isFlippedXY() ? 3 : 7;
 	    for (step = 0; step != 2; step++)
 		for (i = 0; i != segmentCount; i++) {
 		    int i4 = i*4;
@@ -234,18 +237,18 @@ package com.lushprojects.circuitjs1.client;
 		    if (diag != (step == 0))
 			continue;
 		    setColor(g, i);
-		    drawSegment(g, xl+disp[i4]*spx, yl+disp[i4+1]*spy, xl+disp[i4+2]*spx, yl+disp[i4+3]*spy);
+		    drawSegment(g, xl+disp[i4]*spx, yl+disp[i4+1]*spy, xl+disp[i4+2]*spx, yl+disp[i4+3]*spy, thick);
 		}
 	    if (extraSegment == ES_DP) {
 		setColor(g, baseSegmentCount);
 		int dist = (int)Math.max(spx*1.5, spx+12);
-		drawDecimal(g, xl+spx+dist, yl+spy*2);
+		drawDecimal(g, xl+spx+dist, yl+spy*2, dpsize);
 	    }
 	    if (extraSegment == ES_COLON) {
 		setColor(g, baseSegmentCount);
 		int dist = (int)Math.max(spx*1.5, spx+14);
-		drawDecimal(g, xl+spx+dist, yl+(int)(spy*.5));
-		drawDecimal(g, xl+spx+dist, yl+(int)(spy*1.5));
+		drawDecimal(g, xl+spx+dist, yl+(int)(spy*.5), dpsize);
+		drawDecimal(g, xl+spx+dist, yl+(int)(spy*1.5), dpsize);
 	    }
 	}
 	

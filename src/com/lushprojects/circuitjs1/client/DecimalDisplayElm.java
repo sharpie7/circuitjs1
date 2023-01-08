@@ -40,8 +40,10 @@ class DecimalDisplayElm extends ChipElm {
     
     void draw(Graphics g) {
         drawChip(g);
-        int xl = x+cspc + sizeX*cspc;
-        int yl = y-cspc + sizeY*cspc;
+        int xl = x+cspc + flippedSizeX*cspc;
+        int yl = y-cspc + flippedSizeY*cspc;
+	if (isFlippedXY())
+	    yl += ((flags & FLAG_FLIP_Y) != 0) ? -cspc/2 : cspc/2;
         g.save();
         g.setFont(new Font("SansSerif", 0, 15*csize));
         g.setColor(whiteColor);
