@@ -46,6 +46,11 @@ package com.lushprojects.circuitjs1.client;
 	int getDumpType() { return 'A'; }
 	int getShortcut() { return 0; }
 	
+	void getInfo(String arr[]) {
+	    super.getInfo(arr);
+	    arr[0] = "Antenna (amplified)";
+	}
+
 	public EditInfo getEditInfo(int n) {
 	    return null;
 	}
