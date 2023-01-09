@@ -189,3 +189,5 @@ decimalDigits
 saveas
 showelminfo
 save
+doExportAsSVG
+doExportAsSVGFromAPI

@@ -40,7 +40,7 @@
 "Add to Existing Scope"
 "Adder"
 "Adjust timestep for best audio quality and performance?"
-"Are you sure?"
+"Antenna (amplified)"
 "Are you sure?  There are unsaved changes."
 "Armature Resistance (ohms)"
 "Armature inductance (H)"
