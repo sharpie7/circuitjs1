@@ -372,6 +372,7 @@ MouseOutHandler, MouseWheelHandler {
 	QueryParameters qp = new QueryParameters();
 	String positiveColor = null;
 	String negativeColor = null;
+	String neutralColor = null;
 	String selectColor = null;
 	String currentColor = null;
 	String mouseModeReq = null;
@@ -405,6 +406,7 @@ MouseOutHandler, MouseWheelHandler {
 	    mouseWheelEdit = qp.getBooleanValue("mouseWheelEdit", getOptionFromStorage("mouseWheelEdit", true));
 	    positiveColor = qp.getValue("positiveColor");
 	    negativeColor = qp.getValue("negativeColor");
+	    neutralColor = qp.getValue("neutralColor");
 	    selectColor = qp.getValue("selectColor");
 	    currentColor = qp.getValue("currentColor");
 	    mouseModeReq = qp.getValue("mouseMode");
@@ -722,7 +724,7 @@ MouseOutHandler, MouseWheelHandler {
 
 	scopePopupMenu = new ScopePopupMenu();
 
-	setColors(positiveColor, negativeColor, selectColor, currentColor);
+	setColors(positiveColor, negativeColor, neutralColor, selectColor, currentColor);
 
 	if (startCircuitText != null) {
 	    getSetupList(false);
@@ -779,13 +781,15 @@ MouseOutHandler, MouseWheelHandler {
 	setSimRunning(running);
     }
 
-    void setColors(String positiveColor, String negativeColor, String selectColor, String currentColor) {
+    void setColors(String positiveColor, String negativeColor, String neutralColor, String selectColor, String currentColor) {
         Storage stor = Storage.getLocalStorageIfSupported();
         if (stor != null) {
             if (positiveColor == null)
         	positiveColor = stor.getItem("positiveColor");
             if (negativeColor == null)
         	negativeColor = stor.getItem("negativeColor");
+            if (neutralColor == null)
+        	neutralColor = stor.getItem("neutralColor");
             if (selectColor == null)
         	selectColor = stor.getItem("selectColor");
             if (currentColor == null)
@@ -799,7 +803,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	if (negativeColor != null)
 	    CircuitElm.negativeColor = new Color(URL.decodeQueryString(negativeColor));
-	
+	if (neutralColor != null)
+	    CircuitElm.neutralColor = new Color(URL.decodeQueryString(neutralColor));
+
 	if (selectColor != null)
 	    CircuitElm.selectColor = new Color(URL.decodeQueryString(selectColor));
 	else

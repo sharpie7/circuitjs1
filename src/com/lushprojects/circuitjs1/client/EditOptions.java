@@ -59,24 +59,26 @@ class EditOptions implements Editable {
 		if (n == 4)
 		    return new EditInfo("Negative Color", CircuitElm.negativeColor.getHexValue());
 		if (n == 5)
-		    return new EditInfo("Selection Color", CircuitElm.selectColor.getHexValue());
+		    return new EditInfo("Neutral Color", CircuitElm.neutralColor.getHexValue());
 		if (n == 6)
-		    return new EditInfo("Current Color", CircuitElm.currentColor.getHexValue());
+		    return new EditInfo("Selection Color", CircuitElm.selectColor.getHexValue());
 		if (n == 7)
-		    return new EditInfo("# of Decimal Digits (short format)", CircuitElm.shortDecimalDigits);
+		    return new EditInfo("Current Color", CircuitElm.currentColor.getHexValue());
 		if (n == 8)
+		    return new EditInfo("# of Decimal Digits (short format)", CircuitElm.shortDecimalDigits);
+		if (n == 9)
 		    return new EditInfo("# of Decimal Digits (long format)", CircuitElm.decimalDigits);
-		if (n == 9) {
-            EditInfo ei = new EditInfo("", 0, -1, -1);
-            ei.checkbox = new Checkbox("Developer Mode", sim.developerMode);
-            return ei;
-        }
 		if (n == 10) {
+		    EditInfo ei = new EditInfo("", 0, -1, -1);
+		    ei.checkbox = new Checkbox("Developer Mode", sim.developerMode);
+		    return ei;
+		}
+		if (n == 11) {
 		    EditInfo ei = new EditInfo("", 0, -1, -1);
 		    ei.checkbox = new Checkbox("Auto-Adjust Timestep", sim.adjustTimeStep);
 		    return ei;
 		}
-		if (n == 11 && sim.adjustTimeStep)
+		if (n == 12 && sim.adjustTimeStep)
 		    return new EditInfo("Minimum time step size (s)", sim.minTimeStep, 0, 0);
 
 		return null;
@@ -131,22 +133,26 @@ class EditOptions implements Editable {
 		    CircuitElm.negativeColor = setColor("negativeColor", ei, Color.red);
 		    CircuitElm.setColorScale();
 		}
-		if (n == 5)
-		    CircuitElm.selectColor = setColor("selectColor", ei, Color.cyan);
+		if (n == 5) {
+		    CircuitElm.neutralColor = setColor("neutralColor", ei, Color.gray);
+		    CircuitElm.setColorScale();
+		}
 		if (n == 6)
-		    CircuitElm.currentColor = setColor("currentColor", ei, Color.yellow);
+		    CircuitElm.selectColor = setColor("selectColor", ei, Color.cyan);
 		if (n == 7)
-		    CircuitElm.setDecimalDigits((int)ei.value, true, true);
+		    CircuitElm.currentColor = setColor("currentColor", ei, Color.yellow);
 		if (n == 8)
-		    CircuitElm.setDecimalDigits((int)ei.value, false, true);
+		    CircuitElm.setDecimalDigits((int)ei.value, true, true);
 		if (n == 9)
+		    CircuitElm.setDecimalDigits((int)ei.value, false, true);
+		if (n == 10)
 	            sim.developerMode = ei.checkbox.getState();
-		if (n == 10) {
+		if (n == 11) {
 		    sim.adjustTimeStep = ei.checkbox.getState();
 		    ei.newDialog = true;
 		}
-		if (n == 11 && ei.value > 0)
-			sim.minTimeStep = ei.value;
+		if (n == 12 && ei.value > 0)
+		    sim.minTimeStep = ei.value;
 	}
 	
 	Color setColor(String name, EditInfo ei, Color def) {
