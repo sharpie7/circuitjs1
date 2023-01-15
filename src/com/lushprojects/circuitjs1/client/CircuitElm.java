@@ -46,7 +46,7 @@ public abstract class CircuitElm implements Editable {
     static public Color positiveColor, negativeColor, neutralColor, currentColor;
     static Font unitsFont;
 
-    static NumberFormat showFormat, shortFormat;//, noCommaFormat;
+    static NumberFormat showFormat, shortFormat, fixedFormat;
     static final double pi = 3.14159265358979323846;
     static CircuitElm mouseElmRef = null;
 
@@ -154,6 +154,14 @@ public abstract class CircuitElm implements Editable {
 	    Storage stor = Storage.getLocalStorageIfSupported();
 	    if (stor != null)
 		stor.setItem(sf ? "decimalDigitsShort" : "decimalDigits", Integer.toString(num));
+	}
+	
+	if (!sf) {
+	    s = "####.";
+	    ct = num;
+	    for (; ct > 0; ct--)
+		s += '0';
+	    fixedFormat = NumberFormat.getFormat(s);
 	}
     }
     
@@ -903,15 +911,18 @@ public abstract class CircuitElm implements Editable {
 	return getUnitText(Math.abs(i), "A");
     }
 
-    static String getUnitTextWithScale(double val, String utext, int scale) {
+    static String getUnitTextWithScale(double val, String utext, int scale) { return getUnitTextWithScale(val, utext, scale, false); }
+
+    static String getUnitTextWithScale(double val, String utext, int scale, boolean fixed) {
 	if (Math.abs(val) > 1e12)
 	    return getUnitText(val, utext);
+	NumberFormat nf = fixed ? fixedFormat : showFormat;
 	if (scale == SCALE_1)
-	    return showFormat.format(val) + " " + utext;
+	    return nf.format(val) + " " + utext;
 	if (scale == SCALE_M)
-	    return showFormat.format(1e3*val) + " m" + utext;
+	    return nf.format(1e3*val) + " m" + utext;
 	if (scale == SCALE_MU)
-	    return showFormat.format(1e6*val) + " " + Locale.muString + utext;
+	    return nf.format(1e6*val) + " " + Locale.muString + utext;
 	return getUnitText(val, utext);
     }
 

@@ -23,6 +23,7 @@ import com.lushprojects.circuitjs1.client.util.Locale;
 
 class OutputElm extends CircuitElm {
 	final int FLAG_VALUE = 1;
+	final int FLAG_FIXED = 2;
         int scale;
 	public OutputElm(int xx, int yy) {
 	    super(xx, yy);
@@ -52,7 +53,7 @@ class OutputElm extends CircuitElm {
 	    Font f = new Font("SansSerif", selected ? Font.BOLD : 0, 14);
 	    g.setFont(f);
 	    g.setColor(selected ? selectColor : whiteColor);
-	    String s = (flags & FLAG_VALUE) != 0 ? getUnitTextWithScale(volts[0], "V", scale) : Locale.LS("out");
+	    String s = showVoltage() ? getUnitTextWithScale(volts[0], "V", scale, isFixed()) : Locale.LS("out");
 //	    FontMetrics fm = g.getFontMetrics();
 	    if (this == sim.plotXElm)
 		s = "X";
@@ -74,12 +75,10 @@ class OutputElm extends CircuitElm {
 	    arr[1] = "V = " + getVoltageText(volts[0]);
 	}
 	public EditInfo getEditInfo(int n) {
-	    if (n == 0) {
-		EditInfo ei = new EditInfo("", 0, -1, -1);
-		ei.checkbox = new Checkbox("Show Voltage",
-					   (flags & FLAG_VALUE) != 0);
-		return ei;
-	    }
+	    if (n == 0)
+		return EditInfo.createCheckbox("Show Voltage", showVoltage());
+	    if (!showVoltage())
+		return null;
 	    if (n == 1) {
 		EditInfo ei =  new EditInfo("Scale", 0);
 		ei.choice = new Choice();
@@ -90,15 +89,25 @@ class OutputElm extends CircuitElm {
 		ei.choice.select(scale);
 		return ei;
 	    }
+	    if (scale == SCALE_AUTO)
+		return null;
+	    if (n == 2)
+		return EditInfo.createCheckbox("Fixed Precision", isFixed());
 	    return null;
 	}
+	boolean isFixed() { return (flags & FLAG_FIXED) != 0; }
+	boolean showVoltage() { return (flags & FLAG_VALUE) != 0; }
 	public void setEditValue(int n, EditInfo ei) {
-	    if (n == 0)
-		flags = (ei.checkbox.getState()) ?
-			(flags | FLAG_VALUE) :
-			    (flags & ~FLAG_VALUE);
-	    if (n==1)
+	    if (n == 0) {
+		flags = ei.changeFlag(flags, FLAG_VALUE);
+		ei.newDialog = true;
+	    }
+	    if (n==1) {
 		scale = ei.choice.getSelectedIndex();
+		ei.newDialog = true;
+	    }
+	    if (n == 2)
+		flags = ei.changeFlag(flags, FLAG_FIXED);
 	}
 
 //    void drawHandles(Graphics g, Color c) {
