@@ -946,6 +946,8 @@ class Scope {
     	    reduceRange[plot.units] = true;
     	}
     	
+    	boolean sel = sim.scopeMenuIsSelected(this);
+    	
     	checkForSelectionElsewhere();
     	if (selectedPlot >= 0)
     	    somethingSelected = true;
@@ -963,19 +965,19 @@ class Scope {
     	// draw volt plots on top (last), then current plots underneath, then everything else
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units > UNITS_A && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false, sel);
     	}
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units == UNITS_A && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false, sel);
     	}
     	for (i = 0; i != visiblePlots.size(); i++) {
     	    if (visiblePlots.get(i).units == UNITS_V && i != selectedPlot)
-    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false);
+    		drawPlot(g, visiblePlots.get(i), allPlotsSameUnits, false, sel);
     	}
     	// draw selection on top.  only works if selection chosen from scope
     	if (selectedPlot >= 0 && selectedPlot < visiblePlots.size())
-    	    drawPlot(g, visiblePlots.get(selectedPlot), allPlotsSameUnits, true);
+    	    drawPlot(g, visiblePlots.get(selectedPlot), allPlotsSameUnits, true, sel);
     	
         drawInfoTexts(g);
     	
@@ -1061,7 +1063,7 @@ class Scope {
 	return ((double)(manDivisions)/2+0.05)*plot.manScale;
     }
     
-    void drawPlot(Graphics g, ScopePlot plot, boolean allPlotsSameUnits, boolean selected) {
+    void drawPlot(Graphics g, ScopePlot plot, boolean allPlotsSameUnits, boolean selected, boolean allSelected) {
 	if (plot.elm == null)
 	    return;
     	int i;
@@ -1073,7 +1075,7 @@ class Scope {
     	final int maxy = (rect.height-1)/2;
 
     	String color = (somethingSelected) ? "#A0A0A0" : plot.color;
-	if (sim.scopeSelected == -1  && plot.elm.isMouseElm())
+	if (allSelected || (sim.scopeSelected == -1  && plot.elm.isMouseElm()))
     	    color = CircuitElm.selectColor.getHexValue();
 	else if (selected)
 	    color = plot.color;
@@ -1131,6 +1133,8 @@ class Scope {
     	    majorDiv = "#808080";
     	    curColor = "#A0A000";
     	}
+    	if (allSelected)
+    	    majorDiv = CircuitElm.selectColor.getHexValue();
     	
     	// Vertical (T) gridlines
     	double ts = sim.maxTimeStep*speed;

@@ -96,6 +96,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Navigator;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.DOM;
 
 public class CirSim implements MouseDownHandler, MouseMoveHandler, MouseUpHandler,
 ClickHandler, DoubleClickHandler, ContextMenuHandler, NativePreviewHandler,
@@ -146,6 +147,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem separateAllItem;
     MenuBar mainMenuBar;
     MenuBar selectScopeMenuBar;
+    Vector<MenuItem> selectScopeMenuItems;
     MenuBar subcircuitMenuBar[];
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
@@ -185,6 +187,7 @@ MouseOutHandler, MouseWheelHandler {
     double t;
     int pause = 10;
     int scopeSelected = -1;
+    int scopeMenuSelected = -1;
     int menuScope = -1;
     int menuPlot = -1;
     int hintType = -1, hintItem1, hintItem2;
@@ -709,7 +712,32 @@ MouseOutHandler, MouseWheelHandler {
 
 	elmMenuBar = new MenuBar(true);
 	elmMenuBar.setAutoOpen(true);
-	selectScopeMenuBar = new MenuBar(true);
+	selectScopeMenuBar = new MenuBar(true) {
+	    @Override
+	    
+	    // when mousing over scope menu item, select associated scope
+	    public void onBrowserEvent(Event event) {
+		int currentItem = -1;
+		int i;
+		for (i = 0; i != selectScopeMenuItems.size(); i++) {
+		    MenuItem item = selectScopeMenuItems.get(i);
+		    if (DOM.isOrHasChild(item.getElement(), DOM.eventGetTarget(event))) {
+			//MenuItem found here
+			currentItem = i;
+		    }
+		}
+		switch (DOM.eventGetType(event)) {
+		case Event.ONMOUSEOVER:
+		    scopeMenuSelected = currentItem; 
+		    break;              
+		case Event.ONMOUSEOUT:
+		    scopeMenuSelected = -1;
+		    break;              
+		}
+		super.onBrowserEvent(event);
+	    }
+	};
+	
 	elmMenuBar.addItem(elmEditMenuItem = new MenuItem(Locale.LS("Edit..."),new MyCommand("elm","edit")));
 	elmMenuBar.addItem(elmScopeMenuItem = new MenuItem(Locale.LS("View in New Scope"), new MyCommand("elm","viewInScope")));
 	elmMenuBar.addItem(elmFloatScopeMenuItem  = new MenuItem(Locale.LS("View in New Undocked Scope"), new MyCommand("elm","viewInFloatScope")));
@@ -1181,13 +1209,14 @@ MouseOutHandler, MouseWheelHandler {
     
     public void composeSelectScopeMenu(MenuBar sb) {
 	sb.clearItems();
+	selectScopeMenuItems = new Vector<MenuItem>();
 	for( int i = 0; i < scopeCount; i++) {
 	    String s, l;
 	    s = Locale.LS("Scope")+" "+ Integer.toString(i+1);
 	    l=scopes[i].getScopeLabelOrText();
 	    if (l!="")
 		s+=" ("+SafeHtmlUtils.htmlEscape(l)+")";
-	    sb.addItem(new MenuItem(s ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
+	    selectScopeMenuItems.add(new MenuItem(s ,new MyCommand("elm", "addToScope"+Integer.toString(i))));
 	}
 	int c = countScopeElms();
 	for (int j = 0; j < c; j++) {
@@ -1196,8 +1225,10 @@ MouseOutHandler, MouseWheelHandler {
 	    l = getNthScopeElm(j).elmScope.getScopeLabelOrText();
 	    if (l!="")
 		s += " ("+SafeHtmlUtils.htmlEscape(l)+")";
-	    sb.addItem(new MenuItem(s, new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
+	    selectScopeMenuItems.add(new MenuItem(s, new MyCommand("elm", "addToScope"+Integer.toString(scopeCount+j))));
 	}
+	for (MenuItem mi : selectScopeMenuItems)
+	    sb.addItem(mi);
     }
     
     public void setiFrameHeight() {
@@ -1687,6 +1718,14 @@ MouseOutHandler, MouseWheelHandler {
     }
     
     int oldScopeCount = -1;
+    
+    boolean scopeMenuIsSelected(Scope s) {
+	if (scopeMenuSelected < 0)
+	    return false;
+	if (scopeMenuSelected < scopeCount)
+	    return scopes[scopeMenuSelected] == s;
+	return getNthScopeElm(scopeMenuSelected-scopeCount).elmScope == s; 
+    }
     
     void setupScopes() {
     	int i;
@@ -3304,6 +3343,7 @@ MouseOutHandler, MouseWheelHandler {
     		else
     		    getNthScopeElm(n-scopeCount).elmScope.addElm(menuElm);
     	    }
+    	    scopeMenuSelected = -1;
     	}
     	
     	if (menu=="scopepop") {
@@ -4337,6 +4377,7 @@ MouseOutHandler, MouseWheelHandler {
     		return;
     	}
     	mouseSelect(e);
+    	scopeMenuSelected = -1;
     }
     
     // convert screen coordinates to grid coordinates by inverting circuit transform
