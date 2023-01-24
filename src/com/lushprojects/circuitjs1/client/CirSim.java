@@ -3291,11 +3291,11 @@ MouseOutHandler, MouseWheelHandler {
     	if (item=="separateAll")
 		separateAll();
     	if (item=="zoomin")
-    	    zoomCircuit(20);
+    	    zoomCircuit(20, true);
     	if (item=="zoomout")
-    	    zoomCircuit(-20);
+    	    zoomCircuit(-20, true);
     	if (item=="zoom100")
-    	    setCircuitScale(1);
+    	    setCircuitScale(1, true);
     	if (menu=="elm" && item=="edit")
     		doEdit(menuElm);
     	if (item=="delete") {
@@ -4860,30 +4860,36 @@ MouseOutHandler, MouseWheelHandler {
     	else if (scopeSelected != -1 && !zoomOnly)
     	    scopes[scopeSelected].onMouseWheel(e);
     	else if (!dialogIsShowing()) {
-    	    zoomCircuit(-e.getDeltaY());
+    	    mouseCursorX=e.getX();
+    	    mouseCursorY=e.getY();
+    	    zoomCircuit(-e.getDeltaY(), false);
     	    zoomTime = System.currentTimeMillis();
    	}
     	repaint();
     }
 
-    void zoomCircuit(double dy) {
+    void zoomCircuit(double dy) { zoomCircuit(dy, false); }
+
+    void zoomCircuit(double dy, boolean menu) {
 	double newScale;
     	double oldScale = transform[0];
     	double val = dy*.01;
     	newScale = Math.max(oldScale+val, .2);
     	newScale = Math.min(newScale, 2.5);
-    	setCircuitScale(newScale);
+    	setCircuitScale(newScale, menu);
     }
     
-    void setCircuitScale(double newScale) {
-	int cx = inverseTransformX(circuitArea.width/2);
-	int cy = inverseTransformY(circuitArea.height/2);
+    void setCircuitScale(double newScale, boolean menu) {
+	int constX = !menu ? mouseCursorX : circuitArea.width/2;
+	int constY = !menu ? mouseCursorY : circuitArea.height/2;
+	int cx = inverseTransformX(constX);
+	int cy = inverseTransformY(constY);
 	transform[0] = transform[3] = newScale;
 
 	// adjust translation to keep center of screen constant
 	// inverse transform = (x-t4)/t0
-	transform[4] = circuitArea.width /2 - cx*newScale;
-	transform[5] = circuitArea.height/2 - cy*newScale;
+	transform[4] = constX - cx*newScale;
+	transform[5] = constY - cy*newScale;
     }
     
     void setPowerBarEnable() {
