@@ -33,7 +33,7 @@ public class SRAMLoadFile extends EditDialogLoadFile {
 			
 			var reader = new FileReader();
 			reader.onload = function(e) {
-				var arr = new Int8Array(reader.result);
+				var arr = new Uint8Array(reader.result);
 				var str = "0:";
 				for (var i = 0; i < arr.length; i++)
 					str += " " + arr[i];
