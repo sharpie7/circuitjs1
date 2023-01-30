@@ -161,6 +161,14 @@ import com.google.gwt.user.client.ui.TextArea;
 	    return super.getChipEditInfo(n);
 	}
 	
+	int parseNumber(String str) {
+	    if (str.startsWith("0x"))
+		return Integer.parseInt(str.substring(2), 16);
+	    if (str.startsWith("0b"))
+		return Integer.parseInt(str.substring(2), 2);
+	    return Integer.parseInt(str);
+	}
+
 	public void setChipEditValue(int n, EditInfo ei) {
 	    if (n == 0 && ei.value >= 2 && ei.value <= 16) {
 		addressBits = (int)ei.value;
@@ -181,11 +189,11 @@ import com.google.gwt.user.client.ui.TextArea;
 		    try {
 			String line = lines[i];
 			String args[] = line.split(": *");
-			int addr = Integer.parseInt(args[0]);
+			int addr = parseNumber(args[0]);
 			String vals[] = args[1].split(" +");
 			int j;
 			for (j = 0; j != vals.length; j++) {
-			    int val = Integer.parseInt(vals[j]);
+			    int val = parseNumber(vals[j]);
 			    map.put(addr++, val);
 			}
 		    } catch (Exception e) {}
