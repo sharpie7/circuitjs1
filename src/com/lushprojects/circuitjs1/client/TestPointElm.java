@@ -34,6 +34,7 @@ class TestPointElm extends CircuitElm {
     final int TP_PER = 7;
     final int TP_PWI = 8;
     final int TP_DUT = 9; //mark to space ratio
+    final int FLAG_LABEL = 1;
     int zerocount=0;
     double rmsV=0, total, count;
     double maxV=0, lastMaxV;
@@ -49,15 +50,21 @@ class TestPointElm extends CircuitElm {
     double voltages[];
     boolean increasingV=true, decreasingV=true;
     long periodStart, periodLength, pulseStart;//time between consecutive max values
+    String label;
     
     public TestPointElm(int xx, int yy) { 
         super(xx, yy); 
         meter = TP_VOL;
-        }
+	label = "TP";
+    }
     public TestPointElm(int xa, int ya, int xb, int yb, int f,
              StringTokenizer st) {
         super(xa, ya, xb, yb, f);
         meter = new Integer(st.nextToken()).intValue(); //get meter type from saved dump
+	if ((flags & FLAG_LABEL) != 0)
+	    label = CustomLogicModel.unescape(st.nextToken());
+	else
+	    label = "TP";
     }
     int getDumpType() { return 368; }
     int getPostCount() { return 1; }
@@ -66,7 +73,12 @@ class TestPointElm extends CircuitElm {
         lead1 = new Point();
     }
     String dump() {
-        return super.dump() + " " + meter ;
+	boolean writeLabel = (!label.equals("TP"));
+	flags = (writeLabel) ? (flags | FLAG_LABEL) : (flags & ~FLAG_LABEL);
+        String str = super.dump() + " " + meter;
+	if (writeLabel)
+	    str += " " + CustomLogicModel.escape(label);
+	return str;
     }
     String getMeter(){
         switch (meter) {
@@ -93,6 +105,34 @@ class TestPointElm extends CircuitElm {
         }
         return "";
     }
+    
+    void drawText(Graphics g, String str, String str2, Point pt1, Point pt2) {
+        int w1 = (int)g.context.measureText(str).getWidth();
+        int w2 = (int)g.context.measureText(str2).getWidth();
+        final int spacing = 14;
+        int wmax = max(w1, w2);
+        int h=(int)g.currentFontSize;
+        g.save();
+        g.context.setTextBaseline("middle");
+        int x = pt2.x, y = pt2.y;
+        if (pt1.y != pt2.y) {
+            x -= wmax/2;
+            y += sign(pt2.y-pt1.y)*h;
+            if (pt2.y < pt1.y)
+        	y -= spacing-4;
+        } else {
+            if (pt2.x > pt1.x)
+                x += 4;
+            else
+                x -= 4+wmax;
+        }
+        g.drawString(str,  x+(wmax-w1)/2, y);
+        g.drawString(str2, x+(wmax-w2)/2, y+spacing);
+        adjustBbox(x, y-h/2, x+wmax, y+spacing+h/2);
+        g.restore();
+    }    
+    
+
     void draw(Graphics g) {
 	g.save();
         boolean selected = needsHighlight();
@@ -101,10 +141,10 @@ class TestPointElm extends CircuitElm {
         g.setColor(selected ? selectColor : whiteColor);
         //depending upon flags show voltage or TP
         
-        String s = "TP";
-        interpPoint(point1, point2, lead1, 1-((int)g.context.measureText(s).getWidth()/2+8)/dn);
+        String s = label;
+        interpPoint(point1, point2, lead1, 1-((int)g.context.measureText("TP").getWidth()/2+8)/dn);
         setBbox(point1, lead1, 0);
-                    drawCenteredText(g, s, x2, y2, true); //draw label TPx
+        
         //draw selected value
         switch (meter) {
             case TP_VOL:
@@ -138,7 +178,7 @@ class TestPointElm extends CircuitElm {
                 s = showFormat.format(dutyCycle);
                 break;
         }
-            drawCenteredText(g, s, x2, y2+12, true); //draw selected value TPx
+        drawText(g, label, s, point1, lead1);
         
         setVoltageColor(g, volts[0]);
         if (selected)
@@ -328,14 +368,21 @@ class TestPointElm extends CircuitElm {
             ei.choice.select(meter);
             return ei;
         }
+        if (n == 1) {
+            EditInfo ei = new EditInfo("Label", 0, -1, -1);
+            ei.text = label;
+            return ei;
+        }
 
-return null;
+	return null;
     }
 
     public void setEditValue(int n, EditInfo ei) {
         if (n==0){
             meter = ei.choice.getSelectedIndex();
         }
+        if (n == 1)
+            label = ei.textf.getText();
     }
     
 }
