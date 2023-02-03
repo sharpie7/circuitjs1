@@ -2901,10 +2901,9 @@ MouseOutHandler, MouseWheelHandler {
 	
 	// keep track of iterations completed without convergence issues
 	int goodIterations = 100;
-	boolean goodIteration = true;
 	
 	for (iter = 1; ; iter++) {
-	    if (goodIterations >= 3 && timeStep < maxTimeStep && goodIteration) {
+	    if (goodIterations >= 3 && timeStep < maxTimeStep) {
 		// things are going well, double the time step
 		timeStep = Math.min(timeStep*2, maxTimeStep);
 		console("timestep up = " + timeStep + " at " + t);
@@ -2993,13 +2992,12 @@ MouseOutHandler, MouseWheelHandler {
 	    }
 	    if (subiter > 5 || timeStep < maxTimeStep)
 		console("converged after " + subiter + " iterations, timeStep = " + timeStep);
-	    if (subiter < 3 && goodIteration)
+	    if (subiter < 3)
 		goodIterations++;
 	    else
 		goodIterations = 0;
 	    t += timeStep;
 	    timeStepAccum += timeStep;
-	    goodIteration = true;
 	    if (timeStepAccum >= maxTimeStep) {
 		timeStepAccum -= maxTimeStep;
 		timeStepCount++;
