@@ -13,6 +13,10 @@ Thanks to: Edward Calver for 15 new components and other improvements; Rodrigo H
 
 ## Building the web application
 
+The web application can be compiled and run locally using Eclipse, or in a cloud development container like Github Codespaces or gitpod.io. Both of these services provide a number of free usage hours every month. You can also use the cloud tools from `./dev.sh` on your local Linux machine or in a local docker container.
+
+### Development using Eclipse
+
 The tools you will need to build the project are:
 
 * Eclipse, Oxygen version.
@@ -24,9 +28,29 @@ This repository is a project folder for your Eclipse project space. Once you hav
 
 GWT will build its output in to the "war" directory. In the "war" directory the file "iframe.html" is loaded as an iFrame in to the spare space at the bottom of the right hand pannel. It can be used for branding etc.
 
+### Development using cloud containers
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/) and the appropriate remote extension: either [Gitpod Extension](https://marketplace.visualstudio.com/items?itemName=gitpod.gitpod-desktop) or [Codespaces Extension](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces).
+2. Open your fork of the `circuitjs1` repository in your chosen provider's dev container.
+3. This should open a new tab in your browser showing VS Code. Click in the green button in the bottom left corner, then select "Open in VS Code Desktop" in the popup menu that opened. Click "Allow" in all URL popups and authenticate using github if asked.
+
+Once you have successfully connected your local VS Code to the remote workspace, you should be able to see the content of the remote container in your local VS Code. You can now continue with the setup:
+
+4. Open a shell inside the dev container by pressing `Ctrl+Backtick` or pressing `F1` and typing "Create new Terminal".
+5. Make sure you are in the folder `/workspaces/circuitjs1` inside the container (necessary only once per newly created container).
+6. Run `./dev.sh setup` to install all development dependencies, including GWT and Java.
+7. Run `./dev.sh start` to start the web server and the GWT code server. This will start two services: http://localhost:8000 and http://localhost:9876.
+8. Make sure both port and 8000 and 9876 are forwarded in the "Ports" tab (next to "Terminal").
+9. If you edit a Java file in VS Code and reload http://localhost:8000, it should recompile the file automatically. It will then load the compiled JavaScript and the corresponding source map from the code server running on http://localhost:9876. You should be able to see the your changes in the web application.
+
+> ***Note:*** When running the web application server inside a remote dev container, port forwarding is necessary in order to access the remote server from your own computer. This port forwarding is provided by Visual Studio Code running on your local computer.
+>
+> Theoretically, it would be possible to use the browser-based VS Code interface. However, both Gitpod and Codespaces map forwarded ports to different domain names instead of different ports, which confuses the GWT code loader. It is possible to fix this by live-patching the `serverUrl` variable in `circuitjs1.nocache.js` using a custom HTTP server, but it also requires setting the port visibility to "Public" to avoid CORS errors due to redirects. Using a local installation of VS Code is much simpler.
+
+
 ## Deployment of the web application
 
-* "GWT Compile Project..." as explained above. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
+* "GWT Compile Project..." as explained above or run `./dev.sh compile`. This will put the outputs in to the "war" directory in the Eclipse project folder. You then need to copy everything in the "war" directory, except the "WEB-INF" directory, on to your web server.
 * Customize the header of the file "circuitjs1.html" to include your tracking, favicon etc.
 * Customize the "iframe.html" file to include any branding you want in the right hand panel of the application
 * The optional file "shortrelay.php" is a server-side script to act as a relay to a URL shortening service to avoid cross-origin problems with a purely client solution. You may want to customize this for your site. If you don't want to use this feature edit the circuitjs1.java file before compiling.
@@ -49,7 +73,7 @@ Just for reference the files should look like this
    +- circuits (directory, containing example circuits)
    +- setuplist.txt (index in to example circuit directory)
 ```
-   
+
 ## Embedding
 
 You can link to the full page version of the application using the link shown above.
