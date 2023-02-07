@@ -8,6 +8,11 @@ war/WEB-INF/
 # GWT command line tools
 codeserver.log
 webserver.log
+build.xml
+circuitjs1.tar.gz
+
+# Editor configurations
+.vscode
 
 # Windows image file caches
 Thumbs.db
