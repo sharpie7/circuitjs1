@@ -14,6 +14,8 @@ and set the voltage of external voltage nodes.
 <p>
 <button onclick="sim.setSimRunning(true)">Start</button>
 <button onclick="sim.setSimRunning(false)">Stop</button>
+<button onclick="sim.setMaxTimeStep(sim.getMaxTimeStep()*2)">Double Timestep</button>
+<button onclick="sim.setMaxTimeStep(sim.getMaxTimeStep()/2)">Halve Timestep</button>
 <p>
 extsin frequency:
 <input id="freq" value="10" />
