@@ -116,6 +116,10 @@ package com.lushprojects.circuitjs1.client;
 
 	String getGateText() { return null; }
 	static boolean useEuroGates() { return sim.euroGatesCheckItem.getState(); }
+
+	void drawGatePolygon(Graphics g) {
+	    drawThickPolygon(g, gatePoly);
+	}
 	
 	void draw(Graphics g) {
 	    int i;
@@ -126,11 +130,12 @@ package com.lushprojects.circuitjs1.client;
 	    setVoltageColor(g, volts[inputCount]);
 	    drawThickLine(g, lead2, point2);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
-	    drawThickPolygon(g, gatePoly);
 	    if (useEuroGates()) {
-		    Point center = interpPoint(point1, point2, .5);
-		    drawCenteredText(g, getGateText(), center.x, center.y-6*gsize, true);
-	    }
+		drawThickPolygon(g, gatePoly);
+		Point center = interpPoint(point1, point2, .5);
+		drawCenteredText(g, getGateText(), center.x, center.y-6*gsize, true);
+	    } else
+	        drawGatePolygon(g);
 	    g.setLineWidth(2);
 	    if (hasSchmittInputs())
 		drawPolygon(g, schmittPoly);

@@ -19,6 +19,8 @@
 
 package com.lushprojects.circuitjs1.client;
 
+import com.google.gwt.canvas.dom.client.Context2d;
+
     class AndGateElm extends GateElm {
 	public AndGateElm(int xx, int yy) { super(xx, yy); }
 	public AndGateElm(int xa, int ya, int xb, int yb, int f,
@@ -28,25 +30,44 @@ package com.lushprojects.circuitjs1.client;
 	
 	String getGateText() { return "&"; }
 	
+	public final native void ellipse(Context2d g, double x, double y, double rx, double ry, double ro, double sa, double ea, boolean ccw) /*-{
+	    g.ellipse(x, y, rx, ry, ro, sa, ea, ccw);
+	}-*/;
+
+	void drawGatePolygon(Graphics g) {
+	    g.setLineWidth(3.0);
+	    g.context.beginPath();
+	    g.context.moveTo(gatePoly.xpoints[0], gatePoly.ypoints[0]);
+	    double ang1 = -Math.PI/2 * sign(dx);
+	    double ang2 =  Math.PI/2 * sign(dx);
+	    boolean ccw = false;
+	    double rx = ww;
+	    double ry = hs2;
+	    if (dx == 0) {
+		ang1 = (dy > 0) ? 0 : Math.PI;
+		ang2 = (dy > 0) ? Math.PI : 0;
+		rx = hs2;
+		ry = ww;
+	    }
+	    ellipse(g.context, gatePoly.xpoints[2], gatePoly.ypoints[2], rx, ry, 0, ang1, ang2, ccw);
+	    g.context.lineTo(gatePoly.xpoints[4], gatePoly.ypoints[4]);
+	    g.context.closePath();
+	    g.context.stroke();
+	    g.setLineWidth(1.0);
+	}
+	
 	void setPoints() {
 	    super.setPoints();
 	 
 	    if (useEuroGates()) {
 		createEuroGatePolygon();
 	    } else {
-		// 0=topleft, 1-10 = top curve, 11 = right, 12-21=bottom curve,
-		// 22 = bottom left
-		Point triPoints[] = newPointArray(23);
-		interpPoint2(lead1, lead2, triPoints[0], triPoints[22], 0, hs2);
-		int i;
-		for (i = 0; i != 10; i++) {
-		    double a = i*.1;
-		    double b = Math.sqrt(1-a*a);
-		    interpPoint2(lead1, lead2,
-			    triPoints[i+1], triPoints[21-i],
-			    .5+a/2, b*hs2);
-		}
-		triPoints[11] = new Point(lead2);
+		// 0=topleft, 1 = top of curve, 2 = center, 3=bottom of curve,
+		// 4 = bottom left
+		Point triPoints[] = newPointArray(5);
+		interpPoint2(lead1, lead2, triPoints[0], triPoints[4], 0, hs2);
+		interpPoint2(lead1, lead2, triPoints[1], triPoints[3], .5, hs2);
+		interpPoint(lead1, lead2, triPoints[2], .5);
 		gatePoly = createPolygon(triPoints);
 	    }
 	    if (isInverting()) {
