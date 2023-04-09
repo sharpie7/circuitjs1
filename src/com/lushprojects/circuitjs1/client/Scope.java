@@ -1248,6 +1248,10 @@ class Scope {
 	    selectedPlot = -1;
 	    return;
 	}
+	if (plots.size() == 0) {
+	    selectedPlot = -1;
+	    return;
+	}
 	int ipa = plots.get(0).startIndex(rect.width);
 	int ip = (mouseX-rect.x+ipa) & (scopePointCount-1);
     	int maxy = (rect.height-1)/2;
