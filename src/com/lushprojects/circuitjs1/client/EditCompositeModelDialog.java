@@ -42,6 +42,8 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -114,6 +116,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 	
 	TextBox modelNameTextBox = null;
 	Checkbox saveCheck = null;
+	Checkbox labelCheck = null;
 
 	void createDialog() {
 		Button okButton;
@@ -143,6 +146,12 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 		    vp.add(new Label(Locale.LS("Model Name")));
 		    modelNameTextBox = new TextBox();
 		    vp.add(modelNameTextBox);
+		    modelNameTextBox.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+			    drawChip();
+			}
+		    });
 //		    modelNameTextBox.setText(model.name);
 		}
 		
@@ -176,6 +185,14 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
                 });
 		vp.add(hp);
 		hp.addStyleName("topSpace");
+		vp.add(labelCheck = new Checkbox(Locale.LS("Show Label")));
+		labelCheck.setState(model.showLabel());
+		labelCheck.addClickHandler(new ClickHandler() {
+		    public void onClick(ClickEvent event) {
+			model.setShowLabel(labelCheck.getValue());
+			drawChip();
+		    }
+		});
 		vp.add(saveCheck = new Checkbox(Locale.LS("Save Across Sessions")));
 		saveCheck.setState(model.isSaved());
 	
@@ -246,6 +263,7 @@ public class EditCompositeModelDialog extends Dialog implements MouseDownHandler
 		context.setTransform(1, 0, 0, 1, 0, 0);
 	    context.fillRect(0, 0, context.getCanvas().getWidth(), context.getCanvas().getHeight());
 	    context.setTransform(1/scale, 0, 0, 1/scale, 0, 0);
+	    chip.setLabel(!labelCheck.getValue() ? null : (modelNameTextBox != null) ? modelNameTextBox.getText() : model.name);
 	    chip.draw(g);
 	}
 	

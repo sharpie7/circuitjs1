@@ -97,6 +97,7 @@ public class CustomCompositeElm extends CompositeElm {
         if (x2-x > model.sizeX*16 && this == sim.dragElm)
 	    flags &= ~FLAG_SMALL;
 	chip.setSize((flags & FLAG_SMALL) != 0 ? 1 : 2);
+	chip.setLabel((model.flags & CustomCompositeModel.FLAG_SHOW_LABEL) != 0 ? model.name : null);
 	
 	chip.sizeX = model.sizeX;
 	chip.sizeY = model.sizeY;

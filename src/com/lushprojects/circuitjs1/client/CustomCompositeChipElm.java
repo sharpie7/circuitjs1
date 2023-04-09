@@ -22,6 +22,8 @@ package com.lushprojects.circuitjs1.client;
     // concrete subclass of ChipElm that can be used by other elements (like CustomCompositeElm) to draw chips.
     // CustomCompositeElm can't be a subclass of both ChipElm and CompositeElm.
     class CustomCompositeChipElm extends ChipElm {
+	String label;
+	
 	public CustomCompositeChipElm(int xx, int yy) {
 	    super(xx, yy);
 	    setSize(2);
@@ -39,6 +41,21 @@ package com.lushprojects.circuitjs1.client;
 	    pins[n] = new Pin(p, s, t);
 	    pins[n].fixName();
 	}
+
+	void setLabel(String text) {
+	    label = text;
+	}
+
+	void drawLabel(Graphics g, int x, int y) {
+	    if (label == null)
+		return;
+	    g.save();
+	    g.context.setTextBaseline("middle");
+	    g.context.setTextAlign("center");
+	    g.drawString(label, x, y);
+	    g.restore();
+	}
+
 	int getPostCount() { return pins == null ? 1 : pins.length; }
     }
 

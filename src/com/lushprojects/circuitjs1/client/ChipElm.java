@@ -140,6 +140,8 @@ abstract class ChipElm extends CircuitElm {
 		    break;
 		}
 	    }
+	    
+	    drawLabel(g, labelX, labelY);
 	    g.setColor(needsHighlight() ? selectColor : lightGrayColor);
 	    drawThickPolygon(g, rectPointsX, rectPointsY, 4);
 	    drawPosts(g);
@@ -159,6 +161,10 @@ abstract class ChipElm extends CircuitElm {
 	    }
 	    setPoints();
 	}
+	
+	void drawLabel(Graphics g, int x, int y) {}
+	int labelX, labelY;
+		
 	void setPoints() {
 	    if (x2-x > sizeX*cspc2 && this == sim.dragElm)
 		setSize(2);
@@ -189,6 +195,8 @@ abstract class ChipElm extends CircuitElm {
 	    rectPointsX = new int[] { xr, xr+xs, xr+xs, xr };
 	    rectPointsY = new int[] { yr, yr, yr+ys, yr+ys };
 	    setBbox(xr, yr, rectPointsX[2], rectPointsY[2]);
+	    labelX = xr+xs/2;
+	    labelY = yr+ys/2;
 	}
 	
 	// see if we can move pin to position xp, yp, and return the new position

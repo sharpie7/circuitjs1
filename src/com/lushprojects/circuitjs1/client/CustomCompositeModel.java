@@ -30,6 +30,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
     boolean dumped;
     boolean builtin;
     static int sequenceNumber;
+    static final int FLAG_SHOW_LABEL = 1;
     
     void setName(String n) {
 	modelMap.remove(name);
@@ -192,6 +193,12 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	return x;
     }
     
+    boolean showLabel() { return (flags & FLAG_SHOW_LABEL) != 0; }
+    
+    void setShowLabel(boolean sl) {
+	flags = (sl) ? (flags | FLAG_SHOW_LABEL) : (flags & ~FLAG_SHOW_LABEL);
+    }
+
     String [] listToArray(String arr) {
 	return arr.split(",");
     }
