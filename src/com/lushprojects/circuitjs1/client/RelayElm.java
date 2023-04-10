@@ -189,8 +189,8 @@ class RelayElm extends CircuitElm {
 	
 	if (coilCurCount != 0) {
 	    drawDots(g, coilPosts[0], coilLeads[0], coilCurCount);
-	    drawDots(g, coilLeads[0], coilLeads[1], coilCurCount+currentOffset1);
-	    drawDots(g, coilLeads[1], coilPosts[1], coilCurCount+currentOffset2);
+	    drawDots(g, coilLeads[0], coilLeads[1], addCurCount(coilCurCount, currentOffset1));
+	    drawDots(g, coilLeads[1], coilPosts[1], addCurCount(coilCurCount, currentOffset2));
 	}
 	    
 	drawPosts(g);

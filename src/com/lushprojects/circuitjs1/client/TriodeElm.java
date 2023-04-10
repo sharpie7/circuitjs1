@@ -108,8 +108,8 @@ class TriodeElm extends CircuitElm {
 	if (sim.dragElm != this) {
 	    drawDots(g, plate[0], midgrid, curcountp);
 	    drawDots(g, midgrid,  midcath, curcountc);
-	    drawDots(g, midcath,  cath[1], curcountc+8);
-	    drawDots(g, cath[1],  cath[0], curcountc+8);
+	    drawDots(g, midcath,  cath[1], addCurCount(curcountc, 8));
+	    drawDots(g, cath[1],  cath[0], addCurCount(curcountc, 8));
 	    drawDots(g, point1, midgrid, curcountg);
 	}
 	drawPosts(g);

@@ -203,8 +203,7 @@ class PotElm extends CircuitElm implements Command, MouseWheelHandler {
 	    drawDots(g, point1, midpoint, curcount1);
 	    drawDots(g, point2, midpoint, curcount2);
 	    drawDots(g, post3, corner2, curcount3);
-	    drawDots(g, corner2, midpoint,
-		     curcount3+distance(post3, corner2));
+	    drawDots(g, corner2, midpoint, addCurCount(curcount3, distance(post3, corner2)));
 	}
 	drawPosts(g);
 

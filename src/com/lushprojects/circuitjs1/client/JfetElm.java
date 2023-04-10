@@ -67,9 +67,9 @@ class JfetElm extends MosfetElm {
 	    curcounts = updateDotCount(-gateCurrent-ids, curcounts);
 	    if (curcountd != 0 || curcounts != 0) {
 		drawDots(g, src[0], src[1], curcounts);
-		drawDots(g, src[1], src[2], curcounts+8);
+		drawDots(g, src[1], src[2], addCurCount(curcounts, 8));
 		drawDots(g, drn[0], drn[1], -curcountd);
-		drawDots(g, drn[1], drn[2], -(curcountd+8));
+		drawDots(g, drn[1], drn[2], -addCurCount(curcountd, 8));
 		drawDots(g, point1, gatePt, curcountg);
 	    }
 	    drawPosts(g);

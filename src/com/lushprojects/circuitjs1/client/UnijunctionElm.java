@@ -85,9 +85,9 @@ class UnijunctionElm extends CompositeElm {
 	            curcounte  = updateDotCount(-ib1-ib2, curcounte);
 	            if (curcountb1 != 0 || curcountb2 != 0) {
 	                drawDots(g, b1[0], b1[1], curcountb1);
-	                drawDots(g, b1[1], b1[2], curcountb1+8);
+	                drawDots(g, b1[1], b1[2], addCurCount(curcountb1, 8));
 	                drawDots(g, b2[0], b2[1], curcountb2);
-	                drawDots(g, b2[1], b2[2], (curcountb2+8));
+	                drawDots(g, b2[1], b2[2], addCurCount(curcountb2, 8));
 	                drawDots(g, emitter[0], emitter[1], curcounte);
 	                drawDots(g, emitter[1], emitter[2], curcounte);
 	            }
