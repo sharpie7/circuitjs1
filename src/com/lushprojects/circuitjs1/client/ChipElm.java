@@ -104,8 +104,10 @@ abstract class ChipElm extends CircuitElm {
 		    g.setColor(lightGrayColor);
 		    drawThickCircle(g, p.bubbleX, p.bubbleY, 3);
 		}
-		if (p.clockPointsX != null)
+		if (p.clockPointsX != null) {
+		    g.setColor(lightGrayColor);
 		    g.drawPolyline(p.clockPointsX, p.clockPointsY, 3);
+		}
 		g.setColor(p.selected ? selectColor : whiteColor);
 		int fsz = 10*csize;
 		double availSpace = cspc*2-8;
