@@ -207,7 +207,7 @@ public class CustomCompositeModel implements Comparable<CustomCompositeModel> {
 	if (builtin)
 	    return "";
 	dumped = true;
-	String str = ". " + CustomLogicModel.escape(name) + " 0 " + sizeX + " " + sizeY + " " + extList.size() + " ";
+	String str = ". " + CustomLogicModel.escape(name) + " " + flags + " " + sizeX + " " + sizeY + " " + extList.size() + " ";
         int i;
         for (i = 0; i != extList.size(); i++) {
             ExtListEntry ent = extList.get(i);
