@@ -95,8 +95,9 @@ package com.lushprojects.circuitjs1.client;
 	    for (i = 0; i != inputCount; i++, i0++) {
 		if (i0 == 0 && (inputCount & 1) == 0)
 		    i0++;
-		inPosts[i] = interpPoint(point1, point2, 0, hs*i0);
-		inGates[i] = interpPoint(lead1,  lead2,  icircles != null ? -8/(ww*2.) : 0, hs*i0);
+		double adj = getLeadAdjustment(i);
+                inPosts[i] = interpPoint(point1, point2, 0, hs*i0);
+		inGates[i] = interpPoint(lead1,  lead2,  icircles != null ? -8/(ww*2.)+adj : adj, hs*i0);
 		if (icircles != null)
 		    icircles[i] = interpPoint(lead1, lead2,  -4/(ww*2.), hs*i0);
 		volts[i] = (lastOutput ^ isInverting()) ? 5 : 0;
@@ -106,6 +107,8 @@ package com.lushprojects.circuitjs1.client;
 	    if (hasSchmittInputs())
 		schmittPoly = getSchmittPolygon(gsize, .47f);
 	}
+	
+	double getLeadAdjustment(int ix) { return 0; }
 	
 	void createEuroGatePolygon() {
 	    Point pts[] = newPointArray(4);

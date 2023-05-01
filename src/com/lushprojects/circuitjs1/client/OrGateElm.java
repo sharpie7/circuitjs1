@@ -58,7 +58,19 @@ package com.lushprojects.circuitjs1.client;
             g.context.stroke();
 	    g.setLineWidth(1.0);
 	}
-	
+
+	double getLeadAdjustment(int ix) {
+	    if (useEuroGates())
+		return 0;
+	    if (inputCount > 2 && (ix == 0 || ix == inputCount-1))
+		return -.05;
+	    if (inputCount > 7 && (ix == 1 || ix == inputCount-2))
+		return -.05;
+	    if (inputCount >= 12 && (ix == 2 || ix == inputCount-3))
+		return -.05;
+	    return 0;
+	}
+
 	void setPoints() {
 	    super.setPoints();
 
