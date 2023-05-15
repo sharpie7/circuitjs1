@@ -967,6 +967,7 @@ MouseOutHandler, MouseWheelHandler {
   		
   		var touch1 = e.touches[0];
   		var touch2 = e.touches[e.touches.length-1];
+  		lastScale = Math.hypot(touch1.clientX-touch2.clientX, touch1.clientY-touch2.clientY);
   		var mouseEvent = new MouseEvent(etype, {
     			clientX: .5*(touch1.clientX+touch2.clientX),
     			clientY: .5*(touch1.clientY+touch2.clientY)
@@ -984,12 +985,13 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addEventListener("touchmove", function (e) {
   		e.preventDefault();
   		clearTimeout(tmout);
-	        if (e.touches.length > 1) {
-	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(Math.log(e.scale)-Math.log(lastScale)));
-	            lastScale = e.scale;
-	        }
   		var touch1 = e.touches[0];
   		var touch2 = e.touches[e.touches.length-1];
+	        if (e.touches.length > 1) {
+  		    var newScale = Math.hypot(touch1.clientX-touch2.clientX, touch1.clientY-touch2.clientY);
+	            sim.@com.lushprojects.circuitjs1.client.CirSim::zoomCircuit(D)(40*(Math.log(newScale)-Math.log(lastScale)));
+	            lastScale = newScale;
+	        }
   		var mouseEvent = new MouseEvent("mousemove", {
     			clientX: .5*(touch1.clientX+touch2.clientX),
     			clientY: .5*(touch1.clientY+touch2.clientY)
