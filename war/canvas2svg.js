@@ -348,6 +348,7 @@
      * @private
      */
     ctx.prototype.__applyStyleToCurrentElement = function (type) {
+	this.lineCap = 'round';
     	var currentElement = this.__currentElement;
     	var currentStyleGroup = this.__currentElementsToStyle;
     	if (currentStyleGroup) {
@@ -1012,6 +1013,7 @@
         }
         startAngle = startAngle % (2*Math.PI);
         endAngle = endAngle % (2*Math.PI);
+	if (endAngle == 6.28318) endAngle = 6.27; // fix for missing posts
         if (startAngle === endAngle) {
             //circle time! subtract some of the angle so svg is happy (svg elliptical arc can't draw a full circle)
             endAngle = ((endAngle + (2*Math.PI)) - 0.001 * (counterClockwise ? -1 : 1)) % (2*Math.PI);
