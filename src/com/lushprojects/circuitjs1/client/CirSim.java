@@ -141,6 +141,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     ScopePopupMenu scopePopupMenu;
+    Element sidePanelCheckboxLabel;
     static HashMap<String,String> localizationMap;
    
     String lastCursorStyle;
@@ -270,14 +271,22 @@ MouseOutHandler, MouseWheelHandler {
 		return q % x;
 	}
 	
-	
+    native boolean isMobile(Element element) /*-{
+	if (!element)
+	    return false;
+	var style = getComputedStyle(element);
+	return style.display != 'none';
+    }-*/;
+    
     public void setCanvasSize(){
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
     	height=(int)RootLayoutPanel.get().getOffsetHeight();
     	height=height-MENUBARHEIGHT;
-    	//not needed anymore since the width of the canvas' container div is set to 100% in ths CSS file
-    	//width=width-VERTICALPANELWIDTH;
+    	//not needed on mobile since the width of the canvas' container div is set to 100% in ths CSS file
+    	if (!isMobile(sidePanelCheckboxLabel))
+    	    width=width-VERTICALPANELWIDTH;
+    	
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
@@ -417,7 +426,7 @@ MouseOutHandler, MouseWheelHandler {
 	  verticalPanel.getElement().addClassName("verticalPanel");
 	  verticalPanel.getElement().setId("painel");
 	  Element sidePanelCheckbox = DOM.createInputCheck();
-	  Element sidePanelCheckboxLabel = DOM.createLabel();
+	  sidePanelCheckboxLabel = DOM.createLabel();
 	  sidePanelCheckboxLabel.addClassName("triggerLabel");
 	  sidePanelCheckbox.setId("trigger");
 	  sidePanelCheckboxLabel.setAttribute("for", "trigger" );
