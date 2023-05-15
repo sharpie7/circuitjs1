@@ -62,7 +62,7 @@ package com.lushprojects.circuitjs1.client;
 	double getLeadAdjustment(int ix) {
 	    if (useEuroGates())
 		return 0;
-	    if (inputCount > 2 && (ix == 0 || ix == inputCount-1))
+	    if (inputCount > 3 && (ix == 0 || ix == inputCount-1))
 		return -.05;
 	    if (inputCount > 7 && (ix == 1 || ix == inputCount-2))
 		return -.05;
