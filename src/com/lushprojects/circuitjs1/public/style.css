@@ -1,0 +1,123 @@
+@charset "UTF-8";
+
+/*Hide all mobile elements when in desktop usage*/
+.trigger, .toptrigger, .triggerLabel, toptriggerlabel {
+	display: none;
+}
+
+@media only screen and (max-width: 600px) {
+	.triggerLabel {
+		display: initial;
+		border-radius: 10px 0px 0px 10px;
+		background: white;
+		width: 20px;
+		height: 50px;
+		position: absolute;
+		top: 50px;
+		right: 0;
+		z-index: 1;
+		transition: right 1s;
+	}
+	.triggerLabel:before {
+		content: "‖";
+		font-size: 32px;
+		padding-left: 3px;
+		position: absolute;
+		padding-top: 5px;
+	}
+	.toptriggerlabel {
+		z-index: 1;
+		top: 5px;
+		right: 5px;
+		width: 20px;
+		height: 20px;
+		position: absolute;
+	}
+	.toptriggerlabel:before {
+		content: "☰";
+		font-size: 16px;
+		padding-left: 2px;
+		pointer-events: none;
+	}
+
+	/*Trick to hide the menu when the user taps out of the menu*/
+	.toptrigger:checked {
+		display: block;
+		opacity: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 2;
+		position: absolute;
+	}
+	.trigger:checked+.triggerLabel {
+		right: 128px;
+	}
+
+	/* selects the top panel */
+	.gwt-MenuBar-horizontal>table {
+		display: none;
+	}
+
+	/* shows the top menu when the user taps the menu icon */
+	.toptrigger:checked+label+div>div>table {
+		display: block !important;
+	}
+
+	/* selects the side panel */
+	.trigger+.triggerLabel+div {
+		width: 0 !important;
+		background: white;
+		z-index: 1;
+		transition: width 1s;
+	}
+	.trigger:checked+.triggerLabel+div {
+		width: 128px !important;
+	}
+
+	/* selects the top menu */
+	.gwt-MenuBar-horizontal>table {
+		height: auto;
+		position: fixed;
+		width: 100%;
+		text-align: center;
+		top: 30px;
+		background: white;
+		z-index: 2;
+	}
+	.gwt-MenuBar-horizontal * {
+		display: block;
+	}
+	.gwt-MenuBarPopup {
+		z-index: 2;
+		width: 100%;
+		left: 0 !important;
+	}
+	.gwt-MenuBarPopup>div {
+		overflow: scroll;
+		z-index: 2;
+		width: 100%;
+		height: 300px;
+		position: fixed;
+		top: 30px;
+		/* trick to prevent sub menus from opening in the same touch */
+		transition:all 0.1s;
+	}
+	.gwt-MenuBarPopup>div>table {
+		width: 100%;
+		height: 100%;
+	}
+	.menuPopupMiddleCenterInner>div>table {
+		width: 100%;
+		text-align: center;
+	}
+	.menuPopupTopLeft, .menuPopupTopCenter, .menuPopupTopRight,
+		.menuPopupMiddleLeft, .menuPopupMiddleRight, .menuPopupMiddleCenter,
+		.menuPopupBottomLeft, .menuPopupBottomCenter, .menuPopupBottomRight {
+		background: white !important;
+	}
+
+	/* selects the div containing the canvas */
+	.trigger+.triggerLabel+div+div {
+		width: 100% !important;
+	}
+}

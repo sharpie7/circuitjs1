@@ -71,6 +71,8 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -82,7 +84,9 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.MetaElement;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.storage.client.Storage;
@@ -152,6 +156,8 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem scopeRemovePlotMenuItem;
     MenuItem scopeSelectYMenuItem;
     ScopePopupMenu scopePopupMenu;
+    Element sidePanelCheckboxLabel;
+   
     String lastCursorStyle;
     boolean mouseWasOverSplitter = false;
 
@@ -300,14 +306,26 @@ MouseOutHandler, MouseWheelHandler {
             setCanvasSize();
     }
 
+    native boolean isMobile(Element element) /*-{
+	if (!element)
+	    return false;
+	var style = getComputedStyle(element);
+	return style.display != 'none';
+    }-*/;
+    
     public void setCanvasSize(){
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
     	height=(int)RootLayoutPanel.get().getOffsetHeight();
     	height=height-MENUBARHEIGHT;
-    	width=width-VERTICALPANELWIDTH;
+
+    	//not needed on mobile since the width of the canvas' container div is set to 100% in ths CSS file
+    	if (!isMobile(sidePanelCheckboxLabel))
+    	    width=width-VERTICALPANELWIDTH;
+
     	width = Math.max(width, 0);   // avoid exception when setting negative width
     	height = Math.max(height, 0);
+    	
 		if (cv != null) {
 			cv.setWidth(width + "PX");
 			cv.setHeight(height + "PX");
@@ -357,7 +375,14 @@ MouseOutHandler, MouseWheelHandler {
     
     public void init() {
 
+	//sets the meta tag to allow the css media queries to work
+	MetaElement meta = Document.get().createMetaElement();
+	meta.setName("viewport");
+	meta.setContent("width=device-width");
+	NodeList<com.google.gwt.dom.client.Element> node = Document.get().getElementsByTagName("head");
+	node.getItem(0).appendChild(meta);
 
+	
 	boolean printable = false;
 	boolean convention = true;
 	boolean euroRes = false;
@@ -488,6 +513,21 @@ MouseOutHandler, MouseWheelHandler {
 	menuBar.addItem(Locale.LS("File"), fileMenuBar);
 	verticalPanel=new VerticalPanel();
 
+	verticalPanel.getElement().addClassName("verticalPanel");
+	verticalPanel.getElement().setId("painel");
+	Element sidePanelCheckbox = DOM.createInputCheck();
+	sidePanelCheckboxLabel = DOM.createLabel();
+	sidePanelCheckboxLabel.addClassName("triggerLabel");
+	sidePanelCheckbox.setId("trigger");
+	sidePanelCheckboxLabel.setAttribute("for", "trigger" );
+	sidePanelCheckbox.addClassName("trigger");
+	Element topPanelCheckbox = DOM.createInputCheck(); 
+	Element topPanelCheckboxLabel = DOM.createLabel();
+	topPanelCheckbox.setId("toptrigger");
+	topPanelCheckbox.addClassName("toptrigger");
+	topPanelCheckboxLabel.addClassName("toptriggerlabel");
+	topPanelCheckboxLabel.setAttribute("for", "toptrigger");
+
 	// make buttons side by side if there's room
 	buttonPanel=(VERTICALPANELWIDTH == 166) ? new HorizontalPanel() : new VerticalPanel();
 
@@ -613,13 +653,19 @@ MouseOutHandler, MouseWheelHandler {
 	composeMainMenu(drawMenuBar, 1);
 	loadShortcuts();
 
+	DOM.appendChild(layoutPanel.getElement(), topPanelCheckbox);
+	DOM.appendChild(layoutPanel.getElement(), topPanelCheckboxLabel);	
 	if (!hideMenu)
 	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 
+	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
+	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);
 	if (hideSidebar)
 	    VERTICALPANELWIDTH = 0;
 	else
 	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
+	menuBar.getElement().insertFirst(menuBar.getElement().getChild(1));
+	menuBar.getElement().getFirstChildElement().setAttribute("onclick", "document.getElementsByClassName('toptrigger')[0].checked = false");
 	RootLayoutPanel.get().add(layoutPanel);
 
 	cv =Canvas.createIfSupported();
@@ -951,6 +997,7 @@ MouseOutHandler, MouseWheelHandler {
 	cv.addEventListener("touchstart", function (e) {
         	mousePos = getTouchPos(cv, e);
   		var touch = e.touches[0];
+  		
   		var etype = "mousedown";
   		lastScale = 1;
   		clearTimeout(tmout);
