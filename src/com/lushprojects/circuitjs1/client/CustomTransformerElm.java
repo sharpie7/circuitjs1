@@ -169,6 +169,7 @@ class CustomTransformerElm extends CircuitElm {
 	    }
 	    allocNodes();
 	    setPoints();
+	    xformMatrix = null;
 	    return true;
 	}
 	
