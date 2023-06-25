@@ -658,12 +658,13 @@ MouseOutHandler, MouseWheelHandler {
 	if (!hideMenu)
 	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 
-	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
-	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);
 	if (hideSidebar)
 	    VERTICALPANELWIDTH = 0;
-	else
+	else {
+		DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
+		DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);
 	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
+	}
 	menuBar.getElement().insertFirst(menuBar.getElement().getChild(1));
 	menuBar.getElement().getFirstChildElement().setAttribute("onclick", "document.getElementsByClassName('toptrigger')[0].checked = false");
 	RootLayoutPanel.get().add(layoutPanel);
