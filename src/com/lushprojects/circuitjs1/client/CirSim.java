@@ -150,6 +150,7 @@ MouseOutHandler, MouseWheelHandler {
     MenuItem combineAllItem;
     MenuItem separateAllItem;
     MenuBar mainMenuBar;
+	boolean hideMenu = false;
     MenuBar selectScopeMenuBar;
     Vector<MenuItem> selectScopeMenuItems;
     MenuBar subcircuitMenuBar[];
@@ -317,7 +318,7 @@ MouseOutHandler, MouseWheelHandler {
     	int width, height;
     	width=(int)RootLayoutPanel.get().getOffsetWidth();
     	height=(int)RootLayoutPanel.get().getOffsetHeight();
-    	height=height-MENUBARHEIGHT;
+    	height=height-(hideMenu?0:MENUBARHEIGHT);
 
     	//not needed on mobile since the width of the canvas' container div is set to 100% in ths CSS file
     	if (!isMobile(sidePanelCheckboxLabel))
@@ -389,7 +390,6 @@ MouseOutHandler, MouseWheelHandler {
 	boolean usRes = false;
 	boolean running = true;
 	boolean hideSidebar = false;
-	boolean hideMenu = false;
 	boolean noEditing = false;
 	boolean mouseWheelEdit = false;
 	MenuBar m;
@@ -658,12 +658,13 @@ MouseOutHandler, MouseWheelHandler {
 	if (!hideMenu)
 	    layoutPanel.addNorth(menuBar, MENUBARHEIGHT);
 
-	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
-	DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);
 	if (hideSidebar)
 	    VERTICALPANELWIDTH = 0;
-	else
+	else {
+		DOM.appendChild(layoutPanel.getElement(), sidePanelCheckbox);
+		DOM.appendChild(layoutPanel.getElement(), sidePanelCheckboxLabel);
 	    layoutPanel.addEast(verticalPanel, VERTICALPANELWIDTH);
+	}
 	menuBar.getElement().insertFirst(menuBar.getElement().getChild(1));
 	menuBar.getElement().getFirstChildElement().setAttribute("onclick", "document.getElementsByClassName('toptrigger')[0].checked = false");
 	RootLayoutPanel.get().add(layoutPanel);
@@ -1292,7 +1293,7 @@ MouseOutHandler, MouseWheelHandler {
     					cumheight+=12;
     		}
     	}
-    	int ih=RootLayoutPanel.get().getOffsetHeight()-MENUBARHEIGHT-cumheight;
+    	int ih=RootLayoutPanel.get().getOffsetHeight()-(hideMenu?0:MENUBARHEIGHT)-cumheight;
     	if (ih<0)
     		ih=0;
     	iFrame.setHeight(ih+"px");
