@@ -31,7 +31,8 @@ public class Graphics {
 	
 	  public Graphics(Context2d context) {
 		    this.context = context;
-		  }
+		    currentFontSize = 12;
+	  }
 	  
 	  public void setColor(Color color) {
 		    if (color != null) {
