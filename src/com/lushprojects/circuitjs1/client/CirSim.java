@@ -3069,8 +3069,8 @@ MouseOutHandler, MouseWheelHandler {
 	    tm = System.currentTimeMillis();
 	    lit = tm;
 	    // Check whether enough time has elapsed to perform an *additional* iteration after
-	    // those we have already completed.  But limit total computation time to 50ms (20fps)
-	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 50))
+	    // those we have already completed.  But limit total computation time to 500ms (2fps)
+	    if ((timeStepCount-timeStepCountAtFrameStart)*1000 >= steprate*(tm-lastIterTime) || (tm-lastFrameTime > 500))
 		break;
 	    if (!simRunning)
 		break;
