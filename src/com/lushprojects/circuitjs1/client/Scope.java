@@ -26,7 +26,6 @@ import com.google.gwt.storage.client.Storage;
 
 import java.util.Vector;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.core.client.GWT;
