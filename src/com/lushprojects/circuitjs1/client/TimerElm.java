@@ -51,6 +51,7 @@ class TimerElm extends ChipElm {
 	pins[N_OUT] = new Pin(2, SIDE_E, "out");
 	pins[N_OUT].state = true;
 	pins[N_RST] = new Pin(1, SIDE_E, "rst");
+	pins[N_RST].lineOver = true;
 	pins[N_GND] = new Pin(2, SIDE_S, "gnd");
     }
     boolean nonLinear() { return true; }
